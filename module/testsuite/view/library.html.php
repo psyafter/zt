@@ -17,7 +17,56 @@ js::set('browseType',    $browseType);
 js::set('moduleID',      $moduleID);
 js::set('confirmDelete', $lang->testsuite->confirmDelete);
 js::set('batchDelete',   $lang->testcase->confirmBatchDelete);
+js::set('flow',   $this->config->global->flow);
 ?>
+<?php if($this->config->global->flow == 'onlyTest'):?>
+<style>
+.nav > li > .btn-group > a, .nav > li > .btn-group > a:hover, .nav > li > .btn-group > a:focus{background: #1a4f85; border-color: #164270;}
+.outer.with-side #featurebar {background: none; border: none; line-height: 0; margin: 0; min-height: 0; padding: 0; }
+#querybox #searchform{border-bottom: 1px solid #ddd; margin-bottom: 20px;}
+</style>
+<div id='featurebar'>
+  <ul class='submenu hidden'>
+    <?php echo "<li id='bysearchTab'><a href='#'><i class='icon-search icon'></i>&nbsp;{$lang->testcase->bySearch}</a></li> ";?>
+
+    <li class='right'>
+      <div class='btn-group' id='createActionMenu'>
+        <?php
+        $misc = common::hasPriv('testsuite', 'createCase') ? "class='btn btn-primary'" : "class='btn btn-primary disabled'";
+        $link = common::hasPriv('testsuite', 'createCase') ?  $this->createLink('testsuite', 'createCase', "libID=$libID&moduleID=" . (isset($moduleID) ? $moduleID : 0)) : '#';
+        echo html::a($link, "<i class='icon-plus'></i>" . $lang->testcase->create, '', $misc);
+        ?>
+        <button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown'>
+          <span class='caret'></span>
+        </button>
+        <ul class='dropdown-menu pull-right'>
+        <?php 
+        $misc = common::hasPriv('testsuite', 'batchCreateCase') ? '' : "class=disabled";
+        $link = common::hasPriv('testsuite', 'batchCreateCase') ?  $this->createLink('testsuite', 'batchCreateCase', "libID=$libID&moduleID=" . (isset($moduleID) ? $moduleID : 0)) : '#';
+        echo "<li>" . html::a($link, $lang->testcase->batchCreate, '', $misc) . "</li>";
+        ?>
+        </ul>
+      </div>
+    </li>
+
+    <li class='right'>
+      <?php
+      $link = common::hasPriv('testsuite', 'import') ?  $this->createLink('testsuite', 'import', "libID=$libID") : '#';
+      if(common::hasPriv('testsuite', 'import')) echo html::a($link, "<i class='icon-upload-alt'></i> " . $lang->testcase->importFile, '', "class='export'");
+      ?>
+    </li>
+
+    <li class='right'>
+      <?php
+      $link = common::hasPriv('testsuite', 'exportTemplet') ?  $this->createLink('testsuite', 'exportTemplet', "libID=$libID") : '#';
+      if(common::hasPriv('testsuite', 'exportTemplet')) echo html::a($link, "<i class='icon-download-alt'></i> " . $lang->testsuite->exportTemplet, '', "class='export'");
+      ?>
+    </li>
+  </ul>
+
+  <div id='querybox' class='<?php if($browseType =='bysearch') echo 'show';?>'></div>
+</div>
+<?php else:?>
 <div id='featurebar'>
   <div class='heading'>
     <?php echo "<span class='prefix'>" . html::icon($lang->icons['usecase']) . '</span><strong>' . $libName . '</strong>';?>
@@ -39,12 +88,21 @@ js::set('batchDelete',   $lang->testcase->confirmBatchDelete);
     <?php $hasCasesPriv = common::hasPriv('testsuite', 'library'); ?>
     <?php
     if($hasCasesPriv) echo "<li id='allTab'>" . html::a($this->inlink('library', "libID=$libID&browseType=all"), $lang->testcase->allCases) . "</li>";
-    if($hasCasesPriv and $config->testcase->needReview) echo "<li id='waitTab'>" . html::a($this->inlink('library', "libID=$libID&browseType=wait"), $lang->testcase->statusList['wait']) . "</li>";
+    if($hasCasesPriv and ($config->testcase->needReview or !empty($config->testcase->forceReview))) echo "<li id='waitTab'>" . html::a($this->inlink('library', "libID=$libID&browseType=wait"), $lang->testcase->statusList['wait']) . "</li>";
     echo "<li id='bysearchTab'><a href='#'><i class='icon-search icon'></i>&nbsp;{$lang->testcase->bySearch}</a></li> ";
     if(common::hasPriv('testsuite', 'libView')) echo '<li>' . html::a(inlink('libView', "libID=$libID"), $lang->testsuite->view) . '</li>';
     ?>
   </div>
   <div class='actions'>
+    <div class='btn-group'>
+     <?php
+     $link = common::hasPriv('testsuite', 'exportTemplet') ?  $this->createLink('testsuite', 'exportTemplet', "libID=$libID") : '#';
+     if(common::hasPriv('testsuite', 'exportTemplet')) echo html::a($link, "<i class='icon-download-alt'></i> " . $lang->testsuite->exportTemplet, '', "class='btn export'");
+
+     $link = common::hasPriv('testsuite', 'import') ?  $this->createLink('testsuite', 'import', "libID=$libID") : '#';
+     if(common::hasPriv('testsuite', 'import')) echo html::a($link, "<i class='icon-upload-alt'></i> " . $lang->testcase->importFile, '', "class='btn export'");
+     ?>
+    </div>
     <div class='btn-group'>
       <div class='btn-group' id='createActionMenu'>
         <?php
@@ -52,11 +110,22 @@ js::set('batchDelete',   $lang->testcase->confirmBatchDelete);
         $link = common::hasPriv('testsuite', 'createCase') ?  $this->createLink('testsuite', 'createCase', "libID=$libID&moduleID=" . (isset($moduleID) ? $moduleID : 0)) : '#';
         echo html::a($link, "<i class='icon-plus'></i>" . $lang->testcase->create, '', $misc);
         ?>
+        <button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown'>
+          <span class='caret'></span>
+        </button>
+        <ul class='dropdown-menu pull-right'>
+        <?php 
+        $misc = common::hasPriv('testsuite', 'batchCreateCase') ? '' : "class=disabled";
+        $link = common::hasPriv('testsuite', 'batchCreateCase') ?  $this->createLink('testsuite', 'batchCreateCase', "libID=$libID&moduleID=" . (isset($moduleID) ? $moduleID : 0)) : '#';
+        echo "<li>" . html::a($link, $lang->testcase->batchCreate, '', $misc) . "</li>";
+        ?>
+        </ul>
       </div>
     </div>
   </div>
   <div id='querybox' class='<?php if($browseType =='bysearch') echo 'show';?>'></div>
 </div>
+<?php endif;?>
 <div class='side' id='treebox'>
   <a class='side-handle' data-id='testcaseTree'><i class='icon-caret-left'></i></a>
   <div class='side-body'>
@@ -107,7 +176,7 @@ js::set('batchDelete',   $lang->testcase->confirmBatchDelete);
         </td>
         <td>
           <?php
-          if($config->testcase->needReview) common::printIcon('testcase', 'review',  "caseID=$case->id", $case, 'list', 'review', '', 'iframe');
+          if($config->testcase->needReview or !empty($config->testcase->forceReview)) common::printIcon('testcase', 'review',  "caseID=$case->id", $case, 'list', 'review', '', 'iframe');
           common::printIcon('testcase',  'edit',    "caseID=$case->id", $case, 'list');
           if(common::hasPriv('testcase', 'delete'))
           {
@@ -141,7 +210,7 @@ js::set('batchDelete',   $lang->testcase->confirmBatchDelete);
                   $misc = common::hasPriv('testcase', 'batchDelete') ? "onclick=\"confirmBatchDelete('$actionLink')\"" : $class;
                   echo "<li>" . html::a('#', $lang->delete, '', $misc) . "</li>";
 
-                  if(common::hasPriv('testcase', 'batchReview') and $config->testcase->needReview)
+                  if(common::hasPriv('testcase', 'batchReview') and ($config->testcase->needReview or !empty($config->testcase->forceReview)))
                   {
                       echo "<li class='dropdown-submenu'>";
                       echo html::a('javascript:;', $lang->testcase->review, '', "id='reviewItem'");
@@ -154,7 +223,7 @@ js::set('batchDelete',   $lang->testcase->confirmBatchDelete);
                       }
                       echo '</ul></li>';
                   }
-                  elseif($config->testcase->needReview)
+                  elseif($config->testcase->needReview or !empty($config->testcase->forceReview))
                   {
                       echo '<li>' . html::a('javascript:;', $lang->testcase->review,  '', $class) . '</li>';
                   }
@@ -194,5 +263,13 @@ js::set('batchDelete',   $lang->testcase->confirmBatchDelete);
 <script>
 $('#module' + moduleID).addClass('active'); 
 $('#<?php echo $this->session->libBrowseType?>Tab').addClass('active');
+if(flow == 'onlyTest')
+{
+    $('#modulemenu > .nav > li.right').before($('#featurebar .submenu').html());
+    toggleSearch();
+
+    $('#modulemenu > .nav > li').removeClass('active');
+    $('#modulemenu > .nav > li[data-id=' + browseType + ']').addClass('active');
+}
 </script>
 <?php include '../../common/view/footer.html.php';?>

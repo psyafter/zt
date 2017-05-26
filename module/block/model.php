@@ -146,7 +146,8 @@ class blockModel extends model
      */
     public function initBlock($module)
     {
-        $blocks  = $this->lang->block->default[$module];
+        $flow    = isset($this->config->global->flow) ? $this->config->global->flow : 'full';
+        $blocks  = $module == 'my' ? $this->lang->block->default[$flow][$module] : $this->lang->block->default[$module];
         $account = $this->app->user->account;
 
         /* Mark this app has init. */
@@ -194,6 +195,9 @@ class blockModel extends model
      */
     public function getListParams($module = '')
     {
+        if($module == 'product') return $this->getProductParams($module);
+        if($module == 'project') return $this->getProjectParams($module);
+
         $params = new stdclass();
         $params = $this->onlyNumParams($module, $params);
         return json_encode($params);

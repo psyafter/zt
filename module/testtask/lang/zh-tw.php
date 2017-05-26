@@ -39,10 +39,10 @@ $lang->testtask->testing          = "測試中版本";
 $lang->testtask->blocked          = "被阻塞版本";
 $lang->testtask->done             = "已測版本";
 $lang->testtask->totalStatus      = "全部";
-$lang->testtask->all              = "全部產品";
+$lang->testtask->all              = "全部" . $lang->productCommon;
 
 $lang->testtask->id             = '編號';
-$lang->testtask->common         = '測試視圖版本';
+$lang->testtask->common         = '測試版本';
 $lang->testtask->product        = '所屬' . $lang->productCommon;
 $lang->testtask->project        = '所屬' . $lang->projectCommon;
 $lang->testtask->build          = '版本';

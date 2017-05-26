@@ -42,7 +42,7 @@ class project extends control
         if($this->app->user->account == 'guest' or commonModel::isTutorialMode()) $this->config->project->homepage = 'index';
         if(!isset($this->config->project->homepage))
         { 
-            if($this->projects) die($this->fetch('custom', 'ajaxSetHomepage', "module=project"));
+            if($this->projects and $this->app->viewType != 'mhtml') die($this->fetch('custom', 'ajaxSetHomepage', "module=project"));
 
             $this->config->project->homepage = 'index';
             $this->fetch('custom', 'ajaxSetHomepage', "module=project&page=index");
@@ -52,7 +52,7 @@ class project extends control
         if($homepage == 'browse' and $locate == 'auto') $locate = 'yes';
         if($locate == 'yes') $this->locate($this->createLink('project', 'task'));
 
-        unset($this->lang->project->menu->index);
+        if($this->app->viewType != 'mhtml') unset($this->lang->project->menu->index);
         $this->commonAction($projectID);
         //$this->project->setMenu($this->projects, key($this->projects));
 
@@ -128,12 +128,14 @@ class project extends control
 
         /* Set browse type. */
         $browseType = strtolower($status);
+        if($this->config->global->flow == 'onlyTask' and $browseType == 'byproduct') $param = 0;
 
         /* Get products by project. */
         $project   = $this->commonAction($projectID, $status);
         $projectID = $project->id;
-        $products  = $this->loadModel('product')->getProductsByProject($projectID);
+        $products  = $this->config->global->flow == 'onlyTask' ? array() : $this->loadModel('product')->getProductsByProject($projectID);
         setcookie('preProjectID', $projectID, $this->config->cookieLife, $this->config->webRoot);
+
 
         if($this->cookie->preProjectID != $projectID)
         {
@@ -514,6 +516,7 @@ class project extends control
         $this->view->browseType = $browseType;
         $this->view->param      = $param;
         $this->view->users      = $users;
+        $this->view->project    = $this->project->getByID($projectID);
         $this->view->projectID  = $projectID;
         $this->display();
     }

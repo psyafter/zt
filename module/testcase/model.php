@@ -21,13 +21,52 @@ class testcaseModel extends model
      * @access public
      * @return void
      */
-    public function setMenu($products, $productID, $branch = 0)
+    public function setMenu($products, $productID, $branch = 0, $moduleID = 0, $suiteID = 0)
     {
-        $this->loadModel('product')->setMenu($products, $productID, $branch);
-        $selectHtml = $this->product->select($products, $productID, 'testcase', 'browse', '', $branch);
+        $this->loadModel('product')->setMenu($products, $productID, $branch, $moduleID, 'case');
+        $selectHtml = $this->product->select($products, $productID, 'testcase', 'browse', '', $branch, $moduleID, 'case');
         foreach($this->lang->testcase->menu as $key => $menu)
         {
-            $replace = ($key == 'product') ? $selectHtml : $productID;
+            if($this->config->global->flow != 'onlyTest')
+            {
+                $replace = ($key == 'product') ? $selectHtml : $productID;
+            }
+            else
+            {
+                if($key == 'product')
+                {
+                    $replace = $selectHtml;
+                }
+                elseif($key == 'suite' and common::hasPriv('testcase', 'browse'))
+                {
+                      $suiteList      = $this->loadModel('testsuite')->getSuites($productID);
+                      $currentSuiteID = isset($suiteID) ? (int)$suiteID : 0;
+                      $currentSuite   = zget($suiteList, $currentSuiteID, '');
+                      $currentLable   = empty($currentSuite) ? $this->lang->testsuite->common : $currentSuite->name;
+
+                      $replace  = "<li id='bysuiteTab' class='dropdown'>";
+                      $replace .= html::a('javascript:;', $currentLable . " <span class='caret'></span>", '', "data-toggle='dropdown'");
+                      $replace .="<ul class='dropdown-menu' style='max-height:240px; overflow-y:auto'>";
+
+                      foreach ($suiteList as $suiteID => $suite)
+                      {
+                          $suiteName = $suite->name;
+                          if($suite->type == 'public') $suiteName .= " <span class='label label-info'>{$this->lang->testsuite->authorList[$suite->type]}</span>";
+
+                          $replace .= '<li' . ($suiteID == (int)$currentSuiteID ? " class='active'" : '') . '>';
+                          $replace .= html::a(helper::createLink('testcase', 'browse', "productID=$productID&branch=$branch&browseType=bySuite&param=$suiteID"), $suiteName);
+                          $replace .= "</li>";
+                      }
+
+                      $replace .= '</ul></li>';
+                }
+                else
+                {
+                    $replace = array();
+                    $replace['productID'] = $productID;
+                    $replace['branch']    = $branch;
+                }
+            }
             common::setMenuVars($this->lang->testcase->menu, $key, $replace);
         }
     }
@@ -717,12 +756,14 @@ class testcaseModel extends model
         /* Process data if the value is 'ditto'. */
         foreach($caseIDList as $caseID)
         {
-            if($data->pris[$caseID]    == 'ditto') $data->pris[$caseID]    = isset($prev['pri'])    ? $prev['pri']    : 3;
-            if($data->modules[$caseID] == 'ditto') $data->modules[$caseID] = isset($prev['module']) ? $prev['module'] : 0;
-            if($data->types[$caseID]   == 'ditto') $data->types[$caseID]   = isset($prev['type'])   ? $prev['type']   : '';
-            if($data->stories[$caseID] == '')      $data->stories[$caseID] = 0;
+            if($data->pris[$caseID]     == 'ditto') $data->pris[$caseID]     = isset($prev['pri'])    ? $prev['pri']    : 3;
+            if($data->branches[$caseID] == 'ditto') $data->branches[$caseID] = isset($prev['branch']) ? $prev['branch'] : 0;
+            if($data->modules[$caseID]  == 'ditto') $data->modules[$caseID]  = isset($prev['module']) ? $prev['module'] : 0;
+            if($data->types[$caseID]    == 'ditto') $data->types[$caseID]    = isset($prev['type'])   ? $prev['type']   : '';
+            if($data->stories[$caseID]  == '')      $data->stories[$caseID]  = 0;
 
             $prev['pri']    = $data->pris[$caseID];
+            $prev['branch'] = $data->branches[$caseID];
             $prev['module'] = $data->modules[$caseID];
             $prev['type']   = $data->types[$caseID];
         }
@@ -735,6 +776,7 @@ class testcaseModel extends model
             $case->lastEditedDate = $now;
             $case->pri            = $data->pris[$caseID];
             $case->status         = $data->statuses[$caseID];
+            $case->branch         = $data->branches[$caseID];
             $case->module         = $data->modules[$caseID];
             $case->story          = $data->stories[$caseID];
             $case->color          = $data->colors[$caseID];
@@ -937,7 +979,6 @@ class testcaseModel extends model
             $caseData->title        = $data->title[$key];
             $caseData->pri          = (int)$data->pri[$key];
             $caseData->type         = $data->type[$key];
-            $caseData->status       = $data->status[$key];
             $caseData->stage        = join(',', $data->stage[$key]);
             $caseData->keywords     = $data->keywords[$key];
             $caseData->frequency    = 1;
@@ -959,9 +1000,15 @@ class testcaseModel extends model
         $forceReview = $this->forceReview();
         foreach($cases as $key => $caseData)
         {
+            $caseID = 0;
             if(!empty($_POST['id'][$key]) and empty($_POST['insert']))
             {
-                $caseID      = $data->id[$key];
+                $caseID = $data->id[$key];
+                if(!isset($oldCases[$caseID])) $caseID = 0;
+            }
+
+            if($caseID)
+            {
                 $stepChanged = false;
                 $steps       = array();
                 $oldStep     = isset($oldSteps[$caseID]) ? $oldSteps[$caseID] : array();
@@ -1047,7 +1094,7 @@ class testcaseModel extends model
                 $caseData->openedDate = $now;
                 $caseData->branch     = isset($data->branch[$key]) ? $data->branch[$key] : $branch;
                 if($caseData->story) $caseData->storyVersion = zget($storyVersionPairs, $caseData->story, 1);
-                if($forceReview) $caseData->status = 'wait';
+                $caseData->status = $forceReview ? 'wait' : 'normal';
                 $this->dao->insert(TABLE_CASE)->data($caseData)->autoCheck()->exec();
 
                 if(!dao::isError())
@@ -1266,7 +1313,7 @@ class testcaseModel extends model
             case 'actions':
                 common::printIcon('testtask', 'runCase', "runID=0&caseID=$case->id&version=$case->version", '', 'list', 'play', '', 'runCase iframe', false, "data-width='95%'");
                 common::printIcon('testtask', 'results', "runID=0&caseID=$case->id", '', 'list', '', '', 'results iframe', '', "data-width='90%'");
-                if($config->testcase->needReview) common::printIcon('testcase', 'review',  "caseID=$case->id", $case, 'list', 'review', '', 'iframe');
+                if($this->config->testcase->needReview or !empty($this->config->testcase->forceReview)) common::printIcon('testcase', 'review',  "caseID=$case->id", $case, 'list', 'review', '', 'iframe');
                 common::printIcon('testcase', 'edit',    "caseID=$case->id", $case, 'list');
                 common::printIcon('testcase', 'create',  "productID=$case->product&branch=$case->branch&moduleID=$case->module&from=testcase&param=$case->id", $case, 'list', 'copy');
 
@@ -1336,10 +1383,10 @@ class testcaseModel extends model
         foreach($cases as $key => $case)
         {
             $caseID = $type == 'case' ? $case->id : $case->case;
-            $case->bugs       = isset($caseBugs[$caseID])   ? $caseBugs[$caseID]   : 0;
-            $case->results    = isset($results[$caseID])    ? $results[$caseID]    : 0;
-            $case->caseFails  = isset($caseFails[$caseID])  ? $caseFails[$caseID]  : 0;
-            $case->stepNumber = isset($stepNumber[$caseID]) ? $stepNumber[$caseID] : 0;
+            $case->bugs       = isset($caseBugs[$caseID])  ? $caseBugs[$caseID]   : 0;
+            $case->results    = isset($results[$caseID])   ? $results[$caseID]    : 0;
+            $case->caseFails  = isset($caseFails[$caseID]) ? $caseFails[$caseID]  : 0;
+            $case->stepNumber = isset($steps[$caseID])     ? $steps[$caseID]      : 0;
         }
 
         return $cases;
@@ -1349,12 +1396,11 @@ class testcaseModel extends model
      * Check whether force review 
      * 
      * @access public
-     * @return void
+     * @return bool
      */
     public function forceReview()
     {
-        if(!$this->config->testcase->needReview) return false;
-        if(empty($this->config->testcase->forceReview)) return true;
+        if($this->config->testcase->needReview) return true;
         if(strpos(",{$this->config->testcase->forceReview},", ",{$this->app->user->account},") !== false) return true;
         return false;
     }

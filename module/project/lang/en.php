@@ -207,6 +207,7 @@ $lang->project->goback                = "Go Back";
 $lang->project->noweekend             = 'Without Weekend';
 $lang->project->withweekend           = 'With Weekend';
 $lang->project->interval              = 'Intervals';
+$lang->project->fixFirstWithLeft      = 'Modify the left time';
 
 /* 统计。*/
 $lang->project->charts = new stdclass();
@@ -261,3 +262,10 @@ $lang->project->treeLevel['root']    = 'Show Root';
 $lang->project->treeLevel['story']   = 'Show Story';
 $lang->project->treeLevel['task']    = 'Show Task';
 $lang->project->treeLevel['all']     = 'Show All';
+
+global $config;
+if($config->global->flow == 'onlyTask')
+{
+    unset($lang->project->groups['story']);
+    unset($lang->project->featureBar['task']['needconfirm']);
+}

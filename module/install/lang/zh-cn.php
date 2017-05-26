@@ -81,9 +81,15 @@ $lang->install->dbName         = 'PMS使用的库';
 $lang->install->dbPrefix       = '建表使用的前缀';
 $lang->install->clearDB        = '清空现有数据';
 $lang->install->importDemoData = '导入demo数据';
+$lang->install->working        = '工作方式';
 
 $lang->install->requestTypes['GET']       = '普通方式';
 $lang->install->requestTypes['PATH_INFO'] = '静态友好方式';
+
+$lang->install->workingList['full']      = '完整研发管理工具';
+$lang->install->workingList['onlyTest']  = '测试管理工具';
+$lang->install->workingList['onlyStory'] = '需求管理工具';
+$lang->install->workingList['onlyTask']  = '任务管理工具';
 
 $lang->install->errorConnectDB      = '数据库连接失败 ';
 $lang->install->errorDBName         = '数据库名不能含有 “.” ';
@@ -126,6 +132,14 @@ $lang->install->groupList['TOP']['name']    = '高层管理';
 $lang->install->groupList['TOP']['desc']    = '高层管理';
 $lang->install->groupList['OTHERS']['name'] = '其他';
 $lang->install->groupList['OTHERS']['desc'] = '其他';
+
+$lang->install->cronList[''] = '监控定时任务';
+$lang->install->cronList['moduleName=project&methodName=computeburn'] = '更新燃尽图';
+$lang->install->cronList['moduleName=report&methodName=remind']       = '每日任务提醒';
+$lang->install->cronList['moduleName=svn&methodName=run']             = '同步SVN';
+$lang->install->cronList['moduleName=git&methodName=run']             = '同步GIT';
+$lang->install->cronList['moduleName=backup&methodName=backup']       = '备份数据和附件';
+$lang->install->cronList['moduleName=mail&methodName=asyncSend']      = '异步发信';
 
 $lang->install->success  = "安装成功";
 $lang->install->login    = '登录禅道管理系统';

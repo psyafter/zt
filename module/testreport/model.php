@@ -24,9 +24,48 @@ class testreportModel extends model
     {
         $this->loadModel('product')->setMenu($products, $productID, $branch);
         $selectHtml = $this->product->select($products, $productID, 'testreport', 'browse', '', $branch);
+
+        /* Remove branch. */
+        if(strpos($selectHtml, 'currentBranch') !== false)
+        {
+            $selectHtml = substr($selectHtml, 0, strpos($selectHtml, 'currentBranch'));
+            $selectHtml = substr($selectHtml, 0, strrpos($selectHtml, '<'));
+            if(strpos($selectHtml, '</li>') !== false) $selectHtml = substr($selectHtml, 0, strrpos($selectHtml, '</li>'));
+        }
+
         foreach($this->lang->testtask->menu as $key => $value)
         {
-            $replace = ($key == 'product') ? $selectHtml : $productID;
+            if($this->config->global->flow != 'onlyTest')
+            {
+                $replace = ($key == 'product') ? $selectHtml : $productID;
+            }
+            else
+            {
+                if($key == 'product') 
+                {
+                    $replace = $selectHtml;
+                }
+                elseif($key == 'scope')
+                {
+                    $scope = $this->session->testTaskVersionScope;
+                    $status = $this->session->testTaskVersionStatus;
+                    $viewName = $scope == 'local'? $products[$productID] : $this->lang->testtask->all;
+
+                    $replace  = '<li>';
+                    $replace .= "<a data-toggle='dropdown'>{$viewName} <span class='caret'></span></a>";
+                    $replace .= "<ul class='dropdown-menu' style='max-height:240px;overflow-y:auto'>";
+                    $replace .= "<li>" . html::a(helper::createLink('testtask', 'browse', "productID=$productID&branch=$branch&type=all,$status"), $this->lang->testtask->all) . "</li>";
+                    $replace .= "<li>" . html::a(helper::createLink('testtask', 'browse', "productID=$productID&branch=$branch&type=local,$status"), $products[$productID]) . "</li>";
+                    $replace .= "</ul></li>";
+                }
+                else
+                {
+                    $replace = array();
+                    $replace['productID'] = $productID;
+                    $replace['branch']    = $branch;
+                    $replace['scope']     = $this->session->testTaskVersionScope;
+                }
+            }
             common::setMenuVars($this->lang->testreport->menu, $key, $replace);
         }
     }
@@ -170,7 +209,7 @@ class testreportModel extends model
 
         $bugInfo['legacyBugs']          = $legacyBugs;
         $bugInfo['countBugByTask']      = count($bugsByTask);
-        $bugInfo['bugConfirmedRate']    = empty($resolvedBugs) ? 0 : round((count(zget($resolutionGroups, 'fixed', array())) + count(zget($resolutionGroups, 'postponed', array()))) / $resolvedBugs * 100, 2);
+        $bugInfo['bugConfirmedRate']    = empty($resolvedBugs) ? 0 : round((zget($resolutionGroups, 'fixed', 0) + zget($resolutionGroups, 'postponed', 0)) / $resolvedBugs * 100, 2);
         $bugInfo['bugCreateByCaseRate'] = empty($byCaseNum) ? 0 : round($byCaseNum / count($newBugs) * 100, 2);
 
         $this->app->loadLang('bug');

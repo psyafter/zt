@@ -535,6 +535,25 @@ class doc extends control
     }
 
     /**
+     * Sort doc lib.
+     * 
+     * @access public
+     * @return void
+     */
+    public function sort()
+    {
+        if($_POST)
+        {
+            foreach($_POST as $id => $order)
+            {
+                $this->dao->update(TABLE_DOCLIB)->set('order')->eq($order)->where('id')->eq($id)->exec();
+            }
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
+            $this->send(array('result' => 'success'));
+        }
+    }
+
+    /**
      * Ajax get modules by libID.
      * 
      * @param  int    $libID 
@@ -557,7 +576,8 @@ class doc extends control
      */
     public function ajaxFixedMenu($libID, $type = 'fixed')
     {
-        $customMenus = $this->loadModel('setting')->getItem("owner={$this->app->user->account}&module=common&section=customMenu&key=doc");
+        $customMenuKey = $this->config->global->flow . '_doc';
+        $customMenus = $this->loadModel('setting')->getItem("owner={$this->app->user->account}&module=common&section=customMenu&key={$customMenuKey}");
         if($customMenus) $customMenus = json_decode($customMenus);
         if(empty($customMenus))
         {
@@ -585,7 +605,7 @@ class doc extends control
         $customMenu->order     = count($customMenus); 
         $customMenu->float     = 'right'; 
         if($type == 'fixed') $customMenus[] = $customMenu;
-        $this->setting->setItem("{$this->app->user->account}.common.customMenu.doc", json_encode($customMenus));
+        $this->setting->setItem("{$this->app->user->account}.common.customMenu.{$customMenuKey}", json_encode($customMenus));
         die(js::reload('parent'));
     }
 

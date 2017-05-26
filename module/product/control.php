@@ -49,10 +49,12 @@ class product extends control
      */
     public function index($locate = 'auto', $productID = 0, $status = 'noclosed', $orderBy = 'order_desc', $recTotal = 0, $recPerPage = 10, $pageID = 1)
     {
+        if($this->config->global->flow == 'onlyTest') $this->locate($this->createLink($this->moduleName, 'build'));
+
         if($this->app->user->account == 'guest' or commonModel::isTutorialMode()) $this->config->product->homepage = 'index';
         if(!isset($this->config->product->homepage))
         {
-            if($this->products) die($this->fetch('custom', 'ajaxSetHomepage', "module=product"));
+            if($this->products and $this->app->getViewType() != 'mhtml') die($this->fetch('custom', 'ajaxSetHomepage', "module=product"));
 
             $this->config->product->homepage = 'index';
             $this->fetch('custom', 'ajaxSetHomepage', "module=product&page=index");
@@ -531,10 +533,11 @@ class product extends control
      * @access public
      * @return void
      */
-    public function ajaxGetPlans($productID, $branch = 0, $planID = 0, $needCreate = false)
+    public function ajaxGetPlans($productID, $branch = 0, $planID = 0, $fieldID = '', $needCreate = false)
     {
         $plans = $this->loadModel('productplan')->getPairs($productID, $branch);
-        $output = html::select('plan', $plans, $planID, "class='form-control chosen'");
+        $field = $fieldID ? "plans[$fieldID]" : 'plan';
+        $output = html::select($field, $plans, $planID, "class='form-control chosen'");
         if(count($plans) == 1 and $needCreate) 
         {
             $output .= "<span class='input-group-addon'>";
@@ -658,5 +661,39 @@ class product extends control
     public function doc($productID)
     {
         $this->locate($this->createLink('doc', 'objectLibs', "type=product&objectID=$productID&from=product"));
+    }
+
+    /**
+     * Build of product.
+     * 
+     * @param  int    $productID 
+     * @access public
+     * @return void
+     */
+    public function build($productID = 0)
+    {
+        $this->app->loadLang('build');
+        $this->session->set('productList', $this->app->getURI(true));
+
+        /* Get all product list. Locate to the create product page if there is no product. */
+        $this->products = $this->product->getPairs();
+        if(empty($this->products) and strpos('create|view', $this->methodName) === false) $this->locate($this->createLink('product', 'create'));
+
+        /* Get current product. */
+        $productID = $this->product->saveState($productID, $this->products);
+        $product   = $this->product->getById($productID);
+        $this->product->setMenu($this->products, $productID);
+
+        /* Set menu.*/
+        $this->session->set('buildList', $this->app->getURI(true));
+
+        $this->view->title      = $product->name . $this->lang->colon . $this->lang->product->build;
+        $this->view->position[] = $this->lang->product->build;
+        $this->view->products   = $this->products;
+        $this->view->product    = $product;
+        $this->view->builds     = $this->dao->select('*')->from(TABLE_BUILD)->where('product')->eq($productID)->andWhere('deleted')->eq(0)->fetchAll();
+        $this->view->users      = $this->loadModel('user')->getPairs('noletter');
+
+        $this->display();
     }
 }

@@ -259,4 +259,28 @@ class adminModel extends model
         $register->email   = $this->app->user->email;
         return $register;
     }
+
+    /**
+     * Check weak.
+     * 
+     * @param  object    $user 
+     * @access public
+     * @return bool
+     */
+    public function checkWeak($user)
+    {
+        $weaks = array();
+        foreach(explode(',', $this->config->safe->weak) as $weak)
+        {
+            $weak = md5(trim($weak));
+            $weaks[$weak] = $weak;
+        }
+
+        if(isset($weaks[$user->password])) return true;
+        if($user->password == md5($user->account)) return true;
+        if($user->phone and $user->password == md5($user->phone)) return true;
+        if($user->mobile and $user->password == md5($user->mobile)) return true;
+        if($user->birthday and $user->password == md5($user->birthday)) return true;
+        return false;
+    }
 }

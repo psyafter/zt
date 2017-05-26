@@ -190,8 +190,8 @@ class userModel extends model
     public function getByQuery($query, $pager = null, $orderBy = 'id')
     {
         return $this->dao->select('*')->from(TABLE_USER)
-            ->where($query)
-            ->andWhere('deleted')->eq(0)
+            ->where('deleted')->eq(0)
+            ->beginIF($query)->andWhere($query)->fi()
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll();
@@ -615,6 +615,12 @@ class userModel extends model
             $user->last  = date(DT_DATETIME1, $last);
             $user->admin = strpos($this->app->company->admins, ",{$user->account},") !== false;
             $user->modifyPassword = ($user->visits == 0 and !empty($this->config->safe->modifyPasswordFirstLogin));
+            if($user->modifyPassword) $user->modifyPasswordReason = 'modifyPasswordFirstLogin';
+            if(!$user->modifyPassword and !empty($this->config->safe->changeWeak))
+            {
+                $user->modifyPassword = $this->loadModel('admin')->checkWeak($user);
+                if($user->modifyPassword) $user->modifyPasswordReason = 'weak';
+            }
 
             $this->dao->update(TABLE_USER)->set('visits = visits + 1')->set('ip')->eq($ip)->set('last')->eq($last)->where('account')->eq($account)->exec();
         }

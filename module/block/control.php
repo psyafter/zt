@@ -49,9 +49,13 @@ class block extends control
                 if(!common::hasPriv($moduleKey, 'index')) unset($modules[$moduleKey]);
             }
 
+            if($this->config->global->flow == 'onlyTask' or $this->config->global->flow == 'onlyStory') unset($modules['qa']);
+            if($this->config->global->flow == 'onlyTask' or $this->config->global->flow == 'onlyTest')  unset($modules['product']);
+            if($this->config->global->flow == 'onlyStory' or $this->config->global->flow == 'onlyTest') unset($modules['project']);
+
             $closedBlock = isset($this->config->block->closed) ? $this->config->block->closed : '';
             if(strpos(",$closedBlock,", ",|dynamic,") === false)   $modules['dynamic']   = $this->lang->block->dynamic;
-            if(strpos(",$closedBlock,", ",|flowchart,") === false) $modules['flowchart'] = $this->lang->block->lblFlowchart;
+            if(strpos(",$closedBlock,", ",|flowchart,") === false and $this->config->global->flow == 'full') $modules['flowchart'] = $this->lang->block->lblFlowchart;
             if(strpos(",$closedBlock,", ",|html,") === false)      $modules['html']      = 'HTML';
             $modules = array('' => '') + $modules;
 
@@ -162,12 +166,17 @@ class block extends control
      * @access public
      * @return void
      */
-    public function resize($id, $grid = 4)
+    public function resize($id, $type, $data)
     {
         $block = $this->block->getByID($id);
         if($block)
         {
-            $block->grid = $grid;
+            $field = '';
+            if($type == 'vertical') $field = 'height';
+            if($type == 'horizontal') $field = 'grid';
+            if(empty($field)) $this->send(array('result' => 'fail', 'code' => 400));
+
+            $block->$field = $data;
             $block->params = helper::jsonEncode($block->params);
             $this->dao->replace(TABLE_BLOCK)->data($block)->exec();
             if(dao::isError()) $this->send(array('result' => 'fail', 'code' => 500));
@@ -198,8 +207,12 @@ class block extends control
             if($this->block->initBlock($module)) die(js::reload());
         }
 
-        foreach($blocks as $block)
+        foreach($blocks as $key => $block)
         {
+            if($this->config->global->flow == 'onlyStory' and $block->source != 'product' and $block->source != 'todo' and $block->block != 'dynamic') unset($blocks[$key]);
+            if($this->config->global->flow == 'onlyTask' and $block->source != 'project' and $block->source != 'todo' and $block->block != 'dynamic') unset($blocks[$key]);
+            if($this->config->global->flow == 'onlyTest' and $block->source != 'qa' and $block->source != 'todo' and $block->block != 'dynamic') unset($blocks[$key]);
+
             $block->params  = json_decode($block->params);
             $blockID = $block->block;
             $source  = empty($block->source) ? 'common' : $block->source;
@@ -410,7 +423,7 @@ class block extends control
         $this->session->set('todoList', $uri);
         $this->session->set('bugList',  $uri);
         $this->session->set('taskList', $uri);
-        $this->view->todos = $this->loadModel('todo')->getList('all', $this->app->user->account, 'wait, doing', $this->viewType == 'json' ? 0 : $this->params->num);
+        $this->view->todos = $this->loadModel('todo')->getList('all', $this->app->user->account, 'wait, doing', $this->viewType == 'json' ? 0 : (int)$this->params->num);
     }
 
     /**
@@ -423,7 +436,8 @@ class block extends control
     {
         $this->session->set('taskList',  $this->server->http_referer);
         $this->session->set('storyList', $this->server->http_referer);
-        $this->view->tasks = $this->loadModel('task')->getUserTasks($this->app->user->account, $this->params->type, $this->viewType == 'json' ? 0 : $this->params->num, null, $this->params->orderBy);
+        if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
+        $this->view->tasks = $this->loadModel('task')->getUserTasks($this->app->user->account, $this->params->type, $this->viewType == 'json' ? 0 : (int)$this->params->num, null, $this->params->orderBy);
     }
 
     /**
@@ -435,7 +449,8 @@ class block extends control
     public function printBugBlock()
     {
         $this->session->set('bugList', $this->server->http_referer);
-        $this->view->bugs = $this->loadModel('bug')->getUserBugs($this->app->user->account, $this->params->type, $this->params->orderBy, $this->viewType == 'json' ? 0 : $this->params->num);
+        if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
+        $this->view->bugs = $this->loadModel('bug')->getUserBugs($this->app->user->account, $this->params->type, $this->params->orderBy, $this->viewType == 'json' ? 0 : (int)$this->params->num);
     }
 
     /**
@@ -462,7 +477,7 @@ class block extends control
                 ->andWhere('t3.deleted')->eq(0)
                 ->andWhere('t2.deleted')->eq(0)
                 ->orderBy($this->params->orderBy)
-                ->beginIF($this->viewType != 'json')->limit($this->params->num)->fi()
+                ->beginIF($this->viewType != 'json')->limit((int)$this->params->num)->fi()
                 ->fetchAll();
         }
         elseif($this->params->type == 'openedbyme')
@@ -470,7 +485,7 @@ class block extends control
             $cases = $this->dao->findByOpenedBy($this->app->user->account)->from(TABLE_CASE)
                 ->andWhere('deleted')->eq(0)
                 ->orderBy($this->params->orderBy)
-                ->beginIF($this->viewType != 'json')->limit($this->params->num)->fi()
+                ->beginIF($this->viewType != 'json')->limit((int)$this->params->num)->fi()
                 ->fetchAll();
         }
         $this->view->cases    = $cases;
@@ -485,6 +500,7 @@ class block extends control
     public function printTesttaskBlock()
     {
         $this->session->set('testtaskList', $this->server->http_referer);
+        if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
         $this->app->loadLang('testtask');
         $products = $this->loadModel('product')->getPairs();
         $this->view->testtasks = $this->dao->select('t1.*,t2.name as productName,t3.name as buildName,t4.name as projectName')->from(TABLE_TESTTASK)->alias('t1')
@@ -497,7 +513,7 @@ class block extends control
             ->andWhere('t1.product = t5.product')
             ->beginIF($this->params->type != 'all')->andWhere('t1.status')->eq($this->params->type)->fi()
             ->orderBy('t1.id desc')
-            ->beginIF($this->viewType != 'json')->limit($this->params->num)->fi()
+            ->beginIF($this->viewType != 'json')->limit((int)$this->params->num)->fi()
             ->fetchAll();
     }
 
@@ -510,8 +526,9 @@ class block extends control
     public function printStoryBlock()
     {
         $this->session->set('storyList', $this->server->http_referer);
+        if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
         $this->app->loadClass('pager', $static = true);
-        $num     = isset($this->params->num) ? $this->params->num : 0;
+        $num     = isset($this->params->num) ? (int)$this->params->num : 0;
         $pager   = pager::init(0, $num , 1);
         $type    = isset($this->params->type) ? $this->params->type : 'assignedTo';
         $orderBy = isset($this->params->type) ? $this->params->orderBy : 'id_asc';
@@ -534,7 +551,7 @@ class block extends control
             ->where('t1.deleted')->eq('0')
             ->andWhere('t1.product')->in(array_keys($products))
             ->orderBy('t1.begin desc')
-            ->beginIF($this->viewType != 'json')->limit($this->params->num)->fi()
+            ->beginIF($this->viewType != 'json')->limit((int)$this->params->num)->fi()
             ->fetchAll();
     }
 
@@ -555,7 +572,7 @@ class block extends control
             ->where('t1.deleted')->eq('0')
             ->andWhere('t1.product')->in(array_keys($products))
             ->orderBy('t1.id desc')
-            ->beginIF($this->viewType != 'json')->limit($this->params->num)->fi()
+            ->beginIF($this->viewType != 'json')->limit((int)$this->params->num)->fi()
             ->fetchAll();
     }
 
@@ -575,7 +592,7 @@ class block extends control
             ->where('t1.deleted')->eq('0')
             ->andWhere('t1.project')->in(array_keys($projects))
             ->orderBy('t1.id desc')
-            ->beginIF($this->viewType != 'json')->limit($this->params->num)->fi()
+            ->beginIF($this->viewType != 'json')->limit((int)$this->params->num)->fi()
             ->fetchAll();
     }
 
@@ -588,7 +605,8 @@ class block extends control
     public function printProductBlock()
     {
         $this->app->loadClass('pager', $static = true);
-        $num   = isset($this->params->num) ? $this->params->num : 0;
+        if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
+        $num   = isset($this->params->num) ? (int)$this->params->num : 0;
         $type  = isset($this->params->type) ? $this->params->type : '';
         $pager = pager::init(0, $num , 1);
         $this->view->productStats = $this->loadModel('product')->getStats('order_desc', $this->viewType != 'json' ? $pager : '', $type);
@@ -603,7 +621,8 @@ class block extends control
     public function printProjectBlock()
     {
         $this->app->loadClass('pager', $static = true);
-        $num   = isset($this->params->num) ? $this->params->num : 0;
+        if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
+        $num   = isset($this->params->num) ? (int)$this->params->num : 0;
         $type  = isset($this->params->type) ? $this->params->type : 'all';
         $pager = pager::init(0, $num, 1);
         $this->view->projectStats = $this->loadModel('project')->getProjectStats($type, $productID = 0, $branch = 0, $itemCounts = 30, $orderBy = 'order_desc', $this->viewType != 'json' ? $pager : '');

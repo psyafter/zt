@@ -40,6 +40,7 @@ $lang->product->builds   = 'Builds';
 $lang->product->roadmap  = 'Roadmap';
 $lang->product->doc      = 'Documents';
 $lang->product->project  = $lang->projectCommon . 'List';
+$lang->product->build    = 'Build List';
 
 $lang->product->confirmDelete   = " Do you want to delete {$lang->productCommon}?";
 
@@ -79,6 +80,10 @@ $lang->product->typeList['']         = '';
 $lang->product->typeList['normal']   = 'Normal';
 $lang->product->typeList['branch']   = 'Multi Branch';
 $lang->product->typeList['platform'] = 'Multi Platform';
+
+$lang->product->typeTips = array();
+$lang->product->typeTips['branch']   = '(Generally used to divide the custom content of different users)';
+$lang->product->typeTips['platform'] = '(Generally used to divide ios, Andrews, pc and so on)';
 
 $lang->product->branchName['normal']   = '';
 $lang->product->branchName['branch']   = 'Branch';

@@ -32,7 +32,7 @@
             if($product->type != 'normal')
             {
                 if($product->branch) $branches = array($product->branch => $branches[$product->branch]);
-                echo html::select('branch', $branches, $product->branch, "class='form-control' style='width:100px'");
+                echo "<span class='input-group-addon fix-padding fix-border'></span>" . html::select('branch', $branches, $product->branch, "class='form-control' style='width:100px; display:inline-block;'");
             }
             ?>
           </div>

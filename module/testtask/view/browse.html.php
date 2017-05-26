@@ -12,19 +12,19 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php js::set('confirmDelete', $lang->testtask->confirmDelete)?>
-
+<?php js::set('flow', $this->config->global->flow);?>
+<?php 
+$scope = $this->session->testTaskVersionScope;
+$status = $this->session->testTaskVersionStatus;
+?>
+<?php js::set('status', $status);?>
+<?php if($this->config->global->flow != 'onlyTest'):?>
 <div id="featurebar">
   <ul class="nav">
     <li>
       <span class='dropdown'>
-
-        <?php 
-        $scope = $this->session->testTaskVersionScope;
-        $status = $this->session->testTaskVersionStatus;
-        $viewName = $scope == 'local'? $productName : $lang->testtask->all;
-        ?>
-
-        <button class='btn btn-primary btn-sm' type='button' data-toggle='dropdown'><?php echo $viewName?><span class='caret'></span></button>
+        <?php $viewName = $scope == 'local'? $productName : $lang->testtask->all;?>
+        <button class='btn btn-primary btn-sm' type='button' data-toggle='dropdown'><?php echo $viewName;?> <span class='caret'></span></button>
         <ul class='dropdown-menu' style='max-height:240px;overflow-y:auto'>
           <?php 
             echo "<li>" . html::a(inlink('browse', "productID=$productID&branch=$branch&type=all,$status"), $lang->testtask->all) . "</li>";
@@ -43,6 +43,7 @@
 
   <div class="actions"><?php common::printIcon('testtask', 'create', "product=$productID");?></div>
 </div>
+<?php endif;?>
 <table class='table tablesorter table-fixed' id='taskList'>
   <thead>
   <?php $vars = "productID=$productID&branch=$branch&type=$scope,$status&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}"; ?>
@@ -50,7 +51,9 @@
       <th class='w-id text-left'>   <?php common::printOrderLink('id',      $orderBy, $vars, $lang->idAB);?></th>
       <th class='w-200px text-left'><?php common::printOrderLink('name',    $orderBy, $vars, $lang->testtask->name);?></th>
       <th class='text-left'>        <?php common::printOrderLink('product', $orderBy, $vars, $lang->testtask->product);?></th>
+      <?php if($this->config->global->flow != 'onlyTest'):?>
       <th class='text-left'>        <?php common::printOrderLink('project', $orderBy, $vars, $lang->testtask->project);?></th>
+      <?php endif;?>
       <th class='text-left'>        <?php common::printOrderLink('build',   $orderBy, $vars, $lang->testtask->build);?></th>
       <th class='w-user text-left'> <?php common::printOrderLink('owner',   $orderBy, $vars, $lang->testtask->owner);?></th>
       <th class='w-100px text-left'><?php common::printOrderLink('begin',   $orderBy, $vars, $lang->testtask->begin);?></th>
@@ -65,7 +68,9 @@
     <td><?php echo html::a(inlink('cases', "taskID=$task->id"), sprintf('%03d', $task->id));?></td>
     <td class='text-left' title="<?php echo $task->name?>"><?php echo html::a(inlink('cases', "taskID=$task->id"), $task->name);?></td>
     <td title="<?php echo $task->productName?>"><?php echo $task->productName?></td>
+    <?php if($this->config->global->flow != 'onlyTest'):?>
     <td title="<?php echo $task->projectName?>"><?php echo $task->projectName?></td>
+    <?php endif;?>
     <td><?php $task->build == 'trunk' ? print($lang->trunk) : print(html::a($this->createLink('build', 'view', "buildID=$task->build",'',true), $task->buildName, '','class="iframe"'));?></td>
     <td><?php echo zget($users, $task->owner);?></td>
     <td><?php echo $task->begin?></td>
@@ -89,7 +94,7 @@
   </tr>
   <?php endforeach;?>
   </tbody>
-  <tfoot><tr><td colspan='10'><?php $pager->show();?></td></tr></tfoot>
+  <tfoot><tr><td colspan='<?php echo $config->global->flow == 'onlyTest' ? 9 : 10;?>'><?php $pager->show();?></td></tr></tfoot>
 </table>
 <script>$(function(){$('#<?php echo $status?>Tab').addClass('active')})</script>
 <?php include '../../common/view/footer.html.php';?>

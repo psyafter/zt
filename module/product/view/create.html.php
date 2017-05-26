@@ -12,6 +12,7 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/kindeditor.html.php';?>
+<?php js::set('noProject', ($config->global->flow == 'onlyStory' or $config->global->flow == 'onlyTest') ? true : false);?>
 <div class='container mw-1400px'>
   <div id='titlebar'>
     <div class='heading'>
@@ -43,7 +44,13 @@
       </tr>  
       <tr>
         <th><?php echo $lang->product->type;?></th>
-        <td><?php echo html::select('type', $lang->product->typeList, 'normal', "class='form-control'");?></td><td></td>
+        <td>
+          <?php
+          $proudctTypeList = array();
+          foreach($lang->product->typeList as $key => $type) $productTypeList[$key] = $type . zget($lang->product->typeTips, $key, '');
+          ?>
+          <?php echo html::select('type', $productTypeList, 'normal', "class='form-control'");?>
+        </td><td></td>
       </tr>  
       <tr>
         <th><?php echo $lang->product->desc;?></th>

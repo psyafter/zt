@@ -80,7 +80,7 @@ class testcase extends control
         $queryID    = ($browseType == 'bysearch') ? (int)$param : 0;
 
         /* Set menu, save session. */
-        $this->testcase->setMenu($this->products, $productID, $branch);
+        $this->testcase->setMenu($this->products, $productID, $branch, $moduleID, $suiteID);
         $this->session->set('caseList', $this->app->getURI(true));
         $this->session->set('productID', $productID);
         $this->session->set('moduleID', $moduleID);
@@ -187,6 +187,7 @@ class testcase extends control
         $this->view->suiteList     = $this->loadModel('testsuite')->getSuites($productID);
         $this->view->suiteID       = 0;
         $this->view->moduleID      = 0;
+        $this->view->branch        = $branch;
         $this->display();
     }
 
@@ -600,7 +601,7 @@ class testcase extends control
             $this->view->moduleOptionMenu = $moduleOptionMenu;
             $this->view->stories          = $this->story->getProductStoryPairs($productID, $case->branch);
         }
-        if(!$this->config->testcase->needReview) unset($this->lang->testcase->statusList['wait']);
+        if(!$this->testcase->forceReview()) unset($this->lang->testcase->statusList['wait']);
         $position[]      = $this->lang->testcase->common;
         $position[]      = $this->lang->testcase->edit;
 
@@ -645,6 +646,7 @@ class testcase extends control
 
         /* Get the edited cases. */
         $cases = $this->testcase->getByList($caseIDList);
+        $branchProduct = false;
 
         /* The cases of a product. */
         if($productID)
@@ -669,10 +671,13 @@ class testcase extends control
                 $product = $this->product->getByID($productID);
                 $this->testcase->setMenu($this->products, $productID, $branch);
 
+                if($product->type != 'normal') $branchProduct = true;
+
                 /* Set modules. */
                 $modules = $this->tree->getOptionMenu($productID, $viewType = 'case', $startModuleID = 0, $branch);
                 $modules = array('ditto' => $this->lang->testcase->ditto) + $modules;
 
+                $this->view->branches   = $product->type == 'normal' ? array() : $this->loadModel('branch')->getPairs($product->id);
                 $this->view->modules    = $modules;
                 $this->view->position[] = html::a($this->createLink('testcase', 'browse', "productID=$productID"), $this->products[$productID]);
                 $this->view->title      = $product->name . $this->lang->colon . $this->lang->testcase->batchEdit;
@@ -685,6 +690,7 @@ class testcase extends control
             $this->lang->set('menugroup.testcase', 'my');
             $this->lang->testcase->menuOrder = $this->lang->my->menuOrder;
             $this->loadModel('my')->setMenu();
+
             $this->view->position[] = html::a($this->server->http_referer, $this->lang->my->testCase);
             $this->view->title      = $this->lang->testcase->batchEdit;
 
@@ -693,16 +699,17 @@ class testcase extends control
             foreach($cases as $case) $productIdList[$case->product] = $case->product;
 
             $products = $this->product->getByIdList($productIdList);
-            $modules  = array();
             foreach($products as $product)
             {
-                $productModules = $this->tree->getOptionMenu($product->id, $viewType = 'case', $startModuleID = 0);
-                foreach($productModules as $moduleID => $moduleName) $modules[$moduleID] = '/' . $product->name . $moduleName;
+                if($product->type != 'normal')
+                {
+                    $branchProduct = true;
+                    break;
+                }
             }
-            $this->view->modules = array('ditto' => $this->lang->testcase->ditto) + $modules;
         }
 
-        if(!$this->config->testcase->needReview) unset($this->lang->testcase->statusList['wait']);
+        if(!$this->testcase->forceReview()) unset($this->lang->testcase->statusList['wait']);
 
         /* Judge whether the editedTasks is too large and set session. */
         $countInputVars = count($cases) * (count(explode(',', $this->config->testcase->custom->batchEditFields)) + 3);
@@ -718,13 +725,14 @@ class testcase extends control
         $this->view->showFields   = $this->config->testcase->custom->batchEditFields;
 
         /* Assign. */
-        $this->view->position[] = $this->lang->testcase->common;
-        $this->view->position[] = $this->lang->testcase->batchEdit;
-        $this->view->caseIDList = $caseIDList;
-        $this->view->productID  = $productID;
-        $this->view->priList    = array('ditto' => $this->lang->testcase->ditto) + $this->lang->testcase->priList;
-        $this->view->typeList   = array('' => '', 'ditto' => $this->lang->testcase->ditto) + $this->lang->testcase->typeList;
-        $this->view->cases      = $cases;
+        $this->view->position[]    = $this->lang->testcase->common;
+        $this->view->position[]    = $this->lang->testcase->batchEdit;
+        $this->view->caseIDList    = $caseIDList;
+        $this->view->productID     = $productID;
+        $this->view->branchProduct = $branchProduct;
+        $this->view->priList       = array('ditto' => $this->lang->testcase->ditto) + $this->lang->testcase->priList;
+        $this->view->typeList      = array('' => '', 'ditto' => $this->lang->testcase->ditto) + $this->lang->testcase->typeList;
+        $this->view->cases         = $cases;
 
         $this->display();
     }
@@ -1176,7 +1184,6 @@ class testcase extends control
     {
         if($_POST)
         {
-            if(!$this->config->testcase->needReview) unset($this->lang->testcase->statusList['wait']);
             $product = $this->loadModel('product')->getById($productID);
 
             if($product->type != 'normal') $fields['branch'] = $this->lang->product->branchName[$product->type];
@@ -1187,14 +1194,12 @@ class testcase extends control
             $fields['keywords']     = $this->lang->testcase->keywords;
             $fields['type']         = $this->lang->testcase->type;
             $fields['pri']          = $this->lang->testcase->pri;
-            $fields['status']       = $this->lang->testcase->status;
             $fields['stage']        = $this->lang->testcase->stage;
             $fields['precondition'] = $this->lang->testcase->precondition;
 
             $fields[''] = '';
             $fields['typeValue']   = $this->lang->testcase->lblTypeValue;
             $fields['stageValue']  = $this->lang->testcase->lblStageValue;
-            $fields['statusValue'] = $this->lang->testcase->lblStatusValue;
             if($product->type != 'normal') $fields['branchValue'] = $this->lang->product->branchName[$product->type];
 
             $branches = $this->loadModel('branch')->getPairs($productID);
@@ -1213,7 +1218,6 @@ class testcase extends control
                 {
                     $row->typeValue   = join("\n", $this->lang->testcase->typeList);
                     $row->stageValue  = join("\n", $this->lang->testcase->stageList);
-                    $row->statusValue = join("\n", $this->lang->testcase->statusList);
                     if($product->type != 'normal') $row->branchValue = join("\n", $branches);
                 }
                 $rows[] = $row;
@@ -1491,7 +1495,6 @@ class testcase extends control
             echo js::alert($this->lang->error->noData);
             die(js::locate($this->createLink('testcase', 'browse', "productID=$productID&branch=$branch")));
         }
-        if(!$this->config->testcase->needReview) unset($this->lang->testcase->statusList['wait']);
 
         /* Judge whether the editedTasks is too large and set session. */
         $countInputVars  = count($caseData) * 12 + $stepVars;

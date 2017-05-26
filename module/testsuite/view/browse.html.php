@@ -12,10 +12,13 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php js::set('confirmDelete', $lang->testsuite->confirmDelete)?>
+<?php js::set('flow', $this->config->global->flow);?>
+<?php if($this->config->global->flow != 'onlyTest'):?>
 <div id="titlebar">
   <div class="heading"> <?php echo $lang->testsuite->browse?> </div>
   <div class="actions"><?php common::printIcon('testsuite', 'create', "product=$productID");?></div>
 </div>
+<?php endif;?>
 <table class='table tablesorter table-fixed' id='suiteList'>
   <thead>
   <?php $vars = "productID=$productID&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}"; ?>

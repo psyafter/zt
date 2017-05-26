@@ -23,7 +23,10 @@
 </div>
 
 <div class='panel'>
-  <div class='panel-heading'><strong><?php echo $lang->backup->history?></strong></div>
+  <div class='panel-heading'>
+    <strong><?php echo $lang->backup->history?></strong>
+    <span class='label label-info'><?php echo $lang->backup->restoreTip;?></span>
+  </div>
   <table class='table table-condensed table-bordered active-disabled table-fixed'>
     <thead>
       <tr>
@@ -47,7 +50,7 @@
         <?php if($i == 0):?>
         <td <?php if($rowspan > 1) echo "rowspan='$rowspan'"?>>
           <?php
-          if(common::hasPriv('backup', 'restore')) echo html::a(inlink('restore', "file=$backupFile->name"), $lang->backup->restore, 'hiddenwin', "class='restore'");
+          if(common::hasPriv('backup', 'restore')) echo html::a(inlink('restore', "file={$backupFile->name}&confirm=yes"), $lang->backup->restore, 'hiddenwin', "class='restore'");
           if(common::hasPriv('backup', 'delete')) echo html::a(inlink('delete', "file=$backupFile->name"), $lang->delete, 'hiddenwin');
           ?>
         </td>
@@ -75,5 +78,6 @@
   </div>
 </div>
 <?php js::set('backup', $lang->backup->backup);?>
+<?php js::set('confirmRestore', $lang->backup->confirmRestore);?>
 <?php js::set('restore', $lang->backup->restore);?>
 <?php include '../../common/view/footer.html.php';?>

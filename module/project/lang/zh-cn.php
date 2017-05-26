@@ -207,6 +207,7 @@ $lang->project->goback                = "返回任务列表";
 $lang->project->noweekend             = '去除周末';
 $lang->project->withweekend           = '显示周末';
 $lang->project->interval              = '间隔';
+$lang->project->fixFirstWithLeft      = '修改剩余工时';
 
 /* 统计。*/
 $lang->project->charts = new stdclass();
@@ -261,3 +262,10 @@ $lang->project->treeLevel['root']    = '全部折叠';
 $lang->project->treeLevel['story']   = '显示需求';
 $lang->project->treeLevel['task']    = '显示任务';
 $lang->project->treeLevel['all']     = '全部展开';
+
+global $config;
+if($config->global->flow == 'onlyTask')
+{
+    unset($lang->project->groups['story']);
+    unset($lang->project->featureBar['task']['needconfirm']);
+}

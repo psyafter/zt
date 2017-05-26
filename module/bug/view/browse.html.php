@@ -16,7 +16,58 @@ include '../../common/view/datatable.fix.html.php';
 js::set('browseType',    $browseType);
 js::set('moduleID',      $moduleID);
 js::set('bugBrowseType', ($browseType == 'bymodule' and $this->session->bugBrowseType == 'bysearch') ? 'all' : $this->session->bugBrowseType);
+js::set('flow', $this->config->global->flow);
 ?>
+<?php if($this->config->global->flow == 'onlyTest'):?>
+<div id='featurebar'>
+  <ul class='submenu hidden'>
+    <li id='moreMenus' class='hidden'>
+      <a class='dropdown-toggle' data-toggle='dropdown'>
+        <?php echo $lang->more;?> <span class='caret'></span>
+      </a>
+      <ul class='dropdown-menu right'>
+      </ul>
+    </li>
+    <li id='bysearchTab'><a href='#'><i class='icon-search icon'></i>&nbsp;<?php echo $lang->bug->byQuery;?></a></li>
+    <li class='right'>
+      <div class='btn-group' id='createActionMenu'>
+        <?php 
+        $misc = common::hasPriv('bug', 'create') ? "class='btn btn-primary'" : "class='btn btn-primary disabled'";
+        $link = common::hasPriv('bug', 'create') ?  $this->createLink('bug', 'create', "productID=$productID&branch=$branch&extra=moduleID=$moduleID") : '#';
+        echo html::a($link, "<i class='icon icon-plus'></i>" . $lang->bug->create, '', $misc);
+        ?>
+        <button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown'>
+          <span class='caret'></span>
+        </button>
+        <ul class='dropdown-menu right'>
+        <?php
+        $misc = common::hasPriv('bug', 'batchCreate') ? '' : "class=disabled";
+        $link = common::hasPriv('bug', 'batchCreate') ?  $this->createLink('bug', 'batchCreate', "productID=$productID&branch=$branch&projectID=0&moduleID=$moduleID") : '#';
+        echo "<li>" . html::a($link, $lang->bug->batchCreate, '', $misc) . "</li>";
+        ?>
+        </ul>
+      </div>
+    </li>
+    <li class='right'>
+      <?php common::printLink('bug', 'report', "productID=$productID&browseType=$browseType&branchID=$branch&moduleID=$moduleID", "<i class='icon-common-report icon-bar-chart'></i> " . $lang->bug->report->common); ?>
+    </li>
+    <li class='right'>
+      <a class='dropdown-toggle' data-toggle='dropdown'>
+        <i class='icon-download-alt'></i> <?php echo $lang->export ?>
+        <span class='caret'></span>
+      </a>
+      <ul class='dropdown-menu' id='exportActionMenu'>
+        <?php 
+        $misc = common::hasPriv('bug', 'export') ? "class='export'" : "class=disabled";
+        $link = common::hasPriv('bug', 'export') ?  $this->createLink('bug', 'export', "productID=$productID&orderBy=$orderBy") : '#';
+        echo "<li>" . html::a($link, $lang->bug->export, '', $misc) . "</li>";
+        ?>
+      </ul>
+    </li>
+  </ul>
+  <div id='querybox' class='<?php if($browseType =='bysearch') echo 'show';?>'></div>
+</div>
+<?php else:?>
 <div id='featurebar'>
   <ul class='nav'>
     <li>
@@ -33,6 +84,7 @@ js::set('bugBrowseType', ($browseType == 'bymodule' and $this->session->bugBrows
     </li>
     <?php foreach(customModel::getFeatureMenu($this->moduleName, $this->methodName) as $menuItem):?>
     <?php if(isset($menuItem->hidden)) continue;?>
+    <?php if($this->config->global->flow == 'onlyTest' and $menuItem->name == 'needconfirm') continue;?>
     <?php if(strpos($menuItem->name, 'QUERY') === 0):?>
     <?php $queryID = (int)substr($menuItem->name, 5);?>
     <li id='<?php echo $menuItem->name?>Tab'><?php echo html::a($this->createLink('bug', 'browse', "productid=$productID&branch=$branch&browseType=bySearch&param=$queryID"), $menuItem->text)?></li>
@@ -91,6 +143,7 @@ js::set('bugBrowseType', ($browseType == 'bymodule' and $this->session->bugBrows
   </div>
   <div id='querybox' class='<?php if($browseType =='bysearch') echo 'show';?>'></div>
 </div>
+<?php endif;?>
 <div class='side' id='treebox'>
   <a class='side-handle' data-id='bugTree'><i class='icon-caret-left'></i></a>
   <div class='side-body'>
@@ -256,8 +309,15 @@ if($shortcut.size() > 0)
 }
 <?php endif;?>
 <?php $this->app->loadConfig('qa', '', false);?>
-<?php if(isset($this->config->qa->homepage) and $this->config->qa->homepage != 'browse'):?>
+<?php if(isset($config->qa->homepage) and $config->qa->homepage != 'browse' and $config->global->flow == 'full'):?>
 $(function(){$('#modulemenu .nav li:last').after("<li class='right'><a style='font-size:12px' href='javascript:setHomepage(\"qa\", \"browse\")'><i class='icon icon-cog'></i> <?php echo $lang->homepage?></a></li>")});
 <?php endif;?>
 </script>
+<?php if($config->global->flow == 'onlyTest'):?>
+<style>
+.nav > li > .btn-group > a, .nav > li > .btn-group > a:hover, .nav > li > .btn-group > a:focus{background: #1a4f85; border-color: #164270;}
+.outer.with-side #featurebar {background: none; border: none; line-height: 0; margin: 0; min-height: 0; padding: 0; }
+#querybox #searchform{border-bottom: 1px solid #ddd; margin-bottom: 20px;}
+</style>
+<?php endif;?>
 <?php include '../../common/view/footer.html.php';?>

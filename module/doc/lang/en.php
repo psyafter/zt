@@ -35,6 +35,7 @@ $lang->doc->fileObject     = 'The Object';
 $lang->doc->whiteList      = 'White List';
 $lang->doc->contentType    = 'Document Format';
 $lang->doc->separator      = "<i class='icon-angle-right'></i>";
+$lang->doc->fileTitle      = 'File Title';
 
 $lang->doc->moduleDoc      = 'By Module';
 $lang->doc->searchDoc      = 'By Search';
@@ -51,6 +52,7 @@ $lang->doc->delete         = 'Delete';
 $lang->doc->browse         = 'List';
 $lang->doc->view           = 'Details';
 $lang->doc->diff           = 'Diff';
+$lang->doc->sort           = 'Sort';
 $lang->doc->manageType     = 'Manage Category';
 $lang->doc->editType       = 'Edit';
 $lang->doc->deleteType     = 'Delete';
@@ -68,6 +70,7 @@ $lang->doc->editLib        = 'Edit';
 $lang->doc->deleteLib      = 'Delete';
 $lang->doc->fixedMenu      = 'Fixed In Menu';
 $lang->doc->removeMenu     = 'Remove From Menu';
+$lang->doc->search         = 'Search';
 
 /* 查询条件列表 */
 $lang->doc->allProduct     = 'All' . $lang->productCommon;
@@ -79,6 +82,12 @@ $lang->doc->libTypeList['custom']  = 'Custom Library';
 
 $lang->doc->systemLibs['product'] = $lang->productCommon . 'DocumentLibrary';
 $lang->doc->systemLibs['project'] = $lang->projectCommon . 'DocumentLibrary';
+
+global $config;
+if($config->global->flow == 'onlyStory' or $config->global->flow == 'onlyTest') unset($lang->doc->systemLibs['project']);
+if($config->global->flow == 'onlyStory' or $config->global->flow == 'onlyTest') unset($lang->doc->libTypeList['project']);
+if($config->global->flow == 'onlyTask')  unset($lang->doc->systemLibs['product']);
+if($config->global->flow == 'onlyTask')  unset($lang->doc->libTypeList['product']);
 
 $lang->doc->aclList['open']    = 'Public';
 $lang->doc->aclList['custom']  = 'Custom';

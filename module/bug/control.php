@@ -29,6 +29,15 @@ class bug extends control
         $this->loadModel('story');
         $this->loadModel('task');
         $this->view->products = $this->products = $this->product->getPairs('nocode');
+
+        if($this->config->global->flow == 'onlyTest')
+        {
+            $this->config->bug->list->customCreateFields      = str_replace(array('project,', 'story,', 'task,'), '', $this->config->bug->list->customCreateFields);
+            $this->config->bug->list->customBatchCreateFields = str_replace('project,', '', $this->config->bug->list->customBatchCreateFields);
+
+            $this->config->bug->custom->batchCreateFields = str_replace('project,', '', $this->config->bug->custom->batchCreateFields);
+        }
+
         if(empty($this->products)) die($this->locate($this->createLink('product', 'showErrorNone', "fromModule=bug")));
     }
 
@@ -82,7 +91,7 @@ class bug extends control
         $queryID   = ($browseType == 'bysearch') ? (int)$param : 0;
 
         /* Set menu and save session. */
-        $this->bug->setMenu($this->products, $productID, $branch);
+        $this->bug->setMenu($this->products, $productID, $branch, $moduleID);
         $this->session->set('bugList', $this->app->getURI(true));
 
         /* Process the order by field. */
@@ -465,7 +474,7 @@ class bug extends control
         $this->view->productName = $productName;
         $this->view->modulePath  = $this->tree->getParents($bug->module);
         $this->view->bug         = $bug;
-        $this->view->branchName  = $this->session->currentProductType == 'normal' ? '' : $this->loadModel('branch')->getById($bug->branch);
+        $this->view->branchName  = $this->session->currentProductType == 'normal' ? '' : $this->loadModel('branch')->getById($bug->branch, $bug->product);
         $this->view->users       = $this->user->getPairs('noletter');
         $this->view->actions     = $this->action->getList('bug', $bugID);
         $this->view->builds      = $this->loadModel('build')->getProductBuildPairs($productID, $branch = 0, $params = '');
@@ -615,11 +624,14 @@ class bug extends control
         }
 
         $bugIDList = $this->post->bugIDList ? $this->post->bugIDList : die(js::locate($this->session->bugList, 'parent'));
+        /* Initialize vars.*/
+        $bugs = $this->dao->select('*')->from(TABLE_BUG)->where('id')->in($bugIDList)->fetchAll('id');
 
         /* The bugs of a product. */
         if($productID)
         {
             $product = $this->product->getByID($productID);
+            $branchProduct = $product->type == 'normal' ? false : true;
 
             /* Set plans. */
             $plans          = $this->loadModel('productplan')->getPairs($productID, $branch);
@@ -630,10 +642,24 @@ class bug extends control
             $this->view->title      = $product->name . $this->lang->colon . "BUG" . $this->lang->bug->batchEdit;
             $this->view->position[] = html::a($this->createLink('bug', 'browse', "productID=$productID&branch=$branch"), $this->products[$productID]);
             $this->view->plans      = $plans;
+            $this->view->branches   = $product->type == 'normal' ? array() : array('' => '', 'ditto' => $this->lang->bug->ditto) + $this->loadModel('branch')->getPairs($product->id);
         }
         /* The bugs of my. */
         else
         {
+            $branchProduct = false;
+            $productIdList = array();
+            foreach($bugs as $bug) $productIdList[$bug->product] = $bug->product;
+            $products = $this->product->getByIdList($productIdList);
+            foreach($products as $product)
+            {
+                if($product->type != 'normal')
+                {
+                    $branchProduct = true;
+                    break;
+                }
+            }
+
             $this->lang->bug->menu = $this->lang->my->menu;
             $this->lang->set('menugroup.bug', 'my');
             $this->lang->bug->menuOrder = $this->lang->my->menuOrder;
@@ -641,8 +667,6 @@ class bug extends control
             $this->view->position[] = html::a($this->createLink('my', 'bug'), $this->lang->my->bug);
             $this->view->title      = "BUG" . $this->lang->bug->batchEdit;
         }
-        /* Initialize vars.*/
-        $bugs = $this->dao->select('*')->from(TABLE_BUG)->where('id')->in($bugIDList)->fetchAll('id');
 
         /* Judge whether the editedTasks is too large and set session. */
         $countInputVars  = count($bugs) * (count(explode(',', $this->config->bug->custom->batchEditFields)) + 2);
@@ -663,6 +687,7 @@ class bug extends control
         $this->view->position[]     = $this->lang->bug->batchEdit;
         $this->view->bugIDList      = $bugIDList;
         $this->view->productID      = $productID;
+        $this->view->branchProduct  = $branchProduct;
         $this->view->severityList   = array('ditto' => $this->lang->bug->ditto) + $this->lang->bug->severityList;
         $this->view->typeList       = array('' => '',  'ditto' => $this->lang->bug->ditto) + $this->lang->bug->typeList;
         $this->view->priList        = array('0' => '', 'ditto' => $this->lang->bug->ditto) + $this->lang->bug->priList;

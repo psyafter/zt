@@ -289,24 +289,8 @@ class projectModel extends model
             $lib->project = $projectID;
             $lib->name    = $this->lang->doclib->main['project'];
             $lib->main    = '1';
-            $lib->acl     = $project->acl == 'open' ? 'open' : 'custom';
-
-            $teams = $this->dao->select('account')->from(TABLE_TEAM)->where('project')->eq($projectID)->fetchPairs('account', 'account');
-            $lib->users = join(',', $teams);
-            if($project->acl == 'custom') $lib->groups = $project->whitelist;
+            $lib->acl     = $project->acl == 'open' ? 'open' : 'private';
             $this->dao->insert(TABLE_DOCLIB)->data($lib)->exec();
-
-            $docLibs = $this->dao->select('id,users')->from(TABLE_DOCLIB)->alias('t1')
-                ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t2')->on('t1.product=t2.product')
-                ->where('t2.project')->eq($projectID)
-                ->andWhere('t1.acl')->eq('custom')
-                ->fetchAll('id');
-            foreach($docLibs as $lib)
-            {
-                $docUsers = $teams + explode(',', $lib->users);
-                $docUsers = array_unique($docUsers);
-                $this->dao->update(TABLE_DOCLIB)->set('users')->eq(join(',', $docUsers))->where('id')->eq($lib->id)->exec();
-            }
 
             return $projectID;
         } 
@@ -364,21 +348,8 @@ class projectModel extends model
         }
         if(!dao::isError())
         {
-            if($project->acl != $oldProject->acl)
-            {
-                $this->dao->update(TABLE_DOCLIB)->set('acl')->eq($project->acl == 'open' ? 'open' : 'custom')->where('project')->eq($projectID)->exec();
-                if($project->acl == 'open')    $this->dao->update(TABLE_DOCLIB)->set('groups')->eq('')->where('project')->eq($projectID)->exec();
-                if($project->acl == 'custom')
-                {
-                    $teams = $this->dao->select('account')->from(TABLE_TEAM)->where('project')->eq($projectID)->fetchPairs('account', 'account');
-                    $this->dao->update(TABLE_DOCLIB)->set('groups')->eq($project->whitelist)->set('users')->eq(join(',', $teams))->where('project')->eq($projectID)->exec();
-                }
-                if($project->acl == 'private')
-                {
-                    $teams = $this->dao->select('account')->from(TABLE_TEAM)->where('project')->eq($projectID)->fetchPairs('account', 'account');
-                    $this->dao->update(TABLE_DOCLIB)->set('users')->eq(join(',', $teams))->set('groups')->eq('')->where('project')->eq($projectID)->exec();
-                }
-            }
+            if($project->acl != $oldProject->acl) $this->dao->update(TABLE_DOCLIB)->set('acl')->eq($project->acl == 'open' ? 'open' : 'private')->where('project')->eq($projectID)->exec();
+
             $this->file->updateObjectID($this->post->uid, $projectID, 'project');
             return common::createChanges($oldProject, $project);
         }
@@ -856,7 +827,7 @@ class projectModel extends model
                 unset($queryStatus['closed']);
                 $queryStatus = array_keys($queryStatus);
             }
-            $tasks = $this->task->getProjectTasks($projectID, $productID, $queryStatus, $modules, $sort, $pager);
+            $tasks = $this->task->getProjectTasks($projectID, 0, $queryStatus, $modules, $sort, $pager);
         }
         else
         {
@@ -968,6 +939,8 @@ class projectModel extends model
      */
     public function getProducts($projectID, $withBranch = true)
     {
+        if($this->config->global->flow == 'onlyTask') return array();
+
         if(defined('TUTORIAL'))
         {
             if(!$withBranch) return $this->loadModel('tutorial')->getProductPairs();
@@ -1022,12 +995,7 @@ class projectModel extends model
         }
 
         /* Build search form. */
-        if($type == 'projectStory')
-        {
-            $this->config->product->search['module'] = 'projectStory';
-            unset($this->config->product->search['fields']['stage']);
-            unset($this->config->product->search['params']['stage']);
-        }
+        if($type == 'projectStory') $this->config->product->search['module'] = 'projectStory';
         $this->config->product->search['actionURL'] = $actionURL;
         $this->config->product->search['queryID']   = $queryID;
         $this->config->product->search['params']['product']['values'] = $productPairs + array('all' => $this->lang->product->allProductsOfProject);
@@ -1043,6 +1011,8 @@ class projectModel extends model
         {
             $this->config->product->search['fields']['branch'] = sprintf($this->lang->product->branch, $this->lang->product->branchName[$productType]);
             $this->config->product->search['params']['branch']['values'] = array('' => '') + $branchPairs;
+            unset($this->config->product->search['fields']['stage']);
+            unset($this->config->product->search['params']['stage']);
         }
         $this->config->product->search['params']['status'] = array('operator' => '=', 'control' => 'select', 'values' => $this->lang->story->statusList);
 
@@ -1086,7 +1056,7 @@ class projectModel extends model
         $this->dao->delete()->from(TABLE_PROJECTPRODUCT)->where('project')->eq((int)$projectID)->exec();
         if(!isset($_POST['products'])) return;
         $products = $_POST['products'];
-        $branches = $_POST['branch'];
+        $branches = isset($_POST['branch']) ? $_POST['branch'] : array();
 
         $existedProducts = array();
         $addedProducts   = array();
@@ -1110,10 +1080,6 @@ class projectModel extends model
             $this->dao->insert(TABLE_PROJECTPRODUCT)->data($data)->exec();
             $existedProducts[$productID] = true;
         }
-
-        $this->loadModel('doc');
-        foreach($deletedProducts as $productID) $this->doc->setLibUsers('product', $productID);
-        foreach($addedProducts as $productID)   $this->doc->setLibUsers('product', $productID);
     }
 
     /**
@@ -1257,6 +1223,7 @@ class projectModel extends model
             $task->name         = $bug->title;
             $task->type         = 'devel';
             $task->pri          = $bugToTasks->pri[$key];
+            $task->deadline     = $bugToTasks->deadline[$key];
             $task->consumed     = 0;
             $task->status       = 'wait';
             $task->openedDate   = $now;
@@ -1534,21 +1501,6 @@ class projectModel extends model
                 $this->dao->insert(TABLE_TEAM)->data($member)->exec();
             }
         }
-
-        $acl = $this->dao->select('acl')->from(TABLE_PROJECT)->where('id')->eq($projectID)->fetch('acl');
-        if($acl != 'open') $this->loadModel('doc')->setLibUsers('project', $projectID);
-
-        $docLibs = $this->dao->select('id,users')->from(TABLE_DOCLIB)->alias('t1')
-            ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t2')->on('t1.product=t2.product')
-            ->where('t2.project')->eq($projectID)
-            ->andWhere('t1.acl')->eq('custom')
-            ->fetchAll('id');
-        foreach($docLibs as $lib)
-        {
-            $docUsers = $accounts + explode(',', $lib->users);
-            $docUsers = array_unique($docUsers);
-            $this->dao->update(TABLE_DOCLIB)->set('users')->eq(join(',', $docUsers))->where('id')->eq($lib->id)->exec();
-        }
     }
 
     /**
@@ -1562,20 +1514,6 @@ class projectModel extends model
     public function unlinkMember($projectID, $account)
     {
         $this->dao->delete()->from(TABLE_TEAM)->where('project')->eq((int)$projectID)->andWhere('account')->eq($account)->exec();
-
-        $acl = $this->dao->select('acl')->from(TABLE_PROJECT)->where('id')->eq($projectID)->fetch('acl');
-        if($acl != 'open') $this->loadModel('doc')->setLibUsers('project', $projectID);
-
-        $docLibs = $this->dao->select('id,users')->from(TABLE_DOCLIB)->alias('t1')
-            ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t2')->on('t1.product=t2.product')
-            ->where('t2.project')->eq($projectID)
-            ->andWhere('t1.acl')->eq('custom')
-            ->fetchAll('id');
-        foreach($docLibs as $lib)
-        {
-            $docUsers = str_replace(",$account,", '', ",{$lib->users},");
-            $this->dao->update(TABLE_DOCLIB)->set('users')->eq($docUsers)->where('id')->eq($lib->id)->exec();
-        }
     }
 
     /**
@@ -1621,14 +1559,16 @@ class projectModel extends model
      */
     public function fixFirst($projectID)
     {
-        $project = $this->getById($projectID);
-        $burn    = $this->dao->select('*')->from(TABLE_BURN)->where('project')->eq($projectID)->andWhere('date')->eq($project->begin)->fetch();
+        $project  = $this->getById($projectID);
+        $burn     = $this->dao->select('*')->from(TABLE_BURN)->where('project')->eq($projectID)->andWhere('date')->eq($project->begin)->fetch();
+        $withLeft = $this->post->withLeft ? $this->post->withLeft : 0;
 
         $data = fixer::input('post')
             ->add('project', $projectID)
             ->add('date', $project->begin)
-            ->add('left', empty($burn) ? $this->post->estimate : $burn->left)
+            ->add('left', $withLeft ? $this->post->estimate : $burn->left)
             ->add('consumed', empty($burn) ? 0 : $burn->consumed)
+            ->remove('withLeft')
             ->get();
         if(!is_numeric($data->estimate)) return false;
 

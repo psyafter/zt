@@ -38,13 +38,13 @@ $config->story->list->exportFields      = '
     childStories, linkStories, duplicateStory, files';
 
 $config->story->list->customCreateFields      = 'source,verify,pri,estimate,mailto,keywords';
-$config->story->list->customBatchCreateFields = 'module,plan,source,spec,verify,pri,estimate,review,keywords';
-$config->story->list->customBatchEditFields   = 'module,plan,estimate,pri,assignedTo,source,stage,closedBy,closedReason,keywords';
+$config->story->list->customBatchCreateFields = 'module,plan,spec,source,verify,pri,estimate,review,keywords';
+$config->story->list->customBatchEditFields   = 'branch,module,plan,estimate,pri,assignedTo,source,stage,closedBy,closedReason,keywords';
 
 $config->story->custom = new stdclass();
 $config->story->custom->createFields      = $config->story->list->customCreateFields;
 $config->story->custom->batchCreateFields = 'module,plan,spec,pri,estimate,review';
-$config->story->custom->batchEditFields   = 'module,plan,estimate,pri,source,stage,closedBy,closedReason';
+$config->story->custom->batchEditFields   = 'branch,module,plan,estimate,pri,source,stage,closedBy,closedReason';
 
 $config->story->datatable = new stdclass();
 $config->story->datatable->defaultField = array('id', 'pri', 'title', 'plan', 'source', 'openedBy', 'assignedTo', 'estimate', 'status', 'stage', 'taskCount', 'bugCount', 'caseCount', 'actions');

@@ -87,7 +87,7 @@ function shortcut()
  */
 function showSearchMenu(objectType, objectID, module, method, extra)
 {
-    var $toggle = $(objectType == 'branch' ? '#currentBranch' : '#currentItem').closest('li').toggleClass('show');
+    var $toggle = $(objectType == 'branch' ? '#currentBranch' : (objectType == 'tree' ? '#currentModule' : '#currentItem')).closest('li').toggleClass('show');
     if(!$toggle.hasClass('show')) return;
     var $menu = $toggle.find('#dropMenu');
     var uuid = $.zui.uuid();
@@ -262,9 +262,21 @@ function setRequiredFields()
         requiredFields = config.requiredFields.split(',');
         for(i = 0; i < requiredFields.length; i++)
         {
-            $('#' + requiredFields[i]).closest('td,th').prepend("<div class='required required-wrapper'></div>");
-            var colEle = $('#' + requiredFields[i]).closest('[class*="col-"]');
-            if(colEle.parent().hasClass('form-group')) colEle.addClass('required');
+            var $ctlEle = $('#' + requiredFields[i]);
+            var $ctlParent = $ctlEle.parent();
+            if($ctlParent.hasClass('input-group') && $ctlParent.find('input').length > 1)
+            {
+                var $requiredDiv = $('<div class="input-group-required"><div class="required"></div></div>');
+                $ctlEle.after($requiredDiv);
+                $requiredDiv.find('.required').append($ctlEle);
+                if($ctlEle.is('select')) $requiredDiv.addClass('fix-pd-right');
+            }
+            else
+            {
+                $ctlEle.closest('td,th').prepend("<div class='required required-wrapper'></div>");
+                var $colEle = $ctlEle.closest('[class*="col-"]');
+                if($colEle.parent().hasClass('form-group')) $colEle.addClass('required');
+            }
         }
     }
     $('.required').closest('td,th').next().css('padding-left', '15px');
@@ -532,7 +544,29 @@ function setFormAction(actionLink, hiddenwin, obj)
     if(hiddenwin) $form.attr('target', hiddenwin);
     else $form.removeAttr('target');
 
-    $form.attr('action', actionLink).submit();
+    $form.attr('action', actionLink);
+
+    // Check safari is for bug #1000, see http://pms.zentao.net/bug-view-1000.html
+    var isSafari = navigator.userAgent.indexOf('AppleWebKit') > -1;
+    if(isSafari)
+    {
+        var idPreffix = 'checkbox-fix-' + $.zui.uuid();
+        $form.find('input[type="checkbox"]').each(function()
+        {
+            var $checkbox = $(this);
+            var checkboxId = idPreffix + $checkbox.val();
+            $checkbox.attr('data-fix-checkbox', checkboxId).after('<div id="' + checkboxId + '"/>').appendTo($form);
+        });
+    }
+    $form.submit();
+    if(isSafari)
+    {
+        $form.find('[data-fix-checkbox]').each(function()
+        {
+            var $checkbox = $(this);
+            $('#' + $checkbox.data('fixCheckbox')).after($checkbox).remove();
+        });
+    }
 }
 
 /**
@@ -1340,9 +1374,10 @@ function fixStyle()
  * @access public
  * @return void
  */
-function startCron()
+function startCron(restart)
 {
-    $.ajax({type:"GET", timeout:100, url:createLink('cron', 'ajaxExec')});
+    if(typeof(restart) == 'undefined') restart = 0;
+    $.ajax({type:"GET", timeout:100, url:createLink('cron', 'ajaxExec', 'restart=' + restart)});
 }
 
 function computePasswordStrength(password)
@@ -1402,7 +1437,7 @@ function computePasswordStrength(password)
  */
 function checkOnlybodyPage()
 {
-    if(location.href == top.location.href)
+    if(self == parent)
     {
         href = location.href.replace('?onlybody=yes', '');
         location.href = href.replace('&onlybody=yes', '');

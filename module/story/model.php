@@ -166,6 +166,7 @@ class storyModel extends model
         if($result['stop']) return array('status' => 'exists', 'id' => $result['duplicate']);
 
         if($this->checkForceReview()) $story->status = 'draft';
+        if($story->status == 'draft') $story->stage   = $this->post->plan > 0 ? 'planned' : 'wait';
         $story = $this->loadModel('file')->processEditor($story, $this->config->story->editor->create['id'], $this->post->uid);
         $this->dao->insert(TABLE_STORY)->data($story, 'spec,verify')->autoCheck()->batchCheck($this->config->story->create->requiredFields, 'notempty')->exec();
         if(!dao::isError())
@@ -182,7 +183,7 @@ class storyModel extends model
             $data->verify  = $story->verify;
             $this->dao->insert(TABLE_STORYSPEC)->data($data)->exec();
 
-            if($projectID != 0) 
+            if($projectID != 0 and $story->status != 'draft') 
             {
                 $this->dao->insert(TABLE_PROJECTSTORY)
                     ->set('project')->eq($projectID)
@@ -448,7 +449,7 @@ class storyModel extends model
             ->add('lastEditedDate', $now)
             ->setDefault('status', $oldStory->status)
             ->setDefault('product', $oldStory->product)
-            ->setDefault('plan', $oldStory->plan)
+            ->setDefault('plan', 0)
             ->setDefault('branch', 0)
             ->setIF($this->post->assignedTo   != $oldStory->assignedTo, 'assignedDate', $now)
             ->setIF($this->post->closedBy     != false and $oldStory->closedDate == '', 'closedDate', $now)
@@ -513,15 +514,17 @@ class storyModel extends model
             /* Process the data if the value is 'ditto'. */
             foreach($storyIDList as $storyID)
             {
-                if($data->pris[$storyID]    == 'ditto') $data->pris[$storyID]    = isset($prev['pri'])    ? $prev['pri']    : 0;
-                if($data->modules[$storyID] == 'ditto') $data->modules[$storyID] = isset($prev['module']) ? $prev['module'] : 0;
-                if($data->plans[$storyID]   == 'ditto') $data->plans[$storyID]   = isset($prev['plan'])   ? $prev['plan']   : 0;
-                if($data->sources[$storyID] == 'ditto') $data->sources[$storyID] = isset($prev['source']) ? $prev['source'] : '';
+                if($data->pris[$storyID]     == 'ditto') $data->pris[$storyID]     = isset($prev['pri'])    ? $prev['pri']    : 0;
+                if($data->branches[$storyID] == 'ditto') $data->branches[$storyID] = isset($prev['branch']) ? $prev['branch'] : 0;
+                if($data->modules[$storyID]  == 'ditto') $data->modules[$storyID]  = isset($prev['module']) ? $prev['module'] : 0;
+                if($data->plans[$storyID]    == 'ditto') $data->plans[$storyID]    = isset($prev['plan'])   ? $prev['plan']   : 0;
+                if($data->sources[$storyID]  == 'ditto') $data->sources[$storyID]  = isset($prev['source']) ? $prev['source'] : '';
                 if(isset($data->stages[$storyID])        and ($data->stages[$storyID]        == 'ditto')) $data->stages[$storyID]        = isset($prev['stage'])        ? $prev['stage']        : ''; 
                 if(isset($data->closedBys[$storyID])     and ($data->closedBys[$storyID]     == 'ditto')) $data->closedBys[$storyID]     = isset($prev['closedBy'])     ? $prev['closedBy']     : ''; 
                 if(isset($data->closedReasons[$storyID]) and ($data->closedReasons[$storyID] == 'ditto')) $data->closedReasons[$storyID] = isset($prev['closedReason']) ? $prev['closedReason'] : ''; 
 
                 $prev['pri']    = $data->pris[$storyID];
+                $prev['branch'] = isset($data->branches[$storyID]) ? $data->branches[$storyID] : 0;
                 $prev['module'] = $data->modules[$storyID];
                 $prev['plan']   = $data->plans[$storyID];
                 $prev['source'] = $data->sources[$storyID];
@@ -544,6 +547,7 @@ class storyModel extends model
                 $story->pri            = $data->pris[$storyID];
                 $story->assignedTo     = $data->assignedTo[$storyID];
                 $story->assignedDate   = $oldStory == $data->assignedTo[$storyID] ? $oldStory->assignedDate : $now;
+                $story->branch         = isset($data->branches[$storyID]) ? $data->branches[$storyID] : 0;
                 $story->module         = $data->modules[$storyID];
                 $story->plan           = $data->plans[$storyID];
                 $story->source         = $data->sources[$storyID];
@@ -571,7 +575,6 @@ class storyModel extends model
 
                 $this->dao->update(TABLE_STORY)->data($story)
                     ->autoCheck()
-                    ->batchCheck($this->config->story->edit->requiredFields, 'notempty')
                     ->checkIF($story->closedBy, 'closedReason', 'notempty')
                     ->checkIF($story->closedReason == 'done', 'stage', 'notempty')
                     ->checkIF($story->closedReason == 'duplicate',  'duplicateStory', 'notempty')
@@ -1012,7 +1015,6 @@ class storyModel extends model
             ->add('lastEditedBy', $this->app->user->account)
             ->add('lastEditedDate', $now)
             ->add('assignedDate', $now)
-            ->add('status', 'active') 
             ->add('closedBy', '')
             ->add('closedReason', '')
             ->add('closedDate', '0000-00-00')
@@ -1305,6 +1307,7 @@ class storyModel extends model
      */
     public function getProductStoryPairs($productID = 0, $branch = 0, $moduleIdList = 0, $status = 'all', $order = 'id_desc', $limit = 0)
     {
+        if($branch) $branch = "0,$branch";//Fix bug 1059.
         $stories = $this->dao->select('t1.id, t1.title, t1.module, t1.pri, t1.estimate, t2.name AS product')
             ->from(TABLE_STORY)->alias('t1')->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id')
             ->where('1=1')
@@ -2268,7 +2271,7 @@ class storyModel extends model
             case 'stage':
                 echo "<div" . (isset($storyStages[$story->id]) ? " class='popoverStage' data-toggle='popover' data-placement='bottom' data-target='\$next'" : '') . "'>";
                 echo $this->lang->story->stageList[$story->stage];
-                if(isset($storyStages[$story->id])) echo "<span class='pull-right'><i class='icon icon-caret-down'></i></span>";
+                if(isset($storyStages[$story->id])) echo "<span><i class='icon icon-caret-down'></i></span>";
                 echo '</div>';
                 if(isset($storyStages[$story->id]))
                 {
@@ -2322,7 +2325,7 @@ class storyModel extends model
                 common::printIcon('story', 'review',     $vars, $story, 'list', 'review');
                 common::printIcon('story', 'close',      $vars, $story, 'list', 'off', '', 'iframe', true);
                 common::printIcon('story', 'edit',       $vars, $story, 'list', 'pencil');
-                common::printIcon('story', 'createCase', "productID=$story->product&branch=$story->branch&module=0&from=&param=0&$vars", $story, 'list', 'sitemap');
+                if($this->config->global->flow != 'onlyStory') common::printIcon('story', 'createCase', "productID=$story->product&branch=$story->branch&module=0&from=&param=0&$vars", $story, 'list', 'sitemap');
                 break;
             }
             echo '</td>';

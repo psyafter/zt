@@ -313,6 +313,13 @@ class treeModel extends model
     public function getTreeMenu($rootID, $type = 'root', $startModule = 0, $userFunc, $extra = '', $branch = 0)
     {
         $branches = array($branch => '');
+        if($branch)
+        {
+            $branchName = $this->loadModel('branch')->getById($branch);
+            $branches   = array('null' => '', $branch => $branchName);
+            $extra      = array('rootID' => $rootID, 'branch' => $branch);
+        }
+
         $manage   = $userFunc[1] == 'createManageLink' ? true : false;
         $product  = $this->loadModel('product')->getById($rootID);
         if(strpos('story|bug|case', $type) !== false and empty($branch))
@@ -329,7 +336,7 @@ class treeModel extends model
             $treeMenu = array();
             $stmt = $this->dbh->query($this->buildMenuQuery($rootID, $type, $startModule, $branchID));
             while($module = $stmt->fetch()) $this->buildTree($treeMenu, $module, $type, $userFunc, $extra, $branchID);
-            if($type == 'case' and !empty($extra) and empty($treeMenu)) continue;
+            if(!empty($extra) and empty($treeMenu)) continue;
             ksort($treeMenu);
             if(!empty($branchID) and $branch and $branchID != 'null')
             {
@@ -611,33 +618,46 @@ class treeModel extends model
     public function buildTree(& $treeMenu, $module, $type, $userFunc, $extra, $branch = 0)
     {
         /* Add for task #1945. check the module has case or no. */
-        if($type == 'case' and !empty($extra))
+        if((isset($extra['rootID']) and isset($extra['branch']) and $branch == 'null') or ($type == 'case' and is_numeric($extra)))
         {
-            static $runs = array();
-            if(empty($runs))
+            static $objects = array();
+            if(empty($objects))
             {
-                $runs = $this->dao->select('t1.*,t2.module')->from(TABLE_TESTRUN)->alias('t1')
-                    ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
-                    ->where('t1.task')->eq((int)$extra)
-                    ->fetchAll('module');
+                if(is_array($extra))
+                {
+                    $table   = $this->config->objectTables[$type];
+                    $objects = $this->dao->select('module')->from($table)->where('product')->eq((int)$extra['rootID'])->andWhere('branch')->eq((int)$extra['branch'])->fetchAll('module');
+                }
+                else
+                {
+                    $objects = $this->dao->select('t1.*,t2.module')->from(TABLE_TESTRUN)->alias('t1')
+                        ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
+                        ->where('t1.task')->eq((int)$extra)
+                        ->fetchAll('module');
+                }
             }
             static $modules = array();
-            if(empty($modules)) $modules = $this->dao->select('id,path')->from(TABLE_MODULE)->where('root')->eq($module->root)->andWhere("(type='story' or type='case')")->fetchPairs('id', 'path');
+            if(empty($modules))
+            {
+                $typeCondition = "type='story'";
+                if($type != 'story') $typeCondition .= " or type='{$type}'";
+                $modules = $this->dao->select('id,path')->from(TABLE_MODULE)->where('root')->eq($module->root)->andWhere("({$typeCondition})")->fetchPairs('id', 'path');
+            }
             $childModules = array();
             foreach($modules as $moduleID => $modulePath)
             {
                 if(strpos($modulePath, $module->path) === 0) $childModules[$moduleID] = $moduleID;
             }
-            $hasRuns = false;
+            $hasObjects = false;
             foreach($childModules as $moduleID)
             {
-                if(isset($runs[$moduleID]))
+                if(isset($objects[$moduleID]))
                 {
-                    $hasRuns = true;
+                    $hasObjects = true;
                     break;
                 }
             }
-            if(!$hasRuns) return;
+            if(!$hasObjects) return;
         }
 
         if(is_array($extra) or empty($extra)) $extra['branchID'] = $branch;
@@ -1155,6 +1175,7 @@ class treeModel extends model
 
         $data     = fixer::input('post')->get();
         $branches = isset($data->branch) ? $data->branch : array();
+        $orders   = isset($data->order)  ? $data->order  : array();
         $shorts   = $data->shorts;
         if($parentModule)
         {
@@ -1174,6 +1195,16 @@ class treeModel extends model
             /* The new modules. */
             if(is_numeric($moduleID))
             {
+                if(isset($orders[$moduleID]) and !empty($orders[$moduleID]))
+                {
+                    $order = $orders[$moduleID];
+                }
+                else
+                {
+                    $order = $this->post->maxOrder + $i * 10;
+                    $i ++;
+                }
+
                 $module          = new stdClass();
                 $module->root    = $rootID;
                 $module->name    = strip_tags(trim($moduleName));
@@ -1182,18 +1213,18 @@ class treeModel extends model
                 $module->short   = $shorts[$moduleID];
                 $module->grade   = $grade;
                 $module->type    = $type;
-                $module->order   = $this->post->maxOrder + $i * 10;
+                $module->order   = $order;
                 $this->dao->insert(TABLE_MODULE)->data($module)->exec();
                 $moduleID  = $this->dao->lastInsertID();
                 $childPath = $parentPath . "$moduleID,";
                 $this->dao->update(TABLE_MODULE)->set('path')->eq($childPath)->where('id')->eq($moduleID)->limit(1)->exec();
-                $i ++;
             }
             else
             {
                 $short    = $shorts[$moduleID];
+                $order    = $orders[$moduleID];
                 $moduleID = str_replace('id', '', $moduleID);
-                $this->dao->update(TABLE_MODULE)->set('name')->eq(strip_tags(trim($moduleName)))->set('short')->eq($short)->where('id')->eq($moduleID)->limit(1)->exec();
+                $this->dao->update(TABLE_MODULE)->set('name')->eq(strip_tags(trim($moduleName)))->set('short')->eq($short)->set('order')->eq($order)->where('id')->eq($moduleID)->limit(1)->exec();
             }
         }
     }

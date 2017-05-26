@@ -20,6 +20,10 @@ $lang->testsuite->linkVersion      = "版本";
 $lang->testsuite->unlinkCase       = "移除";
 $lang->testsuite->batchUnlinkCases = "批量移除用例";
 $lang->testsuite->deleted          = '已删除';
+$lang->testsuite->exportTemplet    = '导出模板';
+$lang->testsuite->batchCreateCase  = '批量创建用例';
+$lang->testsuite->import           = '导入';
+$lang->testsuite->showImport       = '显示导入数据';
 
 $lang->testsuite->common         = '套件';
 $lang->testsuite->product        = '所属' . $lang->productCommon;

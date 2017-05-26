@@ -81,9 +81,15 @@ $lang->install->dbName         = 'Database Library';
 $lang->install->dbPrefix       = 'Database Table Prefix';
 $lang->install->clearDB        = 'Clear Database';
 $lang->install->importDemoData = 'Import Demo Data';
+$lang->install->working        = 'Working way';
 
 $lang->install->requestTypes['GET']       = 'GET';
 $lang->install->requestTypes['PATH_INFO'] = 'PATH_INFO';
+
+$lang->install->workingList['full']      = 'Full';
+$lang->install->workingList['onlyTest']  = 'Only Test';
+$lang->install->workingList['onlyStory'] = 'Only Story';
+$lang->install->workingList['onlyTask']  = 'Only Task';
 
 $lang->install->errorConnectDB      = 'Connection to database Failed. ';
 $lang->install->errorDBName         = 'Database name should exclude “.” ';
@@ -126,6 +132,14 @@ $lang->install->groupList['TOP']['name']    = 'Senior Manager';
 $lang->install->groupList['TOP']['desc']    = 'for Senior Manager';
 $lang->install->groupList['OTHERS']['name'] = 'Other';
 $lang->install->groupList['OTHERS']['desc'] = 'for Other';
+
+$lang->install->cronList[''] = 'Monitor cron';
+$lang->install->cronList['moduleName=project&methodName=computeburn'] = 'Compute burn';
+$lang->install->cronList['moduleName=report&methodName=remind']       = 'Daily task reminder';
+$lang->install->cronList['moduleName=svn&methodName=run']             = 'Synchronize SVN';
+$lang->install->cronList['moduleName=git&methodName=run']             = 'Synchronize GIT';
+$lang->install->cronList['moduleName=backup&methodName=backup']       = 'Backup data and attachment';
+$lang->install->cronList['moduleName=mail&methodName=asyncSend']      = 'Asynchronous sending';
 
 $lang->install->success  = "Installed!";
 $lang->install->login    = 'Login ZenTao';

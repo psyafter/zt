@@ -38,7 +38,34 @@ class router extends baseRouter
         if($moduleName == 'common')
         {
             $productProject = false;
-            if($this->dbh and !empty($this->config->db->name)) $productProject = $this->dbh->query('SELECT value FROM' . TABLE_CONFIG . "WHERE `owner`='system' AND `module`='custom' AND `key`='productProject'")->fetch();
+            if($this->dbh and !empty($this->config->db->name))
+            {
+                global $config;
+                if(!isset($config->global)) $config->global = new stdclass();
+                $flow = $this->dbh->query('SELECT value FROM' . TABLE_CONFIG . "WHERE `owner`='system' AND `module`='common' AND `key`='flow'")->fetch();
+                $config->global->flow = $flow ? $flow->value : 'full';
+
+                try
+                {
+                    $productProject = $this->dbh->query('SELECT value FROM' . TABLE_CONFIG . "WHERE `owner`='system' AND `module`='custom' AND `key`='productProject'")->fetch();
+                }
+                catch (PDOException $exception) 
+                {
+                    $repairCode = '|1034|1035|1194|1195|1459|';
+                    $errorInfo = $exception->errorInfo;
+                    $errorCode = $errorInfo[1];
+                    $errorMsg  = $errorInfo[2];
+                    $message   = $exception->getMessage();
+                    if(strpos($repairCode, "|$errorCode|") !== false or ($errorCode == '1016' and strpos($errorMsg, 'errno: 145') !== false) or strpos($message, 'repair') !== false)
+                    {
+                        if(isset($config->framework->autoRepairTable) and $config->framework->autoRepairTable)
+                        {
+                            header("location: " . $config->webRoot . 'checktable.php');
+                            exit;
+                        }
+                    }
+                }
+            }
 
             $productCommon = $projectCommon = 0;
             if($productProject)

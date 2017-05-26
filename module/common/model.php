@@ -374,7 +374,7 @@ class commonModel extends model
      */
     public static function printSearchBox()
     {
-        global $app, $lang;
+        global $app, $config, $lang;
         $moduleName  = $app->getModuleName();
         $methodName  = $app->getMethodName();
         $searchObject = $moduleName;
@@ -391,7 +391,12 @@ class commonModel extends model
         {
             $searchObject = $methodName;
         }
-        if(empty($lang->searchObjects[$searchObject])) $searchObject = 'bug';
+        if(empty($lang->searchObjects[$searchObject]))
+        {   
+            $searchObject = 'bug';
+            if($config->global->flow == 'onlyStory') $searchObject = 'story';
+            if($config->global->flow == 'onlyTask')  $searchObject = 'task';
+        }
 
         echo "<div class='input-group input-group-sm' id='searchbox'>"; 
         echo "<div class='input-group-btn' id='typeSelector'>";
@@ -575,12 +580,12 @@ class commonModel extends model
             if(isset($order[1]) and $order[1] == 'asc')
             {
                 $orderBy   = "{$order[0]}_desc";
-                $className = $isMobile ? 'SortDown' : 'headerSortDown';
+                $className = $isMobile ? 'SortUp' : 'headerSortDown';
             }
             else
             {
                 $orderBy = "{$order[0]}_asc";
-                $className = $isMobile ? 'SortUp' : 'headerSortUp';
+                $className = $isMobile ? 'SortDown' : 'headerSortUp';
             }
         }
         else
@@ -1107,7 +1112,7 @@ class commonModel extends model
     {
         $module = $this->app->getModuleName();
         $method = $this->app->getMethodName();
-        if(isset($this->app->user->modifyPassword) and $this->app->user->modifyPassword and $module != 'my' and $method != 'changepassword') die(js::locate(helper::createLink('my', 'changepassword')));
+        if(isset($this->app->user->modifyPassword) and $this->app->user->modifyPassword and ($module != 'my' or $method != 'changepassword')) die(js::locate(helper::createLink('my', 'changepassword')));
         if($this->isOpenMethod($module, $method)) return true;
         if(!$this->loadModel('user')->isLogon() and $this->server->php_auth_user) $this->user->identifyByPhpAuth();
         if(!$this->loadModel('user')->isLogon() and $this->cookie->za) $this->user->identifyByCookie();
@@ -1216,6 +1221,8 @@ class commonModel extends model
      */
     public static function setMenuVars($menu, $key, $params)
     {
+        if(!isset($menu->$key)) return false;
+
         if(is_array($params))
         {
             if(is_array($menu->$key))

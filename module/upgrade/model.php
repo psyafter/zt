@@ -172,6 +172,13 @@ class upgradeModel extends model
                 $this->adjustPriv9_0_1();
             case '9_1':
                 $this->execSQL($this->getUpgradeFile('9.1'));
+            case '9_1_1':
+                $this->execSQL($this->getUpgradeFile('9.1.1'));
+            case '9_1_2':
+                $this->execSQL($this->getUpgradeFile('9.1.2'));
+                $this->processCustomMenus();
+                $this->adjustPriv9_2();
+            case '9_2':
         }
 
         $this->deletePatch();
@@ -262,6 +269,9 @@ class upgradeModel extends model
         case '9_0':
         case '9_0_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.0.1'));
         case '9_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('9.1'));
+        case '9_1_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.1.1'));
+        case '9_1_2':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.1.2'));
+        case '9_2':
         }
         return str_replace('zt_', $this->config->db->prefix, $confirmContent);
     }
@@ -1640,6 +1650,50 @@ class upgradeModel extends model
     }
 
     /**
+     * Adjust priv for 9.2.
+     * 
+     * @access public
+     * @return void
+     */
+    public function adjustPriv9_2()
+    {
+        $groups = $this->dao->select('`group`')->from(TABLE_GROUPPRIV)->where('module')->eq('testsuite')->andWhere('method')->eq('createCase')->fetchPairs('group', 'group');
+        foreach($groups as $groupID)
+        {
+            $data = new stdclass();
+            $data->group  = $groupID;
+            $data->module = 'testsuite';
+            $newMethods   = array('batchCreateCase', 'exportTemplet', 'import', 'showImport');
+            foreach($newMethods as $method)
+            {
+                $data->method = $method;
+                $this->dao->replace(TABLE_GROUPPRIV)->data($data)->exec();
+            }
+        }
+
+        $groups = $this->dao->select('`group`')->from(TABLE_GROUPPRIV)->where('module')->eq('product')->andWhere('method')->eq('index')->fetchPairs('group', 'group');
+        foreach($groups as $groupID)
+        {
+            $data = new stdclass();
+            $data->group  = $groupID;
+            $data->module = 'product';
+            $data->method = 'build';
+            $this->dao->replace(TABLE_GROUPPRIV)->data($data)->exec();
+        }
+
+        $groups = $this->dao->select('`group`')->from(TABLE_GROUPPRIV)->where('module')->eq('custom')->andWhere('method')->eq('flow')->fetchPairs('group', 'group');
+        foreach($groups as $groupID)
+        {
+            $data = new stdclass();
+            $data->group  = $groupID;
+            $data->module = 'custom';
+            $data->method = 'working';
+            $this->dao->replace(TABLE_GROUPPRIV)->data($data)->exec();
+        }
+        return true;
+    }
+
+    /**
      * Judge any error occers.
      * 
      * @access public
@@ -1687,5 +1741,24 @@ class upgradeModel extends model
 		$needProcess = array();
         if(strpos($fromVersion, 'pro') === false ? $fromVersion < '8.3' : $fromVersion < 'pro5.4') $needProcess['updateFile'] = true;
 		return $needProcess;
+    }
+
+    /**
+     * Process customMenus for different working. 
+     * 
+     * @access public
+     * @return void
+     */
+    public function processCustomMenus()
+    {
+        $this->loadModel('setting')->setItem('system.common.global.flow', 'full');
+        $customMenus = $this->dao->select('*')->from(TABLE_CONFIG)->where('section')->eq('customMenu')->fetchAll();
+
+        foreach($customMenus as $customMenu)
+        {
+            $this->dao->update(TABLE_CONFIG)->set('`key`')->eq("full_{$customMenu->key}")->where('id')->eq($customMenu->id)->exec();
+        }
+
+        return !dao::isError();
     }
 }
