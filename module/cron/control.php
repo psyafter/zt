@@ -174,6 +174,7 @@ class cron extends control
             unset($_SESSION['company']);
             unset($this->app->company);
             $this->common->setCompany();
+            $timestamp = time();
             $this->common->loadConfigFromDB();
             foreach($parsedCrons as $id => $cron)
             {
@@ -233,7 +234,8 @@ class cron extends control
             }
 
             /* Sleep some seconds. */
-            $sleepTime = 60 - ((time() - strtotime($now->format('Y-m-d H:i:s'))) % 60);
+            //$sleepTime = 60 - ((time() - strtotime($now->format('Y-m-d H:i:s'))) % 60);
+            $sleepTime = 60 - ((time() - $timestamp) % 60);
             sleep($sleepTime);
 
             /* Break while. */
