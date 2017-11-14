@@ -391,7 +391,7 @@ class fileModel extends model
      */
     public function setSavePath()
     {
-        $savePath = $this->app->getAppRoot() . "www/data/upload/{$this->app->company->id}/" . date('Ym/', $this->now);
+        $savePath = $this->app->getAppRoot() . "data/upload/{$this->app->company->id}/" . date('Ym/', $this->now);
         if(!file_exists($savePath))
         {
             @mkdir($savePath, 0777, true);
