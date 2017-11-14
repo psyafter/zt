@@ -50,6 +50,7 @@ js::set('productID' , $bug->product);
           </td>
           <td>
             <span id='resolvedBuildBox'><?php echo html::select('resolvedBuild', $builds, '', "class='form-control chosen'");?></span>
+            <script type="text/javascript">$('select#resolvedBuild option[value="trunk"]').prop('selected', true);</script>
             <span id='newBuildBox' class='hidden'><?php echo html::input('buildName', '', "class='form-control' placeholder='{$lang->bug->placeholder->newBuildName}'");?></span>
           </td>
           <td>

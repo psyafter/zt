@@ -54,6 +54,7 @@
                     echo '</div>';
                 }
                 ?>
+                <script type="text/javascript">$('select#module').prepend('<option value="" data-keys="" selected="selected">select module</option>')</script>
               </div>
             </td>
           </tr>

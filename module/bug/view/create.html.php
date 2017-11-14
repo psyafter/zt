@@ -57,6 +57,7 @@ js::set('flow', $config->global->flow);
                     echo '</span>';
                 }
                 ?>
+                <script type="text/javascript">$('select#module').prepend('<option value="" data-keys="" selected="selected">select module</option>')</script>
               </div>
             </td>
           </tr>
@@ -88,6 +89,7 @@ js::set('flow', $config->global->flow);
               <div class='input-group' id='buildBox'>
                 <span class="input-group-addon"><?php echo $lang->bug->openedBuild?></span>
                 <?php echo html::select('openedBuild[]', $builds, $buildID, "size=4 multiple=multiple class='chosen form-control'");?>
+                <script type="text/javascript">$('select#openedBuild option[value="trunk"]').prop('selected', true);</script>
                 <span class='input-group-addon fix-border' id='buildBoxActions'></span>
                 <div class='input-group-btn'><?php echo html::commonButton($lang->bug->allBuilds, "class='btn' id='all' data-toggle='tooltip' onclick='loadAllBuilds()'")?></div>
               </div>
