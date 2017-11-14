@@ -3823,7 +3823,7 @@
             '<head><meta charset="utf-8" /><title></title>',
             '<style>',
             'html {margin:0;padding:0;}',
-            'body {margin:0;padding:5px;}',
+            'body {margin:0;padding:5px;direction:rtl;text-align:right;}',
             'body, td {font:12px/1.5 "sans serif",tahoma,verdana,helvetica;}',
             'body, p, div {word-wrap: break-word;}',
             'p {margin:5px 0;}',
