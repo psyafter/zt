@@ -44,7 +44,7 @@ class backupModel extends model
             chdir($this->app->getTmpRoot());
             $this->app->loadClass('pclzip', true);
             $zip = new pclzip($backupFile);
-            $zip->create($this->app->getAppRoot() . 'www/data/', PCLZIP_OPT_REMOVE_PATH, $this->app->getAppRoot() . 'www/data/', PCLZIP_OPT_TEMP_FILE_ON);
+            $zip->create($this->app->getAppRoot() . 'data/', PCLZIP_OPT_REMOVE_PATH, $this->app->getAppRoot() . 'data/', PCLZIP_OPT_TEMP_FILE_ON);
             if($zip->errorCode() != 0)
             {
                 $return->result = false;
@@ -56,7 +56,7 @@ class backupModel extends model
         {
             if(!is_dir($backupFile)) mkdir($backupFile, 0777, true);
             $zfile = $this->app->loadClass('zfile');
-            $zfile->copyDir($this->app->getAppRoot() . 'www/data/', $backupFile);
+            $zfile->copyDir($this->app->getAppRoot() . 'data/', $backupFile);
         }
 
         return $return;
@@ -81,7 +81,7 @@ class backupModel extends model
 
         $tmpFile  = array_search($appRoot . 'tmp', $fileList);
         $wwwFile  = array_search($appRoot . 'www', $fileList);
-        $dataFile = array_search($appRoot . 'www/data', $wwwFileList);
+        $dataFile = array_search($appRoot . 'data', $wwwFileList);
         unset($fileList[$tmpFile]);
         unset($fileList[$wwwFile]);
         unset($wwwFileList[$dataFile]);
@@ -160,7 +160,7 @@ class backupModel extends model
             chdir($this->app->getTmpRoot());
             $this->app->loadClass('pclzip', true);
             $zip = new pclzip($backupFile);
-            if($zip->extract(PCLZIP_OPT_PATH, $this->app->getAppRoot() . 'www/data/', PCLZIP_OPT_TEMP_FILE_ON) == 0)
+            if($zip->extract(PCLZIP_OPT_PATH, $this->app->getAppRoot() . 'data/', PCLZIP_OPT_TEMP_FILE_ON) == 0)
             {
                 $return->result = false;
                 $return->error  = $zip->errorInfo();
@@ -170,7 +170,7 @@ class backupModel extends model
         else
         {
             $zfile = $this->app->loadClass('zfile');
-            $zfile->copyDir($backupFile, $this->app->getAppRoot() . 'www/data/');
+            $zfile->copyDir($backupFile, $this->app->getAppRoot() . 'data/');
         }
 
         return $return;
