@@ -9,7 +9,7 @@ if(file_exists($extViewFile))
             <?php if(isset($action->objectType) and isset($action->action)):?>
             <?php if(!empty($action->comment)):?>
             <tr>
-              <td style="padding:0px 10px 10px 10px; border: none;">
+              <td style="padding:0px 10px 10px 10px; border: none;direction:rtl;" dir="rtl">
                 <fieldset style="border: 1px solid #e5e5e5">
                 <legend style="color: #114f8e"><?php echo $this->lang->comment?></legend>
                 <div style="padding:5px;"><?php echo $action->comment?></div>
@@ -18,7 +18,7 @@ if(file_exists($extViewFile))
             </tr>
             <?php endif;?>
             <tr>
-              <td style='padding: 10px; background-color: #FFF0D5'>
+              <td style='padding: 10px; background-color: #FFF0D5;direction:rtl;' dir="rtl">
                 <?php $action->actor = zget($users, $action->actor);?>
                 <?php $action->extra = zget($users, $action->extra);?>
                 <span style='font-size: 16px; color: #F1A325'>●</span> &nbsp;<span><?php $this->action->printAction($action);?></span>
@@ -26,7 +26,7 @@ if(file_exists($extViewFile))
             </tr>
             <?php if(!empty($action->history)):?>
             <tr>
-              <td style='padding: 10px;'>
+              <td style='padding: 10px;direction:rtl;' dir="rtl">
                 <div><?php $this->action->printChanges($action->objectType, $action->history, false);?></div>
               </td>
             </tr>
