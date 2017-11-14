@@ -47,6 +47,7 @@ js::set('productID' , $bug->product);
       <td>
         <div class='input-group'>
           <span id='resolvedBuildBox'><?php echo html::select('resolvedBuild', $builds, '', "class='form-control chosen'");?></span>
+ 		  <script type="text/javascript">$('select#resolvedBuild option[value="trunk"]').prop('selected', true);</script>
           <?php if(common::hasPriv('build', 'create')):?>
           <span id='newBuildBox' class='hidden'><?php echo html::input('buildName', '', "class='form-control' placeholder='{$lang->bug->placeholder->newBuildName}'");?></span>
           <span class='input-group-addon'><label class="checkbox-inline"><input name="createBuild" value="1" id="createBuild" type="checkbox"> <?php echo $lang->bug->createBuild?></label></span>
