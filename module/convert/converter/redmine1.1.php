@@ -795,7 +795,7 @@ class redmine11ConvertModel extends redmineConvertModel
                 self::$info['files'][] = sprintf($this->lang->convert->errorFileNotExits, $soureFile);
                 continue;
             }
-            $targetFile = $this->app->getAppRoot() . "www/data/upload/{$this->app->company->id}/" . $file->pathname;
+            $targetFile = $this->app->getAppRoot() . "data/upload/{$this->app->company->id}/" . $file->pathname;
             $targetPath = dirname($targetFile);
             if(!is_dir($targetPath)) mkdir($targetPath, 0777, true);
             if(!copy($soureFile, $targetFile))
