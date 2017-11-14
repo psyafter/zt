@@ -56,6 +56,7 @@ js::set('confirmDeleteTemplate', $lang->bug->confirmDeleteTemplate);
                 echo '</span>';
             }
             ?>
+			<script type="text/javascript">$('select#module').prepend('<option value="" data-keys="" selected="selected">select module</option>')</script>
           </div>
         </td>
         <td></td>
@@ -94,6 +95,7 @@ js::set('confirmDeleteTemplate', $lang->bug->confirmDeleteTemplate);
           <div class='input-group'>
             <span class='input-group-addon w-90px'><?php echo $lang->bug->openedBuild?></span>
             <span id='buildBox'><?php echo html::select('openedBuild[]', $builds, $buildID, "size=4 multiple=multiple class='chosen form-control'");?></span>
+			<script type="text/javascript">$('select#openedBuild option[value="trunk"]').prop('selected', true);</script>
             <span class='input-group-addon fix-border' id='buildBoxActions'></span>
             <span class='input-group-btn'><?php echo html::commonButton($lang->bug->allBuilds, "class='btn btn-default' data-toggle='tooltip' onclick='loadAllBuilds()'")?></span>
           </div>
