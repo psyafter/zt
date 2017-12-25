@@ -15,6 +15,7 @@
 <?php include '../../common/view/kindeditor.html.php';?>
 <?php js::set('oldStoryID', $task->story); ?>
 <?php js::set('oldAssignedTo', $task->assignedTo); ?>
+<?php js::set('oldProjectID', $task->project); ?>
 <?php js::set('confirmChangeProject', $lang->task->confirmChangeProject); ?>
 <?php js::set('changeProjectConfirmed', false); ?>
 <form class='form-condensed' method='post' enctype='multipart/form-data' target='hiddenwin' id='dataform'>
@@ -79,7 +80,7 @@
             <th><?php echo $lang->task->module;?></th>
             <td id="moduleIdBox"><?php echo html::select('module', $modules, $task->module, 'class="form-control chosen" onchange="loadModuleRelated()"');?></td>
           </tr>
-          <?php if($config->global->flow != 'onlyTask'):?>
+          <?php if($config->global->flow != 'onlyTask' and $project->type != 'ops'):?>
           <tr>
             <th><?php echo $lang->task->story;?></th>
             <td><span id="storyIdBox"><?php echo html::select('story', $stories, $task->story, "class='form-control chosen'");?></span></td>

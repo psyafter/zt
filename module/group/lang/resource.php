@@ -84,7 +84,6 @@ $lang->resource->my->changePassword = 'changePassword';
 $lang->resource->my->unbind         = 'unbind';
 $lang->resource->my->manageContacts = 'manageContacts';
 $lang->resource->my->deleteContacts = 'deleteContacts';
-$lang->resource->my->limited        = 'limited';
 $lang->resource->my->score          = 'score';
 
 $lang->my->methodOrder[0]  = 'index';
@@ -103,7 +102,6 @@ $lang->my->methodOrder[60] = 'unbind';
 $lang->my->methodOrder[65] = 'manageContacts';
 $lang->my->methodOrder[75] = 'deleteContacts';
 $lang->my->methodOrder[80] = 'score';
-$lang->my->methodOrder[85] = 'limited';
 
 /* Todo. */
 $lang->resource->todo = new stdclass();
@@ -485,6 +483,7 @@ $lang->resource->bug->saveTemplate       = 'saveTemplate';
 $lang->resource->bug->deleteTemplate     = 'deleteTemplate';
 $lang->resource->bug->setPublic          = 'setPublic';
 $lang->resource->bug->batchChangeModule  = 'batchChangeModule';
+$lang->resource->bug->batchChangeBranch  = 'batchChangeBranch';
 
 $lang->bug->methodOrder[0]   = 'index';
 $lang->bug->methodOrder[5]   = 'browse';
@@ -513,6 +512,7 @@ $lang->bug->methodOrder[110] = 'setPublic';
 $lang->bug->methodOrder[115] = 'linkBugs';
 $lang->bug->methodOrder[120] = 'unlinkBug';
 $lang->bug->methodOrder[125] = 'batchChangeModule';
+$lang->bug->methodOrder[130] = 'batchChangeBranch';
 
 /* Test case. */
 $lang->resource->testcase = new stdclass();
@@ -536,6 +536,7 @@ $lang->resource->testcase->showImport         = 'showImport';
 $lang->resource->testcase->confirmChange      = 'confirmChange';
 $lang->resource->testcase->confirmStoryChange = 'confirmStoryChange';
 $lang->resource->testcase->batchChangeModule  = 'batchChangeModule';
+$lang->resource->testcase->batchChangeBranch  = 'batchChangeBranch';
 $lang->resource->testcase->bugs               = 'bugs';
 $lang->resource->testcase->review             = 'review';
 $lang->resource->testcase->batchReview        = 'batchReview';
@@ -558,9 +559,10 @@ $lang->testcase->methodOrder[55]  = 'confirmStoryChange';
 $lang->testcase->methodOrder[60]  = 'batchEdit';
 $lang->testcase->methodOrder[65]  = 'batchDelete';
 $lang->testcase->methodOrder[70]  = 'batchChangeModule';
-$lang->testcase->methodOrder[75]  = 'linkCases';
-$lang->testcase->methodOrder[80]  = 'unlinkCase';
-$lang->testcase->methodOrder[85]  = 'bugs';
+$lang->testcase->methodOrder[75]  = 'batchChangeBranch';
+$lang->testcase->methodOrder[80]  = 'linkCases';
+$lang->testcase->methodOrder[85]  = 'unlinkCase';
+$lang->testcase->methodOrder[90]  = 'bugs';
 $lang->testcase->methodOrder[95]  = 'review';
 $lang->testcase->methodOrder[100] = 'batchReview';
 $lang->testcase->methodOrder[105] = 'batchConfirmStoryChange';
@@ -1007,12 +1009,15 @@ $lang->resource->action->trash    = 'trash';
 $lang->resource->action->undelete = 'undelete';
 $lang->resource->action->hideOne  = 'hideOne';
 $lang->resource->action->hideAll  = 'hideAll';
+$lang->resource->action->comment  = 'comment';
 $lang->resource->action->editComment = 'editComment';
 
 $lang->action->methodOrder[5]  = 'trash';
 $lang->action->methodOrder[10] = 'undelete';
 $lang->action->methodOrder[15] = 'hideOne';
 $lang->action->methodOrder[20] = 'hideAll';
+$lang->action->methodOrder[25] = 'comment';
+$lang->action->methodOrder[30] = 'editComment';
 
 $lang->resource->backup = new stdclass();
 $lang->resource->backup->index   = 'index';

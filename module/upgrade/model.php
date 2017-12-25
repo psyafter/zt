@@ -193,6 +193,14 @@ class upgradeModel extends model
             case '9_6':
                 $this->execSQL($this->getUpgradeFile('9.6'));
                 $this->fixDatatableColsConfig();
+            case '9_6_1':
+                $this->addLimitedGroup();
+            case '9_6_2':
+            case '9_6_3':
+                $this->execSQL($this->getUpgradeFile('9.6.3'));
+                $this->changeLimitedName();
+                $this->adjustPriv9_7();
+                $this->changeStoryWidth();
         }
 
         $this->deletePatch();
@@ -292,6 +300,9 @@ class upgradeModel extends model
         case '9_5':       $confirmContent .= file_get_contents($this->getUpgradeFile('9.5'));
         case '9_5_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.5.1'));
         case '9_6':       $confirmContent .= file_get_contents($this->getUpgradeFile('9.6'));
+        case '9_6_1':
+        case '9_6_2':
+        case '9_6_3':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.6.3'));
         }
         return str_replace('zt_', $this->config->db->prefix, $confirmContent);
     }
@@ -1852,6 +1863,109 @@ class upgradeModel extends model
             $this->dao->update(TABLE_CONFIG)->set('value')->eq(json_encode($cols))->where('id')->eq($datatableCols->id)->exec();
         }
 
+        return true;
+    }
+
+    /**
+     * Add limited group.
+     * 
+     * @access public
+     * @return bool
+     */
+    public function addLimitedGroup()
+    {
+        $limitedGroup = $this->dao->select('*')->from(TABLE_GROUP)->where('`role`')->eq('limited')->fetch();
+        if(empty($limitedGroup))
+        {
+            $group = new stdclass();
+            $group->name = 'limited';
+            $group->role = 'limited';
+            $group->desc = 'For limited user';
+            $this->dao->insert(TABLE_GROUP)->data($group)->exec();
+
+            $groupID = $this->dao->lastInsertID();
+        }
+        else
+        {
+            $groupID = $limitedGroup->id;
+        }
+
+        $limitedGroups = $this->dao->select('`group`')->from(TABLE_GROUPPRIV)
+            ->where('module')->eq('my')
+            ->andWhere('method')->eq('limited')
+            ->fetchPairs('group', 'group');
+        $this->dao->delete()->from(TABLE_GROUPPRIV)->where('module')->eq('my')->andWhere('method')->eq('limited')->exec();
+
+        $limitedUsers = $this->dao->select('account')->from(TABLE_USERGROUP)->where('`group`')->in($limitedGroups)->fetchPairs('account', 'account');
+        foreach($limitedUsers as $limitedUser)
+        {
+            $this->dao->replace(TABLE_USERGROUP)->set('account')->eq($limitedUser)->set('`group`')->eq($groupID)->exec();
+        }
+
+        $groupPriv = new stdclass();
+        $groupPriv->group = $groupID;
+        $groupPriv->module = 'my';
+        $groupPriv->method = 'limited';
+        $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
+
+        return true;
+    }
+
+    /**
+     * Change limited name.
+     * 
+     * @access public
+     * @return bool
+     */
+    public function changeLimitedName()
+    {
+        $this->app->loadLang('install');
+        $this->dao->update(TABLE_GROUP)->set('name')->eq($this->lang->install->groupList['LIMITED']['name'])
+            ->set('desc')->eq($this->lang->install->groupList['LIMITED']['desc'])
+            ->where('role')->eq('limited')
+            ->exec();
+
+        return true;
+    }
+
+    /**
+     * Adjust Priv for 9.7 
+     * 
+     * @access public
+     * @return bool
+     */
+    public function adjustPriv9_7()
+    {
+        $groups = $this->dao->select('*')->from(TABLE_GROUPPRIV)->where('method')->eq('edit')->andWhere('module')->in('story,task,bug,testcase')->fetchPairs('group', 'group');
+        foreach($groups as $groupID)
+        {
+            $groupPriv = new stdclass();
+            $groupPriv->group  = $groupID;
+            $groupPriv->module = 'action';
+            $groupPriv->method = 'comment';
+            $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
+        }
+        return true;
+    }
+
+    /**
+     * Change story field width.
+     * 
+     * @access public
+     * @return bool
+     */
+    public function changeStoryWidth()
+    {
+        $projectCustom = $this->dao->select('*')->from(TABLE_CONFIG)->where('section')->eq('projectTask')->andWhere('`key`')->in('cols,tablecols')->fetchAll('id');
+        foreach($projectCustom as $configID => $projectTask)
+        {
+            $fields = json_decode($projectTask->value);
+            foreach($fields as $i => $field)
+            {
+                if($field->id == 'story') $field->width = '40px';
+            }
+            $this->dao->update(TABLE_CONFIG)->set('value')->eq(json_encode($fields))->where('id')->eq($configID)->exec();
+        }
         return true;
     }
 }

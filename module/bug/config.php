@@ -6,14 +6,14 @@ $config->bug->longlife    = 7;
 $config->bug->create  = new stdclass();
 $config->bug->edit    = new stdclass();
 $config->bug->resolve = new stdclass();
-$config->bug->create->requiredFields  = 'title,openedBuild';
+$config->bug->create->requiredFields  = 'title,openedBuild,module';
 $config->bug->edit->requiredFields    = $config->bug->create->requiredFields;
 $config->bug->resolve->requiredFields = 'resolution';
 
 $config->bug->list = new stdclass();
 $config->bug->list->allFields = 'id, module, project, story, task, 
     title, keywords, severity, pri, type, os, browser, hardware,
-    found, steps, status, activatedCount, confirmed, mailto,
+    found, steps, status, deadline, activatedCount, confirmed, mailto,
     openedBy, openedDate, openedBuild, 
     assignedTo, assignedDate,
     resolvedBy, resolution, resolvedBuild, resolvedDate,
