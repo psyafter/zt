@@ -15,7 +15,16 @@ function createLink(moduleName, methodName, vars, viewType, isOnlyBody)
     if(vars)
     {
         vars = vars.split('&');
-        for(i = 0; i < vars.length; i ++) vars[i] = vars[i].split('=');
+        for(i = 0; i < vars.length; i ++)
+        {
+            splited = vars[i].split('=');
+
+            var newvars = new Array()
+            newvars[0] = splited.shift();
+            newvars[1] = splited.join('=');
+
+            vars[i] = newvars;
+        }
     }
     if(config.requestType != 'GET')
     {
@@ -600,7 +609,7 @@ function setImageSize(image, maxWidth)
 function setModalTriggerLink()
 {
     $('.repolink').modalTrigger({width:960, type:'iframe'});
-    $(".export").modalTrigger({width:650, type:'iframe'});
+    $('.export').modalTrigger({width:800, type:'iframe', afterShown: setCheckedCookie});
 }
 
 /**
@@ -1347,6 +1356,30 @@ function setModal4List(triggerClass, replaceID, callback, width)
 }
 
 /**
+ * Set checked in cookie.
+ * 
+ * @access public
+ * @return void
+ */
+function setCheckedCookie()
+{
+    var checkeds = '';
+    $(':checkbox').each(function()
+    {
+        if($(this).attr('checked'))
+        {
+            if(!isNaN($(this).val()))
+            {
+                var checkedVal = parseInt($(this).val());
+                if(checkedVal != 0) checkeds = checkeds + checkedVal + ',';
+            }
+        }
+    })
+    if(checkeds != '') checkeds = checkeds.substring(0, checkeds.length - 1);
+    $.cookie('checkedItem', checkeds, {expires:config.cookieLife, path:config.webRoot});
+}
+
+/**
  * Set table behavior
  * 
  * @access public
@@ -1986,6 +2019,34 @@ function selectFocusJump(type)
     }
 }
 
+function adjustNoticePosition()
+{
+    var bottom = 25;
+    $('#noticeBox').find('.alert').each(function()
+    {
+        $(this).css('bottom',  bottom + 'px');
+        bottom += $(this).outerHeight(true) - 10;
+    });
+}
+
+function notifyMessage(data)
+{
+    if(window.Notification)
+    {
+        if(Notification.permission == "granted")
+        {
+            new Notification("", {body:data});
+        }
+        else if(Notification.permission != "denied")
+        {
+            Notification.requestPermission(function(permission)
+            {
+                new Notification("", {body:data});
+            });
+        }
+    }
+}
+
 /* Ping the server every some minutes to keep the session. */
 needPing = true;
 
@@ -2013,29 +2074,11 @@ $(document).ready(function()
     fixStyle();
 
     // Init tree menu
-    $('.tree').tree({name: config.currentModule + '-' + config.currentMethod, initialState: 'preserve'});
+    $('.tree').tree({initialState: 'preserve'});
 
     $(window).resize(saveWindowSize);   // When window resized, call it again.
 
     if(needPing) setTimeout('setPing()', 1000 * 60 * 10);  // After 10 minutes, begin ping.
-
-    $('.export').bind('click', function()
-    {
-        var checkeds = '';
-        $(':checkbox').each(function()
-        {
-            if($(this).attr('checked'))
-            {
-                if(!isNaN($(this).val()))
-                {
-                    var checkedVal = parseInt($(this).val());
-                    if(checkedVal != 0) checkeds = checkeds + checkedVal + ',';
-                }
-            }
-        })
-        if(checkeds != '') checkeds = checkeds.substring(0, checkeds.length - 1);
-        $.cookie('checkedItem', checkeds, {expires:config.cookieLife, path:config.webRoot});
-    });
 
     initPrioritySelector();
     initHotKey();

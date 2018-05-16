@@ -66,7 +66,7 @@
           <th class='w-80px text-left'><?php common::printOrderLink('line', $orderBy, $vars, $lang->product->line);?></th>
           <th class='w-80px'><?php echo $lang->product->activeStories;?></th>
           <th class='w-80px'><?php echo $lang->product->changedStories;?></th>
-          <th class='w-80px'><?php echo $lang->product->draftStories;?></th>
+          <th class='w-70px'><?php echo $lang->product->draftStories;?></th>
           <th class='w-80px'><?php echo $lang->product->closedStories;?></th>
           <th class='w-80px'><?php echo $lang->product->plans;?></th>
           <th class='w-80px'><?php echo $lang->product->releases;?></th>
@@ -89,7 +89,7 @@
             <?php echo html::a($this->createLink('product', 'view', 'product=' . $product->id), sprintf('%03d', $product->id));?>
           </td>
           <td class='text-left' title='<?php echo $product->name?>'><?php echo html::a($this->createLink('product', 'view', 'product=' . $product->id), $product->name);?></td>
-          <td class='text-left'><?php echo zget($lines, $product->line);?></td>
+          <td class='text-left'><?php echo zget($lines, $product->line, '');?></td>
           <td><?php echo $product->stories['active']?></td>
           <td><?php echo $product->stories['changed']?></td>
           <td><?php echo $product->stories['draft']?></td>

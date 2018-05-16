@@ -11,6 +11,7 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
+<?php include '../../common/view/datepicker.html.php';?>
 <div id='titlebar'>
   <div class='heading'>
     <span class='prefix'><?php echo html::icon($lang->icons['bug']);?></span>
@@ -27,10 +28,19 @@
   </div>
 </div>
 <?php
-$visibleFields = array();
+$visibleFields  = array();
+$requiredFields = array();
 foreach(explode(',', $showFields) as $field)
 {
     if($field) $visibleFields[$field] = '';
+}
+foreach(explode(',', $this->config->bug->create->requiredFields) as $field)
+{
+    if($field)
+    {
+        $requiredFields[$field] = '';
+        if(strpos(",{$config->bug->list->customBatchCreateFields},", ",{$field},") !== false) $visibleFields[$field] = '';
+    }
 }
 ?>
 <form class='form-condensed' class='form-condensed' method='post' target='hiddenwin'>
@@ -39,17 +49,45 @@ foreach(explode(',', $showFields) as $field)
       <tr>
         <th class='w-50px'>  <?php echo $lang->idAB;?></th> 
         <th class='w-120px<?php echo zget($visibleFields, $product->type, ' hidden')?>'> <?php echo $lang->product->branch;?></th>
-        <th class='w-120px<?php echo zget($visibleFields, 'module', ' hidden')?>'> <?php echo $lang->bug->module;?> <span class='required'></span></th>
-        <th class='w-130px<?php echo zget($visibleFields, 'project', ' hidden')?>'><?php echo $lang->bug->project;?></th>
+        <th class='w-120px'> <?php echo $lang->bug->module;?> <span class='required'></span></th>
+        <th class='w-130px<?php echo zget($visibleFields, 'project', ' hidden')?>'>
+          <?php echo $lang->bug->project;?>
+          <?php if(isset($requiredFields['project'])) echo " <span class='required'></span>";?>
+        </th>
         <th><?php echo $lang->bug->openedBuild;?> <span class='required'></span></th>
         <th><?php echo $lang->bug->title;?> <span class='required'></span></th>
-        <th class='<?php echo zget($visibleFields, 'steps', 'hidden')?>'>          <?php echo $lang->bug->steps;?></th>
-        <th class='w-100px<?php echo zget($visibleFields, 'type', ' hidden')?>'>   <?php echo $lang->typeAB;?></th>
-        <th class='w-80px<?php echo zget($visibleFields, 'pri', ' hidden')?>'>     <?php echo $lang->bug->pri;?></th>
-        <th class='w-80px<?php echo zget($visibleFields, 'severity', ' hidden')?>'><?php echo $lang->bug->severity;?></th>
-        <th class='w-120px<?php echo zget($visibleFields, 'os', ' hidden')?>'>     <?php echo $lang->bug->os;?></th>
-        <th class='w-100px<?php echo zget($visibleFields, 'browser', ' hidden')?>'><?php echo $lang->bug->browser;?></th>
-        <th class='<?php echo zget($visibleFields, 'keywords', ' hidden')?>'>      <?php echo $lang->bug->keywords;?></th>
+        <th class='<?php echo zget($visibleFields, 'deadline', 'hidden')?>'>
+          <?php echo $lang->bug->deadline;?>
+          <?php if(isset($requiredFields['deadline'])) echo " <span class='required'></span>";?>
+        </th>
+        <th class='<?php echo zget($visibleFields, 'steps', 'hidden')?>'>
+          <?php echo $lang->bug->steps;?>
+          <?php if(isset($requiredFields['steps'])) echo " <span class='required'></span>";?>
+        </th>
+        <th class='w-100px<?php echo zget($visibleFields, 'type', ' hidden')?>'>
+          <?php echo $lang->typeAB;?>
+          <?php if(isset($requiredFields['type'])) echo " <span class='required'></span>";?>
+        </th>
+        <th class='w-80px<?php echo zget($visibleFields, 'pri', ' hidden')?>'>
+          <?php echo $lang->bug->pri;?>
+          <?php if(isset($requiredFields['pri'])) echo " <span class='required'></span>";?>
+        </th>
+        <th class='w-80px<?php echo zget($visibleFields, 'severity', ' hidden')?>'>
+          <?php echo $lang->bug->severity;?>
+          <?php if(isset($requiredFields['severity'])) echo " <span class='required'></span>";?>
+        </th>
+        <th class='w-120px<?php echo zget($visibleFields, 'os', ' hidden')?>'>
+          <?php echo $lang->bug->os;?>
+          <?php if(isset($requiredFields['os'])) echo " <span class='required'></span>";?>
+        </th>
+        <th class='w-100px<?php echo zget($visibleFields, 'browser', ' hidden')?>'>
+          <?php echo $lang->bug->browser;?>
+          <?php if(isset($requiredFields['browser'])) echo " <span class='required'></span>";?>
+        </th>
+        <th class='<?php echo zget($visibleFields, 'keywords', ' hidden')?>'>
+          <?php echo $lang->bug->keywords;?>
+          <?php if(isset($requiredFields['keywords'])) echo " <span class='required'></span>";?>
+        </th>
       </tr>
     </thead>
     <tbody>
@@ -77,9 +115,9 @@ foreach(explode(',', $showFields) as $field)
       $os        = $i == 0 ? '' : 'ditto';
       $browser   = $i == 0 ? '' : 'ditto';
       ?>
-      <tr class='text-center'>
+      <tr class='text-left'>
         <td><?php echo $i+1;?></td>
-        <td class='text-left<?php echo zget($visibleFields, $product->type, ' hidden')?>'><?php echo html::select("branches[$i]", $branches, $branch, "class='form-control' onchange='setBranchRelated(this.value, $productID, $i)'");?></td>
+        <td class='text-left<?php echo zget($visibleFields, $product->type, ' hidden')?>' style='overflow:visible'><?php echo html::select("branches[$i]", $branches, $branch, "class='form-control chosen' onchange='setBranchRelated(this.value, $productID, $i)'");?></td>
         <td class='text-left<?php echo zget($visibleFields, 'module', ' hidden')?>'  style='overflow:visible'><?php echo html::select("modules[$i]", $moduleOptionMenu, $moduleID, "class='form-control chosen'");?></td>
         <td class='text-left<?php echo zget($visibleFields, 'project', ' hidden')?>' style='overflow:visible'><?php echo html::select("projects[$i]", $projects, $projectID, "class='form-control chosen' onchange='loadProjectBuilds($productID, this.value, $i)'");?></td>
         <td class='text-left' style='overflow:visible' id='buildBox<?php echo $i;?>'><?php echo html::select("openedBuilds[$i][]", $builds, 'trunk', "class='form-control chosen' multiple");?></td>
@@ -89,12 +127,13 @@ foreach(explode(',', $showFields) as $field)
           <?php echo html::input("title[$i]", $bugTitle, "class='form-control' autocomplete='off'") . html::hidden("uploadImage[$i]", $fileName);?>
           </div>
         </td>
-        <td class='<?php echo zget($visibleFields, 'steps', 'hidden')?>'>   <?php echo html::textarea("stepses[$i]", '', "rows='1' class='form-control autosize'");?></td>
-        <td class='<?php echo zget($visibleFields, 'type', 'hidden')?>'>    <?php echo html::select("types[$i]", $lang->bug->typeList, $type, "class='form-control'");?></td>
-        <td class='<?php echo zget($visibleFields, 'pri', 'hidden')?>'>     <?php echo html::select("pris[$i]", $lang->bug->priList, $pri, "class='form-control'");?></td>
-        <td class='<?php echo zget($visibleFields, 'severity', 'hidden')?>'><?php echo html::select("severities[$i]", $lang->bug->severityList, '', "class='form-control'");?></td>
-        <td class='<?php echo zget($visibleFields, 'os', 'hidden')?>'>      <?php echo html::select("oses[$i]", $lang->bug->osList, $os, "class='form-control'");?></td>
-        <td class='<?php echo zget($visibleFields, 'browser', 'hidden')?>'> <?php echo html::select("browsers[$i]", $lang->bug->browserList, $browser, "class='form-control'");?></td>
+        <td class='<?php echo zget($visibleFields, 'deadline', 'hidden')?>'><?php echo html::input("deadlines[$i]", '', "class='form-control form-date'");?></td>
+        <td class='<?php echo zget($visibleFields, 'steps', 'hidden')?>'><?php echo html::textarea("stepses[$i]", '', "rows='1' class='form-control autosize'");?></td>
+        <td class='<?php echo zget($visibleFields, 'type', 'hidden')?>' style='overflow:visible'>    <?php echo html::select("types[$i]", $lang->bug->typeList, $type, "class='form-control chosen'");?></td>
+        <td class='<?php echo zget($visibleFields, 'pri', 'hidden')?>' style='overflow:visible'>     <?php echo html::select("pris[$i]", $lang->bug->priList, $pri, "class='form-control chosen'");?></td>
+        <td class='<?php echo zget($visibleFields, 'severity', 'hidden')?>' style='overflow:visible'><?php echo html::select("severities[$i]", $lang->bug->severityList, '', "class='form-control chosen'");?></td>
+        <td class='<?php echo zget($visibleFields, 'os', 'hidden')?>' style='overflow:visible'>      <?php echo html::select("oses[$i]", $lang->bug->osList, $os, "class='form-control chosen'");?></td>
+        <td class='<?php echo zget($visibleFields, 'browser', 'hidden')?>' style='overflow:visible'> <?php echo html::select("browsers[$i]", $lang->bug->browserList, $browser, "class='form-control chosen'");?></td>
         <td class='<?php echo zget($visibleFields, 'keywords', 'hidden')?>'><?php echo html::input("keywords[$i]", '', "class='form-control' autocomplete='off'");?></td>
       </tr>
       <?php $i++;?>
@@ -110,9 +149,9 @@ foreach(explode(',', $showFields) as $field)
       $os        = $i - $nextStart == 0 ? '' : 'ditto';
       $browser   = $i - $nextStart == 0 ? '' : 'ditto';
       ?>
-      <tr class='text-center'>
+      <tr class='text-left'>
         <td><?php echo $i+1;?></td>
-        <td class='text-left<?php echo zget($visibleFields, $product->type, ' hidden')?>'><?php echo html::select("branches[$i]", $branches, $branch, "class='form-control' onchange='setBranchRelated(this.value, $productID, $i)'");?></td>
+        <td class='text-left<?php echo zget($visibleFields, $product->type, ' hidden')?>' style='overflow:visible'><?php echo html::select("branches[$i]", $branches, $branch, "class='form-control chosen' onchange='setBranchRelated(this.value, $productID, $i)'");?></td>
         <td class='text-left<?php echo zget($visibleFields, 'module', ' hidden')?>'  style='overflow:visible'><?php echo html::select("modules[$i]", $moduleOptionMenu, $moduleID, "class='form-control chosen'");?></td>
         <td class='text-left<?php echo zget($visibleFields, 'project', ' hidden')?>' style='overflow:visible'><?php echo html::select("projects[$i]", $projects, $projectID, "class='form-control chosen' onchange='loadProjectBuilds($productID, this.value, $i)'");?></td>
         <td class='text-left' style='overflow:visible' id='buildBox<?php echo $i;?>'><?php echo html::select("openedBuilds[$i][]", $builds, '', "class='form-control chosen' multiple");?></td>
@@ -122,12 +161,13 @@ foreach(explode(',', $showFields) as $field)
           <?php echo html::input("title[$i]", '', "class='form-control' autocomplete='off'");?>
           </div>
         </td>
-        <td class='<?php echo zget($visibleFields, 'steps', 'hidden')?>'>   <?php echo html::textarea("stepses[$i]", '', "rows='1' class='form-control autosize'");?></td>
-        <td class='<?php echo zget($visibleFields, 'type', 'hidden')?>'>    <?php echo html::select("types[$i]", $lang->bug->typeList, $type, "class='form-control'");?></td>
-        <td class='<?php echo zget($visibleFields, 'pri', 'hidden')?>'>     <?php echo html::select("pris[$i]", $lang->bug->priList, $pri, "class='form-control'");?></td>
-        <td class='<?php echo zget($visibleFields, 'severity', 'hidden')?>'><?php echo html::select("severities[$i]", $lang->bug->severityList, '', "class='form-control'");?></td>
-        <td class='<?php echo zget($visibleFields, 'os', 'hidden')?>'>      <?php echo html::select("oses[$i]", $lang->bug->osList, $os, "class='form-control'");?></td>
-        <td class='<?php echo zget($visibleFields, 'browser', 'hidden')?>'> <?php echo html::select("browsers[$i]", $lang->bug->browserList, $browser, "class='form-control'");?></td>
+        <td class='<?php echo zget($visibleFields, 'deadline', 'hidden')?>'><?php echo html::input("deadlines[$i]", '', "class='form-control form-date'");?></td>
+        <td class='<?php echo zget($visibleFields, 'steps', 'hidden')?>'><?php echo html::textarea("stepses[$i]", '', "rows='1' class='form-control autosize'");?></td>
+        <td class='<?php echo zget($visibleFields, 'type', 'hidden')?>' style='overflow:visible'>    <?php echo html::select("types[$i]", $lang->bug->typeList, $type, "class='form-control chosen'");?></td>
+        <td class='<?php echo zget($visibleFields, 'pri', 'hidden')?>' style='overflow:visible'>     <?php echo html::select("pris[$i]", $lang->bug->priList, $pri, "class='form-control chosen'");?></td>
+        <td class='<?php echo zget($visibleFields, 'severity', 'hidden')?>' style='overflow:visible'><?php echo html::select("severities[$i]", $lang->bug->severityList, '', "class='form-control chosen'");?></td>
+        <td class='<?php echo zget($visibleFields, 'os', 'hidden')?>' style='overflow:visible'>      <?php echo html::select("oses[$i]", $lang->bug->osList, $os, "class='form-control chosen'");?></td>
+        <td class='<?php echo zget($visibleFields, 'browser', 'hidden')?>' style='overflow:visible'> <?php echo html::select("browsers[$i]", $lang->bug->browserList, $browser, "class='form-control chosen'");?></td>
         <td class='<?php echo zget($visibleFields, 'keywords', 'hidden')?>'><?php echo html::input("keywords[$i]", '', "class='form-control' autocomplete='off'");?></td>
       </tr>
       <?php endfor;?>
@@ -139,9 +179,9 @@ foreach(explode(',', $showFields) as $field)
 </form>
 <table class='hide' id='trTemp'>
   <tbody>
-    <tr class='text-center'>
+    <tr class='text-left'>
       <td>%s</td>
-      <td class='text-left<?php echo zget($visibleFields, $product->type, ' hidden')?>'><?php echo html::select("branches[%s]", $branches, $branch, "class='form-control' onchange='setBranchRelated(this.value, $productID, \"%s\")'");?></td>
+      <td class='text-left<?php echo zget($visibleFields, $product->type, ' hidden')?>' style='overflow:visible'><?php echo html::select("branches[%s]", $branches, $branch, "class='form-control' onchange='setBranchRelated(this.value, $productID, \"%s\")'");?></td>
       <td class='text-left<?php echo zget($visibleFields, 'module', ' hidden')?>'  style='overflow:visible'><?php echo html::select("modules[%s]", $moduleOptionMenu, $moduleID, "class='form-control'");?></td>
       <td class='text-left<?php echo zget($visibleFields, 'project', ' hidden')?>' style='overflow:visible'><?php echo html::select("projects[%s]", $projects, $projectID, "class='form-control' onchange='loadProjectBuilds($productID, this.value, \"%s\")'");?></td>
       <td class='text-left' style='overflow:visible' id='buildBox%s'><?php echo html::select("openedBuilds[%s][]", $builds, '', "class='form-control' multiple");?></td>
@@ -151,12 +191,13 @@ foreach(explode(',', $showFields) as $field)
         <?php echo html::input("title[%s]", '', "class='form-control' autocomplete='off'");?>
         </div>
       </td>
-      <td class='<?php echo zget($visibleFields, 'steps', 'hidden')?>'>   <?php echo html::textarea("stepses[%s]", '', "rows='1' class='form-control autosize'");?></td>
-      <td class='<?php echo zget($visibleFields, 'type', 'hidden')?>'>    <?php echo html::select("types[%s]", $lang->bug->typeList, $type, "class='form-control'");?></td>
-      <td class='<?php echo zget($visibleFields, 'pri', 'hidden')?>'>     <?php echo html::select("pris[%s]", $lang->bug->priList, '', "class='form-control'");?></td>
-      <td class='<?php echo zget($visibleFields, 'severity', 'hidden')?>'><?php echo html::select("severities[%s]", $lang->bug->severityList, '', "class='form-control'");?></td>
-      <td class='<?php echo zget($visibleFields, 'os', 'hidden')?>'>      <?php echo html::select("oses[%s]", $lang->bug->osList, $os, "class='form-control'");?></td>
-      <td class='<?php echo zget($visibleFields, 'browser', 'hidden')?>'> <?php echo html::select("browsers[%s]", $lang->bug->browserList, $browser, "class='form-control'");?></td>
+      <td class='<?php echo zget($visibleFields, 'deadline', 'hidden')?>'><?php echo html::input("deadlines[%s]", '', "class='form-control form-date'");?></td>
+      <td class='<?php echo zget($visibleFields, 'steps', 'hidden')?>'><?php echo html::textarea("stepses[%s]", '', "rows='1' class='form-control autosize'");?></td>
+      <td class='<?php echo zget($visibleFields, 'type', 'hidden')?>' style='overflow:visible'>    <?php echo html::select("types[%s]", $lang->bug->typeList, $type, "class='form-control'");?></td>
+      <td class='<?php echo zget($visibleFields, 'pri', 'hidden')?>' style='overflow:visible'>     <?php echo html::select("pris[%s]", $lang->bug->priList, '', "class='form-control'");?></td>
+      <td class='<?php echo zget($visibleFields, 'severity', 'hidden')?>' style='overflow:visible'><?php echo html::select("severities[%s]", $lang->bug->severityList, '', "class='form-control'");?></td>
+      <td class='<?php echo zget($visibleFields, 'os', 'hidden')?>' style='overflow:visible'>      <?php echo html::select("oses[%s]", $lang->bug->osList, $os, "class='form-control'");?></td>
+      <td class='<?php echo zget($visibleFields, 'browser', 'hidden')?>' style='overflow:visible'> <?php echo html::select("browsers[%s]", $lang->bug->browserList, $browser, "class='form-control'");?></td>
       <td class='<?php echo zget($visibleFields, 'keywords', 'hidden')?>'><?php echo html::input("keywords[%s]", '', "class='form-control' autocomplete='off'");?></td>
     </tr>
   </tbody>

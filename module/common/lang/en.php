@@ -46,7 +46,7 @@ $lang->goback       = 'Back';
 $lang->goPC         = 'PC';
 $lang->more         = 'More';
 $lang->day          = 'Day';
-$lang->customConfig = 'Custom';
+$lang->customConfig = 'Custom Configuration';
 $lang->public       = 'Public';
 $lang->trunk        = 'Trunk';
 $lang->sort         = 'Order';
@@ -73,6 +73,7 @@ $lang->tutorial        = 'Tutorial';
 $lang->changeLog       = 'Change Log';
 $lang->manual          = 'Manual';
 $lang->customMenu      = 'Custom Menu';
+$lang->lineNumber      = 'Line No.';
 $lang->tutorialConfirm = 'You are using tutorial. Do you want to exit right now？';
 
 $lang->preShortcutKey  = '[Shortcut:←]';
@@ -93,7 +94,7 @@ $lang->workingHour  = 'Hour';
 $lang->idAB         = 'ID';
 $lang->priAB        = 'P';
 $lang->statusAB     = 'Status';
-$lang->openedByAB   = 'Created by';
+$lang->openedByAB   = 'Creator';
 $lang->assignedToAB = 'Assignee';
 $lang->typeAB       = 'Type';
 
@@ -165,7 +166,7 @@ $lang->my->menu = new stdclass();
 
 $lang->my->menu->account        = array('link' => '<span id="myname"><i class="icon-user"></i> %s' . $lang->arrow . '</span>', 'fixed' => true);
 $lang->my->menu->index          = 'Home|my|index';
-$lang->my->menu->todo           = array('link' => 'To-Do|my|todo|', 'subModule' => 'todo');
+$lang->my->menu->todo           = array('link' => 'Todo|my|todo|', 'subModule' => 'todo');
 $lang->my->menu->task           = array('link' => 'Task|my|task|', 'subModule' => 'task');
 $lang->my->menu->bug            = array('link' => 'Bug|my|bug|',   'subModule' => 'bug');
 $lang->my->menu->testtask       = array('link' => 'Test Task|my|testtask|', 'subModule' => 'testcase,testtask', 'alias' => 'testcase');
@@ -339,13 +340,12 @@ $lang->admin->menu = new stdclass();
 $lang->admin->menu->index     = array('link' => 'Home|admin|index', 'alias' => 'register,certifytemail,certifyztmobile,ztcompany');
 
 $lang->admin->menu->custom    = array('link' => 'Custom|custom|set', 'subModule' => 'custom');
-$lang->admin->menu->mail      = array('link' => 'Email|mail|index', 'subModule' => 'mail');
+$lang->admin->menu->message   = array('link' => 'Message|message|index', 'subModule' => 'message,mail,webhook');
 $lang->admin->menu->backup    = array('link' => 'Backup|backup|index', 'subModule' => 'backup');
 $lang->admin->menu->safe      = array('link' => 'Security|admin|safe', 'alias' => 'checkweak');
 $lang->admin->menu->cron      = array('link' => 'Cron|cron|index', 'subModule' => 'cron');
 $lang->admin->menu->trashes   = array('link' => 'Recycle|action|trash', 'subModule' => 'action');
 $lang->admin->menu->dev       = array('link' => 'Develop|dev|api', 'alias' => 'db', 'subModule' => 'dev,editor');
-$lang->admin->menu->api       = array('link' => 'API|webhook|browse', 'alias' => 'create,edit', 'subModule' => 'entry,webhook');
 $lang->admin->menu->sso       = 'RangerTeam|admin|sso';
 
 $lang->convert   = new stdclass();
@@ -360,6 +360,7 @@ $lang->cron      = new stdclass();
 $lang->dev       = new stdclass();
 $lang->entry     = new stdclass();
 $lang->webhook   = new stdclass();
+$lang->message   = new stdclass();
 $lang->search    = new stdclass();
 
 $lang->convert->menu   = $lang->admin->menu;
@@ -374,6 +375,7 @@ $lang->mail->menu      = $lang->admin->menu;
 $lang->dev->menu       = $lang->admin->menu;
 $lang->entry->menu     = $lang->admin->menu;
 $lang->webhook->menu   = $lang->admin->menu;
+$lang->message->menu   = $lang->admin->menu;
 
 /* 菜单分组。*/
 $lang->menugroup = new stdclass();
@@ -407,11 +409,12 @@ $lang->menugroup->mail        = 'admin';
 $lang->menugroup->dev         = 'admin';
 $lang->menugroup->entry       = 'admin';
 $lang->menugroup->webhook     = 'admin';
+$lang->menugroup->message     = 'admin';
 
 /* 错误提示信息。*/
 $lang->error = new stdclass();
 $lang->error->companyNotFound = "The domain %s cannot be found!";
-$lang->error->length          = array("『%s』Length Error. It should be『%s』", "『%s』length should be <=『%s』and >=『%s』.");
+$lang->error->length          = array("『%s』Length Error. It should be『%s』", "『%s』length should be <=『%s』and >『%s』.");
 $lang->error->reg             = "『%s』Format Error. It should be『%s』.";
 $lang->error->unique          = "『%s』『%s』existed. Please go to Admin->Recycle to restore it, if you are sure it is deleted.";
 $lang->error->gt              = "『%s』should be >『%s』.";
@@ -423,6 +426,7 @@ $lang->error->int             = array("『%s』should be numbers", "『%s』shou
 $lang->error->float           = "『%s』should be numbers, decimals included.";
 $lang->error->email           = "『%s』should be valid Email.";
 $lang->error->date            = "『%s』should be valid date.";
+$lang->error->datetime        = "『%s』should be valid date.";
 $lang->error->code            = "『%s』should be letters or numbers.";
 $lang->error->account         = "『%s』should be valid account.";
 $lang->error->passwordsame    = "Two passwords should be consistent.";
@@ -433,28 +437,9 @@ $lang->error->noData          = 'No Data';
 $lang->error->editedByOther   = 'This record might have been changed. Please refresh and try to edit again!';
 $lang->error->tutorialData    = 'No data can be imported in tutorial mode. Please exit tutorial first!';
 
-if(!defined('PARAM_CODE_MISSING'))    define('PARAM_CODE_MISSING',    301);
-if(!defined('PARAM_TOKEN_MISSING'))   define('PARAM_TOKEN_MISSING',   302);
-if(!defined('INVALID_ENTRY'))         define('INVALID_ENTRY',         311);
-if(!defined('EMPTY_KEY'))             define('EMPTY_KEY',             312);
-if(!defined('IP_DENIED'))             define('IP_DENIED',             321);
-if(!defined('INVALID_TOKEN'))         define('INVALID_TOKEN',         331);
-if(!defined('SESSION_CODE_MISSING'))  define('SESSION_CODE_MISSING',  341);
-if(!defined('SESSION_VERIFY_FAILED')) define('SESSION_VERIFY_FAILED', 342);
-
-$lang->error->entry = array();
-$lang->error->entry['PARAM_CODE_MISSING']    = 'Param code is missing.';
-$lang->error->entry['PARAM_TOKEN_MISSING']   = 'Param token is missing.';
-$lang->error->entry['INVALID_ENTRY']         = 'Entry does not exist.';
-$lang->error->entry['EMPTY_KEY']             = 'Key of entry is missing.';
-$lang->error->entry['IP_DENIED']             = 'IP is denied.';
-$lang->error->entry['INVALID_TOKEN']         = 'Invalid token.';
-$lang->error->entry['SESSION_CODE_MISSING']  = 'Session code is missing.';
-$lang->error->entry['SESSION_VERIFY_FAILED'] = 'Session verification failed.';
-
 /* 分页信息。*/
 $lang->pager = new stdclass();
-$lang->pager->noRecord     = "No History";
+$lang->pager->noRecord     = "No Records";
 $lang->pager->digest       = " <strong>%s</strong> in total. %s <strong>%s/%s</strong> &nbsp; ";
 $lang->pager->recPerPage   = " <strong>%s</strong> per page";
 $lang->pager->first        = "<i class='icon-step-backward' title='Home'></i>";
@@ -468,17 +453,18 @@ $lang->pager->summery      = "<strong>%s-%s</strong> of <strong>%s</strong>.";
 
 $lang->proVersion     = "<a href='http://api.zentao.pm/goto.php?item=proversion&from=footer' target='_blank' id='proLink' class='text-important'>ZenTao Pro <i class='text-danger icon-pro-version'></i></a> &nbsp; ";
 $lang->downNotify     = "Download Desktop Notification";
+$lang->website    = "http://www.zentao.pm";
 
 $lang->suhosinInfo   = "Warning! Data is reaching the limit. Please change <font color=red>sohusin.post.max_vars</font> and <font color=red>sohusin.request.max_vars</font> (set larger %s value) in php.ini, then save and restart Apache or php-fpm, or some data will not be saved.";
 $lang->maxVarsInfo   = "Warning! Data is reaching the limit. Please change <font color=red>max_input_vars</font> (set larger %s value) in php.ini, then save and restart Apache or php-fpm, or some data will not be saved.";
-$lang->pasteTextInfo = "Paste text here. Each line will be a header of each data record. ";
+$lang->pasteTextInfo = "Paste text here. Each line will be the title of each record. ";
 $lang->noticeImport  = "<p style='font-size:14px'>Imported data contains data that has already existed in system. Please confirm you actions on the date </p><p><a href='javascript:submitForm(\"cover\")' class='btn btn-mini'>Override</a> <a href='javascript:submitForm(\"insert\")' class='btn btn-mini'>New Insertion</a></p>";
 
 $lang->noResultsMatch     = "No results match!";
 $lang->searchMore         = "More results：";
 $lang->chooseUsersToMail  = "Choose users that will be notified.";
 $lang->browserNotice      = 'Your current browser might not show the best effect. Please use Chrome, Firefox, IE9+, Opera or Safari.';
-$lang->noticePasteImg     = "Paste image here.";
+$lang->noticePasteImg     = "Support pasting images.";
 
 /* 时间格式设置。*/
 if(!defined('DT_DATETIME1')) define('DT_DATETIME1',  'Y-m-d H:i:s');

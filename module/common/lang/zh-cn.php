@@ -73,6 +73,7 @@ $lang->tutorial        = '新手教程';
 $lang->changeLog       = '修改日志';
 $lang->manual          = '手册';
 $lang->customMenu      = '自定义导航';
+$lang->lineNumber      = '行号';
 $lang->tutorialConfirm = '检测到你尚未退出新手教程模式，是否现在退出？';
 
 $lang->preShortcutKey  = '[快捷键:←]';
@@ -86,9 +87,9 @@ $lang->loading       = '稍候...';
 $lang->notFound      = '抱歉，您访问的对象并不存在！';
 $lang->showAll       = '[[全部显示]]';
 
-$lang->future       = '未来';
-$lang->year         = '年';
-$lang->workingHour  = '工时';
+$lang->future      = '未来';
+$lang->year        = '年';
+$lang->workingHour = '工时';
 
 $lang->idAB         = 'ID';
 $lang->priAB        = 'P';
@@ -102,14 +103,14 @@ $lang->common->common = '公有模块';
 
 /* 主导航菜单。*/
 $lang->menu = new stdclass();
-$lang->menu->my       = '<i class="icon-home"></i><span> 我的地盘</span>|my|index';
-$lang->menu->product  = $lang->productCommon . '|product|index';
-$lang->menu->project  = $lang->projectCommon . '|project|index';
-$lang->menu->qa       = '测试|qa|index';
-$lang->menu->doc      = '文档|doc|index';
-$lang->menu->report   = '统计|report|index';
-$lang->menu->company  = '组织|company|index';
-$lang->menu->admin    = '后台|admin|index';
+$lang->menu->my      = '<i class="icon-home"></i><span> 我的地盘</span>|my|index';
+$lang->menu->product = $lang->productCommon . '|product|index';
+$lang->menu->project = $lang->projectCommon . '|project|index';
+$lang->menu->qa      = '测试|qa|index';
+$lang->menu->doc     = '文档|doc|index';
+$lang->menu->report  = '统计|report|index';
+$lang->menu->company = '组织|company|index';
+$lang->menu->admin   = '后台|admin|index';
 
 /* 查询条中可以选择的对象列表。*/
 $lang->searchObjects['bug']         = 'Bug';
@@ -145,12 +146,12 @@ $lang->exportTypeList['selected'] = '选中记录';
 $lang->lang = 'Language';
 
 /* 风格列表。*/
-$lang->theme                 = '主题';
-$lang->themes['default']     = '默认';
-$lang->themes['green']       = '绿色';
-$lang->themes['red']         = '红色';
-$lang->themes['lightblue']   = '亮蓝';
-$lang->themes['blackberry']  = '黑莓';
+$lang->theme                = '主题';
+$lang->themes['default']    = '默认';
+$lang->themes['green']      = '绿色';
+$lang->themes['red']        = '红色';
+$lang->themes['lightblue']  = '亮蓝';
+$lang->themes['blackberry'] = '黑莓';
 
 /* 首页菜单设置。*/
 $lang->index = new stdclass();
@@ -187,20 +188,20 @@ $lang->score->menu = $lang->my->menu;
 $lang->product = new stdclass();
 $lang->product->menu = new stdclass();
 
-$lang->product->menu->list     = array('link' => '%s', 'fixed' => true);
-$lang->product->menu->story    = array('link' => '需求|product|browse|productID=%s', 'alias' => 'batchedit', 'subModule' => 'story');
-$lang->product->menu->dynamic  = '动态|product|dynamic|productID=%s';
-$lang->product->menu->plan     = array('link' => '计划|productplan|browse|productID=%s', 'subModule' => 'productplan');
-$lang->product->menu->release  = array('link' => '发布|release|browse|productID=%s',     'subModule' => 'release');
-$lang->product->menu->roadmap  = '路线图|product|roadmap|productID=%s';
-$lang->product->menu->doc      = array('link' => '文档|doc|objectLibs|type=product&objectID=%s&from=product', 'subModule' => 'doc');
-$lang->product->menu->branch   = '@branch@|branch|manage|productID=%s';
-$lang->product->menu->module   = '模块|tree|browse|productID=%s&view=story';
-$lang->product->menu->view     = array('link' => '概况|product|view|productID=%s', 'alias' => 'edit');
-$lang->product->menu->project  = "{$lang->projectCommon}|product|project|status=all&productID=%s";
-$lang->product->menu->create   = array('link' => "<i class='icon-plus'></i>&nbsp;添加{$lang->productCommon}|product|create", 'float' => 'right');
-$lang->product->menu->all      = array('link' => "<i class='icon-cubes'></i>&nbsp;所有{$lang->productCommon}|product|all|productID=%s", 'float' => 'right');
-$lang->product->menu->index    = array('link' => "<i class='icon-home'></i>{$lang->productCommon}主页|product|index|locate=no", 'float' => 'right');
+$lang->product->menu->list    = array('link' => '%s', 'fixed' => true);
+$lang->product->menu->story   = array('link' => '需求|product|browse|productID=%s', 'alias' => 'batchedit', 'subModule' => 'story');
+$lang->product->menu->dynamic = '动态|product|dynamic|productID=%s';
+$lang->product->menu->plan    = array('link' => '计划|productplan|browse|productID=%s', 'subModule' => 'productplan');
+$lang->product->menu->release = array('link' => '发布|release|browse|productID=%s',     'subModule' => 'release');
+$lang->product->menu->roadmap = '路线图|product|roadmap|productID=%s';
+$lang->product->menu->doc     = array('link' => '文档|doc|objectLibs|type=product&objectID=%s&from=product', 'subModule' => 'doc');
+$lang->product->menu->branch  = '@branch@|branch|manage|productID=%s';
+$lang->product->menu->module  = '模块|tree|browse|productID=%s&view=story';
+$lang->product->menu->view    = array('link' => '概况|product|view|productID=%s', 'alias' => 'edit');
+$lang->product->menu->project = "{$lang->projectCommon}|product|project|status=all&productID=%s";
+$lang->product->menu->create  = array('link' => "<i class='icon-plus'></i>&nbsp;添加{$lang->productCommon}|product|create", 'float' => 'right');
+$lang->product->menu->all     = array('link' => "<i class='icon-cubes'></i>&nbsp;所有{$lang->productCommon}|product|all|productID=%s", 'float' => 'right');
+$lang->product->menu->index   = array('link' => "<i class='icon-home'></i>{$lang->productCommon}主页|product|index|locate=no", 'float' => 'right');
 
 $lang->story       = new stdclass();
 $lang->productplan = new stdclass();
@@ -216,20 +217,20 @@ $lang->release->menu     = $lang->product->menu;
 $lang->project = new stdclass();
 $lang->project->menu = new stdclass();
 
-$lang->project->menu->list      = array('link' => '%s', 'fixed' => true);
-$lang->project->menu->task      = array('link' => '任务|project|task|projectID=%s', 'subModule' => 'task,tree', 'alias' => 'grouptask,importtask,burn,importbug,kanban,printkanban,tree');
-$lang->project->menu->story     = array('link' => '需求|project|story|projectID=%s', 'subModule' => 'story', 'alias' => 'linkstory,storykanban');
-$lang->project->menu->bug       = 'Bug|project|bug|projectID=%s';
-$lang->project->menu->dynamic   = '动态|project|dynamic|projectID=%s';
-$lang->project->menu->build     = array('link' => '版本|project|build|projectID=%s', 'subModule' => 'build');
-$lang->project->menu->testtask  = array('link' => '测试单|project|testtask|projectID=%s');
-$lang->project->menu->team      = array('link' => '团队|project|team|projectID=%s', 'alias' => 'managemembers');
-$lang->project->menu->doc       = array('link' => '文档|doc|objectLibs|type=project&objectID=%s&from=project', 'subModule' => 'doc');
-$lang->project->menu->product   = $lang->productCommon . '|project|manageproducts|projectID=%s';
-$lang->project->menu->view      = array('link' => '概况|project|view|projectID=%s', 'alias' => 'edit,start,suspend,putoff,close');
-$lang->project->menu->create    = array('link' => "<i class='icon-plus'></i>&nbsp;添加{$lang->projectCommon}|project|create", 'float' => 'right');
-$lang->project->menu->all       = array('link' => "<i class='icon-th-large'></i>&nbsp;所有{$lang->projectCommon}|project|all|status=undone&projectID=%s", 'float' => 'right');
-$lang->project->menu->index     = array('link' => "<i class='icon-home'></i>{$lang->projectCommon}主页|project|index|locate=no", 'float' => 'right');
+$lang->project->menu->list     = array('link' => '%s', 'fixed' => true);
+$lang->project->menu->task     = array('link' => '任务|project|task|projectID=%s', 'subModule' => 'task,tree', 'alias' => 'grouptask,importtask,burn,importbug,kanban,printkanban,tree');
+$lang->project->menu->story    = array('link' => '需求|project|story|projectID=%s', 'subModule' => 'story', 'alias' => 'linkstory,storykanban');
+$lang->project->menu->bug      = 'Bug|project|bug|projectID=%s';
+$lang->project->menu->dynamic  = '动态|project|dynamic|projectID=%s';
+$lang->project->menu->build    = array('link' => '版本|project|build|projectID=%s', 'subModule' => 'build');
+$lang->project->menu->testtask = array('link' => '测试单|project|testtask|projectID=%s');
+$lang->project->menu->team     = array('link' => '团队|project|team|projectID=%s', 'alias' => 'managemembers');
+$lang->project->menu->doc      = array('link' => '文档|doc|objectLibs|type=project&objectID=%s&from=project', 'subModule' => 'doc');
+$lang->project->menu->product  = $lang->productCommon . '|project|manageproducts|projectID=%s';
+$lang->project->menu->view     = array('link' => '概况|project|view|projectID=%s', 'alias' => 'edit,start,suspend,putoff,close');
+$lang->project->menu->create   = array('link' => "<i class='icon-plus'></i>&nbsp;添加{$lang->projectCommon}|project|create", 'float' => 'right');
+$lang->project->menu->all      = array('link' => "<i class='icon-th-large'></i>&nbsp;所有{$lang->projectCommon}|project|all|status=undone&projectID=%s", 'float' => 'right');
+$lang->project->menu->index    = array('link' => "<i class='icon-home'></i>{$lang->projectCommon}主页|project|index|locate=no", 'float' => 'right');
 
 $lang->task  = new stdclass();
 $lang->build = new stdclass();
@@ -296,9 +297,9 @@ $lang->caselib->menu->index     = array('link' => "<i class='icon-home'></i>测�
 $lang->doc = new stdclass();
 $lang->doc->menu = new stdclass();
 
-$lang->doc->menu->list    = array('link' => '%s', 'fixed' => true);
-$lang->doc->menu->crumb   = array('link' => '%s', 'fixed' => true);
-$lang->doc->menu->create  = array('link' => '<i class="icon-plus"></i>&nbsp;添加文档库|doc|createLib', 'float' => 'right');
+$lang->doc->menu->list   = array('link' => '%s', 'fixed' => true);
+$lang->doc->menu->crumb  = array('link' => '%s', 'fixed' => true);
+$lang->doc->menu->create = array('link' => '<i class="icon-plus"></i>&nbsp;添加文档库|doc|createLib', 'float' => 'right');
 
 /* 统计视图菜单设置。*/
 $lang->report = new stdclass();
@@ -339,13 +340,12 @@ $lang->admin->menu = new stdclass();
 $lang->admin->menu->index     = array('link' => '首页|admin|index', 'alias' => 'register,certifytemail,certifyztmobile,ztcompany');
 $lang->admin->menu->extension = array('link' => '插件|extension|browse', 'subModule' => 'extension');
 $lang->admin->menu->custom    = array('link' => '自定义|custom|set', 'subModule' => 'custom');
-$lang->admin->menu->mail      = array('link' => '发信|mail|index', 'subModule' => 'mail');
+$lang->admin->menu->message   = array('link' => '消息|message|index', 'subModule' => 'message,mail,webhook');
 $lang->admin->menu->backup    = array('link' => '备份|backup|index', 'subModule' => 'backup');
 $lang->admin->menu->safe      = array('link' => '安全|admin|safe', 'alias' => 'checkweak');
 $lang->admin->menu->cron      = array('link' => '计划任务|cron|index', 'subModule' => 'cron');
 $lang->admin->menu->trashes   = array('link' => '回收站|action|trash', 'subModule' => 'action');
 $lang->admin->menu->dev       = array('link' => '二次开发|dev|api', 'alias' => 'db', 'subModule' => 'dev,editor');
-$lang->admin->menu->api       = array('link' => '接口|webhook|browse', 'alias' => 'create,edit', 'subModule' => 'entry,webhook');
 $lang->admin->menu->sso       = '然之集成|admin|sso';
 
 $lang->convert   = new stdclass();
@@ -360,6 +360,7 @@ $lang->cron      = new stdclass();
 $lang->dev       = new stdclass();
 $lang->entry     = new stdclass();
 $lang->webhook   = new stdclass();
+$lang->message   = new stdclass();
 $lang->search    = new stdclass();
 
 $lang->convert->menu   = $lang->admin->menu;
@@ -374,6 +375,7 @@ $lang->mail->menu      = $lang->admin->menu;
 $lang->dev->menu       = $lang->admin->menu;
 $lang->entry->menu     = $lang->admin->menu;
 $lang->webhook->menu   = $lang->admin->menu;
+$lang->message->menu   = $lang->admin->menu;
 
 /* 菜单分组。*/
 $lang->menugroup = new stdclass();
@@ -407,11 +409,12 @@ $lang->menugroup->mail        = 'admin';
 $lang->menugroup->dev         = 'admin';
 $lang->menugroup->entry       = 'admin';
 $lang->menugroup->webhook     = 'admin';
+$lang->menugroup->message     = 'admin';
 
 /* 错误提示信息。*/
 $lang->error = new stdclass();
 $lang->error->companyNotFound = "您访问的域名 %s 没有对应的公司。";
-$lang->error->length          = array("『%s』长度错误，应当为『%s』", "『%s』长度应当不超过『%s』，且不小于『%s』。");
+$lang->error->length          = array("『%s』长度错误，应当为『%s』", "『%s』长度应当不超过『%s』，且大于『%s』。");
 $lang->error->reg             = "『%s』不符合格式，应当为:『%s』。";
 $lang->error->unique          = "『%s』已经有『%s』这条记录了。如果您确定该记录已删除，请到后台管理-回收站还原。。";
 $lang->error->gt              = "『%s』应当大于『%s』。";
@@ -423,6 +426,7 @@ $lang->error->int             = array("『%s』应当是数字。", "『%s』应
 $lang->error->float           = "『%s』应当是数字，可以是小数。";
 $lang->error->email           = "『%s』应当为合法的EMAIL。";
 $lang->error->date            = "『%s』应当为合法的日期。";
+$lang->error->datetime        = "『%s』应当为合法的日期。";
 $lang->error->code            = "『%s』应当为字母或数字的组合。";
 $lang->error->account         = "『%s』应当为合法的用户名。";
 $lang->error->passwordsame    = "两次密码应当相等。";
@@ -432,25 +436,6 @@ $lang->error->pasteImg        = '您的浏览器不支持粘贴图片！';
 $lang->error->noData          = '没有数据';
 $lang->error->editedByOther   = '该记录可能已经被改动。请刷新页面重新编辑！';
 $lang->error->tutorialData    = '新手模式下不会插入数据，请退出新手模式操作';
-
-if(!defined('PARAM_CODE_MISSING'))    define('PARAM_CODE_MISSING',    301);
-if(!defined('PARAM_TOKEN_MISSING'))   define('PARAM_TOKEN_MISSING',   302);
-if(!defined('INVALID_ENTRY'))         define('INVALID_ENTRY',         311);
-if(!defined('EMPTY_KEY'))             define('EMPTY_KEY',             312);
-if(!defined('IP_DENIED'))             define('IP_DENIED',             321);
-if(!defined('INVALID_TOKEN'))         define('INVALID_TOKEN',         331);
-if(!defined('SESSION_CODE_MISSING'))  define('SESSION_CODE_MISSING',  341);
-if(!defined('SESSION_VERIFY_FAILED')) define('SESSION_VERIFY_FAILED', 342);
-
-$lang->error->entry = array();
-$lang->error->entry['PARAM_CODE_MISSING']    = '缺少code参数';
-$lang->error->entry['PARAM_TOKEN_MISSING']   = '缺少token参数';
-$lang->error->entry['INVALID_ENTRY']         = '应用不存在';
-$lang->error->entry['EMPTY_KEY']             = '应用未设置密钥';
-$lang->error->entry['IP_DENIED']             = '该IP访问被限制访问';
-$lang->error->entry['INVALID_TOKEN']         = '不合法的token参数';
-$lang->error->entry['SESSION_CODE_MISSING']  = '缺少session code';
-$lang->error->entry['SESSION_VERIFY_FAILED'] = 'session验证失败';
 
 /* 分页信息。*/
 $lang->pager = new stdclass();
@@ -466,31 +451,32 @@ $lang->pager->previousPage = "上一页";
 $lang->pager->nextPage     = "下一页";
 $lang->pager->summery      = "第 <strong>%s-%s</strong> 项，共 <strong>%s</strong> 项";
 
-$lang->proVersion     = "<a href='http://api.zentao.net/goto.php?item=proversion&from=footer' target='_blank' id='proLink' class='text-important'>专业版 <i class='text-danger icon-pro-version'></i></a> &nbsp; ";
-$lang->downNotify     = "下载桌面提醒";
+$lang->proVersion = "<a href='http://api.zentao.net/goto.php?item=proversion&from=footer' target='_blank' id='proLink' class='text-important'>专业版 <i class='text-danger icon-pro-version'></i></a> &nbsp; ";
+$lang->downNotify = "下载桌面提醒";
+$lang->website    = "http://www.zentao.net";
 
 $lang->suhosinInfo   = "警告：数据太多，请在php.ini中修改<font color=red>sohusin.post.max_vars</font>和<font color=red>sohusin.request.max_vars</font>（大于%s的数）。 保存并重新启动apache或php-fpm，否则会造成部分数据无法保存。";
 $lang->maxVarsInfo   = "警告：数据太多，请在php.ini中修改<font color=red>max_input_vars</font>（大于%s的数）。 保存并重新启动apache或php-fpm，否则会造成部分数据无法保存。";
 $lang->pasteTextInfo = "粘贴文本到文本域中，每行文字作为一条数据的标题。";
 $lang->noticeImport  = "<p style='font-size:14px'>导入数据中，含有已经存在系统的数据，请确认这些数据要覆盖或者全新插入</p><p><a href='javascript:submitForm(\"cover\")' class='btn btn-mini'>覆盖</a> <a href='javascript:submitForm(\"insert\")' class='btn btn-mini'>全新插入</a></p>";
 
-$lang->noResultsMatch     = "没有匹配结果";
-$lang->searchMore         = "搜索此关键字的更多结果：";
-$lang->chooseUsersToMail  = "选择要发信通知的用户...";
-$lang->browserNotice      = '你目前使用的浏览器可能无法得到最佳浏览效果，建议使用Chrome、火狐、IE9+、Opera、Safari浏览器。';
-$lang->noticePasteImg     = "可以在编辑器直接贴图。";
+$lang->noResultsMatch    = "没有匹配结果";
+$lang->searchMore        = "搜索此关键字的更多结果：";
+$lang->chooseUsersToMail = "选择要发信通知的用户...";
+$lang->browserNotice     = '你目前使用的浏览器可能无法得到最佳浏览效果，建议使用Chrome、火狐、IE9+、Opera、Safari浏览器。';
+$lang->noticePasteImg    = "可以在编辑器直接贴图。";
 
 /* 时间格式设置。*/
-if(!defined('DT_DATETIME1')) define('DT_DATETIME1',  'Y-m-d H:i:s');
-if(!defined('DT_DATETIME2')) define('DT_DATETIME2',  'y-m-d H:i');
-if(!defined('DT_MONTHTIME1'))define('DT_MONTHTIME1', 'n/d H:i');
-if(!defined('DT_MONTHTIME2'))define('DT_MONTHTIME2', 'n月d日 H:i');
-if(!defined('DT_DATE1'))     define('DT_DATE1',     'Y-m-d');
-if(!defined('DT_DATE2'))     define('DT_DATE2',     'Ymd');
-if(!defined('DT_DATE3'))     define('DT_DATE3',     'Y年m月d日');
-if(!defined('DT_DATE4'))     define('DT_DATE4',     'n月j日');
-if(!defined('DT_TIME1'))     define('DT_TIME1',     'H:i:s');
-if(!defined('DT_TIME2'))     define('DT_TIME2',     'H:i');
+if(!defined('DT_DATETIME1'))  define('DT_DATETIME1',  'Y-m-d H:i:s');
+if(!defined('DT_DATETIME2'))  define('DT_DATETIME2',  'y-m-d H:i');
+if(!defined('DT_MONTHTIME1')) define('DT_MONTHTIME1', 'n/d H:i');
+if(!defined('DT_MONTHTIME2')) define('DT_MONTHTIME2', 'n月d日 H:i');
+if(!defined('DT_DATE1'))      define('DT_DATE1',     'Y-m-d');
+if(!defined('DT_DATE2'))      define('DT_DATE2',     'Ymd');
+if(!defined('DT_DATE3'))      define('DT_DATE3',     'Y年m月d日');
+if(!defined('DT_DATE4'))      define('DT_DATE4',     'n月j日');
+if(!defined('DT_TIME1'))      define('DT_TIME1',     'H:i:s');
+if(!defined('DT_TIME2'))      define('DT_TIME2',     'H:i');
 
 /* datepicker 时间*/
 $lang->datepicker = new stdclass();
@@ -608,7 +594,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyStory')
     /* Adjust sub menu of product module. */
     unset($lang->product->menu->project);
     unset($lang->product->menu->doc);
-    
+
     /* Rename product module. */
     $lang->menu->product = "{$lang->productCommon}|product|index";
 
@@ -761,15 +747,15 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTest')
     $lang->testtask->menu->report      = array('link' => '报告|testreport|browse', 'alias' => 'view,create,edit');
     $lang->testtask->menu->create      = array('link' => "<i class='icon-plus'></i> 提交测试|testtask|create|productID=%s", 'float' => 'right');
 
-    $lang->testtask->menuOrder[5]   = 'product';
-    $lang->testtask->menuOrder[10]  = 'scope';
-    $lang->testtask->menuOrder[15]  = 'wait';
-    $lang->testtask->menuOrder[20]  = 'doing';
-    $lang->testtask->menuOrder[25]  = 'blocked';
-    $lang->testtask->menuOrder[30]  = 'done';
-    $lang->testtask->menuOrder[35]  = 'totalStatus';
-    $lang->testtask->menuOrder[40]  = 'report';
-    $lang->testtask->menuOrder[45]  = 'create';
+    $lang->testtask->menuOrder[5]  = 'product';
+    $lang->testtask->menuOrder[10] = 'scope';
+    $lang->testtask->menuOrder[15] = 'wait';
+    $lang->testtask->menuOrder[20] = 'doing';
+    $lang->testtask->menuOrder[25] = 'blocked';
+    $lang->testtask->menuOrder[30] = 'done';
+    $lang->testtask->menuOrder[35] = 'totalStatus';
+    $lang->testtask->menuOrder[40] = 'report';
+    $lang->testtask->menuOrder[45] = 'create';
 
     $lang->testreport->menu      = $lang->testtask->menu;
     $lang->testreport->menuOrder = $lang->testtask->menuOrder;
@@ -806,7 +792,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTest')
 
     $lang->build->menu      = $lang->product->menu;
     $lang->build->menuOrder = $lang->product->menuOrder;
-    
+
     /* Adjust menu group. */
     $lang->menugroup->bug        = 'bug';
     $lang->menugroup->testcase   = 'testcase';
@@ -814,8 +800,8 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTest')
     $lang->menugroup->testsuite  = 'testsuite';
     $lang->menugroup->testreport = 'testtask';
     $lang->menugroup->build      = 'product';
-    
-    /* Adjust search objects. */ 
+
+    /* Adjust search objects. */
     unset($lang->searchObjects['story']);
     unset($lang->searchObjects['task']);
     unset($lang->searchObjects['release']);

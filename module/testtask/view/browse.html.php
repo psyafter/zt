@@ -23,16 +23,16 @@ $status = $this->session->testTaskVersionStatus;
 <div id="featurebar">
   <ul class="nav">
     <li>
-      <span class='dropdown'>
+      <div class='dropdown'>
         <?php $viewName = $scope == 'local'? $productName : $lang->testtask->all;?>
-        <button class='btn btn-primary btn-sm' type='button' data-toggle='dropdown'><?php echo $viewName;?> <span class='caret'></span></button>
+        <button class='btn btn-primary btn-sm btn-limit' type='button' data-toggle='dropdown'><span class='title'><?php echo $viewName;?></span> <span class='caret'></span></button>
         <ul class='dropdown-menu' style='max-height:240px;overflow-y:auto'>
           <?php
             echo "<li>" . html::a(inlink('browse', "productID=$productID&branch=0&type=all,$status"), $lang->testtask->all) . "</li>";
             echo "<li>" . html::a(inlink('browse', "productID=$productID&branch=$branch&type=local,$status"), $productName) . "</li>";
           ?>
         </ul>
-      </span>
+      </div>
     </li>
     <li id='waitTab'><?php echo html::a(inlink('browse', "productID=$productID&branch=$branch&type=$scope,wait"), $lang->testtask->wait);?></li>
     <li id='doingTab'><?php echo html::a(inlink('browse', "productID=$productID&branch=$branch&type=$scope,doing"), $lang->testtask->testing);?></li>
@@ -79,7 +79,7 @@ $status = $this->session->testTaskVersionStatus;
     <?php if($this->config->global->flow != 'onlyTest'):?>
     <td title="<?php echo $task->projectName?>"><?php echo $task->projectName?></td>
     <?php endif;?>
-    <td><?php $task->build == 'trunk' ? print($lang->trunk) : print(html::a($this->createLink('build', 'view', "buildID=$task->build",'',true), $task->buildName, '','class="iframe"'));?></td>
+    <td><?php echo ($task->build == 'trunk' || empty($task->buildName)) ? $lang->trunk : html::a($this->createLink('build', 'view', "buildID=$task->build",'',true), $task->buildName, '','class="iframe"');?></td>
     <td><?php echo zget($users, $task->owner);?></td>
     <td><?php echo $task->begin?></td>
     <td><?php echo $task->end?></td>

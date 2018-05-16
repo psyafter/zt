@@ -23,11 +23,11 @@
     </div>
   </div>
   <form class='form-condensed' method='post' target='hiddenwin' id='dataform'>
-    <table class='table table-form'> 
+    <table class='table table-form'>
       <tr>
         <th class='w-90px'><?php echo $lang->project->name;?></th>
         <td class='w-p45'><?php echo html::input('name', $project->name, "class='form-control' autocomplete='off'");?></td><td></td>
-      </tr>  
+      </tr>
       <tr>
         <th><?php echo $lang->project->code;?></th>
         <td><?php echo html::input('code', $project->code, "class='form-control' autocomplete='off'");?></td>
@@ -58,15 +58,15 @@
             <span class='input-group-addon'><?php echo $lang->project->day;?></span>
           </div>
         </td>
-      </tr> 
+      </tr>
       <tr>
         <th><?php echo $lang->project->type;?></th>
         <td><?php echo html::select('type', $lang->project->typeList, $project->type, "class='form-control'");?></td>
-      </tr>  
+      </tr>
       <tr>
         <th><?php echo $lang->project->teamname;?></th>
         <td><?php echo html::input('team', $project->team, "class='form-control' autocomplete='off'");?></td>
-      </tr>  
+      </tr>
       <tr>
         <th><?php echo $lang->project->status;?></th>
         <td><?php echo html::select('status', $lang->project->statusList, $project->status, "class='form-control'");?></td>
@@ -114,10 +114,10 @@
             <?php $i = 0;?>
             <?php foreach($linkedProducts as $product):?>
             <div class='col-sm-3'>
-              <div class='input-group'>
-                <?php echo html::select("products[$i]", $allProducts, $product->id, "class='form-control chosen' onchange='loadBranches(this)'");?>
-                <span class='input-group-addon fix-border' style='padding:0px'></span>
-                <?php if($product->type != 'normal' and isset($branchGroups[$product->id])) echo html::select("branch[$i]", $branchGroups[$product->id], $product->branch, "class='form-control' style='width:80px'")?>
+              <?php $hasBranch = $product->type != 'normal' and isset($branchGroups[$product->id]);?>
+              <div class="input-group<?php if($hasBranch) echo ' has-branch';?>">
+                <?php echo html::select("products[$i]", $allProducts, $product->id, "class='form-control chosen' onchange='loadBranches(this)' data-last='" . $product->id . "'");?>
+                <?php if($hasBranch) echo html::select("branch[$i]", $branchGroups[$product->id], $product->branch, "class='form-control' onchange=\"loadPlans('#products{$i}', this.value)\"");?>
               </div>
             </div>
             <?php $i++;?>
@@ -125,7 +125,6 @@
             <div class='col-sm-3'>
               <div class='input-group'>
                 <?php echo html::select("products[$i]", $allProducts, '', "class='form-control chosen' onchange='loadBranches(this)'");?>
-                <span class='input-group-addon fix-border' style='padding:0px'></span>
               </div>
             </div>
           </div>

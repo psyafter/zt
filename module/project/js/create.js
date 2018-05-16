@@ -8,10 +8,10 @@ $(function()
     $('#cpmBtn').click(function(){$('#copyProjectModal').modal('show')});
     $('#copyProjects a').click(function(){setCopyProject($(this).data('id')); $('#copyProjectModal').modal('hide')});
     var typeWidth = $('#type').closest('td').width();
-    $('#productsBox .col-sm-3').width(typeWidth);
+    $('#productsBox .col-sm-3,#plansBox .col-sm-3').width(typeWidth);
     $(document).on('change', "#productsBox select", function()
     {
-        $('#productsBox .col-sm-3').width(typeWidth);
+        $('#productsBox .col-sm-3,#plansBox .col-sm-3').width(typeWidth);
     });
     $('#begin').on('change', function()
     {
@@ -23,6 +23,19 @@ $(function()
     {
         $("input:radio[name='delta']").attr("checked", false);
     })
+
+    if(typeof(currentPlanID) == 'undefined')
+    {
+        $('#productsBox select[id^="products"]').each(function()
+        {
+            var branchID = 0;
+            if($(this).closest('.input-group').find('select[id^="branch"]').size() > 0)
+            {
+                var branchID = $(this).closest('.input-group').find('select[id^="branch"]').val();
+            }
+            loadPlans($(this), branchID);
+        });
+    }
 });
 
 function showTypeTips()
@@ -37,3 +50,4 @@ function showTypeTips()
         $('.type-tips').hide();
     }
 }
+

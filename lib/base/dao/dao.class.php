@@ -1356,6 +1356,10 @@ class baseDAO
             {
                 $field['rule'] = 'date';
             }
+            elseif($type == 'datetime')
+            {
+                $field['rule'] = 'datetime';
+            }
             else
             {
                 $field['rule'] = 'skip';
@@ -1650,6 +1654,8 @@ class baseSQL
      */
     public function set($set)
     {
+        if($this->inCondition and !$this->conditionIsTrue) return $this;
+
         /* Add ` to avoid keywords of mysql. */
         if(strpos($set, '=') ===false)
         {

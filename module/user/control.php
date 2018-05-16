@@ -711,9 +711,6 @@ class user extends control
                 /* Keep login. */
                 if($this->post->keepLogin) $this->user->keepLogin($user);
 
-                /* Check password. */
-                if(isset($this->config->safe->mode) and $this->user->computePasswordStrength($password) < $this->config->safe->mode) echo js::alert($this->lang->user->weakPassword);
-
                 /* Go to the referer. */
                 if($this->post->referer and strpos($this->post->referer, $loginLink) === false and strpos($this->post->referer, $denyLink) === false)
                 {
@@ -784,7 +781,7 @@ class user extends control
             {
                 $demoUsers = 'productManager,projectManager,dev1,dev2,dev3,tester1,tester2,tester3,testManager';
                 if($this->app->getClientLang() == 'en') $demoUsers = 'thePO,pm1,pm2,pg1,pg2,pg3,thePM,qa1,theQS';
-                $demoUsers = $this->dao->select('account,password,realname')->from(TABLE_USER)->where('account')->in($demoUsers)->fetchAll('account');
+                $demoUsers = $this->dao->select('account,password,realname')->from(TABLE_USER)->where('account')->in($demoUsers)->andWhere('deleted')->eq(0)->fetchAll('account');
                 $this->view->demoUsers = $demoUsers;
             }
 

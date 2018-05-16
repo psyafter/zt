@@ -78,7 +78,7 @@
                 $hasCustomPri = false;
                 foreach($lang->testcase->priList as $priKey => $priValue)
                 {
-                    if($priKey != $priValue)
+                    if(!empty($priKey) and (string)$priKey != (string)$priValue)
                     {
                         $hasCustomPri = true;
                         break;

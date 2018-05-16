@@ -6,11 +6,11 @@
     </div>
   </div>
   <div class='dropdown' id='versionMenu'>
-    <button class='btn btn-sm dropdown-toggle' type='button' data-toggle='dropdown'><?php echo $version === 'latest' ? $lang->misc->feature->lastest : ('v' . $version) ?> <span class='caret'></span></button>
+    <button class='btn btn-sm dropdown-toggle' type='button' data-toggle='dropdown'><?php echo $version === 'latest' ? $lang->misc->feature->lastest : ($lang->misc->releaseDate[$version] . ' ' . $version);?> <span class='caret'></span></button>
     <ul class='dropdown-menu'>
       <?php foreach(array_keys($lang->misc->feature->all) as $versionName):?>
       <li<?php echo $versionName === $version ? " class='active'" : '' ?>>
-        <?php echo html::a(helper::createLink('misc', 'changeLog', "version=$versionName"), $versionName === 'latest' ? $lang->misc->feature->lastest : ('v' . $versionName));?>
+        <?php echo html::a(helper::createLink('misc', 'changeLog', "version=$versionName"), $versionName === 'latest' ? $lang->misc->feature->lastest : ($lang->misc->releaseDate[$versionName] . ' ' . $versionName));?>
       </li>
       <?php endforeach; ?>
     </ul>
@@ -24,7 +24,7 @@
     </div>
     <?php $idx++; ?>
     <?php endforeach; ?>
-    <?php if($detailed):?>
+    <?php if($detailed and $this->app->getClientLang() != 'en'):?>
     <div> <a href='###' onclick="$('.detailed').toggle()"><?php echo $lang->misc->feature->detailed;?></a></div>
     <div class='detailed hide'><?php echo $detailed;?></div>
     <?php endif;?>

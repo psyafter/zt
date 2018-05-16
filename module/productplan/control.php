@@ -191,6 +191,7 @@ class productplan extends control
      */
     public function browse($productID = 0, $branch = 0, $browseType = 'all', $orderBy = 'begin_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1 )
     {
+        $this->app->loadLang('project');
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
         $pager = new pager($recTotal, $recPerPage, $pageID);
@@ -513,16 +514,15 @@ class productplan extends control
         }
         else
         {
-            $projects = $this->loadModel('project')->getPairs();
+            $projects    = $this->loadModel('project')->getPairs();
             $projects[0] = '';
-            $allBugs= $this->bug->getActiveBugs($this->view->product->id, $plan->branch, $projects);
+            $allBugs     = $this->bug->getActiveBugs($this->view->product->id, $plan->branch, array_keys($projects));
         }
 
         $this->view->allBugs    = $allBugs;
         $this->view->planBugs   = $this->bug->getPlanBugs($planID);
         $this->view->products   = $products;
         $this->view->plan       = $plan;
-        $this->view->plans      = $this->dao->select('id, end')->from(TABLE_PRODUCTPLAN)->fetchPairs();
         $this->view->users      = $this->loadModel('user')->getPairs('noletter');
         $this->view->browseType = $browseType;
         $this->view->param      = $param;

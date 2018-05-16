@@ -23,7 +23,7 @@ js::set('confirmDelete', $lang->user->confirmDelete);
   <a class='side-handle' data-id='companyTree'><i class='icon-caret-left'></i></a>
   <div class='side-body'>
     <div class='panel panel-sm'>
-      <div class='panel-heading nobr'><?php echo html::icon($lang->icons['dept']);?> <strong><?php echo $lang->dept->common;?></strong></div>
+      <div class='panel-heading text-ellipsis'><?php echo html::icon($lang->icons['dept']);?> <strong><?php echo $lang->dept->common;?></strong></div>
       <div class='panel-body'>
         <?php echo $deptTree;?>
         <div class='text-right'><?php common::printLink('dept', 'browse', '', $lang->dept->manage);?></div>
@@ -66,7 +66,7 @@ js::set('confirmDelete', $lang->user->confirmDelete);
         </td>
         <td><?php if(!common::printLink('user', 'view', "account=$user->account", $user->realname, '', "title='$user->realname'")) echo $user->realname;?></td>
         <td><?php echo $user->account;?></td>
-        <td><?php echo $lang->user->roleList[$user->role];?></td>
+        <td><?php echo isset($user->role) ? $lang->user->roleList[$user->role] : '';?></td>
         <td><?php echo html::mailto($user->email);?></td>
         <td><?php if(isset($lang->user->genderList[$user->gender])) echo $lang->user->genderList[$user->gender];?></td>
         <td><?php echo $user->phone;?></td>

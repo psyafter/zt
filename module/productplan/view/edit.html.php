@@ -24,28 +24,40 @@
     </div>
   </div>
   <form class='form-condensed' method='post' target='hiddenwin' id='dataform'>
-    <table class='table table-form'> 
+    <table class='table table-form'>
       <tr>
         <th class='w-80px'><?php echo $lang->productplan->product;?></th>
         <td class='w-p25-f'><?php echo $product->name;?></td><td></td>
-      </tr>  
+      </tr>
       <?php if($product->type != 'normal'):?>
       <tr>
         <th><?php echo $lang->product->branch;?></th>
         <td><?php echo html::select('branch', $branches, $plan->branch, 'class="form-control"');?></td>
-      </tr>  
+      </tr>
       <?php endif;?>
       <tr>
         <th><?php echo $lang->productplan->title;?></th>
         <td><?php echo html::input('title', $plan->title, "class='form-control' autocomplete='off'");?></td>
-      </tr>  
+      </tr>
       <tr>
         <th><?php echo $lang->productplan->begin;?></th>
-        <td><?php echo html::input('begin', $plan->begin, "class='form-control form-date'");?></td>
-      </tr>  
+        <td>
+          <div class='input-group'>
+            <?php echo html::input('begin', $plan->begin != '2030-01-01' ? formatTime($plan->begin) : '', "class='form-control form-date'");?>
+            <?php $checked = $plan->begin == '2030-01-01' || $plan->end == '2030-01-01' ? "checked='checked'" : '';?>
+            <span class='input-group-addon'>
+              <label class='checkbox-inline'>
+                <input type='checkbox' id='future' name='future' value='1' <?php echo $checked;?>> <?php echo $lang->productplan->future;?>
+              </label>
+            </span>
+          </div>
+        </td>
+      </tr>
       <tr>
         <th><?php echo $lang->productplan->end;?></th>
-        <td><?php echo html::input('end', $plan->end, 'class="form-control form-date"');?></td>
+        <td>
+          <?php echo html::input('end', $plan->end != '2030-01-01' ? formatTime($plan->end) : '', 'class="form-control form-date"');?>
+        </td>
         <td>
           &nbsp; &nbsp; <?php echo html::radio('delta', $lang->productplan->endList , '', "onclick='computeEndDate(this.value)'");?>
         </td>
@@ -53,11 +65,11 @@
       <tr>
         <th><?php echo $lang->productplan->desc;?></th>
         <td colspan='2'><?php echo html::textarea('desc', htmlspecialchars($plan->desc), "rows='10' class='form-control'");?></td>
-      </tr>  
+      </tr>
       <tr>
         <td></td>
         <td colspan='2'>
-          <?php 
+          <?php
           echo html::submitButton();
           echo html::backButton();
           echo html::hidden('product', $product->id);

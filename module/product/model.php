@@ -81,7 +81,7 @@ class productModel extends model
         setCookie("lastProduct", $productID, $this->config->cookieLife, $this->config->webRoot);
         $currentProduct = $this->getById($productID);
         $this->session->set('currentProductType', $currentProduct->type);
-        $output  = "<a id='currentItem' href=\"javascript:showSearchMenu('product', '$productID', '$currentModule', '$currentMethod', '$extra')\">{$currentProduct->name} <span class='icon-caret-down'></span></a><div id='dropMenu'><i class='icon icon-spin icon-spinner'></i></div>";
+        $output  = "<a id='currentItem' href=\"javascript:showSearchMenu('product', '$productID', '$currentModule', '$currentMethod', '$extra')\"><span class='title'>{$currentProduct->name}</span> <span class='icon-caret-down'></span></a><div id='dropMenu'><i class='icon icon-spin icon-spinner'></i></div>";
         if($isMobile) $output  = "<a id='currentItem' href=\"javascript:showSearchMenu('product', '$productID', '$currentModule', '$currentMethod', '$extra')\">{$currentProduct->name} <span class='icon-caret-down'></span></a><div id='currentItemDropMenu' class='hidden affix enter-from-bottom layer'></div>";
         if($currentProduct->type == 'normal') unset($this->lang->product->menu->branch);
         if($currentProduct->type != 'normal')
@@ -309,6 +309,7 @@ class productModel extends model
         $product = $this->loadModel('file')->processImgURL($product, $this->config->product->editor->create['id'], $this->post->uid);
         $this->dao->insert(TABLE_PRODUCT)->data($product)->autoCheck()
             ->batchCheck($this->config->product->create->requiredFields, 'notempty')
+            ->checkIF(strlen($product->code) == 0, 'code', 'notempty') //the value of product code can be 0 or 00.00
             ->check('name', 'unique', "deleted = '0'")
             ->check('code', 'unique', "deleted = '0'")
             ->exec();
@@ -349,6 +350,7 @@ class productModel extends model
         $product = $this->loadModel('file')->processImgURL($product, $this->config->product->editor->edit['id'], $this->post->uid);
         $this->dao->update(TABLE_PRODUCT)->data($product)->autoCheck()
             ->batchCheck($this->config->product->edit->requiredFields, 'notempty')
+            ->checkIF(strlen($product->code) == 0, 'code', 'notempty') //the value of product code can be 0 or 00.0
             ->check('name', 'unique', "id != $productID and deleted = '0'")
             ->check('code', 'unique', "id != $productID and deleted = '0'")
             ->where('id')->eq($productID)
@@ -383,6 +385,7 @@ class productModel extends model
             $products[$productID]->QD     = $data->QDs[$productID];
             $products[$productID]->RD     = $data->RDs[$productID];
             $products[$productID]->type   = $data->types[$productID];
+            $products[$productID]->line   = $data->lines[$productID];
             $products[$productID]->status = $data->statuses[$productID];
             $products[$productID]->desc   = strip_tags($this->post->descs[$productID], $this->config->allowedTags);
             $products[$productID]->order  = $data->orders[$productID];
@@ -395,6 +398,7 @@ class productModel extends model
                 ->data($product)
                 ->autoCheck()
                 ->batchCheck($this->config->product->edit->requiredFields , 'notempty')
+                ->checkIF(strlen($product->code) == 0, 'code', 'notempty') //the value of product code can be 0 or 00.0
                 ->check('name', 'unique', "id != $productID and deleted = '0'")
                 ->check('code', 'unique', "id != $productID and deleted = '0'")
                 ->where('id')->eq($productID)
@@ -614,10 +618,11 @@ class productModel extends model
         }
         if(empty($teams))
         {
-            $teams = $this->dao->select('t1.project, t1.account')->from(TABLE_TEAM)->alias('t1')
-                ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
+            $teams = $this->dao->select('t1.root, t1.account')->from(TABLE_TEAM)->alias('t1')
+                ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.root = t2.id')
                 ->where('t2.deleted')->eq(0)
-                ->fetchGroup('project', 'account');
+                ->andWhere('t1.type')->eq('project')
+                ->fetchGroup('root', 'account');
         }
 
         if(!isset($projects[$product->id])) return $members;
@@ -773,36 +778,71 @@ class productModel extends model
         return $stats;
     }
 
+    /**
+     * Get priv products.
+     * 
+     * @access public
+     * @return array
+     */
     public function getPrivProducts()
     {
         $account = ',' . $this->app->user->account . ',';
         static $products;
         if($products === null)
         {
-            $groupSql = '';
+            $groups = '';
             if(isset($this->app->user->groups))
             {
-                foreach($this->app->user->groups as $group) $groupSql .= "INSTR(CONCAT(',', t1.whitelist, ','), ',$group,') > 0 OR ";
+                foreach($this->app->user->groups as $group) $groups .= ",$group,";
             }
-            $groupSql = !empty($groupSql) ? '(' . substr($groupSql, 0, strlen($groupSql) - 4) . ')' : '1 != 1';
 
-            $products = $this->dao->select('distinct t1.id')->from(TABLE_PRODUCT)->alias('t1')
+            $stmt = $this->dao->select('distinct t1.*,t3.type as teamType,t3.account as teamAccount,t4.deleted as projectDeleted')->from(TABLE_PRODUCT)->alias('t1')
                 ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t2')->on('t1.id = t2.product')
-                ->leftJoin(TABLE_TEAM)->alias('t3')->on('t2.project = t3.project')
+                ->leftJoin(TABLE_TEAM)->alias('t3')->on('t2.project = t3.root')
                 ->leftJoin(TABLE_PROJECT)->alias('t4')->on('t2.project = t4.id')
-                ->beginIF($this->app->user->admin)->where('t1.deleted')->eq(0)->fi()
-                ->beginIF(!$this->app->user->admin)
-                ->where('t1.acl')->eq('open')
-                ->orWhere("(t1.acl = 'custom' AND $groupSql)")
-                ->orWhere('t1.PO')->eq($this->app->user->account)
-                ->orWhere('t1.QD')->eq($this->app->user->account)
-                ->orWhere('t1.RD')->eq($this->app->user->account)
-                ->orWhere('t1.createdBy')->eq($this->app->user->account)
-                ->orWhere('t3.account')->eq($this->app->user->account)
-                ->andWhere('t1.deleted')->eq(0)
-                ->andWhere('t4.deleted')->eq(0)
-                ->fi()
-                ->fetchAll('id');
+                ->where('t1.deleted')->eq(0)
+                ->query();
+
+            $products = array();
+            $account  = $this->app->user->account;
+            while($product = $stmt->fetch())
+            {
+                $id = $product->id;
+                if($this->app->user->admin)
+                {
+                    $products[$id] = $id;
+                }
+                else
+                {
+                    if($product->PO == $account OR $product->QD == $account OR $product->RD == $account OR $product->createdBy == $account)
+                    {
+                        $products[$id] = $id;
+                        continue;
+                    }
+                    if($product->teamType == 'project' and $product->teamAccount == $account and $product->projectDeleted == '0')
+                    {
+                        $products[$id] = $id;
+                        continue;
+                    }
+                    if($product->acl == 'open')
+                    {
+                        $products[$id] = $id;
+                        continue;
+                    }
+                    if($product->acl == 'custom')
+                    {
+                        foreach(explode(',', $product->whitelist) as $whitelist)
+                        {
+                            if(empty($whitelist)) continue;
+                            if(strpos($groups, ",$whitelist,") !== false)
+                            {
+                                $products[$id] = $id;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
         return $products;
     }
@@ -832,7 +872,7 @@ class productModel extends model
             }
         }
 
-        $cases = $this->dao->select('DISTINCT story')->from(TABLE_CASE)->where('story')->in($storyIdList)->fetchAll();
+        $cases = $this->dao->select('DISTINCT story')->from(TABLE_CASE)->where('story')->in($storyIdList)->andWhere('deleted')->eq(0)->fetchAll();
         $rate  = count($stories) == 0 ? 0 : round(count($cases) / count($stories), 2);
 
         return sprintf($this->lang->product->storySummary, count($stories), $totalEstimate, $rate * 100 . "%");

@@ -22,8 +22,8 @@ $itemRow = <<<EOT
       <input type='text' class="form-control" autocomplete='off' value="" name="values[]">
     </td>
     <td class='text-left'>
-      <a href='javascript:void()' class='btn-icon' onclick='addItem(this)'><i class='icon-plus'></i></a>
-      <a href='javascript:void()' class='btn-icon' onclick='delItem(this)'><i class='icon-remove'></i></a>
+      <a href="javascript:void(0)" class='btn-icon' onclick="addItem(this)"><i class='icon-plus'></i></a>
+      <a href="javascript:void(0)" class='btn-icon' onclick="delItem(this)"><i class='icon-remove'></i></a>
     </td>
   </tr>
 EOT;
@@ -50,20 +50,20 @@ EOT;
       <?php if(($module == 'story' or $module == 'testcase') and $field == 'review'):?>
       <table class='table table-form mw-800px'>
         <tr>
-          <th class='w-80px'><?php echo $lang->custom->storyReview;?></th>
+          <th class='w-120px'><?php echo $lang->custom->storyReview;?></th>
           <td><?php echo html::radio('needReview', $lang->custom->reviewList, $needReview);?></td>
-          <td></td>
+          <td class='w-100px'></td>
         </tr>
         <tr <?php if($needReview and $module == 'testcase') echo "class='hidden'"?>>
           <th><?php echo $lang->custom->forceReview;?></th>
           <td><?php echo html::select('forceReview[]', $users, $forceReview, "class='form-control chosen' multiple");?></td>
-          <td class='w-180px'><?php printf($lang->custom->notice->forceReview, $lang->$module->common);?></td>
+          <td style='width:300px'><?php printf($lang->custom->notice->forceReview, $lang->$module->common);?></td>
         </tr>
         <?php if($module == 'testcase'):?>
         <tr <?php if(!$needReview) echo "class='hidden'"?>>
           <th><?php echo $lang->custom->forceNotReview;?></th>
           <td><?php echo html::select('forceNotReview[]', $users, $forceNotReview, "class='form-control chosen' multiple");?></td>
-          <td class='w-180px'><?php printf($lang->custom->notice->forceNotReview, $lang->$module->common);?></td>
+          <td style='width:300px'><?php printf($lang->custom->notice->forceNotReview, $lang->$module->common);?></td>
         </tr>
         <?php endif;?>
         <tr>
@@ -115,7 +115,7 @@ EOT;
       <?php elseif($module == 'user' and $field == 'deleted'):?>
       <table class='table table-form mw-600px'>
         <tr>
-          <th class='w-100px'><?php echo $lang->custom->user->fields['deleted'];?></th>
+          <th class='w-150px'><?php echo $lang->custom->user->fields['deleted'];?></th>
           <td><?php echo html::radio('showDeleted', $lang->custom->deletedList, $showDeleted);?></td>
         </tr>
         <tr>
@@ -139,8 +139,8 @@ EOT;
           </td>
           <?php if($canAdd):?>
           <td class='text-left w-100px'>
-            <a href='javascript:void()' class='btn-icon' onclick='addItem(this)'><i class='icon-plus'></i></a>
-            <a href='javascript:void()' onclick='delItem(this)' class='btn-icon'><i class='icon-remove'></i></a>
+            <a href="javascript:void(0)" onclick="addItem(this)" class='btn-icon'><i class='icon-plus'></i></a>
+            <a href="javascript:void(0)" onclick="delItem(this)" class='btn-icon'><i class='icon-remove'></i></a>
           </td>
           <?php endif;?>
         </tr>

@@ -34,7 +34,7 @@
       </tr>
       <tr>
         <th><?php echo $lang->task->type;?></th>
-        <td><?php echo html::select('type', $lang->task->typeList, $task->type, 'class=form-control onchange="setOwners(this.value)"');?></td><td></td>
+        <td><?php echo html::select('type', $lang->task->typeList, $task->type, "class='form-control chosen' onchange='setOwners(this.value)'");?></td><td></td>
       </tr>
       <tr>
         <th><?php echo $lang->task->assignedTo;?></th>
@@ -43,7 +43,7 @@
             <?php echo html::select('assignedTo[]', $members, $task->assignedTo, "class='form-control chosen'");?>
             <?php echo html::input('teamMember', '', "class='form-control team-group fix-border hidden' readonly='readonly'");?>
             <span class="input-group-addon team-group hidden" data-toggle='modalTeam'><?php echo $lang->task->team;?></span>
-            <label class='input-group-addon affair'><input type='checkBox' name='multiple' id="multipleBox" value='1'/><?php echo $lang->task->multipleAB;?></label>
+            <label class='input-group-addon affair'><input type='checkBox' name='multiple' id="multipleBox" value='1'/> <?php echo $lang->task->multipleAB;?></label>
           </div>
         </td>
         <td>
@@ -90,7 +90,7 @@
             $hasCustomPri = false;
             foreach($lang->task->priList as $priKey => $priValue)
             {
-                if($priKey != $priValue)
+                if(!empty($priKey) and (string)$priKey != (string)$priValue)
                 {
                     $hasCustomPri = true;
                     break;
@@ -101,7 +101,7 @@
               <div class='input-group'>
                 <span class='input-group-addon fix-border br-0'><?php echo $lang->task->pri;?></span>
                 <?php if($hasCustomPri):?>
-                <?php echo html::select('pri', $lang->task->priList, $task->pri, "class='form-control'");?> 
+                <?php echo html::select('pri', $lang->task->priList, $task->pri, "class='form-control chosen'");?> 
                 <?php else:?>
                 <div class='input-group-btn dropdown-pris'>
                   <button type='button' class='btn dropdown-toggle br-0' data-toggle='dropdown'>
@@ -193,7 +193,7 @@
         </div>
         <div class='modal-content'>
           <table class="table table-form">
-            <?php for($i = 0; $i < 6; $i++):?>
+            <?php for($i = 0; $i < 5; $i++):?>
             <tr>
               <td class='w-150px'><?php echo html::select("team[]", $members, '', "class='form-control chosen'");?></td>
               <td>

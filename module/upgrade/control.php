@@ -37,8 +37,15 @@ class upgrade extends control
     {
         if($this->get->agree == true) $this->locate(inlink('backup'));
 
+        $clientLang = $this->app->getClientLang();
+        $licenseCN  = file_get_contents($this->app->getBasePath() . 'doc/LICENSE.CN');
+        $licenseEN  = file_get_contents($this->app->getBasePath() . 'doc/LICENSE.EN');
+
+        $license = $licenseEN . $licenseCN;
+        if($clientLang == 'zh-cn' or $clientLang == 'zh-tw') $license = $licenseCN . $licenseEN;
+
         $this->view->title   = $this->lang->upgrade->common;
-        $this->view->license = file_get_contents($this->app->getBasePath() . 'doc/LICENSE');
+        $this->view->license = $license;
         $this->display();
     }
 
@@ -78,6 +85,7 @@ class upgrade extends control
      */
     public function confirm()
     {
+        $this->session->set('step', '');
         $this->view->title       = $this->lang->upgrade->confirm;
         $this->view->position[]  = $this->lang->upgrade->common;
         $this->view->confirm     = $this->upgrade->getConfirm($this->post->fromVersion);
@@ -97,6 +105,7 @@ class upgrade extends control
      */
     public function execute($fromVersion = '')
     {
+        $this->session->set('step', '');
         $fromVersion = isset($_POST['fromVersion']) ? $this->post->fromVersion : $fromVersion;
         $this->upgrade->execute($fromVersion);
 

@@ -38,7 +38,7 @@ $config->bug->list->exportFields = 'id, product, branch, module, project, story,
     lastEditedDate, files';
 
 $config->bug->list->customCreateFields      = 'project,story,task,pri,severity,os,browser,deadline,mailto,keywords';
-$config->bug->list->customBatchCreateFields = 'module,project,steps,type,pri,severity,os,browser,keywords';
+$config->bug->list->customBatchCreateFields = 'module,project,steps,type,pri,deadline,severity,os,browser,keywords';
 $config->bug->list->customBatchEditFields   = 'type,severity,pri,productplan,assignedTo,deadline,status,resolvedBy,resolution,os,browser,keywords';
 
 $config->bug->custom = new stdclass();
@@ -267,7 +267,7 @@ $config->bug->datatable->fieldList['openedBuild']['fixed']    = 'no';
 $config->bug->datatable->fieldList['openedBuild']['width']    = '120';
 $config->bug->datatable->fieldList['openedBuild']['required'] = 'no';
 
-$config->bug->datatable->fieldList['assignedTo']['title']    = 'assignedTo';
+$config->bug->datatable->fieldList['assignedTo']['title']    = 'assignedToAB';
 $config->bug->datatable->fieldList['assignedTo']['fixed']    = 'no';
 $config->bug->datatable->fieldList['assignedTo']['width']    = '80';
 $config->bug->datatable->fieldList['assignedTo']['required'] = 'no';

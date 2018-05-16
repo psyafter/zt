@@ -74,7 +74,7 @@
         <legend><?php echo $lang->project->basicInfo?></legend>
         <table class='table table-data table-condensed table-borderless'>
           <tr>
-            <th class='w-80px text-right strong'><?php echo $lang->project->name;?></th>
+            <th class='w-110px text-right strong'><?php echo $lang->project->name;?></th>
             <td><?php echo $project->name;?></td>
           </tr>
           <tr>
@@ -132,6 +132,21 @@
                 else
                 {
                     echo html::a($this->createLink('product', 'browse', "productID=$productID"), $product->name);
+                }
+                echo '<br />';
+            }
+            ?>
+            </td>
+          </tr>
+          <tr>
+            <th><?php echo $lang->project->linkPlan;?></th>
+            <td>
+            <?php 
+            foreach($products as $productID => $product) 
+            {
+                if(isset($planGroups[$productID][$product->plan]))
+                {
+                    echo html::a($this->createLink('productplan', 'view', "planID={$product->id}"), $product->name . '/' . $planGroups[$productID][$product->plan]);
                 }
                 echo '<br />';
             }

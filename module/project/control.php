@@ -41,7 +41,7 @@ class project extends control
     {
         if($this->app->user->account == 'guest' or commonModel::isTutorialMode()) $this->config->project->homepage = 'index';
         if(!isset($this->config->project->homepage))
-        { 
+        {
             if($this->projects and $this->app->viewType != 'mhtml') die($this->fetch('custom', 'ajaxSetHomepage', "module=project"));
 
             $this->config->project->homepage = 'index';
@@ -188,6 +188,18 @@ class project extends control
 
         /* Get tasks. */
         $tasks = $this->project->getTasks($productID, $projectID, $this->projects, $browseType, $queryID, $moduleID, $sort, $pager);
+
+        if($browseType != 'unclosed' and $browseType != 'all')
+        {
+            foreach($tasks as $task)
+            {
+                if(isset($task->children))
+                {
+                    $task->children = true;
+                    unset($task->children);
+                }
+            }
+        }
 
        /* Build the search form. */
         $actionURL = $this->createLink('project', 'task', "projectID=$projectID&status=bySearch&param=myQueryID");
@@ -375,7 +387,7 @@ class project extends control
         $this->view->title          = $project->name . $this->lang->colon . $this->lang->project->importTask;
         $this->view->position[]     = html::a(inlink('browse', "projectID=$toProject"), $project->name);
         $this->view->position[]     = $this->lang->project->importTask;
-        $this->view->tasks2Imported = $tasks2Imported; 
+        $this->view->tasks2Imported = $tasks2Imported;
         $this->view->projects       = $projects;
         $this->view->projectID      = $project->id;
         $this->view->fromProject    = $fromProject;
@@ -399,9 +411,6 @@ class project extends control
         {
             $mails = $this->project->importBug($projectID);
             if(dao::isError()) die(js::error(dao::getError()));
-
-            $this->loadModel('task');
-            foreach($mails as $mail) $this->task->sendmail($mail->taskID, $mail->actionID);
 
             die(js::locate($this->createLink('project', 'importBug', "projectID=$projectID"), 'parent'));
         }
@@ -603,9 +612,16 @@ class project extends control
 
         /* Count T B C */
         $storyIdList = array_keys($stories);;
-        $storyTasks = $this->loadModel('task')->getStoryTaskCounts($storyIdList,$projectID);
-        $storyBugs  = $this->loadModel('bug')->getStoryBugCounts($storyIdList,$projectID);
+        $storyTasks = $this->loadModel('task')->getStoryTaskCounts($storyIdList, $projectID);
+        $storyBugs  = $this->loadModel('bug')->getStoryBugCounts($storyIdList, $projectID);
         $storyCases = $this->loadModel('testcase')->getStoryCaseCounts($storyIdList);
+
+        $plans = $this->project->getPlans($products);
+        $allPlans = array('' => '');
+        if(!empty($plans))
+        {
+            foreach($plans as $productID => $plan) $allPlans += $plan;
+        }
 
         /* Assign. */
         $this->view->title        = $title;
@@ -613,6 +629,7 @@ class project extends control
         $this->view->productID    = $productID;
         $this->view->project      = $project;
         $this->view->stories      = $stories;
+        $this->view->allPlans     = $allPlans;
         $this->view->summary      = $this->product->summary($stories);
         $this->view->orderBy      = $orderBy;
         $this->view->type         = $type;
@@ -762,6 +779,7 @@ class project extends control
         $this->view->orderBy     = $orderBy;
         $this->view->tasks       = $this->testtask->getProjectTasks($projectID);
         $this->view->users       = $this->loadModel('user')->getPairs('noclosed|noletter');
+        $this->view->products    = $this->loadModel('product')->getPairs();
 
         $this->display();
     }
@@ -826,8 +844,8 @@ class project extends control
 
     /**
      * Fix burn for first date.
-     * 
-     * @param  int    $projectID 
+     *
+     * @param  int    $projectID
      * @access public
      * @return void
      */
@@ -873,14 +891,16 @@ class project extends control
      *
      * @param string $projectID
      * @param string $copyProjectID
+     * @param int    $planID
      *
      * @access public
      * @return void
      */
-    public function create($projectID = '', $copyProjectID = '')
+    public function create($projectID = '', $copyProjectID = '', $planID = 0)
     {
         if($projectID)
         {
+            if(!empty($planID)) $this->project->linkStories($projectID);
             $this->view->title     = $this->lang->project->tips;
             $this->view->tips      = $this->fetch('project', 'tips', "projectID=$projectID");
             $this->view->projectID = $projectID;
@@ -888,13 +908,14 @@ class project extends control
             exit;
         }
 
-        $name      = '';
-        $code      = '';
-        $team      = '';
-        $products  = array();
-        $whitelist = '';
-        $acl       = 'open';
-
+        $name        = '';
+        $code        = '';
+        $team        = '';
+        $products    = array();
+        $whitelist   = '';
+        $acl         = 'open';
+        $plan        = new stdClass();
+        $productPlan = array();
         if($copyProjectID)
         {
             $copyProject = $this->dao->select('*')->from(TABLE_PROJECT)->where('id')->eq($copyProjectID)->fetch();
@@ -904,6 +925,16 @@ class project extends control
             $acl         = $copyProject->acl;
             $whitelist   = $copyProject->whitelist;
             $products    = $this->project->getProducts($copyProjectID);
+        }     
+
+        if(!empty($planID))
+        {
+            $plan        = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where('id')->eq($planID)->fetch();
+            $products    = $this->dao->select('t1.id, t1.name, t1.type, t2.branch')->from(TABLE_PRODUCT)->alias('t1')
+                ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t2')->on('t1.id = t2.product')
+                ->where('t1.id')->eq($plan->product)
+                ->fetchAll('id');
+            $productPlan = $this->loadModel('productplan')->getPairs($plan->product, 0, 'unexpired');
         }
 
         if(!empty($_POST))
@@ -913,7 +944,15 @@ class project extends control
             if(dao::isError()) die(js::error(dao::getError()));
 
             $this->loadModel('action')->create('project', $projectID, 'opened');
-            die(js::locate($this->createLink('project', 'create', "projectID=$projectID"), 'parent'));
+            $url = $this->createLink('project', 'create', "projectID=$projectID");
+            if(!empty($planID))
+            {
+                die(js::confirm($this->lang->project->importPlanStory, $this->createLink('project', 'create', "projectID=$projectID&copyProjectID=&planID=$planID"), $url, 'parent', 'parent'));
+            }
+            else
+            {
+                die(js::locate($url, 'parent'));
+            }
         }
 
         $this->project->setMenu($this->projects, key($this->projects));
@@ -923,12 +962,14 @@ class project extends control
         $this->view->projects      = array('' => '') + $this->projects;
         $this->view->groups        = $this->loadModel('group')->getPairs();
         $this->view->allProducts   = array(0 => '') + $this->loadModel('product')->getPairs('noclosed|nocode');
+        $this->view->acl           = $acl;
+        $this->view->plan          = $plan;
         $this->view->name          = $name;
         $this->view->code          = $code;
         $this->view->team          = $team;
-        $this->view->products      = $products ;
+        $this->view->products      = $products;
+        $this->view->productPlan   = array(0 => '') + $productPlan;
         $this->view->whitelist     = $whitelist;
-        $this->view->acl           = $acl      ;
         $this->view->copyProjectID = $copyProjectID;
         $this->view->branchGroups  = $this->loadModel('branch')->getByProducts(array_keys($products));
         $this->display();
@@ -938,6 +979,9 @@ class project extends control
      * Edit a project.
      *
      * @param  int    $projectID
+     * @param  string $action
+     * @param  string $extra
+     *
      * @access public
      * @return void
      */
@@ -980,9 +1024,11 @@ class project extends control
 
         $allProducts    = array(0 => '') + $this->loadModel('product')->getPairs('noclosed|nocode');
         $linkedProducts = $this->project->getProducts($project->id);
+        $linkedBranches = array();
         foreach($linkedProducts as $product)
         {
             if(!isset($allProducts[$product->id])) $allProducts[$product->id] = $product->name;
+            if($product->branch) $linkedBranches[$product->branch] = $product->branch;
         }
 
         $this->view->title          = $title;
@@ -996,7 +1042,7 @@ class project extends control
         $this->view->groups         = $this->loadModel('group')->getPairs();
         $this->view->allProducts    = $allProducts;
         $this->view->linkedProducts = $linkedProducts;
-        $this->view->branchGroups   = $this->loadModel('branch')->getByProducts(array_keys($linkedProducts));
+        $this->view->branchGroups   = $this->loadModel('branch')->getByProducts(array_keys($linkedProducts), '', $linkedBranches);
 
         $this->display();
     }
@@ -1246,6 +1292,11 @@ class project extends control
         if(!$project) die(js::error($this->lang->notFound) . js::locate('back'));
 
         $products = $this->project->getProducts($project->id);
+        $linkedBranches = array();
+        foreach($products as $product)
+        {
+            if($product->branch) $linkedBranches[$product->branch] = $product->branch;
+        }
 
         /* Set menu. */
         $this->project->setMenu($this->projects, $project->id);
@@ -1256,7 +1307,8 @@ class project extends control
 
         $this->view->project      = $project;
         $this->view->products     = $products;
-        $this->view->branchGroups = $this->loadModel('branch')->getByProducts(array_keys($products));
+        $this->view->branchGroups = $this->loadModel('branch')->getByProducts(array_keys($products), '', $linkedBranches);
+        $this->view->planGroups   = $this->project->getPlans($products);
         $this->view->groups       = $this->loadModel('group')->getPairs();
         $this->view->actions      = $this->loadModel('action')->getList('project', $projectID);
         $this->view->users        = $this->loadModel('user')->getPairs('noletter');
@@ -1266,10 +1318,10 @@ class project extends control
 
     /**
      * Kanban.
-     * 
-     * @param  int    $projectID 
-     * @param  string $type 
-     * @param  string $orderBy 
+     *
+     * @param  int    $projectID
+     * @param  string $type
+     * @param  string $orderBy
      * @access public
      * @return void
      */
@@ -1298,7 +1350,8 @@ class project extends control
         $this->view->position[]  = $this->lang->project->kanban;
         $this->view->stories     = $stories;
         $this->view->realnames   = $this->loadModel('user')->getPairs('noletter');
-        $this->view->orderBy     = $orderBy;
+        $this->view->storyOrder  = $orderBy;
+        $this->view->orderBy     = 'id_asc';
         $this->view->projectID   = $projectID;
         $this->view->project     = $project;
         $this->view->type        = $type;
@@ -1313,8 +1366,8 @@ class project extends control
     /**
      * Tree view.
      * Product
-     * 
-     * @param  int    $projectID 
+     *
+     * @param  int    $projectID
      * @param  string $type
      * @access public
      * @return void
@@ -1340,14 +1393,14 @@ class project extends control
         $this->view->projectID  = $projectID;
         $this->view->level      = $type;
         $this->view->tree       = $tree;
-        $this->display(); 
+        $this->display();
     }
 
     /**
      * Print kanban.
-     * 
-     * @param  int    $projectID 
-     * @param  string $orderBy 
+     *
+     * @param  int    $projectID
+     * @param  string $orderBy
      * @access public
      * @return void
      */
@@ -1362,7 +1415,7 @@ class project extends control
             $storySpecs = $this->story->getStorySpecs(array_keys($stories));
 
             $order = 1;
-            foreach($stories as $story) $story->order = $order++; 
+            foreach($stories as $story) $story->order = $order++;
 
             $kanbanTasks = $this->project->getKanbanTasks($projectID, "id");
             $kanbanBugs  = $this->loadModel('bug')->getProjectBugs($projectID);
@@ -1449,13 +1502,13 @@ class project extends control
 
         $this->view->position[] = html::a($this->createLink('project', 'browse', "projectID=$projectID"), $project->name);
         $this->view->position[] = $this->lang->project->printKanban;
-        $this->display(); 
+        $this->display();
     }
 
     /**
      * Story kanban.
-     * 
-     * @param  int    $projectID 
+     *
+     * @param  int    $projectID
      * @access public
      * @return void
      */
@@ -1552,10 +1605,12 @@ class project extends control
 
         $allProducts     = $this->product->getPairs('noclosed|nocode');
         $linkedProducts  = $this->project->getProducts($project->id);
+        $linkedBranches  = array();
         // Merge allProducts and linkedProducts for closed product.
         foreach($linkedProducts as $product)
         {
             if(!isset($allProducts[$product->id])) $allProducts[$product->id] = $product->name;
+            if(!empty($product->branch)) $linkedBranches[$product->branch] = $product->branch;
         }
 
         /* Assign. */
@@ -1563,7 +1618,7 @@ class project extends control
         $this->view->position       = $position;
         $this->view->allProducts    = $allProducts;
         $this->view->linkedProducts = $linkedProducts;
-        $this->view->branchGroups   = $this->loadModel('branch')->getByProducts(array_keys($allProducts));
+        $this->view->branchGroups   = $this->loadModel('branch')->getByProducts(array_keys($allProducts), '', $linkedBranches);
 
         $this->display();
     }
@@ -1807,7 +1862,7 @@ class project extends control
             $this->project->unlinkStory($projectID, $storyID);
 
             /* if kanban then reload and if ajax request then send result. */
-            if(isonlybody()) 
+            if(isonlybody())
             {
                 die(js::reload('parent'));
             }
@@ -2019,8 +2074,8 @@ class project extends control
 
     /**
      * Story sort.
-     * 
-     * @param  int    $projectID 
+     *
+     * @param  int    $projectID
      * @access public
      * @return void
      */
@@ -2079,11 +2134,11 @@ class project extends control
     }
 
     /**
-     * Export project. 
-     * 
-     * @param  string $status 
-     * @param  int    $productID 
-     * @param  string $orderBy 
+     * Export project.
+     *
+     * @param  string $status
+     * @param  int    $productID
+     * @param  string $orderBy
      * @access public
      * @return void
      */
@@ -2144,8 +2199,8 @@ class project extends control
 
     /**
      * Kanban setting.
-     * 
-     * @param  int    $projectID 
+     *
+     * @param  int    $projectID
      * @access public
      * @return void
      */
@@ -2181,9 +2236,9 @@ class project extends control
 
     /**
      * Ajax reset kanban setting
-     * 
-     * @param  int    $projectID 
-     * @param  string $confirm 
+     *
+     * @param  int    $projectID
+     * @param  string $confirm
      * @access public
      * @return void
      */
@@ -2206,5 +2261,27 @@ class project extends control
         if(common::hasPriv('project', 'kanbanColsColor')) $this->setting->deleteItems("owner=system&module=project&section=kanbanSetting&key=colorList");
 
         die(js::reload('parent.parent'));
+    }
+
+    /**
+     * Import stories by plan.
+     *
+     * @param int $projectID
+     * @param int $planID
+     *
+     * @access public
+     * @return void
+     */
+    public function importPlanStories($projectID, $planID)
+    {
+        $planStories  = $planProducts = array();
+        $planStory    = $this->loadModel('story')->getPlanStories($planID);
+        if(!empty($planStory))
+        {
+            $planStories = array_keys($planStory);
+            foreach($planStory as $story) $planProducts[$story->id] = $story->product;
+            $this->project->linkStory($projectID, $planStories, $planProducts);
+        }
+        die(js::locate(helper::createLink('project', 'story', 'projectID=' . $projectID), 'parent'));
     }
 }

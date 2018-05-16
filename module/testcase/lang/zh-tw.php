@@ -36,6 +36,9 @@ $lang->testcase->stage            = '適用階段';
 $lang->testcase->reviewedBy       = '由誰評審';
 $lang->testcase->reviewedDate     = '評審時間';
 $lang->testcase->reviewResult     = '評審結果';
+$lang->testcase->reviewedByAB     = '評審人';
+$lang->testcase->reviewedDateAB   = '日期';
+$lang->testcase->reviewResultAB   = '結果';
 $lang->testcase->forceNotReview   = '不需要評審';
 $lang->testcase->lastEditedByAB   = '修改者';
 $lang->testcase->lastEditedDateAB = '修改日期';
@@ -108,23 +111,23 @@ $lang->testcase->deleteStep   = '刪除';
 $lang->testcase->insertBefore = '之前添加';
 $lang->testcase->insertAfter  = '之後添加';
 
-$lang->testcase->assignToMe    = '給我的用例';
-$lang->testcase->openedByMe    = '我建的用例';
-$lang->testcase->allCases      = '所有';
-$lang->testcase->needConfirm   = '需求變動';
-$lang->testcase->bySearch      = '搜索';
+$lang->testcase->assignToMe  = '給我的用例';
+$lang->testcase->openedByMe  = '我建的用例';
+$lang->testcase->allCases    = '所有';
+$lang->testcase->needConfirm = '需求變動';
+$lang->testcase->bySearch    = '搜索';
 
-$lang->testcase->lblStory           = '相關需求';
-$lang->testcase->lblLastEdited      = '最後編輯';
-$lang->testcase->lblTypeValue       = '類型可選值列表';
-$lang->testcase->lblStageValue      = '階段可選值列表';
-$lang->testcase->lblStatusValue     = '狀態可選值列表';
+$lang->testcase->lblStory       = '相關需求';
+$lang->testcase->lblLastEdited  = '最後編輯';
+$lang->testcase->lblTypeValue   = '類型可選值列表';
+$lang->testcase->lblStageValue  = '階段可選值列表';
+$lang->testcase->lblStatusValue = '狀態可選值列表';
 
-$lang->testcase->legendBasicInfo    = '基本信息';
-$lang->testcase->legendAttatch      = '附件';
-$lang->testcase->legendLinkBugs     = '相關Bug';
-$lang->testcase->legendOpenAndEdit  = '創建編輯';
-$lang->testcase->legendComment      = '備註';
+$lang->testcase->legendBasicInfo   = '基本信息';
+$lang->testcase->legendAttatch     = '附件';
+$lang->testcase->legendLinkBugs    = '相關Bug';
+$lang->testcase->legendOpenAndEdit = '創建編輯';
+$lang->testcase->legendComment     = '備註';
 
 $lang->testcase->confirmDelete      = '您確認要刪除該測試用例嗎？';
 $lang->testcase->confirmBatchDelete = '您確認要批量刪除這些測試用例嗎？';
@@ -161,8 +164,9 @@ $lang->testcase->reviewResultList['']        = '';
 $lang->testcase->reviewResultList['pass']    = '確認通過';
 $lang->testcase->reviewResultList['clarify'] = '繼續完善';
 
-$lang->testcase->groups['']      = '分組查看';
-$lang->testcase->groups['story'] = '需求分組';
+$lang->testcase->groups['']           = '分組查看';
+$lang->testcase->groups['story']      = '需求分組';
+$lang->testcase->groups['assignedTo'] = '指派分組';
 
 $lang->testcase->statusList['']            = '';
 $lang->testcase->statusList['wait']        = '待評審';

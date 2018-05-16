@@ -42,7 +42,7 @@ foreach(explode(',', $showFields) as $field)
         <?php if($branchProduct):?>
         <th class='w-150px<?php echo zget($visibleFields, 'branch', ' hidden')?>'><?php echo $lang->story->branch;?></th>
         <?php endif;?>
-        <th class='w-150px<?php echo zget($visibleFields, 'module', ' hidden')?>'><?php echo $lang->story->module;?></th>
+        <th class='w-150px'><?php echo $lang->story->module;?></th>
         <th class='w-150px<?php echo zget($visibleFields, 'plan', ' hidden')?>'><?php echo $lang->story->planAB;?></th>
         <th class='w-150px'> <?php echo $lang->story->title;?> <span class='required'></span></th>
         <th class='w-50px<?php echo zget($visibleFields, 'estimate', ' hidden')?>'> <?php echo $lang->story->estimateAB;?></th>
@@ -87,7 +87,7 @@ foreach(explode(',', $showFields) as $field)
           <?php echo html::select("branches[$storyID]", $branches, $story->branch, "class='form-control chosen' onchange='loadBranches($branchProductID, this.value, $storyID);' $disabled");?>
         </td>
         <?php endif;?>
-        <td class='text-left<?php echo zget($visibleFields, 'module', ' hidden')?>' style='overflow:visible'>
+        <td class='text-left<?php echo zget($visibleFields, 'module')?>' style='overflow:visible'>
           <?php echo html::select("modules[$storyID]", $modules, $story->module, "class='form-control chosen'");?>
         </td>
         <td class='text-left<?php echo zget($visibleFields, 'plan', ' hidden')?>' style='overflow:visible'>

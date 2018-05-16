@@ -15,8 +15,8 @@ class productplanModel extends model
 {
     /**
      * Get plan by id.
-     * 
-     * @param  int    $planID 
+     *
+     * @param  int    $planID
      * @param  bool   $setImgSize
      * @access public
      * @return object
@@ -30,9 +30,9 @@ class productplanModel extends model
     }
 
     /**
-     * Get plans by idList 
-     * 
-     * @param  int    $planIDList 
+     * Get plans by idList
+     *
+     * @param  int    $planIDList
      * @access public
      * @return array
      */
@@ -43,8 +43,8 @@ class productplanModel extends model
 
     /**
      * Get last plan.
-     * 
-     * @param  int    $productID 
+     *
+     * @param  int    $productID
      * @access public
      * @return void
      */
@@ -53,6 +53,7 @@ class productplanModel extends model
         return $this->dao->select('*')->from(TABLE_PRODUCTPLAN)
             ->where('deleted')->eq(0)
             ->andWhere('product')->eq($productID)
+            ->andWhere('end')->ne('2030-01-01')
             ->beginIF($branch)->andWhere('branch')->eq($branch)->fi()
             ->orderBy('end desc')
             ->limit(1)
@@ -60,9 +61,9 @@ class productplanModel extends model
     }
 
     /**
-     * Get list 
-     * 
-     * @param  int    $product 
+     * Get list
+     *
+     * @param  int    $product
      * @param  int    $branch
      * @param  string $browseType
      * @param  object $pager
@@ -73,21 +74,39 @@ class productplanModel extends model
     public function getList($product = 0, $branch = 0, $browseType = 'all', $pager = null, $orderBy = 'begin_desc')
     {
         $date = date('Y-m-d');
-        return $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where('product')->eq($product)
-            ->andWhere('deleted')->eq(0)
-            ->beginIF(!empty($branch))->andWhere('branch')->eq($branch)->fi()
-            ->beginIF($browseType == 'unexpired')->andWhere('end')->gt($date)->fi()
-            ->beginIF($browseType == 'overdue')->andWhere('end')->le($date)->fi()
+        $productPlans = $this->dao->select('t1.*,t2.project')->from(TABLE_PRODUCTPLAN)->alias('t1')
+            ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t2')->on('t2.plan = t1.id and t2.product = ' . $product)
+            ->where('t1.product')->eq($product)
+            ->andWhere('t1.deleted')->eq(0)
+            ->beginIF(!empty($branch))->andWhere('t1.branch')->eq($branch)->fi()
+            ->beginIF($browseType == 'unexpired')->andWhere('t1.end')->gt($date)->fi()
+            ->beginIF($browseType == 'overdue')->andWhere('t1.end')->le($date)->fi()
             ->orderBy($orderBy)
             ->page($pager)
-            ->fetchAll();
+            ->fetchAll('id');
+
+        if(!empty($productPlans))
+        {
+            foreach($productPlans as $productPlan)
+            {
+                $stories = $this->dao->select('id,estimate')->from(TABLE_STORY)
+                    ->where("CONCAT(',', plan, ',')")->like("%,{$productPlan->id},%")
+                    ->andWhere('deleted')->eq(0)
+                    ->fetchPairs('id', 'estimate');
+                $productPlan->stories   = count($stories);
+                $productPlan->bugs      = $this->dao->select()->from(TABLE_BUG)->where("plan")->eq($productPlan->id)->andWhere('deleted')->eq(0)->count();
+                $productPlan->hour      = array_sum($stories);
+                $productPlan->projectID = $productPlan->project;
+            }
+        }
+        return $productPlans;
     }
 
     /**
      * Get plan pairs.
-     * 
-     * @param  array|int    $product 
-     * @param  string       $expired 
+     *
+     * @param  array|int    $product
+     * @param  string       $expired
      * @access public
      * @return array
      */
@@ -98,28 +117,34 @@ class productplanModel extends model
             ->where('product')->in($product)
             ->andWhere('deleted')->eq(0)
             ->beginIF($branch)->andWhere("branch")->in("0,$branch")->fi()
-            ->beginIF($expired == 'unexpired')->andWhere('end')->gt($date)->fi()
+            ->beginIF($expired == 'unexpired')->andWhere('end')->ge($date)->fi()
             ->orderBy('begin desc')
             ->fetchPairs();
 
-        if($expired == 'unexpired' and empty($plans))
+        if($expired == 'unexpired')
         {
-            $plans = $this->dao->select('id,CONCAT(title, " [", begin, " ~ ", end, "]") as title')->from(TABLE_PRODUCTPLAN)
+            $plans += $this->dao->select('id,CONCAT(title, " [", begin, " ~ ", end, "]") as title')->from(TABLE_PRODUCTPLAN)
                 ->where('product')->in($product)
                 ->andWhere('deleted')->eq(0)
+                ->andWhere('end')->lt($date)
                 ->beginIF($branch)->andWhere("branch")->in("0,$branch")->fi()
+                ->beginIF($plans)->andWhere("id")->notIN(array_keys($plans))->fi()
                 ->orderBy('begin desc')
                 ->limit(5)
                 ->fetchPairs();
         }
 
+        foreach($plans as $key => $value)
+        {
+            $plans[$key] = str_replace('[2030-01-01 ~ 2030-01-01]', '[' . $this->lang->productplan->future . ']', $value);
+        }
         return array('' => '') + $plans;
     }
 
     /**
-     * Get plans for products 
-     * 
-     * @param  int    $products 
+     * Get plans for products
+     *
+     * @param  int    $products
      * @access public
      * @return void
      */
@@ -133,19 +158,23 @@ class productplanModel extends model
 
     /**
      * Create a plan.
-     * 
+     *
      * @access public
      * @return int
      */
     public function create()
     {
-        $plan = fixer::input('post')->stripTags($this->config->productplan->editor->create['id'], $this->config->allowedTags)->remove('delta,uid')->get();
+        $plan = fixer::input('post')->stripTags($this->config->productplan->editor->create['id'], $this->config->allowedTags)
+            ->setIF($this->post->future || empty($_POST['begin']), 'begin', '2030-01-01')
+            ->setIF($this->post->future || empty($_POST['end']), 'end', '2030-01-01')
+            ->remove('delta,uid,future')
+            ->get();
         $plan = $this->loadModel('file')->processImgURL($plan, $this->config->productplan->editor->create['id'], $this->post->uid);
         $this->dao->insert(TABLE_PRODUCTPLAN)
             ->data($plan)
             ->autoCheck()
             ->batchCheck($this->config->productplan->create->requiredFields, 'notempty')
-            ->check('end', 'gt', $plan->begin)
+            ->checkIF(!$this->post->future && !empty($_POST['begin']) && !empty($_POST['end']), 'end', 'gt', $plan->begin)
             ->exec();
         if(!dao::isError())
         {
@@ -158,21 +187,26 @@ class productplanModel extends model
 
     /**
      * Update a plan
-     * 
-     * @param  int    $planID 
+     *
+     * @param  int    $planID
      * @access public
      * @return array
      */
     public function update($planID)
     {
         $oldPlan = $this->dao->findByID((int)$planID)->from(TABLE_PRODUCTPLAN)->fetch();
-        $plan = fixer::input('post')->stripTags($this->config->productplan->editor->edit['id'], $this->config->allowedTags)->remove('delta,uid')->get();
+        $plan = fixer::input('post')->stripTags($this->config->productplan->editor->edit['id'], $this->config->allowedTags)
+            ->setIF($this->post->future || empty($_POST['begin']), 'begin', '2030-01-01')
+            ->setIF($this->post->future || empty($_POST['end']), 'end', '2030-01-01')
+            ->remove('delta,uid,future')
+            ->get();
+
         $plan = $this->loadModel('file')->processImgURL($plan, $this->config->productplan->editor->edit['id'], $this->post->uid);
         $this->dao->update(TABLE_PRODUCTPLAN)
             ->data($plan)
             ->autoCheck()
             ->batchCheck($this->config->productplan->edit->requiredFields, 'notempty')
-            ->check('end', 'gt', $plan->begin)
+            ->checkIF(!$this->post->future && !empty($_POST['begin']) && !empty($_POST['end']), 'end', 'gt', $plan->begin)
             ->where('id')->eq((int)$planID)
             ->exec();
         if(!dao::isError())
@@ -184,8 +218,8 @@ class productplanModel extends model
 
     /**
      * Batch update plan.
-     * 
-     * @param  int    $productID 
+     *
+     * @param  int    $productID
      * @access public
      * @return array
      */
@@ -233,8 +267,8 @@ class productplanModel extends model
 
     /**
      * Link stories.
-     * 
-     * @param  int    $planID 
+     *
+     * @param  int    $planID
      * @access public
      * @return void
      */
@@ -267,9 +301,9 @@ class productplanModel extends model
     }
 
     /**
-     * Unlink story 
-     * 
-     * @param  int    $storyID 
+     * Unlink story
+     *
+     * @param  int    $storyID
      * @access public
      * @return void
      */
@@ -284,8 +318,8 @@ class productplanModel extends model
 
     /**
      * Link bugs.
-     * 
-     * @param  int    $planID 
+     *
+     * @param  int    $planID
      * @access public
      * @return void
      */

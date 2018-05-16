@@ -54,9 +54,10 @@ class block extends control
             if($this->config->global->flow == 'onlyStory' or $this->config->global->flow == 'onlyTest') unset($modules['project']);
 
             $closedBlock = isset($this->config->block->closed) ? $this->config->block->closed : '';
-            if(strpos(",$closedBlock,", ",|dynamic,") === false)   $modules['dynamic']   = $this->lang->block->dynamic;
+            if(strpos(",$closedBlock,", ",|assigntome,") === false) $modules['assigntome'] = $this->lang->block->assignToMe;
+            if(strpos(",$closedBlock,", ",|dynamic,") === false) $modules['dynamic'] = $this->lang->block->dynamic;
             if(strpos(",$closedBlock,", ",|flowchart,") === false and $this->config->global->flow == 'full') $modules['flowchart'] = $this->lang->block->lblFlowchart;
-            if(strpos(",$closedBlock,", ",|html,") === false)      $modules['html']      = 'HTML';
+            if(strpos(",$closedBlock,", ",|html,") === false) $modules['html'] = 'HTML';
             $modules = array('' => '') + $modules;
 
             $hiddenBlocks = $this->block->getHiddenBlocks();
@@ -291,6 +292,10 @@ class block extends control
         elseif($block->block == 'flowchart')
         {
             $html = $this->fetch('block', 'flowchart');
+        }
+        elseif($block->block == 'assigntome')
+        {
+            $html = $this->fetch('block', 'printAssignToMeBlock');
         }
         
         die($html);
@@ -628,6 +633,57 @@ class block extends control
         $type  = isset($this->params->type) ? $this->params->type : 'all';
         $pager = pager::init(0, $num, 1);
         $this->view->projectStats = $this->loadModel('project')->getProjectStats($type, $productID = 0, $branch = 0, $itemCounts = 30, $orderBy = 'order_desc', $this->viewType != 'json' ? $pager : '');
+    }
+
+    /**
+     * Print assign to me block.
+     * 
+     * @access public
+     * @return void
+     */
+    public function printAssignToMeBlock()
+    {
+       if(common::hasPriv('todo',  'view')) $hasViewPriv['todo']  = true;
+       if(common::hasPriv('task',  'view')) $hasViewPriv['task']  = true;
+       if(common::hasPriv('bug',   'view')) $hasViewPriv['bug']   = true;
+
+        if(isset($hasViewPriv['todo']))
+        {
+            $this->app->loadClass('date');
+            $this->app->loadLang('todo');
+            $todos = $this->dao->select('*')->from(TABLE_TODO)
+                ->where("(assignedTo = '{$this->app->user->account}' or (assignedTo = '' and account='{$this->app->user->account}'))")
+                ->andWhere('cycle')->eq(0)
+                ->orderBy('`date`')
+                ->fetchAll();
+
+            foreach($todos as $todo)
+            {
+                $todo->begin = date::formatTime($todo->begin);
+                $todo->end   = date::formatTime($todo->end);
+            }
+            if(empty($todos)) unset($hasViewPriv['todo']);
+            $this->view->todos = $todos;
+        }
+        if(isset($hasViewPriv['task']))
+        {
+            $this->app->loadLang('task');
+            $tasks = $this->dao->select('*')->from(TABLE_TASK)->where('assignedTo')->eq($this->app->user->account)->andWhere('deleted')->eq('0')->orderBy('id_desc')->fetchAll();
+
+            if(empty($tasks)) unset($hasViewPriv['task']);
+            $this->view->tasks = $tasks;
+        }
+        if(isset($hasViewPriv['bug']))
+        {
+            $this->app->loadLang('bug');
+            $bugs = $this->dao->select('*')->from(TABLE_BUG)->where('assignedTo')->eq($this->app->user->account)->andWhere('deleted')->eq('0')->orderBy('id_desc')->fetchAll();
+
+            if(empty($bugs)) unset($hasViewPriv['bug']);
+            $this->view->bugs = $bugs;
+        }
+
+        $this->view->hasViewPriv = $hasViewPriv;
+        $this->display();
     }
 
     /**
