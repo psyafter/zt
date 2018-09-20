@@ -7,13 +7,13 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     message
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class message extends control
 {
     /**
-     * Index 
-     * 
+     * Index
+     *
      * @access public
      * @return void
      */
@@ -32,8 +32,8 @@ class message extends control
     }
 
     /**
-     * Setting 
-     * 
+     * Setting
+     *
      * @access public
      * @return void
      */
@@ -44,7 +44,7 @@ class message extends control
             $data = fixer::input('post')->get();
             $data->messageSetting = json_encode($data->messageSetting);
             $this->loadModel('setting')->setItem('system.message.setting', $data->messageSetting);
-            die(js::reload('parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
 
         $this->loadModel('webhook');
@@ -65,7 +65,7 @@ class message extends control
 
     /**
      * Ajax get message.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -96,9 +96,9 @@ class message extends control
         {
             echo <<<EOT
 <div class='alert alert-info with-icon alert-dismissable' style='width:380px; position:fixed; bottom:25px; right:15px; z-index: 9999;'>
-   <i class='icon icon-envelope-alt'>  </i>
+   <i class='icon icon-envelope-o'>  </i>
    <div class='content'>{$messages}</div>
-   <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+   <button type="button" class="close" data-dismiss="alert">×</button>
  </div>
 EOT;
         }

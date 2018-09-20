@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     group
  * @version     $Id: zh-tw.php 4719 2013-05-03 02:20:28Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->group->common             = '權限分組';
 $lang->group->browse             = '瀏覽分組';
@@ -19,7 +19,7 @@ $lang->group->manageView         = '視圖維護';
 $lang->group->managePriv         = '權限維護';
 $lang->group->managePrivByGroup  = '權限維護';
 $lang->group->managePrivByModule = '按模組分配權限';
-$lang->group->byModuleTips       = '<span class="tips">（可以按住shift或者control鍵進行多選）</span>';
+$lang->group->byModuleTips       = '<span class="tips">（可以按住Shift或者Ctrl鍵進行多選）</span>';
 $lang->group->manageMember       = '成員維護';
 $lang->group->confirmDelete      = '您確定刪除該用戶分組嗎？';
 $lang->group->successSaved       = '成功保存';

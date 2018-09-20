@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     API
  * @version     $Id: api.class.php 4132 2013-01-18 02:30:05Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class ztclient
 {

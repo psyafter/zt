@@ -7,14 +7,14 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     sso
  * @version     $Id: control.php 4460 2013-02-26 02:28:02Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class sso extends control
 {
     /**
      * SSO login.
-     * 
-     * @param  string $type 
+     *
+     * @param  string $type
      * @access public
      * @return void
      */
@@ -44,6 +44,11 @@ class sso extends control
             {
                 $location = rtrim($location, '?') . "?token=$token&auth=$auth&userIP=$userIP&callback=$callback&referer=$referer";
             }
+            if(!empty($_GET['sessionid']))
+            {
+                $sessionConfig = json_decode(base64_decode($this->get->sessionid), false);
+                $location     .= '&' . $sessionConfig->session_name . '=' . $sessionConfig->session_id;
+            }
             $this->locate($location);
         }
 
@@ -69,10 +74,11 @@ class sso extends control
 
                 $this->user->cleanLocked($user->account);
                 /* Authorize him and save to session. */
-                $user->rights = $this->user->authorize($user->account);
-                $user->groups = $this->user->getGroups($user->account);
-                $user->last   = date(DT_DATETIME1, $last);
-                $user->admin  = strpos($this->app->company->admins, ",{$user->account},") !== false;
+                $user->rights   = $this->user->authorize($user->account);
+                $user->groups   = $this->user->getGroups($user->account);
+                $user->last     = date(DT_DATETIME1, $last);
+                $user->lastTime = $user->last;
+                $user->admin    = strpos($this->app->company->admins, ",{$user->account},") !== false;
                 $user->modifyPassword = ($user->visits == 0 and !empty($this->config->safe->modifyPasswordFirstLogin));
                 if($user->modifyPassword) $user->modifyPasswordReason = 'modifyPasswordFirstLogin';
                 if(!$user->modifyPassword and !empty($this->config->safe->changeWeak))
@@ -94,8 +100,8 @@ class sso extends control
 
     /**
      * SSO logout.
-     * 
-     * @param  string $type 
+     *
+     * @param  string $type
      * @access public
      * @return void
      */
@@ -114,9 +120,9 @@ class sso extends control
             if(strpos($location, '&') !== false)
             {
                 $location = rtrim($location, '&') . "&token=$token&auth=$auth&userIP=$userIP&callback=$callback";
-            }   
+            }
             else
-            {   
+            {
                 $location = rtrim($location, '?') . "?token=$token&auth=$auth&userIP=$userIP&callback=$callback";
             }
             $this->locate($location);
@@ -134,7 +140,7 @@ class sso extends control
 
     /**
      * Ajax set config.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -157,9 +163,9 @@ class sso extends control
     }
 
     /**
-     * Bind user. 
-     * 
-     * @param  string $referer 
+     * Bind user.
+     *
+     * @param  string $referer
      * @access public
      * @return void
      */
@@ -198,7 +204,7 @@ class sso extends control
 
     /**
      * Get pairs of user.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -211,7 +217,7 @@ class sso extends control
 
     /**
      * Get bind users with ranzhi.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -224,7 +230,7 @@ class sso extends control
 
     /**
      * Bind user from ranzhi.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -241,7 +247,7 @@ class sso extends control
 
     /**
      * Create user from ranzhi.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -257,8 +263,8 @@ class sso extends control
 
     /**
      * Get todo list for ranzhi.
-     * 
-     * @param  string  $account 
+     *
+     * @param  string  $account
      * @access public
      * @return void
      */

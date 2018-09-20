@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     dept
  * @version     $Id: zh-tw.php 4129 2013-01-18 01:58:14Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->dept->common      = '部門結構';
 $lang->dept->manageChild = "下級部門";
@@ -17,7 +17,7 @@ $lang->dept->parent      = "上級部門";
 $lang->dept->manager     = "負責人";
 $lang->dept->name        = "部門名稱";
 $lang->dept->browse      = "部門維護";
-$lang->dept->manage      = "維護部門結構";
+$lang->dept->manage      = "維護部門";
 $lang->dept->updateOrder = "更新排序";
 $lang->dept->add         = "添加部門";
 $lang->dept->dragAndSort = "拖動排序";

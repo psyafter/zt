@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     svn
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 /* Methods. */
 $lang->svn = new stdclass();

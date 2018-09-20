@@ -10,12 +10,20 @@
  * @link        http://www.ranzhico.com
  */
 $config->block = new stdclass();
-$config->block->editor = new stdclass();
+$config->block->version = 2;
+$config->block->editor  = new stdclass();
 $config->block->editor->set = array('id' => 'html', 'tools' => 'simple');
 
-$config->block->gridOptions[6]  = '1/2';
-$config->block->gridOptions[4]  = '1/3';
-$config->block->gridOptions[8]  = '2/3';
-$config->block->gridOptions[3]  = '1/4';
-$config->block->gridOptions[9]  = '3/4';
-$config->block->gridOptions[12] = '100%';
+$config->block->longBlock = array();
+$config->block->longBlock['']['flowchart']        = 'flowchart';
+$config->block->longBlock['']['welcome']          = 'welcome';
+$config->block->longBlock['product']['statistic'] = 'statistic';
+$config->block->longBlock['project']['statistic'] = 'statistic';
+$config->block->longBlock['qa']['statistic']      = 'statistic';
+
+$config->block->shortBlock = array();
+$config->block->shortBlock['product']['overview'] = 'overview';
+$config->block->shortBlock['project']['overview'] = 'overview';
+
+$config->statistic = new stdclass();
+$config->statistic->storyStages = array('wait', 'planned', 'developing', 'testing', 'released');

@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     report
  * @version     $Id: zh-tw.php 5080 2013-07-10 00:46:59Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->report->common     = '統計視圖';
 $lang->report->index      = '統計首頁';
@@ -99,4 +99,5 @@ $lang->report->mailTitle->task     = " 任務(%s),";
 $lang->report->mailTitle->todo     = " 待辦(%s),";
 $lang->report->mailTitle->testTask = " 測試版本(%s),";
 
-$lang->report->proVersion = '<a href="http://api.zentao.net/goto.php?item=proversion&from=reportpage" target="_blank">更多精彩，盡在專業版！</a>';
+$lang->report->proVersion = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">更多精彩，盡在專業版！</a>';
+$lang->report->proVersionEn = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';

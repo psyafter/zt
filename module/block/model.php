@@ -7,7 +7,7 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     block
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class blockModel extends model
 {
@@ -35,7 +35,7 @@ class blockModel extends model
             ->setDefault('source', $source)
             ->setDefault('block', $type)
             ->setDefault('params', array())
-            ->remove('uid')
+            ->remove('uid,actionLink,modules,moduleBlock')
             ->get();
 
         if($block) $data->height = $block->height;
@@ -123,6 +123,9 @@ class blockModel extends model
         $blocks = $this->dao->select('*')->from(TABLE_BLOCK)->where('account')->eq($this->app->user->account)
             ->andWhere('module')->eq($module)
             ->andWhere('hidden')->eq(0)
+            ->beginIF($this->config->global->flow == 'onlyStory')->andWhere('source')->notin('project,qa')->fi()
+            ->beginIF($this->config->global->flow == 'onlyTask')->andWhere('source')->notin('product,qa')->fi()
+            ->beginIF($this->config->global->flow == 'onlyTest')->andWhere('source')->notin('product,project')->fi()
             ->orderBy('`order`')
             ->fetchAll('id');
 
@@ -145,6 +148,50 @@ class blockModel extends model
     }
 
     /**
+     * Get data of welcome block.
+     * 
+     * @access public
+     * @return array
+     */
+    public function getWelcomeBlockData()
+    {
+        $data = array();
+
+        $projects = $this->loadModel('project')->getPairs();
+        $products = $this->loadModel('product')->getPairs();
+
+        $data['tasks']    = (int)$this->dao->select('count(*) AS count')->from(TABLE_TASK)->where('assignedTo')->eq($this->app->user->account)->andWhere('deleted')->eq(0)->fetch('count');
+        $data['bugs']     = (int)$this->dao->select('count(*) AS count')->from(TABLE_BUG)->where('assignedTo')->eq($this->app->user->account)->andWhere('deleted')->eq(0)->fetch('count');
+        $data['stories']  = (int)$this->dao->select('count(*) AS count')->from(TABLE_STORY)->where('assignedTo')->eq($this->app->user->account)->andWhere('deleted')->eq(0)->fetch('count');
+        $data['projects'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_PROJECT)->where('id')->in(array_keys($projects))->andWhere("(status='wait' or status='doing')")->andWhere('deleted')->eq(0)->fetch('count');
+        $data['products'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_PRODUCT)->where('status')->ne('closed')->andWhere('id')->in(array_keys($products))->andWhere('deleted')->eq(0)->fetch('count');
+
+        $today = date('Y-m-d');
+        $data['delayTask'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_TASK)
+            ->where('assignedTo')->eq($this->app->user->account)
+            ->andWhere('status')->in('wait,doing')
+            ->andWhere('deadline')->ne('0000-00-00')
+            ->andWhere('deadline')->lt($today)
+            ->andWhere('deleted')->eq(0)
+            ->fetch('count');
+        $data['delayBug'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_BUG)
+            ->where('assignedTo')->eq($this->app->user->account)
+            ->andWhere('status')->eq('active')
+            ->andWhere('deadline')->ne('0000-00-00')
+            ->andWhere('deadline')->lt($today)
+            ->andWhere('deleted')->eq(0)
+            ->fetch('count');
+        $data['delayProject'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_PROJECT)
+            ->where('id')->in(array_keys($projects))
+            ->andWhere('status')->in('wait,doing')
+            ->andWhere('end')->lt($today)
+            ->andWhere('deleted')->eq(0)
+            ->fetch('count');
+
+        return $data;
+    }
+
+    /**
      * Init block when account use first. 
      * 
      * @param  string    $appName 
@@ -159,6 +206,7 @@ class blockModel extends model
 
         /* Mark this app has init. */
         $this->loadModel('setting')->setItem("$account.$module.common.blockInited", true);
+        $this->loadModel('setting')->setItem("$account.$module.block.initVersion", $this->config->block->version);
         foreach($blocks as $index => $block)
         {
             $block['order']   = $index;
@@ -198,7 +246,7 @@ class blockModel extends model
      * 
      * @param  string $module 
      * @access public
-     * @return void
+     * @return string
      */
     public function getListParams($module = '')
     {
@@ -206,7 +254,7 @@ class blockModel extends model
         if($module == 'project') return $this->getProjectParams($module);
 
         $params = new stdclass();
-        $params = $this->onlyNumParams($module, $params);
+        $params = $this->onlyNumParams($params);
         return json_encode($params);
     }
 
@@ -348,9 +396,9 @@ class blockModel extends model
      * @access public
      * @return json
      */
-    public function getPlanParams($module = '')
+    public function getPlanParams()
     {
-        $params = $this->onlyNumParams($module);
+        $params = $this->onlyNumParams();
         return json_encode($params);
     }
 
@@ -360,9 +408,9 @@ class blockModel extends model
      * @access public
      * @return json
      */
-    public function getReleaseParams($module = '')
+    public function getReleaseParams()
     {
-        $params = $this->onlyNumParams($module);
+        $params = $this->onlyNumParams();
         return json_encode($params);
     }
 
@@ -372,9 +420,9 @@ class blockModel extends model
      * @access public
      * @return json
      */
-    public function getBuildParams($module = '')
+    public function getBuildParams()
     {
-        $params = $this->onlyNumParams($module);
+        $params = $this->onlyNumParams();
         return json_encode($params);
     }
 
@@ -384,13 +432,89 @@ class blockModel extends model
      * @access public
      * @return json
      */
-    public function getProductParams($module = '')
+    public function getProductParams()
     {
         $params->type['name']    = $this->lang->block->type;
         $params->type['options'] = $this->lang->block->typeList->product;
         $params->type['control'] = 'select';
 
-        return json_encode($this->onlyNumParams($module, $params));
+        return json_encode($this->onlyNumParams($params));
+    }
+
+    /**
+     * Get statistic params.
+     *
+     * @access public
+     * @return string
+     */
+    public function getStatisticParams($module = 'product')
+    {
+        if($module == 'product') return $this->getProductStatisticParams($module);
+        if($module == 'project') return $this->getProjectStatisticParams($module);
+        if($module == 'qa')      return $this->getQaStatisticParams($module);
+
+        $params = new stdclass();
+        $params = $this->onlyNumParams($params);
+        return json_encode($params);
+    }
+
+    /**
+     * Get product statistic params.
+     * 
+     * @access public
+     * @return void
+     */
+    public function getProductStatisticParams()
+    {
+        $params = new stdclass();
+        $params->type['name']    = $this->lang->block->type;
+        $params->type['options'] = $this->lang->block->typeList->product;
+        $params->type['control'] = 'select';
+
+        return json_encode($params);
+    }
+
+    /**
+     * Get project statistic params.
+     * 
+     * @access public
+     * @return void
+     */
+    public function getProjectStatisticParams()
+    {
+        $params = new stdclass();
+        $params->type['name']    = $this->lang->block->type;
+        $params->type['options'] = $this->lang->block->typeList->project;
+        $params->type['control'] = 'select';
+
+        return json_encode($params);
+    }
+
+    /**
+     * Get qa statistic params.
+     *
+     * @access public
+     * @return void
+     */
+    public function getQaStatisticParams()
+    {
+        $params = new stdclass();
+        $params->type['name']    = $this->lang->block->type;
+        $params->type['options'] = $this->lang->block->typeList->product;
+        $params->type['control'] = 'select';
+
+        return json_encode($params);
+    }
+
+    /**
+     * Get product overview pararms.
+     *
+     * @access public
+     * @return string
+     */
+    public function getOverviewParams()
+    {
+        return false;
     }
 
     /**
@@ -399,13 +523,30 @@ class blockModel extends model
      * @access public
      * @return json
      */
-    public function getProjectParams($module = '')
+    public function getProjectParams()
     {
         $params->type['name']    = $this->lang->block->type;
         $params->type['options'] = $this->lang->block->typeList->project;
         $params->type['control'] = 'select';
 
-        return json_encode($this->onlyNumParams($module, $params));
+        return json_encode($this->onlyNumParams($params));
+    }
+
+    public function getAssignToMeParams()
+    {
+        $params->todoNum['name']    = $this->lang->block->todoNum;
+        $params->todoNum['default'] = 20; 
+        $params->todoNum['control'] = 'input';
+
+        $params->taskNum['name']    = $this->lang->block->taskNum;
+        $params->taskNum['default'] = 20; 
+        $params->taskNum['control'] = 'input';
+
+        $params->bugNum['name']    = $this->lang->block->bugNum;
+        $params->bugNum['default'] = 20; 
+        $params->bugNum['control'] = 'input';
+
+        return json_encode($params);
     }
 
     /**
@@ -444,17 +585,133 @@ class blockModel extends model
     /**
      * Build number params.
      * 
-     * @param  string $module 
      * @param  object $params 
      * @access public
      * @return object
      */
-    public function onlyNumParams($module = '', $params = '')
+    public function onlyNumParams($params = '')
     {
         if(empty($params)) $params = new stdclass();
         $params->num['name']    = $this->lang->block->num;
         $params->num['default'] = 20; 
         $params->num['control'] = 'input';
         return $params;
+    }
+
+    /**
+     * Check whether long block.
+     * 
+     * @param  object    $block 
+     * @access public
+     * @return book
+     */
+    public function isLongBlock($block)
+    {
+        if(empty($block)) return true;
+        return $block->grid >= 6;
+    }
+
+    /**
+     * Check API for ranzhi
+     * 
+     * @param  string    $hash 
+     * @access public
+     * @return bool
+     */
+    public function checkAPI($hash)
+    {
+        if(empty($hash)) return false;
+
+        $key = $this->dao->select('value')->from(TABLE_CONFIG)
+            ->where('owner')->eq('system')
+            ->andWhere('module')->eq('sso')
+            ->andWhere('`key`')->eq('key')
+            ->fetch('value');
+
+        return $key == $hash;
+    }
+
+    /**
+     * Get products like drop menu order
+     * 
+     * @param  strint    $status 
+     * @access public
+     * @return array
+     */
+    public function getProductsLikeDropMenu($status)
+    {
+        $products = $this->loadModel('product')->getList($status);
+        if(empty($products)) return $products;
+
+        $lines = $this->loadModel('tree')->getLinePairs();
+        $productList = array();
+        foreach($lines as $id => $name)
+        {
+            foreach($products as $key => $product)
+            {
+                if($product->line == $id)
+                {
+                    $product->name = $name . '/' . $product->name;
+                    $productList[] = $product;
+                    unset($products[$key]);
+                }
+            }
+        }
+        $productList = array_merge($productList, $products);
+
+        $products = $mineProducts = $otherProducts = $closedProducts = array();
+        foreach($productList as $product)
+        {
+            if(!$this->app->user->admin and !$this->product->checkPriv($product)) continue;
+            if($product->status == 'normal' and $product->PO == $this->app->user->account) 
+            {
+                $mineProducts[$product->id] = $product;
+            }
+            elseif($product->status == 'normal' and $product->PO != $this->app->user->account) 
+            {
+                $otherProducts[$product->id] = $product;
+            }
+            elseif($product->status == 'closed')
+            {
+                $closedProducts[$product->id] = $product;
+            }
+        }
+        $products = $mineProducts + $otherProducts + $closedProducts;
+
+        return $products;
+    }
+
+    /**
+     * Get projects like drop menu order
+     * 
+     * @param  string    $status 
+     * @access public
+     * @return array
+     */
+    public function getProjectsLikeDropMenu($status)
+    {
+        $projectList = $this->loadModel('project')->getList($status);
+        if(empty($projectList)) return $projectList;
+
+        $projects = $mineProjects = $otherProjects = $closedProjects = array();
+        foreach($projectList as $project)
+        {
+            if(!$this->app->user->admin and !$this->project->checkPriv($project)) continue;
+            if($project->status != 'done' and $project->status != 'closed' and $project->PM == $this->app->user->account)
+            {
+                $mineProjects[$project->id] = $project;
+            }
+            elseif($project->status != 'done' and $project->status != 'closed' and !($project->PM == $this->app->user->account))
+            {
+                $otherProjects[$project->id] = $project;
+            }
+            elseif($project->status == 'done' or $project->status == 'closed')
+            {
+                $closedProjects[$project->id] = $project;
+            }
+        }
+        $projects = $mineProjects + $otherProjects + $closedProjects;
+
+        return $projects;
     }
 }

@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     tree
  * @version     $Id: en.php 5045 2013-07-06 07:04:40Z zhujinyonging@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->tree = new stdclass();
 $lang->tree->common             = 'Module';
@@ -19,7 +19,7 @@ $lang->tree->manage             = 'Manage module';
 $lang->tree->fix                = 'Fix';
 $lang->tree->manageProduct      = "Manage {$lang->productCommon}";
 $lang->tree->manageProject      = "Manage {$lang->projectCommon}";
-$lang->tree->manageLine         = 'Manage product line';
+$lang->tree->manageLine         = 'Manage Product Line';
 $lang->tree->manageBug          = 'Manage Bug';
 $lang->tree->manageCase         = 'Manage Case';
 $lang->tree->manageCaseLib      = 'Manage Library';
@@ -27,7 +27,7 @@ $lang->tree->manageCustomDoc    = 'Manage DocLib';
 $lang->tree->updateOrder        = 'Sort';
 $lang->tree->manageChild        = 'Manage Child Module';
 $lang->tree->manageStoryChild   = 'Manage Child Module';
-$lang->tree->manageLineChild    = 'Manage product line';
+$lang->tree->manageLineChild    = 'Manage Product Line';
 $lang->tree->manageBugChild     = 'Manage Child Bug';
 $lang->tree->manageCaseChild    = 'Manage Child Case';
 $lang->tree->manageCaselibChild = 'Manage Child Library';
@@ -36,13 +36,14 @@ $lang->tree->syncFromProduct    = 'Copy';
 $lang->tree->dragAndSort        = "Drag and Sort";
 $lang->tree->sort               = "Sort";
 $lang->tree->addChild           = "Add Child";
+$lang->tree->confirmDelete      = 'Do you want to delete this Module and its Children?';
+$lang->tree->confirmDeleteLine  = 'Do you want to delete this Product Line and its Children?';
+$lang->tree->confirmRoot        = "Changes on {$lang->productCommon} will change the Story, Bug, Case of {$lang->productCommon} it belongs to, as well as the realtion of {$lang->projectCommon} and {$lang->productCommon}, which is dangerous, please be aware of it. Do you want to change?";
+$lang->tree->successSave        = 'Saved.';
+$lang->tree->successFixed       = 'Fixed.';
+$lang->tree->repeatName         = 'The name "%s" has existed!';
 
-$lang->tree->confirmDelete = 'Do you want to delete this Module and its Children?';
-$lang->tree->confirmRoot   = "Changes on {$lang->productCommon} will change the Story, Bug, Case of {$lang->productCommon} it belongs to, as well as the realtion of {$lang->projectCommon} and {$lang->productCommon}, which is dangerous, please be aware of it. Do you want to change?";
-$lang->tree->successSave   = 'Saved.';
-$lang->tree->successFixed  = 'Fixed.';
-$lang->tree->repeatName    = 'The name "%s" has existed!';
-
+$lang->tree->module     = 'Module';
 $lang->tree->name       = 'Name';
 $lang->tree->line       = 'Product Line';
 $lang->tree->cate       = 'Category Name';

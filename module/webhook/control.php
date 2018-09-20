@@ -7,7 +7,7 @@
  * @author      Gang Liu <liugang@cnezsoft.com>
  * @package     webhook 
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class webhook extends control
 {
@@ -53,7 +53,7 @@ class webhook extends control
         {
             $this->webhook->create();
             if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            $this->send(array('result' => 'success', 'message' => $this->lang->webhook->saveSuccess, 'locate' => inlink('browse')));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
         }
 
         $this->app->loadLang('action');
@@ -80,7 +80,7 @@ class webhook extends control
         {
             $this->webhook->update($id);
             if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            $this->send(array('result' => 'success', 'message' => $this->lang->webhook->saveSuccess, 'locate' => inlink('browse')));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
         }
 
         $this->app->loadLang('action');
@@ -159,13 +159,20 @@ class webhook extends control
             return true;
         }
 
-        $now = helper::now();
+        $now  = helper::now();
+        $diff = 0;
         foreach($dataList as $data)
         {
             $webhook = zget($webhooks, $data->objectID, '');
             if($webhook)
             {
-                $result = $this->webhook->fetchHook($webhook, $data->data);
+                /* if connect time is out then ignore it.*/
+                if($diff < 29)
+                {
+                    $time = time();
+                    $result = $this->webhook->fetchHook($webhook, $data->data);
+                    $diff = time() - $time;
+                }
                 $this->webhook->saveLog($webhook, $data->action, $data->data, $result);
             }
             

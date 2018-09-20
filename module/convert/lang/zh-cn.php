@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     convert
  * @version     $Id: zh-cn.php 4129 2013-01-18 01:58:14Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->convert->common  = '从其他系统导入';
 $lang->convert->index   = '首页';
@@ -43,7 +43,7 @@ $lang->convert->sourceList['Redmine'] = array('Redmine_1.1' => '1.1');
 $lang->convert->setting     = '设置';
 $lang->convert->checkConfig = '检查配置';
 
-$lang->convert->ok          = '<span class="text-success"><i class="icon-ok-sign"></i> 检查通过</span>';
+$lang->convert->ok          = '<span class="text-success"><i class="icon-check-sign"></i> 检查通过</span>';
 $lang->convert->fail        = '<span class="text-danger"><i class="icon-remove-sign"></i> 检查失败</span>';
 
 $lang->convert->dbHost      = '数据库服务器';

@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     api
  * @version     $Id: English.php 824 2010-05-02 15:32:06Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->api = new stdclass();
 $lang->api->common   = 'API';

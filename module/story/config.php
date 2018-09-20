@@ -13,7 +13,7 @@ $config->story->edit   = new stdclass();
 $config->story->change = new stdclass();
 $config->story->close  = new stdclass();
 $config->story->review = new stdclass();
-$config->story->create->requiredFields = 'title,module';
+$config->story->create->requiredFields = 'title';
 $config->story->change->requiredFields = 'title';
 $config->story->close->requiredFields  = 'closedReason';
 $config->story->review->requiredFields = 'assignedTo,reviewedBy';
@@ -56,7 +56,7 @@ $config->story->datatable->fieldList['id']['required'] = 'yes';
 
 $config->story->datatable->fieldList['pri']['title']    = 'priAB';
 $config->story->datatable->fieldList['pri']['fixed']    = 'left';
-$config->story->datatable->fieldList['pri']['width']    = '40';
+$config->story->datatable->fieldList['pri']['width']    = '50';
 $config->story->datatable->fieldList['pri']['required'] = 'no';
 
 $config->story->datatable->fieldList['title']['title']    = 'title';
@@ -91,12 +91,12 @@ $config->story->datatable->fieldList['sourceNote']['required'] = 'no';
 
 $config->story->datatable->fieldList['status']['title']    = 'statusAB';
 $config->story->datatable->fieldList['status']['fixed']    = 'no';
-$config->story->datatable->fieldList['status']['width']    = '60';
+$config->story->datatable->fieldList['status']['width']    = '80';
 $config->story->datatable->fieldList['status']['required'] = 'no';
 
 $config->story->datatable->fieldList['estimate']['title']    = 'estimateAB';
 $config->story->datatable->fieldList['estimate']['fixed']    = 'no';
-$config->story->datatable->fieldList['estimate']['width']    = '55';
+$config->story->datatable->fieldList['estimate']['width']    = '65';
 $config->story->datatable->fieldList['estimate']['required'] = 'no';
 
 $config->story->datatable->fieldList['stage']['title']    = 'stageAB';
@@ -193,5 +193,5 @@ $config->story->datatable->fieldList['caseCount']['name']     = $lang->story->ca
 
 $config->story->datatable->fieldList['actions']['title']    = 'actions';
 $config->story->datatable->fieldList['actions']['fixed']    = 'right';
-$config->story->datatable->fieldList['actions']['width']    = '140';
+$config->story->datatable->fieldList['actions']['width']    = '190';
 $config->story->datatable->fieldList['actions']['required'] = 'yes';

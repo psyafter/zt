@@ -9,7 +9,7 @@
  * @author      Gang Liu <liugang@cnezsoft.com>
  * @package     ZenTaoPMS
  * @version     $Id: index.php 5036 2013-07-06 05:26:44Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 /* Set the error reporting. */
 error_reporting(0);

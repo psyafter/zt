@@ -8,7 +8,7 @@
  * @author      jinyong zhu <zhujinyong@cnezsoft.com>
  * @package     bin
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 /* Set pathes and timezone. */
 $zentaoPath = dirname(dirname(dirname(__FILE__))) . "/";

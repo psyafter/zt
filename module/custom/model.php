@@ -7,7 +7,7 @@
  * @author      Congzhi Chen <congzhi@cnezsoft.com>
  * @package     custom
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class customModel extends model
 {
@@ -140,11 +140,11 @@ class customModel extends model
     public static function setMenuByConfig($allMenu, $customMenu, $module = '')
     {
         global $app, $lang, $config;
-        $menu            = array();
-        $menuModuleName  = $module;
-        $order           = 1;
-        $customMenuMap   = array();
-        $isTutorialMode  = commonModel::isTutorialMode();
+        $menu           = array();
+        $menuModuleName = $module;
+        $order          = 1;
+        $customMenuMap  = array();
+        $isTutorialMode = commonModel::isTutorialMode();
 
         if($customMenu)
         {
@@ -201,19 +201,21 @@ class customModel extends model
         /* Merge fileMenu and customMenu. */
         foreach($customMenuMap as $name => $item)
         {
-            if(is_object($allMenu) and !isset($allMenu->$name))$allMenu->$name = $item;
-            if(is_array($allMenu)  and !isset($allMenu[$name]))$allMenu[$name] = $item;
+            if(is_object($allMenu) and !isset($allMenu->$name)) $allMenu->$name = $item;
+            if(is_array($allMenu)  and !isset($allMenu[$name])) $allMenu[$name] = $item;
         }
 
         foreach($allMenu as $name => $item)
         {
             if(is_object($item)) $item = (array)$item;
 
-            $label  = '';
-            $module = '';
-            $method = '';
-            $float  = '';
-            $fixed  = '';
+            $label     = '';
+            $module    = '';
+            $method    = '';
+            $class     = '';
+            $subModule = '';
+            $subMenu   = '';
+            $alias     = '';
 
             $link = (is_array($item) and isset($item['link'])) ? $item['link'] : $item;
             /* The variable of item has not link and is not link then ignore it. */
@@ -235,31 +237,49 @@ class customModel extends model
                 {
                     $itemLink = array('module' => $module, 'method' => $method);
                     if(isset($link[3])) $itemLink['vars'] = $link[3];
-                    if(is_array($item))
-                    {
-                        if(isset($item['subModule'])) $itemLink['subModule'] = $item['subModule'];
-                        if(isset($item['alias']))     $itemLink['alias']     = $item['alias'];
-                        if(isset($item['target']))    $itemLink['target']    = $item['target'];
-                    }
+                    if(is_array($item) and isset($item['target'])) $itemLink['target'] = $item['target'];
                 }
 
                 if(is_array($item))
                 {
-                    if(isset($item['float'])) $float = $item['float'];
-                    if(isset($item['fixed'])) $fixed = $item['fixed'];
+                    if(isset($item['class']))     $class     = $item['class'];
+                    if(isset($item['subModule'])) $subModule = $item['subModule'];
+                    if(isset($item['subMenu']))   $subMenu   = $item['subMenu'];
+                    if(isset($item['alias']))     $alias     = $item['alias'];
                 }
 
-                $hidden = !$fixed && isset($customMenuMap[$name]) && isset($customMenuMap[$name]->hidden) && $customMenuMap[$name]->hidden;
+                $hidden = isset($customMenuMap[$name]) && isset($customMenuMap[$name]->hidden) && $customMenuMap[$name]->hidden;
+
+                if(isset($item['subMenu']))
+                {
+                    foreach($item['subMenu'] as $subItem)
+                    {
+                        if(isset($subItem->link['module']) && isset($subItem->link['method']))
+                        {
+                            $subItem->hidden = !common::hasPriv($subItem->link['module'], $subItem->link['method']);
+                        }
+                    }
+                    if(isset($customMenuMap[$name]->subMenu))
+                    {
+                        foreach($customMenuMap[$name]->subMenu as $subItem)
+                        {
+                            if(isset($subItem->hidden) && isset($item['subMenu'][$subItem->name])) $item['subMenu'][$subItem->name]->hidden = $subItem->hidden;
+                        }
+                    }
+                }
+
                 if(strpos($name, 'QUERY') === 0 and !isset($customMenuMap[$name])) $hidden = true;
 
                 $menuItem = new stdclass();
-                $menuItem->name   = $name;
-                $menuItem->link   = $itemLink;
-                $menuItem->text   = $label;
-                $menuItem->order  = $fixed ? -1 : (isset($customMenuMap[$name]) && isset($customMenuMap[$name]->order) ? $customMenuMap[$name]->order : $order++);
-                if($float)  $menuItem->float   = $float;
-                if($fixed)  $menuItem->fixed   = $fixed;
-                if($hidden) $menuItem->hidden  = $hidden;
+                $menuItem->name  = $name;
+                $menuItem->link  = $itemLink;
+                $menuItem->text  = $label;
+                $menuItem->order = (isset($customMenuMap[$name]) && isset($customMenuMap[$name]->order) ? $customMenuMap[$name]->order : $order++);
+                if($hidden)   $menuItem->hidden    = $hidden;
+                if($class)    $menuItem->class     = $class;
+                if($subModule)$menuItem->subModule = $subModule;
+                if($subMenu)  $menuItem->subMenu   = $subMenu;
+                if($alias)    $menuItem->alias     = $alias;
                 if($isTutorialMode) $menuItem->tutorial = true;
 
                 /* Hidden menu by config in mobile. */
@@ -291,7 +311,7 @@ class customModel extends model
         if($module != 'main' and isset($lang->menugroup->$module)) $module = $lang->menugroup->$module;
         $flowModule = $config->global->flow . '_' . $module;
         $customMenu = isset($config->customMenu->$flowModule) ? $config->customMenu->$flowModule : array();
-        if(commonModel::isTutorialMode() && $module === 'main')$customMenu = 'my,product,project,qa,company';
+        if(commonModel::isTutorialMode() && $module === 'main') $customMenu = 'my,product,project,qa,company';
         if(!empty($customMenu) && is_string($customMenu) && substr($customMenu, 0, 1) === '[') $customMenu = json_decode($customMenu);
         if($module == 'my' && empty($config->global->scoreStatus)) unset($allMenu->score);
         $menu = self::setMenuByConfig($allMenu, $customMenu, $module);
@@ -343,11 +363,12 @@ class customModel extends model
         global $lang, $app, $dbh;
         if(!isset($lang->$module->featureBar[$method])) return;
         $queryModule = $module == 'project' ? 'task' : ($module == 'product' ? 'story' : $module);
-        $shortcuts   = $dbh->query('select id, title from ' . TABLE_USERQUERY . " where `account` = '{$app->user->account}' AND `module` = '{$queryModule}' order by id")->fetchAll();
-        foreach($shortcuts as $shortcut)
+        $shortcuts   = $dbh->query('select id, title from ' . TABLE_USERQUERY . " where `account` = '{$app->user->account}' AND `module` = '{$queryModule}' AND `shortcut` = '1' order by id")->fetchAll();
+
+        if($shortcuts)
         {
-            $shortcutID = 'QUERY' . $shortcut->id;
-            $lang->$module->featureBar[$method][$shortcutID] = $shortcut->title;
+            $lang->$module->featureBar[$method]['QUERY'] = $lang->custom->common;
+            foreach($shortcuts as $shortcut) $lang->custom->queryList[$shortcut->id] = $shortcut->title;
         }
     }
 
@@ -445,21 +466,26 @@ class customModel extends model
 
         $data = fixer::input('post')->get();
         $requiredFields = array();
-        foreach($data->requiredFields as $method => $fields)
+        if(!empty($data->requiredFields))
         {
-            $method      = strtolower($method);
-            $systemField = $this->config->$moduleName->$method->requiredFields;
-
-            $fields = join(',', $fields);
-            foreach(explode(',', $systemField) as $field)
+            foreach($data->requiredFields as $method => $fields)
             {
-                $field = trim($field);
-                if(strpos(",$fields,", ",$field,") === false) $fields .= ",$field";
-            }
+                $method      = strtolower($method);
+                $systemField = $this->config->$moduleName->$method->requiredFields;
 
-            $requiredFields[$method]['requiredFields'] = $fields;
+                $fields = join(',', $fields);
+                foreach(explode(',', $systemField) as $field)
+                {
+                    $field = trim($field);
+                    if(strpos(",$fields,", ",$field,") === false) $fields .= ",$field";
+                }
+
+                $requiredFields[$method]['requiredFields'] = $fields;
+            }
         }
 
-        $this->loadModel('setting')->setItems("system.{$moduleName}", $requiredFields);
+        $this->loadModel('setting');
+        $this->setting->deleteItems("owner=system&module={$moduleName}");
+        $this->setting->setItems("system.{$moduleName}", $requiredFields);
     }
 }

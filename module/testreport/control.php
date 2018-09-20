@@ -7,15 +7,15 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     testreport
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class testreport extends control
 {
     /**
-     * Construct 
-     * 
-     * @param  string $moduleName 
-     * @param  string $methodName 
+     * Construct
+     *
+     * @param  string $moduleName
+     * @param  string $methodName
      * @access public
      * @return void
      */
@@ -35,15 +35,15 @@ class testreport extends control
     }
 
     /**
-     * Browse report. 
-     * 
-     * @param  int    $objectID 
-     * @param  string $objectType 
-     * @param  string $extra 
-     * @param  string $orderBy 
-     * @param  int    $recTotal 
-     * @param  int    $recPerPage 
-     * @param  int    $pageID 
+     * Browse report.
+     *
+     * @param  int    $objectID
+     * @param  string $objectType
+     * @param  string $extra
+     * @param  string $orderBy
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
      * @access public
      * @return void
      */
@@ -76,10 +76,10 @@ class testreport extends control
         if(empty($reports) and common::hasPriv('testreport', 'create'))
         {
             $param = '';
-            if($objectType == 'product' and $extra) $param = "objectID=$extra&objectType=testtask"; 
+            if($objectType == 'product' and $extra) $param = "objectID=$extra&objectType=testtask";
             if($objectType == 'project')
             {
-                $param = "objectID=$objectID&objectType=project"; 
+                $param = "objectID=$objectID&objectType=project";
                 if(isset($_POST['taskIdList'])) $param .= '&extra=' . join(',', $_POST['taskIdList']);
             }
             if($param) $this->locate($this->createLink('testreport', 'create', $param));
@@ -112,11 +112,11 @@ class testreport extends control
     }
 
     /**
-     * Create report. 
-     * 
-     * @param  int    $objectID 
-     * @param  string $objectType 
-     * @param  string $extra 
+     * Create report.
+     *
+     * @param  int    $objectID
+     * @param  string $objectType
+     * @param  string $extra
      * @access public
      * @return void
      */
@@ -151,12 +151,14 @@ class testreport extends control
                 $build   = $this->build->getById($task->build);
                 $stories = empty($build->stories) ? array() : $this->story->getByList($build->stories);
 
-                $builds[$build->id] = $build;
+                if(!empty($build->id)) $builds[$build->id] = $build;
                 $bugs = $this->testreport->getBugs4Test($builds, $productID, $begin, $end);
             }
 
             $tasks = array($task->id => $task);
             $owner = $task->owner;
+
+            $this->setChartDatas($objectID);
 
             $this->view->title       = $task->name . $this->lang->testreport->create;
             $this->view->position[]  = html::a(inlink('browse', "objectID=$productID&objectType=product&extra={$task->id}"), $task->name);
@@ -182,6 +184,7 @@ class testreport extends control
 
                 $owners[$task->owner] = $task->owner;
                 $productIdList[$task->product] = $task->product;
+                $this->setChartDatas($task->id);
             }
             if(count($productIdList) > 1)
             {
@@ -210,7 +213,7 @@ class testreport extends control
             $this->view->reportTitle = date('Y-m-d') . " PROJECT#{$project->id} {$project->name} {$this->lang->testreport->common}";
 
         }
-        $cases   = $this->testreport->getTaskCases($tasks);
+        $cases   = $this->testreport->getTaskCases($tasks, $begin, $end);
         $bugInfo = $this->testreport->getBugInfo($tasks, $productIdList, $begin, $end, $builds);
 
         $this->view->begin   = $begin;
@@ -229,7 +232,7 @@ class testreport extends control
         $this->view->users   = $this->user->getPairs('noletter|noclosed|nodeleted');
 
         $this->view->cases       = $cases;
-        $this->view->caseSummary = $this->testreport->getResultSummary($tasks, $cases);
+        $this->view->caseSummary = $this->testreport->getResultSummary($tasks, $cases, $begin, $end);
 
         $this->view->legacyBugs = $bugInfo['legacyBugs'];
         unset($bugInfo['legacyBugs']);
@@ -241,10 +244,10 @@ class testreport extends control
     }
 
     /**
-     * Edit report 
-     * 
-     * @param  int    $reportID 
-     * @param  string $from 
+     * Edit report
+     *
+     * @param  int    $reportID
+     * @param  string $from
      * @access public
      * @return void
      */
@@ -302,23 +305,29 @@ class testreport extends control
                 $build   = $this->build->getById($task->build);
                 $stories = empty($build->stories) ? array() : $this->story->getByList($build->stories);
 
-                $builds[$build->id] = $build;
+                if(!empty($build->id)) $builds[$build->id] = $build;
                 $bugs = $this->testreport->getBugs4Test($builds, $report->product, $report->begin, $report->end);
             }
             $tasks = array($task->id => $task);
+
+            $this->setChartDatas($report->objectID);
         }
         else
         {
             $tasks = $this->testtask->getProjectTasks($report->project);
             $productIdList = array();
-            foreach($tasks as $task) $productIdList[$task->product] = $task->product;
+            foreach($tasks as $task)
+            {
+                $productIdList[$task->product] = $task->product;
+                $this->setChartDatas($task->id);
+            }
 
             $stories = $this->story->getProjectStories($project->id);
             $builds  = $this->build->getProjectBuilds($project->id);
             $bugs    = $this->testreport->getBugs4Test($builds, $productIdList, $report->begin, $report->end, 'project');
         }
 
-        $cases   = $this->testreport->getTaskCases($tasks);
+        $cases   = $this->testreport->getTaskCases($tasks, $report->begin, $report->end);
         $bugInfo = $this->testreport->getBugInfo($tasks, $productIdList, $report->begin, $report->end, $builds);
 
         $this->view->title = $report->title . $this->lang->testreport->edit;
@@ -335,7 +344,7 @@ class testreport extends control
         $this->view->users   = $this->user->getPairs('noletter|noclosed|nodeleted');
 
         $this->view->cases       = $cases;
-        $this->view->caseSummary = $this->testreport->getResultSummary($tasks, $cases);
+        $this->view->caseSummary = $this->testreport->getResultSummary($tasks, $cases, $report->begin, $report->end);
 
         $this->view->legacyBugs = $bugInfo['legacyBugs'];
         unset($bugInfo['legacyBugs']);
@@ -345,15 +354,17 @@ class testreport extends control
     }
 
     /**
-     * View report. 
-     * 
-     * @param  int    $reportID 
+     * View report.
+     *
+     * @param  int    $reportID
      * @access public
      * @return void
      */
     public function view($reportID, $from = 'product')
     {
         $report  = $this->testreport->getById($reportID);
+        if(!$report) die(js::error($this->lang->notFound) . js::locate('back'));
+
         $project = $this->project->getById($report->project);
         if($from == 'product' and is_numeric($report->product))
         {
@@ -385,8 +396,17 @@ class testreport extends control
 
         $tasks   = $report->tasks ? $this->testtask->getByList($report->tasks) : array();;
         $builds  = $report->builds ? $this->build->getByList($report->builds) : array();
-        $cases   = $this->testreport->getTaskCases($tasks, $report->cases);
+        $cases   = $this->testreport->getTaskCases($tasks, $report->begin, $report->end, $report->cases);
         $bugInfo = $this->testreport->getBugInfo($tasks, $report->product, $report->begin, $report->end, $builds);
+
+        if($report->objectType == 'testtask')
+        {
+            $this->setChartDatas($report->objectID);
+        }
+        elseif($tasks)
+        {
+            foreach($tasks as $task) $this->setChartDatas($task->id);
+        }
 
         $this->view->title      = $report->title;
         $this->view->browseLink = $browseLink;
@@ -402,7 +422,7 @@ class testreport extends control
         $this->view->actions = $this->loadModel('action')->getList('testreport', $reportID);
 
         $this->view->storySummary = $this->product->summary($stories);
-        $this->view->caseSummary  = $this->testreport->getResultSummary($tasks, $cases);
+        $this->view->caseSummary  = $this->testreport->getResultSummary($tasks, $cases, $report->begin, $report->end);
 
         $this->view->legacyBugs = $bugInfo['legacyBugs'];
         unset($bugInfo['legacyBugs']);
@@ -411,10 +431,10 @@ class testreport extends control
     }
 
     /**
-     * Delete report. 
-     * 
-     * @param  int    $reportID 
-     * @param  string $confirm 
+     * Delete report.
+     *
+     * @param  int    $reportID
+     * @param  string $confirm
      * @access public
      * @return void
      */
@@ -433,9 +453,9 @@ class testreport extends control
 
     /**
      * Common action.
-     * 
-     * @param  int    $objectID 
-     * @param  string $objectType 
+     *
+     * @param  int    $objectID
+     * @param  string $objectType
      * @access public
      * @return int
      */
@@ -446,7 +466,7 @@ class testreport extends control
             $this->products = $this->product->getPairs('nocode');
             $productID      = $this->product->saveState($objectID, $this->products);
             $this->testreport->setMenu($this->products, $productID);
-            return $productID; 
+            return $productID;
         }
         elseif($objectType == 'project')
         {
@@ -456,7 +476,61 @@ class testreport extends control
             $this->lang->testreport->menu = $this->lang->project->menu;
             $this->lang->testreport->menu->testtask['subModule'] = 'testreport';
             $this->lang->menugroup->testreport = 'project';
-            return $projectID; 
+            return $projectID;
+        }
+    }
+
+    /**
+     * Set chart datas of cases.
+     *
+     * @param  int    $taskID
+     * @access public
+     * @return void
+     */
+    public function setChartDatas($taskID)
+    {
+        $this->loadModel('report');
+        $task   = $this->loadModel('testtask')->getById($taskID);
+        foreach($this->lang->testtask->report->charts as $chart => $title)
+        {
+            if(strpos($chart, 'testTask') === false) continue;
+
+            $chartFunc   = 'getDataOf' . $chart;
+            $chartData   = $this->testtask->$chartFunc($taskID);
+            $chartOption = $this->testtask->mergeChartOption($chart);
+            if(!empty($chartType)) $chartOption->type = $chartType;
+
+            $this->view->charts[$chart] = $chartOption;
+            if(isset($this->view->datas[$chart]))
+            {
+                $existDatas = $this->view->datas[$chart];
+                $sum        = 0;
+                foreach($chartData as $key => $data)
+                {
+                    if(isset($existDatas[$key]))
+                    {
+                        $data->value += $existDatas[$key]->value;
+                        $sum += $data->value;
+                        unset($existDatas[$chart][$key]);
+                    }
+                }
+
+                foreach($existDatas as $key => $data)
+                {
+                    $sum += $data->value;
+                    $chartData[$key] = $data;
+                }
+                if($sum)
+                {
+                    foreach($chartData as $data) $data->percent = round($data->value / $sum, 2);
+                }
+                ksort($chartData);
+                $this->view->datas[$chart] = $chartData;
+            }
+            else
+            {
+                $this->view->datas[$chart] = $this->report->computePercent($chartData);
+            }
         }
     }
 }

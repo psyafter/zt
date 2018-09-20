@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testtask
  * @version     $Id: control.php 5114 2013-07-12 06:02:59Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class testtask extends control
 {
@@ -50,7 +50,7 @@ class testtask extends control
      * @access public
      * @return void
      */
-    public function browse($productID = 0, $branch = '', $type = 'local,wait', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1, $beginTime = 0, $endTime = 0)
+    public function browse($productID = 0, $branch = '', $type = 'local,totalStatus', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1, $beginTime = 0, $endTime = 0)
     {
         /* Save session. */
         $this->session->set('testtaskList', $this->app->getURI(true));
@@ -211,7 +211,7 @@ class testtask extends control
             $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'bug');
         }
 
-        $this->testtask->setMenu($this->products, $productID, $task->branch);
+        $this->testtask->setMenu($this->products, $productID, $task->branch, $taskID);
 
         $this->view->title      = "TASK #$task->id $task->name/" . $this->products[$productID];
         $this->view->position[] = html::a($this->createLink('testtask', 'browse', "productID=$productID"), $this->products[$productID]);
@@ -259,10 +259,10 @@ class testtask extends control
         $task = $this->testtask->getById($taskID);
         if(!$task) die(js::error($this->lang->notFound) . js::locate('back'));
         $productID = $task->product;
-        $this->testtask->setMenu($this->products, $productID, $task->branch);
-        setcookie('preProductID', $productID, $this->config->cookieLife, $this->config->webRoot);
+        $this->testtask->setMenu($this->products, $productID, $task->branch, $taskID);
+        setcookie('preTaskID', $taskID, $this->config->cookieLife, $this->config->webRoot);
 
-        if($this->cookie->preProductID != $productID)
+        if($this->cookie->preTaskID != $taskID)
         {
             $_COOKIE['taskCaseModule'] = 0;
             setcookie('taskCaseModule', 0, $this->config->cookieLife, $this->config->webRoot);
@@ -356,7 +356,7 @@ class testtask extends control
             }
         }
 
-        $this->testtask->setMenu($this->products, $productID, $branchID);
+        $this->testtask->setMenu($this->products, $productID, $branchID, $taskID);
         $this->view->title         = $this->products[$productID] . $this->lang->colon . $this->lang->testtask->common . $this->lang->colon . $this->lang->testtask->reportChart;
         $this->view->position[]    = html::a($this->createLink('testtask', 'cases', "taskID=$taskID"), $this->products[$productID]);
         $this->view->position[]    = $this->lang->testtask->reportChart;
@@ -390,12 +390,11 @@ class testtask extends control
         $task    = $this->testtask->getById($taskID);
         if(!$task) die(js::error($this->lang->notFound) . js::locate('back'));
         $productID = $task->product;
-        $this->testtask->setMenu($this->products, $productID, $task->branch);
+        $this->testtask->setMenu($this->products, $productID, $task->branch, $taskID);
 
         $runs = $this->testtask->getRuns($taskID, 0, $groupBy);
         $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'testcase', false);
         $runs = $this->testcase->appendData($runs, 'run');
-
         $groupCases  = array();
         $groupByList = array();
         foreach($runs as $run)
@@ -408,6 +407,17 @@ class testtask extends control
             elseif($groupBy == 'assignedTo')
             {
                 $groupCases[$run->assignedTo][] = $run;
+            }
+        }
+
+        if($groupBy == 'story' && $task->build)
+        {
+            $buildStoryIdList = $this->dao->select('stories')->from(TABLE_BUILD)->where('id')->eq($task->build)->fetch('stories');
+            $buildStories     = $this->dao->select('id,title')->from(TABLE_STORY)->where('id')->in($buildStoryIdList)->andWhere('id')->notin(array_keys($groupCases))->fetchAll('id');
+            foreach($buildStories as $buildStory)
+            {
+                $groupCases[$buildStory->id][] = $buildStory;
+                $groupByList[$buildStory->id]  = $buildStory->title;
             }
         }
 
@@ -454,7 +464,7 @@ class testtask extends control
         $productID = $this->product->saveState($task->product, $this->products);
 
         /* Set menu. */
-        $this->testtask->setMenu($this->products, $productID, $task->branch);
+        $this->testtask->setMenu($this->products, $productID, $task->branch, $taskID);
 
         $this->view->title      = $this->products[$productID] . $this->lang->colon . $this->lang->testtask->edit;
         $this->view->position[] = html::a($this->createLink('testtask', 'browse', "productID=$productID"), $this->products[$productID]);
@@ -484,7 +494,7 @@ class testtask extends control
         if(!empty($_POST))
         {
             $changes = $this->testtask->start($taskID);
-            if(dao::isError()) die(js::error(dao::getError()));
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
             if($this->post->comment != '' or !empty($changes))
             {
@@ -492,8 +502,8 @@ class testtask extends control
                 $this->action->logHistory($actionID, $changes);
             }
 
-            if(isonlybody()) die(js::reload('parent.parent'));
-            die(js::locate($this->createLink('testtask', 'view', "taskID=$taskID"), 'parent'));
+            if(isonlybody()) $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('testtask', 'view', "taskID=$taskID")));
         }
 
         /* Get task info. */
@@ -501,7 +511,7 @@ class testtask extends control
         $productID = $this->product->saveState($testtask->product, $this->products);
 
         /* Set menu. */
-        $this->testtask->setMenu($this->products, $productID, $testtask->branch);
+        $this->testtask->setMenu($this->products, $productID, $testtask->branch, $taskID);
 
         $this->view->testtask   = $testtask;
         $this->view->title      = $testtask->name . $this->lang->colon . $this->lang->testtask->start;
@@ -525,7 +535,7 @@ class testtask extends control
         if(!empty($_POST))
         {
             $changes = $this->testtask->activate($taskID);
-            if(dao::isError()) die(js::error(dao::getError()));
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
             if($this->post->comment != '' or !empty($changes))
             {
@@ -533,8 +543,8 @@ class testtask extends control
                 $this->action->logHistory($actionID, $changes);
             }
 
-            if(isonlybody()) die(js::reload('parent.parent'));
-            die(js::locate($this->createLink('testtask', 'view', "taskID=$taskID"), 'parent'));
+            if(isonlybody()) $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'parent')); 
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('testtask', 'view', "taskID=$taskID")));
         }
 
         /* Get task info. */
@@ -542,7 +552,7 @@ class testtask extends control
         $productID = $this->product->saveState($testtask->product, $this->products);
 
         /* Set menu. */
-        $this->testtask->setMenu($this->products, $productID, $testtask->branch);
+        $this->testtask->setMenu($this->products, $productID, $testtask->branch, $taskID);
 
         $this->view->testtask   = $testtask;
         $this->view->title      = $testtask->name . $this->lang->colon . $this->lang->testtask->start;
@@ -566,7 +576,7 @@ class testtask extends control
         if(!empty($_POST))
         {
             $changes = $this->testtask->close($taskID);
-            if(dao::isError()) die(js::error(dao::getError()));
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
             if($this->post->comment != '' or !empty($changes))
             {
@@ -574,8 +584,8 @@ class testtask extends control
                 $this->action->logHistory($actionID, $changes);
             }
 
-            if(isonlybody()) die(js::reload('parent.parent'));
-            die(js::locate($this->createLink('testtask', 'view', "taskID=$taskID"), 'parent'));
+            if(isonlybody()) $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->success, 'locate' => $this->createLink('testtask', 'view', "taskID=$taskID")));
         }
 
         /* Get task info. */
@@ -583,7 +593,7 @@ class testtask extends control
         $productID = $this->product->saveState($testtask->product, $this->products);
 
         /* Set menu. */
-        $this->testtask->setMenu($this->products, $productID, $testtask->branch);
+        $this->testtask->setMenu($this->products, $productID, $testtask->branch, $taskID);
 
         $this->view->testtask     = $this->testtask->getById($taskID);
         $this->view->title        = $testtask->name . $this->lang->colon . $this->lang->close;
@@ -609,7 +619,7 @@ class testtask extends control
         if(!empty($_POST))
         {
             $changes = $this->testtask->block($taskID);
-            if(dao::isError()) die(js::error(dao::getError()));
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
             if($this->post->comment != '' or !empty($changes))
             {
@@ -617,8 +627,8 @@ class testtask extends control
                 $this->action->logHistory($actionID, $changes);
             }
 
-            if(isonlybody()) die(js::reload('parent.parent'));
-            die(js::locate($this->createLink('testtask', 'view', "taskID=$taskID"), 'parent'));
+            if(isonlybody()) $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('testtask', 'view', "taskID=$taskID")));
         }
 
         /* Get task info. */
@@ -626,7 +636,7 @@ class testtask extends control
         $productID = $this->product->saveState($testtask->product, $this->products);
 
         /* Set menu. */
-        $this->testtask->setMenu($this->products, $productID, $testtask->branch);
+        $this->testtask->setMenu($this->products, $productID, $testtask->branch, $taskID);
 
         $this->view->testtask   = $testtask;
         $this->view->title      = $testtask->name . $this->lang->colon . $this->lang->testtask->start;
@@ -697,7 +707,7 @@ class testtask extends control
         $productID = $this->product->saveState($task->product, $this->products);
 
         /* Save session. */
-        $this->testtask->setMenu($this->products, $productID, $task->branch);
+        $this->testtask->setMenu($this->products, $productID, $task->branch, $taskID);
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
@@ -903,7 +913,7 @@ class testtask extends control
         /* The case of tasks of qa. */
         if($productID)
         {
-            $this->testtask->setMenu($this->products, $productID);
+            $this->testtask->setMenu($this->products, $productID, $taskID);
             $this->view->moduleOptionMenu = $this->loadModel('tree')->getOptionMenu($productID, $viewType = 'case', $startModuleID = 0);
         }
         /* The case of my. */
@@ -980,6 +990,6 @@ class testtask extends control
             ->where('task')->eq((int)$taskID)
             ->andWhere('`case`')->in($this->post->caseIDList)
             ->exec();
-        die(js::locate($this->session->caseList));
+        die(js::locate($this->session->caseList, 'parent'));
     }
 }

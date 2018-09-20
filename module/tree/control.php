@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     tree
  * @version     $Id: control.php 5002 2013-07-03 08:25:39Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class tree extends control
 {
@@ -74,7 +74,7 @@ class tree extends control
             $this->view->currentProduct = $currentProduct;
             $this->view->productModules = $this->tree->getOptionMenu($currentProduct, 'story');
 
-            $title      = $product->name . $this->lang->colon . $this->lang->tree->manageProduct;
+            $title      = $this->lang->tree->manageProduct;
             $position[] = html::a($this->createLink('product', 'browse', "product=$rootID"), $product->name);
             $position[] = $this->lang->tree->manageProduct;
         }
@@ -86,7 +86,7 @@ class tree extends control
             if($this->config->global->flow == 'onlyTest') $this->lang->set('menugroup.tree', 'bug');
             if($this->config->global->flow != 'onlyTest') $this->lang->set('menugroup.tree', 'qa');
 
-            $title      = $product->name . $this->lang->colon . $this->lang->tree->manageBug;
+            $title      = $this->lang->tree->manageBug;
             $position[] = html::a($this->createLink('bug', 'browse', "product=$rootID"), $product->name);
             $position[] = $this->lang->tree->manageBug;
         }
@@ -98,7 +98,7 @@ class tree extends control
             if($this->config->global->flow == 'onlyTest') $this->lang->set('menugroup.tree', 'testcase');
             if($this->config->global->flow != 'onlyTest') $this->lang->set('menugroup.tree', 'qa');
 
-            $title      = $product->name . $this->lang->colon . $this->lang->tree->manageCase;
+            $title      = $this->lang->tree->manageCase;
             $position[] = html::a($this->createLink('testcase', 'browse', "product=$rootID"), $product->name);
             $position[] = $this->lang->tree->manageCase;
         }
@@ -109,19 +109,19 @@ class tree extends control
             $this->lang->tree->menuOrder = $this->lang->testsuite->menuOrder;
             $this->lang->set('menugroup.tree', 'qa');
 
-            $title      = $lib->name . $this->lang->colon . $this->lang->tree->manageCaseLib;
+            $title      = $this->lang->tree->manageCaseLib;
             $position[] = html::a($this->createLink('testsuite', 'library', "libID=$rootID"), $lib->name);
             $position[] = $this->lang->tree->manageCaseLib;
         }
         elseif(strpos($viewType, 'doc') !== false)
         {
             $type = $lib->product ? 'product' : ($lib->project ? 'project' : 'custom');
-            $this->doc->setMenu($rootID, $currentModuleID);
+            $this->doc->setMenu($type, $rootID, $currentModuleID);
             $this->lang->tree->menu      = $this->lang->doc->menu;
             $this->lang->tree->menuOrder = $this->lang->doc->menuOrder;
             $this->lang->set('menugroup.tree', 'doc');
 
-            $title      = $lib->name . $this->lang->colon . $this->lang->tree->manageCustomDoc;
+            $title      = $this->lang->tree->manageCustomDoc;
             $position[] = html::a($this->createLink('doc', 'browse', "libID=$rootID"), $lib->name);
             $position[] = $this->lang->tree->manageCustomDoc;
         }
@@ -140,7 +140,7 @@ class tree extends control
             $this->view->currentProduct = $currentProduct;
             $this->view->productModules = $this->tree->getOptionMenu($currentProduct, 'line');
 
-            $title      = $this->lang->product->common . $this->lang->colon . $this->lang->tree->manageLine;
+            $title      = $this->lang->tree->manageLine;
             $position[] = $this->lang->tree->manageLine;
         }
 
@@ -186,7 +186,7 @@ class tree extends control
         $parentModules  = $this->tree->getParents($currentModuleID);
         $newModule      = (version_compare($project->openedVersion, '4.1', '>') and $products) ? true : false;
 
-        $title      = $project->name . $this->lang->colon . $this->lang->tree->manageProject;
+        $title      = $this->lang->tree->manageProject;
         $position[] = html::a($this->createLink('project', 'task', "projectID=$rootID"), $project->name);
         $position[] = $this->lang->tree->manageProject;
 
@@ -295,7 +295,10 @@ class tree extends control
     {
         if(!empty($_POST))
         {
-            $this->tree->manageChild($rootID, $viewType, $_POST['parentModuleID'], $_POST['modules']);
+            $this->tree->manageChild($rootID, $viewType);
+
+            if(isonlybody()) die(js::closeModal('parent.parent', '', "function(){parent.parent.$('a.refresh').click()}"));
+
             die(js::reload('parent'));
         }
     }
@@ -313,7 +316,9 @@ class tree extends control
     {
         if($confirm == 'no')
         {
-            die(js::confirm($this->lang->tree->confirmDelete, $this->createLink('tree', 'delete', "rootID=$rootID&moduleID=$moduleID&confirm=yes")));
+            $module = $this->tree->getByID($moduleID);
+            $confirmLang = $module->type == 'line' ? $this->lang->tree->confirmDeleteLine : $this->lang->tree->confirmDelete;
+            die(js::confirm($confirmLang, $this->createLink('tree', 'delete', "rootID=$rootID&moduleID=$moduleID&confirm=yes")));
         }
         else
         {
@@ -357,9 +362,9 @@ class tree extends control
             if(count($optionMenu) == 1 and $needManage)
             {
                 $output .=  "<span class='input-group-addon'>";
-                $output .= html::a($this->createLink('tree', 'browse', "rootID=$rootID&view=$viewType&currentModuleID=0&branch=$branch"), $this->lang->tree->manage, '_blank');
+                $output .= html::a($this->createLink('tree', 'browse', "rootID=$rootID&view=$viewType&currentModuleID=0&branch=$branch", '', true), $viewType == 'line' ? $this->lang->tree->manageLine : $this->lang->tree->manage, '', "class='text-primary' data-toggle='modal' data-type='iframe' data-width='95%'");
                 $output .= '&nbsp; ';
-                $output .= $viewType == 'line' ? html::a("javascript:loadProductLines($rootID)", $this->lang->refresh) : html::a("javascript:loadProductModules($rootID)", $this->lang->refresh);
+                $output .= $viewType == 'line' ? html::a("javascript:void(0)", $this->lang->refresh, '', "class='refresh' onclick='loadProductLines($rootID)'") : html::a("javascript:void(0)", $this->lang->refresh, '', "class='refresh' onclick='loadProductModules($rootID)'");
                 $output .= '</span>';
             }
             die($output);
@@ -385,7 +390,7 @@ class tree extends control
      * @access public
      * @return void
      */
-    public function ajaxGetDropMenu($rootID, $module, $method, $extra)
+    public function ajaxGetDropMenu($rootID, $module, $method, $extra = '')
     {
         $this->view->productID = $rootID;
         $this->view->module    = $module;

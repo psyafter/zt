@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     action
  * @version     $Id: model.php 5028 2013-07-06 02:59:41Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -148,7 +148,7 @@ class actionModel extends model
         }
 
         /* Only process these object types. */
-        if(strpos('story, productplan, release, task, build. bug, case, testtask, doc', $objectType) !== false)
+        if(strpos(',story,productplan,release,task,build,bug,case,testtask,doc,', ",{$objectType},") !== false)
         {
             if(!isset($this->config->objectTables[$objectType])) return $emptyRecord;
 
@@ -561,16 +561,19 @@ class actionModel extends model
      * @param  object $pager
      * @param  string|int $productID   all|int(like 123)|notzero   all => include zeror, notzero, great than 0
      * @param  string|int $projectID   same as productID
+     * @param  string $date
+     * @param  string $direction
      * @access public
      * @return array
      */
-    public function getDynamic($account = 'all', $period = 'all', $orderBy = 'date_desc', $pager = null, $productID = 'all', $projectID = 'all')
+    public function getDynamic($account = 'all', $period = 'all', $orderBy = 'date_desc', $pager = null, $productID = 'all', $projectID = 'all', $date = '', $direction = 'next')
     {
         /* Computer the begin and end date of a period. */
         $beginAndEnd = $this->computeBeginAndEnd($period);
         extract($beginAndEnd);
 
         /* Build has priv condition. */
+        $condition = 1;
         if($productID == 'all') $products = $this->loadModel('product')->getPairs();
         if($projectID == 'all') $projects = $this->loadModel('project')->getPairs();
         if($productID == 'all' or $projectID == 'all')
@@ -595,17 +598,25 @@ class actionModel extends model
             ->where(1)
             ->beginIF($period != 'all')->andWhere('date')->gt($begin)->fi()
             ->beginIF($period != 'all')->andWhere('date')->lt($end)->fi()
+            ->beginIF($date)->andWhere('date' . ($direction == 'next' ? '<' : '>') . "'{$date}'")->fi()
             ->beginIF($account != 'all')->andWhere('actor')->eq($account)->fi()
             ->beginIF(is_numeric($productID))->andWhere('product')->like("%,$productID,%")->fi()
             ->beginIF(is_numeric($projectID))->andWhere('project')->eq($projectID)->fi()
             ->beginIF($productID == 'notzero')->andWhere('product')->gt(0)->andWhere('product')->notlike('%,0,%')->fi()
             ->beginIF($projectID == 'notzero')->andWhere('project')->gt(0)->fi()
             ->beginIF($projectID == 'all' or $productID == 'all')->andWhere("IF((objectType!= 'doc' && objectType!= 'doclib'), ($condition), '1=1')")->fi()
-            ->beginIF($docs)->andWhere("IF(objectType != 'doc', '1=1', objectID " . helper::dbIN($docs) . ")")->fi()
-            ->beginIF($libs)->andWhere("IF(objectType != 'doclib', '1=1', objectID " . helper::dbIN(array_keys($libs)) . ') ')->fi()
-            ->orderBy($orderBy)->page($pager)->fetchAll();
+            ->beginIF($docs and !$this->app->user->admin)->andWhere("IF(objectType != 'doc', '1=1', objectID " . helper::dbIN($docs) . ")")->fi()
+            ->beginIF($libs and !$this->app->user->admin)->andWhere("IF(objectType != 'doclib', '1=1', objectID " . helper::dbIN(array_keys($libs)) . ') ')->fi()
+            ->beginIF($this->config->global->flow == 'onlyStory')->andWhere('objectType')->notin('bug,build,project,task,taskcase,testreport,testsuite,testtask')->fi()
+            ->beginIF($this->config->global->flow == 'onlyTask')->andWhere('objectType')->notin('product,productplan,release,story,testcase,testreport,testsuite')->fi()
+            ->beginIF($this->config->global->flow == 'onlyTest')->andWhere('objectType')->notin('project,productplan,release,story,task')->fi()
+            ->orderBy($orderBy)
+            ->page($pager)
+            ->fetchAll();
 
         if(!$actions) return array();
+
+        $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'action');
         return $this->transformActions($actions);
     }
 
@@ -617,10 +628,12 @@ class actionModel extends model
      * @param  int    $queryID 
      * @param  string $orderBy 
      * @param  object $pager 
+     * @param  string $date
+     * @param  string $direction
      * @access public
      * @return array 
      */
-    public function getDynamicBySearch($products, $projects, $queryID, $orderBy = 'date_desc', $pager)
+    public function getDynamicBySearch($products, $projects, $queryID, $orderBy = 'date_desc', $pager = null, $date = '', $direction = 'next')
     {
         $query = $queryID ? $this->loadModel('search')->getQuery($queryID) : '';
 
@@ -663,7 +676,9 @@ class actionModel extends model
 
         $actionQuery = str_replace("`product` = '$productID'", "`product` LIKE '%,$productID,%'", $actionQuery);
 
+        if($date) $actionQuery = "($actionQuery) AND " . ('date' . ($direction == 'next' ? '<' : '>') . "'{$date}'");
         $actions = $this->getBySQL($actionQuery, $orderBy, $pager);
+        $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'action');
         if(!$actions) return array();
         return $this->transformActions($actions);
     }
@@ -681,6 +696,9 @@ class actionModel extends model
     {
         return $actions = $this->dao->select('*')->from(TABLE_ACTION)
             ->where($sql)
+            ->beginIF($this->config->global->flow == 'onlyStory')->andWhere('objectType')->notin('bug,build,project,task,taskcase,testreport,testsuite,testtask')->fi()
+            ->beginIF($this->config->global->flow == 'onlyTask')->andWhere('objectType')->notin('product,productplan,release,story,testcase,testreport,testsuite')->fi()
+            ->beginIF($this->config->global->flow == 'onlyTest')->andWhere('objectType')->notin('project,productplan,release,story,task')->fi()
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll();
@@ -739,9 +757,10 @@ class actionModel extends model
 
             $actionType = strtolower($action->action);
             $objectType = strtolower($action->objectType);
-            $action->date        = date(DT_MONTHTIME2, strtotime($action->date));
-            $action->actionLabel = isset($this->lang->action->label->$actionType) ? $this->lang->action->label->$actionType : $action->action;
-            $action->objectLabel = $objectType;
+            $action->originalDate = $action->date;
+            $action->date         = date(DT_MONTHTIME2, strtotime($action->date));
+            $action->actionLabel  = isset($this->lang->action->label->$actionType) ? $this->lang->action->label->$actionType : $action->action;
+            $action->objectLabel  = $objectType;
             if(isset($this->lang->action->label->$objectType))
             {
                 $objectLabel = $this->lang->action->label->$objectType;
@@ -771,6 +790,8 @@ class actionModel extends model
             {
                 $action->objectLink = '';
             }
+
+            $action->major = (isset($this->config->action->majorList[$action->objectType]) && in_array($action->action, $this->config->action->majorList[$action->objectType])) ? 1 : 0;
         }
         return $actions;
     }
@@ -955,5 +976,64 @@ class actionModel extends model
             ->where('id')->eq($actionID)
             ->exec();
         $this->file->updateObjectID($this->post->uid, $action->objectID, $action->objectType);
+    }
+
+    /**
+     * Build date group by actions
+     * 
+     * @param  array  $actions 
+     * @param  string $direction 
+     * @access public
+     * @return array
+     */
+    public function buildDateGroup($actions, $direction = 'next')
+    {
+        $dateGroup = array();
+        foreach($actions as $action)
+        {
+            $timeStamp    = strtotime(isset($action->originalDate) ? $action->originalDate : $action->date);
+            $date         = date(DT_DATE4, $timeStamp);
+            $action->time = date(DT_TIME2, $timeStamp);
+            $dateGroup[$date][] = $action;
+        }
+
+        if($dateGroup)
+        {
+            $lastDateActions = $this->dao->select('*')->from(TABLE_ACTION)->where($this->session->actionQueryCondition)->andWhere('`date`')->like(substr($action->originalDate, 0, 10) . '%')->orderBy($this->session->actionOrderBy)->fetchAll('id');
+            if(count($dateGroup[$date]) < count($lastDateActions))
+            {
+                unset($dateGroup[$date]);
+                $lastDateActions = $this->transformActions($lastDateActions);
+                foreach($lastDateActions as $action)
+                {
+                    $timeStamp    = strtotime(isset($action->originalDate) ? $action->originalDate : $action->date);
+                    $date         = date(DT_DATE4, $timeStamp);
+                    $action->time = date(DT_TIME2, $timeStamp);
+                    $dateGroup[$date][] = $action;
+                }
+            }
+        }
+
+        if($direction != 'next') $dateGroup = array_reverse($dateGroup);
+        return $dateGroup;
+    }
+
+    /**
+     * Check Has pre or next.
+     * 
+     * @param  string $date 
+     * @param  string $direction 
+     * @access public
+     * @return bool
+     */
+    public function hasPreOrNext($date, $direction = 'next')
+    {
+        $condition = $this->session->actionQueryCondition;
+        /* Remove date condition for direction. */
+        $condition = preg_replace("/AND +date[\<\>]'\d{4}\-\d{2}\-\d{2}'/", '', $condition);
+        $count     = $this->dao->select('count(*) as count')->from(TABLE_ACTION)->where($condition)
+            ->andWhere('date' . ($direction == 'next' ? '<' : '>') . "'{$date}'")
+            ->fetch('count');
+        return $count > 0;
     }
 }

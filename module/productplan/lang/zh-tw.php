@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     productplan
  * @version     $Id: zh-tw.php 4659 2013-04-17 06:45:08Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->productplan->common     = $lang->productCommon . '計劃';
 $lang->productplan->browse     = "瀏覽計劃";
@@ -17,7 +17,7 @@ $lang->productplan->edit       = "編輯計劃";
 $lang->productplan->delete     = "刪除計劃";
 $lang->productplan->view       = "計劃詳情";
 $lang->productplan->bugSummary = "本頁共 <strong>%s</strong> 個Bug";
-$lang->productplan->info       = '信息';
+$lang->productplan->basicInfo  = '基本信息';
 $lang->productplan->batchEdit  = '批量編輯';
 
 $lang->productplan->batchUnlink      = "批量移除";
@@ -37,6 +37,7 @@ $lang->productplan->unlinkedBugs     = '未關聯Bug';
 $lang->productplan->confirmDelete      = "您確認刪除該計劃嗎？";
 $lang->productplan->confirmUnlinkStory = "您確認移除該需求嗎？";
 $lang->productplan->confirmUnlinkBug   = "您確認移除該Bug嗎？";
+$lang->productplan->noPlan             = '暫時沒有計劃。';
 
 $lang->productplan->id      = '編號';
 $lang->productplan->product = $lang->productCommon;

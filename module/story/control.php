@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     story
  * @version     $Id: control.php 5145 2013-07-15 06:47:26Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class story extends control
 {
@@ -72,7 +72,7 @@ class story extends control
         if(!empty($_POST))
         {
             $response['result']  = 'success';
-            $response['message'] = '';
+            $response['message'] = $this->lang->saveSuccess;
 
             $storyResult = $this->story->create($projectID, $bugID, $from = isset($fromObjectIDKey) ? $fromObjectIDKey : '');
             if(!$storyResult or dao::isError())
@@ -238,7 +238,7 @@ class story extends control
         $this->view->users            = $users;
         $this->view->moduleID         = $moduleID;
         $this->view->moduleOptionMenu = $moduleOptionMenu;
-        $this->view->plans            = $this->loadModel('productplan')->getPairs($productID, $branch, 'unexpired');
+        $this->view->plans            = $this->loadModel('productplan')->getPairsForStory($productID, $branch);
         $this->view->planID           = $planID;
         $this->view->source           = $source;
         $this->view->sourceNote       = $sourceNote;
@@ -322,12 +322,11 @@ class story extends control
                 $title = $file['title'];
                 $titles[$title] = $fileName;
             }
-            krsort($titles);
             $this->view->titles = $titles;
         }
 
         $moduleOptionMenu['ditto'] = $this->lang->story->ditto;
-        $plans = $this->loadModel('productplan')->getPairs($productID, $branch, 'unexpired');
+        $plans = $this->loadModel('productplan')->getPairsForStory($productID, $branch);
         $plans['ditto']      = $this->lang->story->ditto;
         $priList             = (array)$this->lang->story->priList;
         $priList['ditto']    = $this->lang->story->ditto;
@@ -739,7 +738,6 @@ class story extends control
             $this->story->review($storyID);
             if(dao::isError()) die(js::error(dao::getError()));
             $result = $this->post->result;
-            if($this->post->closedReason != '' and strpos('done,postponed,subdivided,willnotdo', $this->post->closedReason) === false) $result = 'pass';
             $actionID = $this->action->create('story', $storyID, 'Reviewed', $this->post->comment, ucfirst($result));
             if($this->post->result == 'reject')
             {
@@ -997,7 +995,9 @@ class story extends control
      */
     public function batchChangeStage($stage)
     {
-        $storyIDList = $this->post->storyIDList ? $this->post->storyIDList : die(js::locate($this->session->storyList, 'parent'));
+        $storyIDList = $this->post->storyIDList;
+        if(empty($storyIDList)) die(js::locate($this->session->storyList, 'parent'));
+
         $storyIDList = array_unique($storyIDList);
         $allChanges  = $this->story->batchChangeStage($storyIDList, $stage);
         if(dao::isError()) die(js::error(dao::getError()));
@@ -1109,11 +1109,12 @@ class story extends control
         $this->view->position[] = html::a($this->createLink('testcase', 'browse', "productID=$productID"), $products[$productID]);
         $this->view->position[] = $this->lang->story->zeroCase;
 
-        $this->view->stories   = $this->story->getZeroCase($productID, $sort);
-        $this->view->users     = $this->user->getPairs('noletter');
-        $this->view->productID = $productID;
-        $this->view->orderBy   = $orderBy;
-        $this->view->suiteList = $this->loadModel('testsuite')->getSuites($productID);
+        $this->view->stories    = $this->story->getZeroCase($productID, $sort);
+        $this->view->users      = $this->user->getPairs('noletter');
+        $this->view->productID  = $productID;
+        $this->view->orderBy    = $orderBy;
+        $this->view->suiteList  = $this->loadModel('testsuite')->getSuites($productID);
+        $this->view->browseType = '';
         $this->display();
     }
 
@@ -1136,14 +1137,6 @@ class story extends control
         $products = $this->product->getPairs();
         $queryID  = ($browseType == 'bySearch') ? (int)$param : 0;
 
-        /* Link stories. */
-        if(!empty($_POST))
-        {
-            $this->story->linkStories($storyID, $type);
-            if(isonlybody()) die(js::closeModal('parent.parent', '', "function(){parent.parent.loadLinkedStories('$storyID', '$type')}"));
-            die(js::locate($this->createLink('story', 'edit', "storyID=$storyID"), 'parent'));
-        }
-
         /* Build search form. */
         $actionURL = $this->createLink('story', 'linkStory', "storyID=$storyID&type=$type&browseType=bySearch&queryID=myQueryID", '', true);
         $this->loadModel('product')->buildSearchForm($story->product, $products, $queryID, $actionURL);
@@ -1159,49 +1152,6 @@ class story extends control
         $this->view->users        = $this->loadModel('user')->getPairs('noletter');
 
         $this->display();
-    }
-
-    /**
-     * AJAX: if type is linkStories, get related stories else get child stories.
-     *
-     * @param  int    $storyID
-     * @param  string $type
-     * @access public
-     * @return string
-     */
-    public function ajaxGetLinkedStories($storyID, $type = '')
-    {
-        /* Get linked stories. */
-        $stories = $this->story->getLinkedStories($storyID, $type);
-
-        /* Build linked stories list. */
-        $output = '';
-        foreach($stories as $storyId => $storyTitle)
-        {
-            $output .= '<li>';
-            $output .= html::a(inlink('view', "storyID=$storyId"), "#$storyId " . $storyTitle, '_blank');
-            $output .= html::a("javascript:unlinkStory($storyID, \"$type\", $storyId)", '<i class="icon-remove"></i>', '', "title='{$this->lang->unlink}' style='float:right'");
-            $output .= '</li>';
-        }
-
-        die($output);
-    }
-
-    /**
-     * Unlink story.
-     *
-     * @param  int    $storyID
-     * @param  string $type
-     * @param  int    $story2Unlink
-     * @access public
-     * @return string
-     */
-    public function unlinkStory($storyID, $type = '', $story2Unlink = 0)
-    {
-        /* Unlink related story if type is linkStories else unlink child story. */
-        $this->story->unlinkStory($storyID, $type, $story2Unlink);
-
-        die('success');
     }
 
     /**
@@ -1402,12 +1352,13 @@ class story extends control
     /**
      * get data to export
      *
-     * @param  int $productID
+     * @param  int    $productID
      * @param  string $orderBy
+     * @param  int    $projectID
      * @access public
      * @return void
      */
-    public function export($productID, $orderBy)
+    public function export($productID, $orderBy, $projectID = 0)
     { 
         /* format the fields of every story in order to export data. */
         if($_POST)
@@ -1436,7 +1387,7 @@ class story extends control
             }
             else
             {
-                $stmt = $this->dbh->query($this->session->storyQueryCondition . ($this->post->exportType == 'selected' ? " AND t2.id IN({$this->cookie->checkedItem})" : '') . " ORDER BY " . strtr($orderBy, '_', ' '));
+                $stmt = $this->dbh->query($this->session->storyQueryCondition . ($this->post->exportType == 'selected' ? " AND t1.id IN({$this->cookie->checkedItem})" : '') . " ORDER BY " . strtr($orderBy, '_', ' '));
                 while($row = $stmt->fetch()) $stories[$row->id] = $row;
             }
 
@@ -1586,6 +1537,7 @@ class story extends control
                     $mailto = trim($mailto);
                     if(isset($users[$mailto])) $story->mailto .= $users[$mailto] . ',';
                 }
+                $story->mailto = rtrim($story->mailto, ',');
 
                 $story->reviewedBy = trim(trim($story->reviewedBy), ',');
                 $reviewedBys = explode(',', $story->reviewedBy);
@@ -1595,9 +1547,18 @@ class story extends control
                     $reviewedBy = trim($reviewedBy);
                     if(isset($users[$reviewedBy])) $story->reviewedBy .= $users[$reviewedBy] . ',';
                 }
+                $story->reviewedBy = rtrim($story->reviewedBy, ',');
 
             }
 
+            if($projectID)
+            {
+                $header = new stdclass();
+                $header->name      = 'project';
+                $header->tableName = TABLE_PROJECT;
+
+                $this->post->set('header', $header);
+            }
             if(!(in_array('platform', $productsType) or in_array('branch', $productsType))) unset($fields['branch']);// If products's type are normal, unset branch field.
 
             $this->post->set('fields', $fields);

@@ -7,7 +7,7 @@
 * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
 * @package     config
 * @version     $Id: zentaopms.php 5068 2017-06-20 15:35:22Z pengjx $
-* @link        http://www.zentao.net
+* @link        https://www.zentao.pm
 */
 
 /* Framework settings. */

@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     release
  * @version     $Id: model.php 4129 2013-01-18 01:58:14Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -103,22 +103,37 @@ class releaseModel extends model
      */
     public function create($productID, $branch = 0)
     {
-        $buildID = 0;
-        if($this->post->build == false)
+        $productID = (int)$productID;
+        $branch    = (int)$branch;
+        $buildID   = 0;
+        if($this->post->build == false && $this->post->name)
         {
-            $build = fixer::input('post')
-                ->add('product', (int)$productID)
-                ->add('builder', $this->app->user->account)
-                ->add('branch', $branch)
-                ->stripTags($this->config->release->editor->create['id'], $this->config->allowedTags)
-                ->remove('build,files,labels,uid')
-                ->get();
-            $build = $this->loadModel('file')->processImgURL($build, $this->config->release->editor->create['id']);
-            $this->dao->insert(TABLE_BUILD)->data($build)
-                ->autoCheck()
-                ->check('name', 'unique', "product = {$build->product} AND branch = $branch AND deleted = '0'")
-                ->exec();
-            $buildID = $this->dao->lastInsertID();
+            $build = $this->dao->select('*')->from(TABLE_BUILD)
+                ->where('deleted')->eq('0')
+                ->andWhere('name')->eq($this->post->name)
+                ->andWhere('product')->eq($productID)
+                ->andWhere('branch')->eq($branch)
+                ->fetch();
+            if($build)
+            {
+                dao::$errors['build'] = sprintf($this->lang->release->existBuild, $this->post->name);
+            }
+            else
+            {
+                $build = fixer::input('post')
+                    ->add('product', (int)$productID)
+                    ->add('builder', $this->app->user->account)
+                    ->add('branch', $branch)
+                    ->stripTags($this->config->release->editor->create['id'], $this->config->allowedTags)
+                    ->remove('marker,build,files,labels,uid')
+                    ->get();
+                $build = $this->loadModel('file')->processImgURL($build, $this->config->release->editor->create['id']);
+                $this->dao->insert(TABLE_BUILD)->data($build)
+                    ->autoCheck()
+                    ->check('name', 'unique', "product = {$productID} AND branch = {$branch} AND deleted = '0'")
+                    ->exec();
+                $buildID = $this->dao->lastInsertID();
+            }
         }
 
         if($this->post->build) $branch = $this->dao->select('branch')->from(TABLE_BUILD)->where('id')->eq($this->post->build)->fetch('branch');
@@ -137,16 +152,28 @@ class releaseModel extends model
         $this->dao->insert(TABLE_RELEASE)->data($release)
             ->autoCheck()
             ->batchCheck($this->config->release->create->requiredFields, 'notempty')
-            ->check('name', 'unique', "product = {$release->product} AND branch = $branch AND deleted = '0'")
-            ->exec();
+            ->check('name', 'unique', "product = {$release->product} AND branch = $branch AND deleted = '0'");
 
-        if(!dao::isError())
+        if(dao::isError())
+        {
+            if($buildID) $this->dao->delete()->from(TABLE_BUILD)->where('id')->eq($buildID)->exec();
+            return false;
+        }
+
+        $this->dao->exec();
+
+        if(dao::isError())
+        {
+            if($buildID) $this->dao->delete()->from(TABLE_BUILD)->where('id')->eq($buildID)->exec();
+        }
+        else
         {
             $releaseID = $this->dao->lastInsertID();
             $this->file->updateObjectID($this->post->uid, $releaseID, 'release');
             $this->file->saveUpload('release', $releaseID);
             $this->loadModel('score')->create('release', 'create', $releaseID);
-            if(!dao::isError()) return $releaseID;
+
+            return $releaseID;
         }
 
         return false;
@@ -161,11 +188,13 @@ class releaseModel extends model
      */
     public function update($releaseID)
     {
-        $oldRelease = $this->dao->select('*')->from(TABLE_RELEASE)->where('id')->eq((int)$releaseID)->fetch();
-        $branch     = $this->dao->select('branch')->from(TABLE_BUILD)->where('id')->eq($this->post->build)->fetch('branch');
+        $releaseID  = (int)$releaseID;
+        $oldRelease = $this->dao->select('*')->from(TABLE_RELEASE)->where('id')->eq($releaseID)->fetch();
+        $branch     = $this->dao->select('branch')->from(TABLE_BUILD)->where('id')->eq((int)$this->post->build)->fetch('branch');
 
         $release = fixer::input('post')->stripTags($this->config->release->editor->edit['id'], $this->config->allowedTags)
             ->add('branch',  (int)$branch)
+            ->cleanInt('product')
             ->remove('files,labels,allchecker,uid')
             ->get();
         $release = $this->loadModel('file')->processImgURL($release, $this->config->release->editor->edit['id'], $this->post->uid);

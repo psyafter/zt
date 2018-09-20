@@ -1,23 +1,20 @@
 <?php include '../../common/view/header.lite.html.php';?>
-<div id='titlebar'>
-  <div class='heading'>
-    <span><?php echo html::icon($lang->icons['report']);?></span>
-    <small class='text-muted'> <?php echo $lang->testcase->bugs;?></small>
+<div id='mainContent' class='main-content'>
+  <div class='main-header'>
+    <h2><?php echo $lang->testcase->bugs;?></h2>
   </div>
-</div>
-<div class='bugsList'>
-  <form class='form-condensed' target='hiddenwin'>
+  <div class='bugsList'>
     <table class='table table-fixed'>
       <thead>
         <tr class='text-center'>
-          <th class='w-20px'>    <?php echo $lang->idAB;?></th>
-          <th class='w-p30'>   <?php echo $lang->bug->title;?></th>
-          <th class='w-pri'>   <?php echo $lang->priAB;?></th>
-          <th class='w-type'>  <?php echo $lang->bug->type;?></th>
+          <th class='w-50px'><?php echo $lang->idAB;?></th>
+          <th class='w-p30'> <?php echo $lang->bug->title;?></th>
+          <th class='w-pri'> <?php echo $lang->priAB;?></th>
+          <th class='w-type'><?php echo $lang->bug->type;?></th>
           <th class='w-40px'><?php echo $lang->statusAB;?></th>
-          <th class='w-user'>  <?php echo $lang->bug->assignedTo;?></th>
-          <th class='w-50px'>  <?php echo $lang->bug->resolvedBy;?></th>
-          <th class='w-50px'>  <?php echo $lang->bug->resolution;?></th>
+          <th class='w-user'><?php echo $lang->bug->assignedTo;?></th>
+          <th class='w-50px'><?php echo $lang->bug->resolvedBy;?></th>
+          <th class='w-50px'><?php echo $lang->bug->resolution;?></th>
         </tr>
       </thead>
       <tbody>
@@ -35,6 +32,6 @@
         <?php endforeach;?>
       </tbody>
     </table>
-  </form>
+  </div>
 </div>
 <?php include '../../common/view/footer.lite.html.php';?>

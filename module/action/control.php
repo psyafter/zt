@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     action
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class action extends control
 {
@@ -136,7 +136,6 @@ class action extends control
             dao::$errors['submit'][] = $this->lang->action->historyEdit;
             $this->send(array('result' => 'fail', 'message' => dao::getError()));
         }
-
-        die(js::locate($this->server->http_referer, 'parent'));
+        $this->send(array('result' => 'success', 'locate' => 'reload'));
     }
 }

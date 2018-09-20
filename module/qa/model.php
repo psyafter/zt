@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     qa
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class qaModel extends model
 {
@@ -24,11 +24,25 @@ class qaModel extends model
     {
         $this->loadModel('product')->setMenu($products, $productID, $branch);
         $selectHtml = $this->product->select($products, $productID, 'qa', 'index', '', $branch);
+
+        $productIndex  = '';
+        $isMobile      = $this->app->viewType == 'mhtml';
+        if($isMobile)
+        {
+            $productIndex  = html::a(helper::createLink('qa', 'index'), $this->lang->qa->index) . $this->lang->colon;
+            $productIndex .= $selectHtml;
+        }
+        else
+        {
+            $productIndex  = '<div class="btn-group angle-btn"><div class="btn-group">' . html::a(helper::createLink('qa', 'index', 'locate=no'), $this->lang->qa->index, '', "class='btn'") . '</div></div>';
+            $productIndex .= $selectHtml;
+        }
+
+        $this->lang->modulePageNav = $productIndex;
         foreach($this->lang->qa->menu as $key => $menu)
         {
-            $replace = ($key == 'product') ? $selectHtml : $productID;
+            $replace = $productID;
             common::setMenuVars($this->lang->qa->menu, $key, $replace);
         }
     }
 }
-

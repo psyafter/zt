@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     upgrade
  * @version     $Id: model.php 5019 2013-07-05 02:02:31Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -30,6 +30,7 @@ class upgradeModel extends model
      */
     public function execute($fromVersion)
     {
+        set_time_limit(0);
         switch($fromVersion)
         {
             case '0_3beta': $this->execSQL($this->getUpgradeFile('0.3'));
@@ -205,19 +206,37 @@ class upgradeModel extends model
                 $this->execSQL($this->getUpgradeFile('9.7'));
                 $this->changeTeamFields();
                 $this->moveData2Notify();
-             case '9_8':
+            case '9_8':
                 $this->fixTaskFinishedInfo();
-             case '9_8_1':
+            case '9_8_1':
                 $this->execSQL($this->getUpgradeFile('9.8.1'));
                 $this->fixTaskAssignedTo();
                 $this->fixProjectClosedInfo();
                 $this->resetProductLine();
-             case '9_8_2':
-                $this->execSQL($this->getUpgradeFile('9.8.2'));   
+            case '9_8_2':
+                $this->execSQL($this->getUpgradeFile('9.8.2'));
                 $this->addUniqueKeyToTeam();
-       }
+            case '9_8_3':
+                $this->execSQL($this->getUpgradeFile('9.8.3'));
+                $this->adjustPriv10_0_alpha();
+            case '10_0_alpha':
+                $this->execSQL($this->getUpgradeFile('10.0.alpha'));
+                $this->fixProjectStatisticBlock();
+            case '10_0_beta':
+                $this->execSQL($this->getUpgradeFile('10.0.beta'));
+            case '10_0':
+                $this->execSQL($this->getUpgradeFile('10.0'));
+                $this->fixStorySpecTitle();
+                $this->removeUnlinkPriv();//Remove unlink privilege for story, bug and testcase module.
+            case '10_1':
+                $xuanxuanSql = $this->app->getAppRoot() . 'db' . DS . 'xuanxuan.sql';
+                $this->execSQL($xuanxuanSql);
+            case '10_2':
+            case '10_3':
+        }
 
         $this->deletePatch();
+        return true;
     }
 
     /**
@@ -232,95 +251,102 @@ class upgradeModel extends model
         $confirmContent = '';
         switch($fromVersion)
         {
-        case '0_3beta': $confirmContent .= file_get_contents($this->getUpgradeFile('0.3'));
-        case '0_4beta': $confirmContent .= file_get_contents($this->getUpgradeFile('0.4'));
-        case '0_5beta': $confirmContent .= file_get_contents($this->getUpgradeFile('0.5'));
-        case '0_6beta': $confirmContent .= file_get_contents($this->getUpgradeFile('0.6'));
-        case '1_0beta': $confirmContent .= file_get_contents($this->getUpgradeFile('1.0.beta'));
-        case '1_0rc1':  $confirmContent .= file_get_contents($this->getUpgradeFile('1.0.rc1'));
-        case '1_0rc2':
-        case '1_0':
-        case '1_0_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('1.0.1'));
-        case '1_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('1.1'));
-        case '1_2':       $confirmContent .= file_get_contents($this->getUpgradeFile('1.2'));
-        case '1_3':       $confirmContent .= file_get_contents($this->getUpgradeFile('1.3'));
-        case '1_4':       $confirmContent .= file_get_contents($this->getUpgradeFile('1.4'));
-        case '1_5':       $confirmContent .= file_get_contents($this->getUpgradeFile('1.5'));
-        case '2_0':       $confirmContent .= file_get_contents($this->getUpgradeFile('2.0'));
-        case '2_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('2.1'));
-        case '2_2':       $confirmContent .= file_get_contents($this->getUpgradeFile('2.2'));
-        case '2_3':       $confirmContent .= file_get_contents($this->getUpgradeFile('2.3'));
-        case '2_4':       $confirmContent .= file_get_contents($this->getUpgradeFile('2.4'));
-        case '3_0_beta1': $confirmContent .= file_get_contents($this->getUpgradeFile('3.0.beta1'));
-        case '3_0_beta2':
-        case '3_0':
-        case '3_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('3.1'));
-        case '3_2':       $confirmContent .= file_get_contents($this->getUpgradeFile('3.2'));
-        case '3_2_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('3.2.1'));
-        case '3_3':       $confirmContent .= file_get_contents($this->getUpgradeFile('3.3'));
-        case '4_0_beta1': $confirmContent .= file_get_contents($this->getUpgradeFile('4.0.beta1'));
-        case '4_0_beta2': $confirmContent .= file_get_contents($this->getUpgradeFile('4.0.beta2'));
-        case '4_0':       $confirmContent .= file_get_contents($this->getUpgradeFile('4.0'));
-        case '4_0_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('4.0.1'));
-        case '4_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('4.1'));
-        case '4_2_beta':  $confirmContent .= file_get_contents($this->getUpgradeFile('4.2'));
-        case '4_3_beta':  $confirmContent .= file_get_contents($this->getUpgradeFile('4.3'));
-        case '5_0_beta1':
-        case '5_0_beta2':
-        case '5_0':
-        case '5_1':
-        case '5_2':
-        case '5_2_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('5.2.1'));
-        case '5_3':
-        case '6_0_beta1': $confirmContent .= file_get_contents($this->getUpgradeFile('6.0.beta1'));
-        case '6_0':       $confirmContent .= file_get_contents($this->getUpgradeFile('6.0'));
-        case '6_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('6.1'));
-        case '6_2':
-        case '6_3':
-        case '6_4':
-        case '7_0':       $confirmContent .= file_get_contents($this->getUpgradeFile('7.0'));
-        case '7_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('7.1'));
-        case '7_2':
-        case '7_2_4':     $confirmContent .= file_get_contents($this->getUpgradeFile('7.2.4'));
-        case '7_2_5':
-        case '7_3':       $confirmContent .= file_get_contents($this->getUpgradeFile('7.3'));
-        case '7_4_beta':  $confirmContent .= file_get_contents($this->getUpgradeFile('7.4.beta'));
-        case '8_0':
-        case '8_0_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('8.0.1'));
-        case '8_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('8.1'));
-        case '8_1_3':     $confirmContent .= file_get_contents($this->getUpgradeFile('8.1.3'));
-        case '8_2_beta':
-        case '8_2':
-        case '8_2_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('8.2.1'));
-        case '8_2_2':
-        case '8_2_3':
-        case '8_2_4':
-        case '8_2_5':
-        case '8_2_6':     $confirmContent .= file_get_contents($this->getUpgradeFile('8.2.6'));
-        case '8_3':
-        case '8_3_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('8.3.1'));
-        case '8_4':
-        case '8_4_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('8.4.1'));
-        case '9_0_beta':  $confirmContent .= file_get_contents($this->getUpgradeFile('9.0.beta'));
-        case '9_0':
-        case '9_0_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.0.1'));
-        case '9_1':       $confirmContent .= file_get_contents($this->getUpgradeFile('9.1'));
-        case '9_1_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.1.1'));
-        case '9_1_2':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.1.2'));
-        case '9_2':
-        case '9_2_1':
-        case '9_3_beta':  $confirmContent .= file_get_contents($this->getUpgradeFile('9.3.beta'));
-        case '9_4':       $confirmContent .= file_get_contents($this->getUpgradeFile('9.4'));
-        case '9_5':       $confirmContent .= file_get_contents($this->getUpgradeFile('9.5'));
-        case '9_5_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.5.1'));
-        case '9_6':       $confirmContent .= file_get_contents($this->getUpgradeFile('9.6'));
-        case '9_6_1':
-        case '9_6_2':
-        case '9_6_3':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.6.3'));
-        case '9_7':       $confirmContent .= file_get_contents($this->getUpgradeFile('9.7'));
-        case '9_8':
-        case '9_8_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.8.1'));
-        case '9_8_2':     $confirmContent .= file_get_contents($this->getUpgradeFile('9.8.2'));
+            case '0_3beta':    $confirmContent .= file_get_contents($this->getUpgradeFile('0.3'));
+            case '0_4beta':    $confirmContent .= file_get_contents($this->getUpgradeFile('0.4'));
+            case '0_5beta':    $confirmContent .= file_get_contents($this->getUpgradeFile('0.5'));
+            case '0_6beta':    $confirmContent .= file_get_contents($this->getUpgradeFile('0.6'));
+            case '1_0beta':    $confirmContent .= file_get_contents($this->getUpgradeFile('1.0.beta'));
+            case '1_0rc1':     $confirmContent .= file_get_contents($this->getUpgradeFile('1.0.rc1'));
+            case '1_0rc2':
+            case '1_0':
+            case '1_0_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('1.0.1'));
+            case '1_1':        $confirmContent .= file_get_contents($this->getUpgradeFile('1.1'));
+            case '1_2':        $confirmContent .= file_get_contents($this->getUpgradeFile('1.2'));
+            case '1_3':        $confirmContent .= file_get_contents($this->getUpgradeFile('1.3'));
+            case '1_4':        $confirmContent .= file_get_contents($this->getUpgradeFile('1.4'));
+            case '1_5':        $confirmContent .= file_get_contents($this->getUpgradeFile('1.5'));
+            case '2_0':        $confirmContent .= file_get_contents($this->getUpgradeFile('2.0'));
+            case '2_1':        $confirmContent .= file_get_contents($this->getUpgradeFile('2.1'));
+            case '2_2':        $confirmContent .= file_get_contents($this->getUpgradeFile('2.2'));
+            case '2_3':        $confirmContent .= file_get_contents($this->getUpgradeFile('2.3'));
+            case '2_4':        $confirmContent .= file_get_contents($this->getUpgradeFile('2.4'));
+            case '3_0_beta1':  $confirmContent .= file_get_contents($this->getUpgradeFile('3.0.beta1'));
+            case '3_0_beta2':
+            case '3_0':
+            case '3_1':        $confirmContent .= file_get_contents($this->getUpgradeFile('3.1'));
+            case '3_2':        $confirmContent .= file_get_contents($this->getUpgradeFile('3.2'));
+            case '3_2_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('3.2.1'));
+            case '3_3':        $confirmContent .= file_get_contents($this->getUpgradeFile('3.3'));
+            case '4_0_beta1':  $confirmContent .= file_get_contents($this->getUpgradeFile('4.0.beta1'));
+            case '4_0_beta2':  $confirmContent .= file_get_contents($this->getUpgradeFile('4.0.beta2'));
+            case '4_0':        $confirmContent .= file_get_contents($this->getUpgradeFile('4.0'));
+            case '4_0_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('4.0.1'));
+            case '4_1':        $confirmContent .= file_get_contents($this->getUpgradeFile('4.1'));
+            case '4_2_beta':   $confirmContent .= file_get_contents($this->getUpgradeFile('4.2'));
+            case '4_3_beta':   $confirmContent .= file_get_contents($this->getUpgradeFile('4.3'));
+            case '5_0_beta1':
+            case '5_0_beta2':
+            case '5_0':
+            case '5_1':
+            case '5_2':
+            case '5_2_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('5.2.1'));
+            case '5_3':
+            case '6_0_beta1':  $confirmContent .= file_get_contents($this->getUpgradeFile('6.0.beta1'));
+            case '6_0':        $confirmContent .= file_get_contents($this->getUpgradeFile('6.0'));
+            case '6_1':        $confirmContent .= file_get_contents($this->getUpgradeFile('6.1'));
+            case '6_2':
+            case '6_3':
+            case '6_4':
+            case '7_0':        $confirmContent .= file_get_contents($this->getUpgradeFile('7.0'));
+            case '7_1':        $confirmContent .= file_get_contents($this->getUpgradeFile('7.1'));
+            case '7_2':
+            case '7_2_4':      $confirmContent .= file_get_contents($this->getUpgradeFile('7.2.4'));
+            case '7_2_5':
+            case '7_3':        $confirmContent .= file_get_contents($this->getUpgradeFile('7.3'));
+            case '7_4_beta':   $confirmContent .= file_get_contents($this->getUpgradeFile('7.4.beta'));
+            case '8_0':
+            case '8_0_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('8.0.1'));
+            case '8_1':        $confirmContent .= file_get_contents($this->getUpgradeFile('8.1'));
+            case '8_1_3':      $confirmContent .= file_get_contents($this->getUpgradeFile('8.1.3'));
+            case '8_2_beta':
+            case '8_2':
+            case '8_2_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('8.2.1'));
+            case '8_2_2':
+            case '8_2_3':
+            case '8_2_4':
+            case '8_2_5':
+            case '8_2_6':      $confirmContent .= file_get_contents($this->getUpgradeFile('8.2.6'));
+            case '8_3':
+            case '8_3_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('8.3.1'));
+            case '8_4':
+            case '8_4_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('8.4.1'));
+            case '9_0_beta':   $confirmContent .= file_get_contents($this->getUpgradeFile('9.0.beta'));
+            case '9_0':
+            case '9_0_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('9.0.1'));
+            case '9_1':        $confirmContent .= file_get_contents($this->getUpgradeFile('9.1'));
+            case '9_1_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('9.1.1'));
+            case '9_1_2':      $confirmContent .= file_get_contents($this->getUpgradeFile('9.1.2'));
+            case '9_2':
+            case '9_2_1':
+            case '9_3_beta':   $confirmContent .= file_get_contents($this->getUpgradeFile('9.3.beta'));
+            case '9_4':        $confirmContent .= file_get_contents($this->getUpgradeFile('9.4'));
+            case '9_5':        $confirmContent .= file_get_contents($this->getUpgradeFile('9.5'));
+            case '9_5_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('9.5.1'));
+            case '9_6':        $confirmContent .= file_get_contents($this->getUpgradeFile('9.6'));
+            case '9_6_1':
+            case '9_6_2':
+            case '9_6_3':      $confirmContent .= file_get_contents($this->getUpgradeFile('9.6.3'));
+            case '9_7':        $confirmContent .= file_get_contents($this->getUpgradeFile('9.7'));
+            case '9_8':
+            case '9_8_1':      $confirmContent .= file_get_contents($this->getUpgradeFile('9.8.1'));
+            case '9_8_2':      $confirmContent .= file_get_contents($this->getUpgradeFile('9.8.2'));
+            case '9_8_3':      $confirmContent .= file_get_contents($this->getUpgradeFile('9.8.3'));
+            case '10_0_alpha': $confirmContent .= file_get_contents($this->getUpgradeFile('10.0.alpha'));
+            case '10_0_beta':  $confirmContent .= file_get_contents($this->getUpgradeFile('10.0.beta'));
+            case '10_0':       $confirmContent .= file_get_contents($this->getUpgradeFile('10.0'));
+            case '10_1':       $confirmContent .= file_get_contents($this->app->getAppRoot() . 'db' . DS . 'xuanxuan.sql');
+            case '10_2':
+            case '10_3':
         }
         return str_replace('zt_', $this->config->db->prefix, $confirmContent);
     }
@@ -1246,7 +1272,6 @@ class upgradeModel extends model
      */
     public function adjustDocModule()
     {
-        set_time_limit(0);
         $this->app->loadLang('doc');
         $productDocModules = $this->dao->select('*')->from(TABLE_MODULE)->where('type')->eq('productdoc')->orderBy('grade,id')->fetchAll('id');
         $allProductIdList  = $this->dao->select('id,name,acl,whitelist,createdBy')->from(TABLE_PRODUCT)->where('deleted')->eq('0')->fetchAll('id');
@@ -2066,33 +2091,33 @@ class upgradeModel extends model
     public function adjustPriv9_8()
     {
         $groups = $this->dao->select('id')->from(TABLE_GROUP)->fetchPairs('id', 'id');
-        foreach($groups as $group)
+        foreach($groups as $groupID)
         {
             $groupPriv = new stdclass();
             $groupPriv->group  = $groupID;
             $groupPriv->module = 'todo';
             $groupPriv->method = 'createcycle';
-            $this->dao->replace(TABLE_GROUPPRIV)->data($data)->exec();
+            $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
         }
 
         $groups = $this->dao->select('*')->from(TABLE_GROUPPRIV)->where('module')->eq('mail')->orWhere('module')->eq('webhook')->fetchPairs('group', 'group');
-        foreach($groups as $group)
+        foreach($groups as $groupID)
         {
             $groupPriv = new stdclass();
             $groupPriv->group  = $groupID;
             $groupPriv->module = 'message';
             $groupPriv->method = 'index';
-            $this->dao->replace(TABLE_GROUPPRIV)->data($data)->exec();
+            $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
         }
 
         $groups = $this->dao->select('*')->from(TABLE_GROUPPRIV)->where('module')->eq('project')->andWhere('method')->eq('linkStory')->fetchPairs('group', 'group');
-        foreach($groups as $group)
+        foreach($groups as $groupID)
         {
             $groupPriv = new stdclass();
             $groupPriv->group  = $groupID;
             $groupPriv->module = 'project';
             $groupPriv->method = 'importPlanStories';
-            $this->dao->replace(TABLE_GROUPPRIV)->data($data)->exec();
+            $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
         }
         return true;
     }
@@ -2128,12 +2153,15 @@ class upgradeModel extends model
      */
     public function fixTaskAssignedTo()
     {
+        $minParent = $this->dao->select('parent')->from(TABLE_TASK)->where('parent')->ne(0)->orderBy('parent')->limit(1)->fetch();
+        if(empty($minParent)) return true;
+
         $needUpdateTasks = $this->dao->select('id,parent,closedBy')->from(TABLE_TASK)
             ->where('status')->eq('closed')
             ->andWhere('assignedTo')->ne('closed')
+            ->andWhere('id')->ge($minParent)
             ->fetchAll('id');
-
-        if(!$needUpdateTasks) return true;
+        if(empty($needUpdateTasks)) return true;
 
         $needUpdateParentTasks = array();
         $needUpdateChildTasks  = array();
@@ -2228,7 +2256,13 @@ class upgradeModel extends model
             $this->dao->insert(TABLE_HISTORY)->set('`new`')->eq($action->actor)->set('`field`')->eq('closedBy')->set('`action`')->eq($action->id)->exec();
             $this->dao->insert(TABLE_HISTORY)->set('`new`')->eq($action->date)->set('`old`')->eq('0000-00-00 00:00:00')->set('`field`')->eq('closedDate')->set('`action`')->eq($action->id)->exec();
             $this->dao->update(TABLE_HISTORY)->set('`new`')->eq('closed')->where('`action`')->eq($action->id)->andWhere('field')->eq('status')->exec();
-            $this->dao->update(TABLE_PROJECT)->set('`status`')->eq('closed')->set('`closedBy`')->eq($action->actor)->set('`closedDate`')->eq($action->date)->where('id')->eq($action->objectID)->exec();
+            $this->dao->update(TABLE_PROJECT)
+                ->set('`status`')->eq('closed')
+                ->set('`closedBy`')->eq($action->actor)
+                ->set('`closedDate`')->eq($action->date)
+                ->where('id')->eq($action->objectID)
+                ->andWhere('status')->eq('done')
+                ->exec();
         }
         return !dao::isError();
     }
@@ -2252,7 +2286,7 @@ class upgradeModel extends model
      * @access public
      * @return bool
      */
-    public function  addUniqueKeyToTeam()
+    public function addUniqueKeyToTeam()
     {
         $members = $this->dao->select('root, type, account')->from(TABLE_TEAM)->groupBy('root, type, account')->having('count(*)')->gt(1)->fetchAll();
 
@@ -2272,6 +2306,96 @@ class upgradeModel extends model
                 ->exec();
         }
         $this->dao->exec("ALTER TABLE " . TABLE_TEAM . " ADD UNIQUE `team` (`root`, `type`, `account`)");
+        return !dao::isError();
+    }
+
+    /**
+     * Adjust priv for 10_0_alpha.
+     * 
+     * @access public
+     * @return bool
+     */
+    public function adjustPriv10_0_alpha()
+    {
+        $groups = $this->dao->select('*')->from(TABLE_GROUPPRIV)->where('module')->eq('my')->andWhere('method')->eq('todo')->fetchPairs('group', 'group');
+        foreach($groups as $groupID)
+        {
+            $groupPriv = new stdclass();
+            $groupPriv->group  = $groupID;
+            $groupPriv->module = 'my';
+            $groupPriv->method = 'calendar';
+            $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
+        }
+        return true;
+    }
+
+    /**
+     * Fix project statistic block.
+     * 
+     * @access public
+     * @return void
+     */
+    public function fixProjectStatisticBlock()
+    {
+        $block = $this->dao->select('*')->from(TABLE_BLOCK)->where('module')->eq('my')->andWhere('source')->eq('project')->andWhere('block')->eq('statistic')->fetch();
+        if($block)
+        {
+            $blockParams = json_decode($block->params);
+            if($blockParams->type == 'noclosed')
+            {
+                $blockParams->type = 'undone';
+                $this->dao->update(TABLE_BLOCK)->set('params')->eq(helper::jsonEncode($blockParams))->where('id')->eq($block->id)->exec();
+                return !dao::isError();
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Fix story spec title.
+     *
+     * @access public
+     * @return bool
+     */
+    public function fixStorySpecTitle()
+    {
+        $stories = $this->dao->select('story')->from(TABLE_STORYSEPC)->groupBy('story')->having('COUNT(story, version) = 1');
+
+        $stories = $this->dao->select('t1.id, t1.title')->from(TABLE_STORY)->alias('t1')
+            ->leftJoin(TABLE_STORYSPEC)->alias('t2')->on('t1.id=t2.story')
+            ->where('t1.id')->in($stories)
+            ->andWhere('t1.title')->ne('t2.title')
+            ->andWhere('t2.version')->eq(1)
+            ->fetchPairs();
+
+        foreach($stories as $story => $title)
+        {
+            $this->dao->update(TABLE_STORYSPEC)->set('title')->eq($title)->where('story')->eq($story)->andWhere('version')->eq(1)->exec();
+        }
+
+        return !dao::isError();
+    }
+
+    /**
+     * Remove unlink privilege for story, bug and testcase module.
+     *
+     * @access public
+     * @return bool
+     */
+    public function removeUnlinkPriv()
+    {
+        $this->dao->delete()->from(TABLE_GROUPPRIV)
+            ->where('((module')->eq('story')
+            ->andWhere('method')->eq('unlinkStory')
+            ->markRight(1)
+            ->orWhere('(module')->eq('bug')
+            ->andWhere('method')->eq('unlinkBug')
+            ->markRight(1)
+            ->orWhere('(module')->eq('testcase')
+            ->andWhere('method')->eq('unlinkCase')
+            ->markRight(2)
+            ->exec();
+
         return !dao::isError();
     }
 }

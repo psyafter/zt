@@ -4,6 +4,7 @@ $lang->my->common = 'Dashboard';
 /* Method List。*/
 $lang->my->index          = 'Home';
 $lang->my->todo           = 'My Todo';
+$lang->my->calendar       = 'Calendar';
 $lang->my->task           = 'My Task';
 $lang->my->bug            = 'My Bug';
 $lang->my->testTask       = 'My Build';
@@ -21,19 +22,20 @@ $lang->my->shareContacts  = 'Share the list';
 $lang->my->limited        = 'Restricted operation (editing only content related to itself)';
 $lang->my->score          = 'My Score';
 $lang->my->scoreRule      = 'Score Rule';
+$lang->my->noTodo         = 'No todos. ';
 
 $lang->my->taskMenu = new stdclass();
-$lang->my->taskMenu->assignedToMe = 'AssignedToMe';
-$lang->my->taskMenu->openedByMe   = 'CreatedByMe';
-$lang->my->taskMenu->finishedByMe = 'FinishedByMe';
-$lang->my->taskMenu->closedByMe   = 'ClosedByMe';
-$lang->my->taskMenu->canceledByMe = 'CancelledByMe';
+$lang->my->taskMenu->assignedToMe = 'Assigned To Me';
+$lang->my->taskMenu->openedByMe   = 'Created By Me';
+$lang->my->taskMenu->finishedByMe = 'Finished By Me';
+$lang->my->taskMenu->closedByMe   = 'Closed By Me';
+$lang->my->taskMenu->canceledByMe = 'Cancelled By Me';
 
 $lang->my->storyMenu = new stdclass();
-$lang->my->storyMenu->assignedToMe = 'AssignedToMe';
-$lang->my->storyMenu->openedByMe   = 'CreatedByMe';
-$lang->my->storyMenu->reviewedByMe = 'ReviewedByMe';
-$lang->my->storyMenu->closedByMe   = 'ClosedByMe';
+$lang->my->storyMenu->assignedToMe = 'Assigned To Me';
+$lang->my->storyMenu->openedByMe   = 'Created By Me';
+$lang->my->storyMenu->reviewedByMe = 'Reviewed By Me';
+$lang->my->storyMenu->closedByMe   = 'Closed By Me';
 
 $lang->my->home = new stdclass();
 $lang->my->home->latest        = 'Dynamic';
@@ -42,7 +44,7 @@ $lang->my->home->projects      = $lang->projectCommon;
 $lang->my->home->products      = $lang->productCommon;
 $lang->my->home->createProject = "Create {$lang->projectCommon}";
 $lang->my->home->createProduct = "Create {$lang->productCommon}";
-$lang->my->home->help          = "<a href='http://www.zentao.net/help-read-79236.html' target='_blank'>Help</a>";
+$lang->my->home->help          = "<a href='https://www.zentao.pm/help-read-79236.html' target='_blank'>Help</a>";
 $lang->my->home->noProductsTip = "No {$lang->productCommon} found here.";
 
 $lang->my->form = new stdclass();

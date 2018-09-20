@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     extension
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->extension->common        = '插件管理';
 $lang->extension->browse        = '浏览插件';
@@ -38,7 +38,7 @@ $lang->extension->dirs        = '安装目录';
 $lang->extension->files       = '安装文件';
 $lang->extension->status      = '状态';
 $lang->extension->version     = '版本';
-$lang->extension->latest      = '<small>最新版本<strong><a href="%s" target="_blank" class="extension">%s</a></strong>，兼容禅道<a href="http://api.zentao.net/goto.php?item=latest" target="_blank" class="alert-link"><strong>%s</strong></a></small>';
+$lang->extension->latest      = '<small>最新版本<strong><a href="%s" target="_blank" class="extension">%s</a></strong>，兼容禅道<a href="http://api.zentao.pm/goto.php?item=latest" target="_blank" class="alert-link"><strong>%s</strong></a></small>';
 $lang->extension->author      = '作者';
 $lang->extension->license     = '授权';
 $lang->extension->site        = '官网';
@@ -98,16 +98,15 @@ $lang->extension->upgradeVersion = '（从%s升级到%s）';
 $lang->extension->waring = '警告';
 
 $lang->extension->errorOccurs                  = '错误：';
-$lang->extension->errorGetModules              = '从www.zentao.net获得插件分类失败。可能是因为网络方面的原因，请检查后重新刷新页面。';
-$lang->extension->errorGetExtensions           = '从www.zentao.net获得插件失败。可能是因为网络方面的原因，您可以到 <a href="http://www.zentao.net/extension/" target="_blank" class="alert-link">www.zentao.net</a> 手工下载插件，然后上传安装。';
+$lang->extension->errorGetModules              = '从www.zentao.pm获得插件分类失败。可能是因为网络方面的原因，请检查后重新刷新页面。';
+$lang->extension->errorGetExtensions           = '从www.zentao.pm获得插件失败。可能是因为网络方面的原因，您可以到 <a href="https://www.zentao.pm/extension/" target="_blank" class="alert-link">www.zentao.pm</a> 手工下载插件，然后上传安装。';
 $lang->extension->errorDownloadPathNotFound    = '插件下载存储路径<strong>%s</strong>不存在。<br />linux下面请执行命令：<strong>mkdir -p %s</strong>来修正。';
 $lang->extension->errorDownloadPathNotWritable = '插件下载存储路径<strong>%s</strong>不可写。<br />linux下面请执行命令：<strong>sudo chmod 777 %s</strong>来修正。';
 $lang->extension->errorPackageFileExists       = '下载路径已经有一个名为的<strong>%s</strong>附件。<h5>重新%s，<a href="%s" class="alert-link">请点击此链接</a></h5>';
 $lang->extension->errorDownloadFailed          = '下载失败，请重新下载。如果多次重试还不行，请尝试手工下载，然后通过上传功能上传。';
 $lang->extension->errorMd5Checking             = '下载文件不完整，请重新下载。如果多次重试还不行，请尝试手工下载，然后通过上传功能上传。';
-$lang->extension->errorExtracted               = '包文件<strong> %s </strong>解压缩失败，可能不是一个有效的zip文件。错误信息如下：<br />%s';
-$lang->extension->errorCheckIncompatible       = '该插件与禅道版本不兼容，%s后可能无法使用。<h3>您可以选择 <a href="%s">强制%s</a> 或者 <a href="#" onclick=parent.location.href="%s">取消</a></h3>';
-$lang->extension->errorFileConflicted          = '有以下文件冲突：<br />%s <h3>您可以选择 <a href="%s">覆盖</a> 或者 <a href="#" onclick=parent.location.href="%s">取消</a></h3>';
+$lang->extension->errorCheckIncompatible       = '该插件与禅道版本不兼容，%s后可能无法使用。<h5>您可以选择 <a href="%s" class="btn btn-sm">强制%s</a> 或者 <a href="#" onclick=parent.location.href="%s" class="btn btn-sm">取消</a></h5>';
+$lang->extension->errorFileConflicted          = '有以下文件冲突：<br />%s <h5>您可以选择 <a href="%s" class="btn btn-sm">覆盖</a> 或者 <a href="#" onclick=parent.location.href="%s" class="btn btn-sm">取消</a></h5>';
 $lang->extension->errorPackageNotFound         = '包文件 <strong>%s </strong>没有找到，可能是因为自动下载失败。您可以尝试再次下载。';
 $lang->extension->errorTargetPathNotWritable   = '目标路径 <strong>%s </strong>不可写。';
 $lang->extension->errorTargetPathNotExists     = '目标路径 <strong>%s </strong>不存在。';

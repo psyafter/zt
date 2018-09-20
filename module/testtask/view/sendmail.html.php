@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     bug
  * @version     $Id: sendmail.html.php 3717 2012-12-10 00:37:07Z zhujinyonging@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php $mailTitle = 'TESTTASK #' . $testtask->id . ' ' . $testtask->name;?>
@@ -18,7 +18,7 @@
       <tr>
         <td style='padding: 10px; background-color: #F8FAFE; border: none; font-size: 14px; font-weight: 500; border-bottom: 1px solid #e5e5e5;'>
           <?php $color = empty($testtask->color) ? '#333' : $testtask->color;?>
-          <?php echo html::a(zget($this->config->mail, 'domain', common::getSysURL()) . helper::createLink('testtask', 'view', "testtaskID=$testtask->id"), $mailTitle, '', "style='color: {$color}; text-decoration: underline;'");?>
+          <?php echo html::a(zget($this->config->mail, 'domain', common::getSysURL()) . helper::createLink('testtask', 'view', "testtaskID=$testtask->id", 'html'), $mailTitle, '', "style='color: {$color}; text-decoration: underline;'");?>
         </td>
       </tr>
     </table>

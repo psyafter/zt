@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     task
  * @version     $Id: control.php 5106 2013-07-12 01:28:54Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class task extends control
 {
@@ -45,13 +45,21 @@ class task extends control
      */
     public function create($projectID = 0, $storyID = 0, $moduleID = 0, $taskID = 0, $todoID = 0)
     {
+        $this->project->getLimitedProject();
+        $limitedProjects = !empty($_SESSION['limitedProjects']) ? $_SESSION['limitedProjects'] : '';
+        if(strpos(",{$limitedProjects},", ",$projectID,") !== false)
+        {
+            echo js::alert($this->lang->task->createDenied);
+            die(js::locate($this->createLink('project', 'task', "projectID=$projectID")));
+        }
+
         $task = new stdClass();
         $task->module     = $moduleID;
         $task->assignedTo = '';
         $task->name       = '';
         $task->story      = $storyID;
         $task->type       = '';
-        $task->pri        = '';
+        $task->pri        = '3';
         $task->estimate   = '';
         $task->desc       = '';
         $task->estStarted = '';
@@ -195,6 +203,14 @@ class task extends control
      */
     public function batchCreate($projectID = 0, $storyID = 0, $moduleID = 0, $taskID = 0, $iframe = 0)
     {
+        $this->project->getLimitedProject();
+        $limitedProjects = !empty($_SESSION['limitedProjects']) ? $_SESSION['limitedProjects'] : '';
+        if(strpos(",{$limitedProjects},", ",$projectID,") !== false)
+        {
+            echo js::alert($this->lang->task->createDenied);
+            die(js::locate($this->createLink('project', 'task', "projectID=$projectID")));
+        }
+
         $project   = $this->project->getById($projectID);
         $taskLink  = $this->createLink('project', 'browse', "projectID=$projectID&tab=task");
         $storyLink = $this->session->storyList ? $this->session->storyList : $this->createLink('project', 'story', "projectID=$projectID");
@@ -205,11 +221,11 @@ class task extends control
         if(!empty($_POST))
         {
             $mails = $this->task->batchCreate($projectID);
-            if(dao::isError()) die(js::error(dao::getError()));
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
             /* Locate the browser. */
-            if(!empty($iframe)) die(js::reload('parent.parent'));
-            die(js::locate($storyLink, 'parent'));
+            if(!empty($iframe)) $this->send(array('result' => 'success', 'locate' => 'parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $storyLink));
         }
 
         /* Set Custom*/
@@ -455,7 +471,7 @@ class task extends control
         /* Compute next assignedTo. */
         if(!empty($task->team))
         {
-            $task->assignedTo = $this->task->getNextUser(array_keys($task->team), $task->assignedTo);
+            $task->nextUser = $this->task->getNextUser(array_keys($task->team), $task->assignedTo);
             $members = $this->task->getMemberPairs($task);
         }
 
@@ -798,7 +814,7 @@ class task extends control
             $teams = array_keys($task->team);
 
             $task->nextBy     = $this->task->getNextUser($teams, $task->assignedTo);
-            $task->myConsumed = $task->team[$this->app->user->account]->consumed;
+            $task->myConsumed = $task->team[$task->assignedTo]->consumed;
 
             $lastAccount = end($teams);
             if($lastAccount != $task->assignedTo)
@@ -1129,7 +1145,7 @@ class task extends control
     public function ajaxGetProjectTasks($projectID, $taskID = 0)
     {
         $tasks = $this->task->getProjectTaskPairs((int)$projectID);
-        die(html::select('task', empty($tasks) ? array('' => '') : $tasks, $taskID));
+        die(html::select('task', empty($tasks) ? array('' => '') : $tasks, $taskID, "class='form-control'"));
     }
 
     /**
@@ -1273,8 +1289,10 @@ class task extends control
             if(!$this->session->taskWithChildren)
             {
                 $children = $this->dao->select('*')->from(TABLE_TASK)->where('deleted')->eq(0)
-                    ->andWhere('parent')->in(array_keys($tasks))
-                    ->beginIF($this->post->exportType == 'selected')->andWhere('id')->in($this->cookie->checkedItem)->fi()
+                    ->andWhere('parent')->ne(0)
+                    ->andWhere('parent', true)->in(array_keys($tasks))
+                    ->beginIF($this->post->exportType == 'selected')->orWhere('id')->in($this->cookie->checkedItem)->fi()
+                    ->markRight(1)
                     ->orderBy($sort)
                     ->fetchGroup('parent', 'id');
                 if(!empty($children))
@@ -1308,7 +1326,12 @@ class task extends control
                         {
                             array_splice($tasks, $position, 0, $children[$task->id]);
                             $position += count($children[$task->id]);
+                            unset($children[$task->id]);
                         }
+                    }
+                    if($children)
+                    {
+                        foreach($children as $childTasks) $tasks += $childTasks;
                     }
                 }
             }
@@ -1366,7 +1389,7 @@ class task extends control
                     $task->files = '';
                     foreach($relatedFiles[$task->id] as $file)
                     {
-                        $fileURL = common::getSysURL() . $this->file->webPath . $this->file->getRealPathName($file->pathname);
+                        $fileURL = common::getSysURL() . $this->createLink('file', 'download', "fileID={$file->id}");
                         $task->files .= html::a($fileURL, $file->title, '_blank') . '<br />';
                     }
                 }

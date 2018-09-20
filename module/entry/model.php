@@ -7,7 +7,7 @@
  * @author      Gang Liu <liugang@cnezsoft.com>
  * @package     entry 
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class entryModel extends model
 {

@@ -10,11 +10,11 @@
  *
  * example:
  * $config->svn->client = '/usr/bin/svn'; // c:\svn\svn.exe
- * $config->svn->repos['pms']['path']     = 'http://svn.zentao.net/zentao/trunk/';
+ * $config->svn->repos['pms']['path']     = 'http://svn.zentao.pm/zentao/trunk/';
  * $config->svn->repos['pms']['username'] = 'user';
  * $config->svn->repos['pms']['password'] = 'pass';
  *
- * $config->zentao->path     = "http://pms.zentao.net/";
+ * $config->zentao->path     = "http://pms.zentao.pm/";
  * $config->zentao->user     = 'demo';
  * $config->zentao->password = '123456';
  *

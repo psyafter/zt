@@ -5,7 +5,7 @@
  * @author      Memory <lvtao@cnezsoft.com>
  * @package     score
  * @version     $Id: model.php $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class scoreModel extends model
 {
@@ -93,7 +93,7 @@ class scoreModel extends model
 
                     if(!empty($task->estimate))
                     {
-                        $rule['score'] = $rule['score'] + round(($task->consumed / 10 * $task->estimate / $task->consumed));
+                        $rule['score'] = $rule['score'] + (empty($task->consumed) ? 0 : round($task->consumed / 10 * $task->estimate / $task->consumed));
                     }
                 }
                 break;
@@ -221,7 +221,7 @@ class scoreModel extends model
         $data->time     = empty($time) ? helper::now() : $time;
         $this->dao->insert(TABLE_SCORE)->data($data)->exec();
 
-        $this->dao->update(TABLE_USER)->set("`score`=`score` + " . $rule['score'])->set("`scoreLevel`=`scoreLevel` + " . $rule['score'])->where('account')->eq($account)->exec();
+        $this->dao->update(TABLE_USER)->set("`score`=`score` + " . (int)$rule['score'])->set("`scoreLevel`=`scoreLevel` + " . (int)$rule['score'])->where('account')->eq($account)->exec();
     }
 
     /**
@@ -298,7 +298,7 @@ class scoreModel extends model
 <div id='noticeAttend' class='alert alert-success with-icon alert-dismissable' style='width:280px; position:fixed; bottom:25px; right:15px; z-index: 9999;' id='planInfo'>
    <i class='icon icon-diamond'>  </i>
    <div class='content'>{$notice}</div>
-   <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+   <button type="button" class="close" data-dismiss="alert">×</button>
  </div>
 EOT;
         return $fullNotice;

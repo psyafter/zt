@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     dept
  * @version     $Id: zh-cn.php 4129 2013-01-18 01:58:14Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->dept->common      = '部门结构';
 $lang->dept->manageChild = "下级部门";
@@ -17,7 +17,7 @@ $lang->dept->parent      = "上级部门";
 $lang->dept->manager     = "负责人";
 $lang->dept->name        = "部门名称";
 $lang->dept->browse      = "部门维护";
-$lang->dept->manage      = "维护部门结构";
+$lang->dept->manage      = "维护部门";
 $lang->dept->updateOrder = "更新排序";
 $lang->dept->add         = "添加部门";
 $lang->dept->dragAndSort = "拖动排序";

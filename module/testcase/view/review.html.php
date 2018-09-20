@@ -7,21 +7,21 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     testcase
  * @version     $Id: review.html.php 4129 2013-01-18 01:58:14Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php include '../../common/view/header.lite.html.php';?>
 <?php include '../../common/view/chosen.html.php';?>
 <?php include '../../common/view/kindeditor.html.php';?>
 <?php include '../../common/view/datepicker.html.php';?>
-<div id='titlebar'>
-  <div class='heading'>
-    <span class='prefix'><?php echo html::icon($lang->icons['testcase']);?> <strong><?php echo $case->id;?></strong></span>
-    <strong><?php echo html::a($this->createLink('case', 'view', "caseID=$case->id"), $case->title);?></strong>
-    <small><?php echo html::icon($lang->icons['review']) . ' ' . $lang->testcase->review;?></small>
+<div id='mainContent' class='main-content'>
+  <div class='main-header'>
+    <h2>
+      <span class='label label-id'><?php echo $case->id;?></span>
+      <?php echo html::a($this->createLink('case', 'view', "caseID=$case->id"), $case->title);?>
+    </h2>
   </div>
-</div>
-<form method='post' target='hiddenwin' class='form-condensed'>
+  <form method='post' target='hiddenwin'>
     <table class='table table-form'>
       <tr>
         <th class='w-80px'><?php echo $lang->testcase->reviewedDateAB;?></th>
@@ -40,13 +40,11 @@
         <td colspan='2'><?php echo html::textarea('comment', '', "rows='8' class='form-control'");?></td>
       </tr>
       <tr>
-        <td></td>
-        <td colspan='2'>
-        <?php echo html::submitButton();?>
-        </td>
+        <td colspan='3' class='text-center'><?php echo html::submitButton();?></td>
       </tr>
     </table>
-</form>
-<hr class='small'>
-<div class='main'><?php include '../../common/view/action.html.php';?></div>
+  </form>
+  <hr class='small' />
+  <div class='main'><?php include '../../common/view/action.html.php';?></div>
+</div>
 <?php include '../../common/view/footer.lite.html.php';?>

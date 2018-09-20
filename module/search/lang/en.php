@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     search
  * @version     $Id: en.php 4129 2013-01-18 01:58:14Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->search->common        = 'Search';
 $lang->search->reset         = 'Reset';
@@ -17,13 +17,14 @@ $lang->search->group1        = 'Group 1';
 $lang->search->group2        = 'Group 2';
 $lang->search->buildForm     = 'Search Form';
 $lang->search->buildQuery    = 'Execute Query';
-$lang->search->saveQuery     = 'Save Query';
+$lang->search->savedQuery     = 'Save Query';
 $lang->search->deleteQuery   = 'Delete Query';
 $lang->search->setQueryTitle = 'Enter the query title. Save it After searching.';
 $lang->search->select        = 'Stories/Tasks Filter';
 $lang->search->me            = 'Me';
 $lang->search->noQuery       = 'No query saved!';
 $lang->search->onMenuBar     = 'Show in Menu';
+$lang->search->custom        = 'Custom';
 
 $lang->search->account  = 'Account';
 $lang->search->module   = 'Module';

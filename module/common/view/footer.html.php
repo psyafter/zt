@@ -1,22 +1,21 @@
-  </div><?php /* end '.outer' in 'header.html.php'. */ ?>
-  <script>setTreeBox()</script>
-  <?php if($extView = $this->getExtViewFile(__FILE__)){include $extView; return helper::cd();}?>
+</div><?php /* end '.outer' in 'header.html.php'. */ ?>
+<script>$.initSidebar()</script>
+<?php if($extView = $this->getExtViewFile(__FILE__)){include $extView; return helper::cd();}?>
 
-  <div id='divider'></div>
-  <iframe frameborder='0' name='hiddenwin' id='hiddenwin' scrolling='no' class='debugwin hidden'></iframe>
-<?php $onlybody = zget($_GET, 'onlybody', 'no');?>
+<iframe frameborder='0' name='hiddenwin' id='hiddenwin' scrolling='no' class='debugwin hidden'></iframe>
+
 <?php if($onlybody != 'yes'):?>
-</div><?php /* end '#wrap' in 'header.html.php'. */ ?>
-<div id='footer'>
-  <div id='crumbs'>
+</main><?php /* end '#wrap' in 'header.html.php'. */ ?>
+<footer id='footer'>
+  <div class="container">
     <?php commonModel::printBreadMenu($this->moduleName, isset($position) ? $position : ''); ?>
+    <div id='poweredBy'>
+      <a href='<?php echo $lang->website;?>' target='_blank'><i class='icon-zentao'></i> <?php echo $lang->zentaoPMS . $config->version;?></a> &nbsp;
+      <?php echo $lang->proVersion;?>
+      <?php commonModel::printNotifyLink();?>
+    </div>
   </div>
-  <div id='poweredby'>
-  <a href='<?php echo $lang->website;?>' target='_blank' class='text-primary'><i class='icon-zentao'></i> <?php echo $lang->zentaoPMS . $config->version;?></a> &nbsp;
-    <?php echo $lang->proVersion;?>
-    <?php commonModel::printNotifyLink();?>
-  </div>
-</div>
+</footer>
 <div id="noticeBox"><?php echo $this->loadModel('score')->getNotice(); ?></div>
 <script>
 <?php if(!isset($config->global->browserNotice)):?>
@@ -38,7 +37,7 @@ $(function()
     {
         $.get(createLink('message', 'ajaxGetMessage', "windowBlur=" + (windowBlur ? '1' : '0')), function(data)
         {
-           if(!windowBlur)
+            if(!windowBlur)
             {
                 $('#noticeBox').append(data);
                 adjustNoticePosition();
@@ -48,35 +47,25 @@ $(function()
                 if(data)
                 {
                     if(typeof data == 'string') data = $.parseJSON(data);
-                    if(typeof data.message == 'string')	notifyMessage(data.message);
+                    if(typeof data.message == 'string') notifyMessage(data.message);
                 }
             }
         });
-    }, 60 * 1000);
+    }, 5 * 60 * 1000);
 })
 
-<?php if(!isset($config->global->novice) and $this->loadModel('tutorial')->checkNovice() and $config->global->flow == 'full'):?>
-novice = confirm('<?php echo $lang->tutorial->novice?>');
-$.get(createLink('tutorial', 'ajaxSaveNovice', 'novice=' + (novice ? 'true' : 'false')), function()
-{
-    if(novice) location.href=createLink('tutorial', 'index');
-});
-<?php endif;?>
-
-<?php if(!empty($this->config->sso->redirect)):?>
+<?php if(!empty($config->sso->redirect)):?>
 <?php
-$ranzhiAddr = $this->config->sso->addr;
+$ranzhiAddr = $config->sso->addr;
 $ranzhiURL  = substr($ranzhiAddr, 0, strrpos($ranzhiAddr, '/sys/'));
 ?>
 <?php if(!empty($ranzhiURL)):?>
-$(function(){ redirect('<?php echo $ranzhiURL?>', '<?php echo $this->config->sso->code?>'); });
+$(function(){ redirect('<?php echo $ranzhiURL?>', '<?php echo $config->sso->code?>'); });
 <?php endif;?>
 <?php endif;?>
 </script>
 
 <?php endif;?>
-
-<script>config.onlybody = '<?php echo $onlybody?>';</script>
 <?php
 if($this->loadModel('cron')->runable()) js::execute('startCron()');
 if(isset($pageJS)) js::execute($pageJS);  // load the js for current page.

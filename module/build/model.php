@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     build
  * @version     $Id: model.php 4970 2013-07-02 05:58:11Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -78,11 +78,13 @@ class buildModel extends model
      * @access public
      * @return array
      */
-    public function getProjectBuildPairs($projectID, $productID, $branch = 0, $params = '')
+    public function getProjectBuildPairs($projectID, $productID, $branch = 0, $params = '', $buildID = 0)
     {
-        $sysBuilds = array();
+        $sysBuilds      = array();
+        $selectedBuilds = array();
         if(strpos($params, 'noempty') === false) $sysBuilds = array('' => '');
         if(strpos($params, 'notrunk') === false) $sysBuilds = $sysBuilds + array('trunk' => $this->lang->trunk);
+        if($buildID != 0) $selectedBuilds = $this->dao->select('id, name')->from(TABLE_BUILD)->where('id')->in($buildID)->fetchPairs();
 
         $projectBuilds = $this->dao->select('t1.id, t1.name, t1.project, t2.status as projectStatus, t3.id as releaseID, t3.status as releaseStatus, t4.name as branchName')->from(TABLE_BUILD)->alias('t1')
             ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
@@ -102,7 +104,7 @@ class buildModel extends model
             if((strpos($params, 'noterminate') !== false) and ($build->releaseStatus === 'terminate')) continue;
             $builds[$buildID] = $build->name;
         }
-        if(!$builds) return $sysBuilds;
+        if(!$builds) return $sysBuilds + $selectedBuilds;
 
         /* if the build has been released, replace build name with release name. */
         $releases = $this->dao->select('build, name')->from(TABLE_RELEASE)
@@ -112,7 +114,7 @@ class buildModel extends model
             ->fetchPairs();
         foreach($releases as $buildID => $releaseName) $builds[$buildID] = $releaseName;
 
-        return $sysBuilds + $builds;
+        return $sysBuilds + $builds + $selectedBuilds;
     }
 
     /**
@@ -199,6 +201,7 @@ class buildModel extends model
         $build = fixer::input('post')
             ->setDefault('product', 0)
             ->setDefault('branch', 0)
+            ->cleanInt('product,branch')
             ->add('project', (int)$projectID)
             ->stripTags($this->config->build->editor->create['id'], $this->config->allowedTags)
             ->remove('resolvedBy,allchecker,files,labels,uid')
@@ -230,8 +233,10 @@ class buildModel extends model
      */
     public function update($buildID)
     {
-        $oldBuild = $this->dao->select('*')->from(TABLE_BUILD)->where('id')->eq((int)$buildID)->fetch();
+        $buildID  = (int)$buildID;
+        $oldBuild = $this->dao->select('*')->from(TABLE_BUILD)->where('id')->eq($buildID)->fetch();
         $build    = fixer::input('post')->stripTags($this->config->build->editor->edit['id'], $this->config->allowedTags)
+            ->cleanInt('product,branch')
             ->remove('allchecker,resolvedBy,files,labels,uid')
             ->get();
         if(!isset($build->branch)) $build->branch = $oldBuild->branch;
@@ -240,7 +245,7 @@ class buildModel extends model
         $this->dao->update(TABLE_BUILD)->data($build)
             ->autoCheck()
             ->batchCheck($this->config->build->edit->requiredFields, 'notempty')
-            ->where('id')->eq((int)$buildID)
+            ->where('id')->eq($buildID)
             ->check('name', 'unique', "id != $buildID AND product = {$build->product} AND branch = {$build->branch} AND deleted = '0'")
             ->exec();
         if(isset($build->branch) and $oldBuild->branch != $build->branch) $this->dao->update(TABLE_RELEASE)->set('branch')->eq($build->branch)->where('build')->eq($buildID)->exec();

@@ -7,12 +7,12 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     misc
  * @version     $Id: zh-cn.php 5128 2013-07-13 08:59:49Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->misc = new stdclass();
 $lang->misc->common = '杂项';
 $lang->misc->ping   = '防超时';
-$lang->misc->api    = 'http://api.zentao.net';
+$lang->misc->api    = 'http://api.zentao.pm';
 
 $lang->misc->zentao = new stdclass();
 $lang->misc->zentao->version           = '版本%s';
@@ -53,7 +53,7 @@ $lang->misc->zentao->service['servicemore']= '更多服务...';
 
 $lang->misc->mobile      = "手机访问";
 $lang->misc->noGDLib     = "请用手机浏览器访问：<strong>%s</strong>";
-$lang->misc->copyright   = "&copy; 2009 - 2018 <a href='http://www.cnezsoft.com' target='_blank'>青岛易软天创网络科技有限公司</a> 电话：4006-8899-23 Email：<a href='mailto:co@zentao.net'>co@zentao.net</a>  QQ：1492153927";
+$lang->misc->copyright   = "&copy; 2009 - 2018 <a href='http://www.cnezsoft.com' target='_blank'>青岛易软天创网络科技有限公司</a> 电话：4006-8899-23 Email：<a href='mailto:co@zentao.pm'>co@zentao.pm</a>  QQ：1492153927";
 $lang->misc->checkTable  = "检查修复数据表";
 $lang->misc->needRepair  = "修复表";
 $lang->misc->repairTable = "数据库表可能因为断电原因损坏，需要检查修复！！";

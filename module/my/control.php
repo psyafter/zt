@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     dashboard
  * @version     $Id: control.php 5020 2013-07-05 02:03:26Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class my extends control
 {
@@ -62,6 +62,11 @@ class my extends control
         $this->display();
     }
 
+    public function calendar()
+    {
+        $this->locate($this->createLink('my', 'todo'));
+    }
+
     /**
      * My todos.
      *
@@ -74,7 +79,7 @@ class my extends control
      * @access public
      * @return void
      */
-    public function todo($type = 'today', $account = '', $status = 'all', $orderBy = "date_desc,status,begin", $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    public function todo($type = 'all', $account = '', $status = 'all', $orderBy = "date_desc,status,begin", $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Save session. */
         $uri = $this->app->getURI(true);
@@ -110,7 +115,6 @@ class my extends control
         $this->view->pager        = $pager;
         $this->view->times        = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
         $this->view->time         = date::now();
-        $this->view->members      = $this->loadModel('user')->getPairs();
         $this->view->importFuture = ($type != 'today');
 
         $this->display();
@@ -410,7 +414,7 @@ class my extends control
             {
                 $listID = $this->user->createContactList($this->post->newList, $this->post->users);
                 $this->user->setGlobalContacts($listID, isset($_POST['share']));
-                if(isonlybody()) die(js::closeModal('parent.parent', '', 'function(){parent.parent.ajaxGetContacts(\'#mailtoGroup\')}'));
+                if(isonlybody()) die(js::closeModal('parent.parent', '', ' function(){parent.parent.ajaxGetContacts(\'#mailto\')}'));
                 die(js::locate(inlink('manageContacts', "listID=$listID"), 'parent'));
             }
             elseif($this->post->mode == 'edit')
@@ -527,7 +531,7 @@ class my extends control
      * @access public
      * @return void
      */
-    public function dynamic($type = 'today', $orderBy = 'date_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    public function dynamic($type = 'today', $recTotal = 0, $date = '', $direction = 'next')
     {
         /* Save session. */
         $uri = $this->app->getURI(true);
@@ -544,23 +548,25 @@ class my extends control
 
         /* Set the pager. */
         $this->app->loadClass('pager', $static = true);
-        $pager = pager::init($recTotal, $recPerPage, $pageID);
+        $pager = new pager($recTotal, $recPerPage = 50, $pageID = 1);
 
         /* Append id for secend sort. */
+        $orderBy = $direction == 'next' ? 'date_desc' : 'date_asc';
         $sort = $this->loadModel('common')->appendOrder($orderBy);
 
         /* The header and position. */
         $this->view->title      = $this->lang->my->common . $this->lang->colon . $this->lang->my->dynamic;
         $this->view->position[] = $this->lang->my->dynamic;
 
+        $date    = empty($date) ? '' : date('Y-m-d', $date);
+        $actions = $this->loadModel('action')->getDynamic($this->app->user->account, $type, $sort, $pager, 'all', 'all', $date, $direction);
+
         /* Assign. */
         $this->view->type       = $type;
-        $this->view->recTotal   = $recTotal;
-        $this->view->recPerPage = $recPerPage;
-        $this->view->pageID     = $pageID;
         $this->view->orderBy    = $orderBy;
         $this->view->pager      = $pager;
-        $this->view->actions    = $this->loadModel('action')->getDynamic($this->app->user->account, $type, $sort, $pager);
+        $this->view->dateGroups = $this->action->buildDateGroup($actions, $direction);
+        $this->view->direction  = $direction;
         $this->display();
     }
 

@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     svn
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -311,7 +311,7 @@ class svnModel extends model
      * 
      * @param  object    $log 
      * @access public
-     * @return ojbect
+     * @return object
      */
     public function convertLog($log)
     {
@@ -611,8 +611,8 @@ class svnModel extends model
         {
             foreach($actionFiles as $file)
             {
-                $catLink  = trim(html::a($this->buildURL('cat', $repoRoot . $file, $log->revision), 'view', '', "class='repolink'"));
-                $diffLink = trim(html::a($this->buildURL('diff', $repoRoot . $file, $log->revision), 'diff', '', "class='repolink'"));
+                $catLink  = trim(html::a($this->buildURL('cat', $repoRoot . $file, $log->revision), 'view', '', "class='iframe' data-width='960'"));
+                $diffLink = trim(html::a($this->buildURL('diff', $repoRoot . $file, $log->revision), 'diff', '', "class='iframe' data-width='960'"));
                 $diff .= $action . " " . $file . " $catLink ";
                 $diff .= $action == 'M' ? "$diffLink\n" : "\n" ;
             }

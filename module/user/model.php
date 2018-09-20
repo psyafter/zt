@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     user
  * @version     $Id: model.php 5005 2013-07-03 08:39:11Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -206,6 +206,7 @@ class userModel extends model
      */
     public function create()
     {
+        $_POST['account'] = trim($_POST['account']);
         if(!$this->checkPassword()) return;
         if(strtolower($_POST['account']) == 'guest') return false;
 
@@ -234,17 +235,20 @@ class userModel extends model
             ->batchCheck($this->config->user->create->requiredFields, 'notempty')
             ->check('account', 'unique')
             ->check('account', 'account')
+            ->checkIF($this->post->email != '', 'email', 'email')
             ->exec();
-        if($this->post->group)
-        {
-            $data = new stdClass();
-            $data->account = $this->post->account;
-            $data->group   = $this->post->group;
-            $this->dao->insert(TABLE_USERGROUP)->data($data)->exec();
-        }
-
         if(!dao::isError())
         {
+            $userID = $this->dao->lastInsertID();
+            if($this->post->group)
+            {
+                $data = new stdClass();
+                $data->account = $this->post->account;
+                $data->group   = $this->post->group;
+                $this->dao->insert(TABLE_USERGROUP)->data($data)->exec();
+            }
+
+            $this->loadModel('action')->create('user', $userID, 'Created');
             $this->loadModel('mail');
             if($this->config->mail->mta == 'sendcloud' and !empty($user->email)) $this->mail->syncSendCloud('sync', $user->email, $user->realname);
         }
@@ -266,6 +270,7 @@ class userModel extends model
         $accounts = array();
         for($i = 0; $i < $this->config->user->batchCreate; $i++)
         {
+            $users->account[$i] = trim($users->account[$i]);
             if($users->account[$i] != '')
             {
                 if(strtolower($users->account[$i]) == 'guest') die(js::error(sprintf($this->lang->user->error->reserved, $i+1)));
@@ -287,7 +292,7 @@ class userModel extends model
                 $data[$i]->group    = $users->group[$i] == 'ditto' ? (isset($prev['group']) ? $prev['group'] : '') : $users->group[$i];
                 $data[$i]->email    = $users->email[$i];
                 $data[$i]->gender   = $users->gender[$i];
-                $data[$i]->password = md5($users->password[$i]);
+                $data[$i]->password = md5(trim($users->password[$i]));
                 $data[$i]->commiter = $users->commiter[$i];
                 $data[$i]->join     = empty($users->join[$i]) ? '0000-00-00' : ($users->join[$i]);
                 $data[$i]->skype    = $users->skype[$i];
@@ -354,6 +359,7 @@ class userModel extends model
      */
     public function update($userID)
     {
+        $_POST['account'] = trim($_POST['account']);
         if(!$this->checkPassword(true)) return;
 
         $oldUser = $this->getById($userID, 'id');
@@ -414,6 +420,7 @@ class userModel extends model
         if(!dao::isError())
         {
             $this->loadModel('score')->create('user', 'editProfile');
+            $this->loadModel('action')->create('user', $userID, 'edited');
             $this->loadModel('mail');
             if($this->config->mail->mta == 'sendcloud' and $user->email != $oldUser->email)
             {
@@ -454,7 +461,7 @@ class userModel extends model
         $accounts = array();
         foreach($data->account as $id => $account)
         {
-            $users[$id]['account']  = $account;
+            $users[$id]['account']  = trim($account);
             $users[$id]['realname'] = $data->realname[$id];
             $users[$id]['commiter'] = $data->commiter[$id];
             $users[$id]['email']    = $data->email[$id];
@@ -567,6 +574,7 @@ class userModel extends model
      */
     public function resetPassword()
     {
+        $_POST['account'] = trim($_POST['account']);
         if(!$this->checkPassword()) return;
 
         $user = $this->getById($this->post->account);
@@ -591,6 +599,8 @@ class userModel extends model
      */
     public function checkPassword($canNoPassword = false)
     {
+        $_POST['password1'] = trim($_POST['password1']);
+        $_POST['password2'] = trim($_POST['password2']);
         if(!$canNoPassword and empty($_POST['password1'])) dao::$errors['password'][] = sprintf($this->lang->error->notempty, $this->lang->user->password);
         if($this->post->password1 != false)
         {
@@ -751,6 +761,7 @@ class userModel extends model
                     $viewAllow    = true;
                     break;
                 }
+
                 if(empty($acl['products'])) $productAllow = true;
                 if(empty($acl['projects'])) $projectAllow = true;
                 if(empty($acl['views']))    $viewAllow    = true;
@@ -840,7 +851,7 @@ class userModel extends model
         /* Judge whether the project is delayed. */
         foreach($projects as $project)
         {
-            if($project->status != 'done')
+            if($project->status != 'done' and $project->status != 'closed' and $project->status != 'suspended')
             {
                 $delay = helper::diffDate(helper::today(), $project->end);
                 if($delay > 0) $project->delay = $delay;

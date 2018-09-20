@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     custom
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class custom extends control
 {
@@ -113,39 +113,40 @@ class custom extends control
             }
             else
             {
+                $lang = $_POST['lang'];
+                $oldCustoms = $this->custom->getItems("lang=$lang&module=$module&section=$field");
                 foreach($_POST['keys'] as $index => $key)
                 {
                     if(!empty($key)) $key = trim($key);
                     /* Invalid key. It should be numbers. (It includes severityList in bug module and priList in stroy, task, bug, testcasea, testtask and todo module.) */
                     if($field == 'priList' or $field == 'severityList')
                     {
-                        if(!is_numeric($key) or $key > 255) die(js::alert($this->lang->custom->notice->invalidNumberKey));
+                        if(!is_numeric($key) or $key > 255) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidNumberKey));
                     }
-                    if(!empty($key) and $key != 'n/a' and !validater::checkREG($key, '/^[a-z_0-9]+$/')) die(js::alert($this->lang->custom->notice->invalidStringKey));
+                    if(!empty($key) and !isset($oldCustoms[$key]) and $key != 'n/a' and !validater::checkREG($key, '/^[a-z_0-9]+$/')) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStringKey));
 
                     /* The length of roleList in user module and typeList in todo module is less than 10. check it when saved. */
                     if($field == 'roleList' or $module == 'todo' and $field == 'typeList')
                     {
-                        if(strlen($key) > 10) die(js::alert($this->lang->custom->notice->invalidStrlen['ten']));
+                        if(strlen($key) > 10) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStrlen['ten']));
                     }
                     
                     /* The length of sourceList in story module and typeList in task module is less than 20, check it when saved. */
                     if($field == 'sourceList' or $module == 'task' and $field == 'typeList')
                     {
-                        if(strlen($key) > 20) die(js::alert($this->lang->custom->notice->invalidStrlen['twenty']));
+                        if(strlen($key) > 20) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStrlen['twenty']));
                     }
                     
                     /* The length of stageList in testcase module is less than 255, check it when saved. */
-                    if($module == 'testcase' and $field == 'stageList' and strlen($key) > 255) die(js::alert($this->lang->custom->notice->invalidStrlen['twoHundred']));
+                    if($module == 'testcase' and $field == 'stageList' and strlen($key) > 255) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStrlen['twoHundred']));
                     
                     /* The length of field that in bug and testcase module and reasonList in story and task module is less than 30, check it when saved. */
                     if($module == 'bug' or $field == 'reasonList' or $module == 'testcase')
                     {
-                        if(strlen($key) > 30) die(js::alert($this->lang->custom->notice->invalidStrlen['thirty']));
+                        if(strlen($key) > 30) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStrlen['thirty']));
                     }
                 }
 
-                $lang = $_POST['lang'];
                 $this->custom->deleteItems("lang=$lang&module=$module&section=$field");
                 foreach($_POST['keys'] as $index => $key)
                 {
@@ -156,8 +157,8 @@ class custom extends control
                     $this->custom->setItem("{$lang}.{$module}.{$field}.{$key}.{$system}", $value);
                 }
             }
-            if(dao::isError()) die(js::error(dao::getError()));
-            die(js::locate($this->createLink('custom', 'set', "module=$module&field=$field&lang=" . str_replace('-', '_', $lang)), 'parent'));
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
 
         /* Check whether the current language has been customized. */
@@ -237,7 +238,7 @@ class custom extends control
                 $this->dao->update(TABLE_BLOCK)->set("`title` = REPLACE(`title`, '{$projectCommonList[$oldProjectIndex]}', '{$projectCommonList[$newProjectIndex]}')")->where('source')->eq('project')->exec();
             }
 
-            die(js::reload('parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
 
         $this->view->title      = $this->lang->custom->flow;
@@ -250,7 +251,7 @@ class custom extends control
         if($_POST)
         {
             $this->loadModel('setting')->setItem('system.common.global.flow', $this->post->flow);
-            die(js::reload('parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
 
         $this->view->title      = $this->lang->custom->working;
@@ -269,10 +270,10 @@ class custom extends control
     {
         if(empty($moduleName)) $moduleName = current($this->config->custom->requiredModules);
 
-        if($_POST)
+        if($_SERVER['REQUEST_METHOD'] == 'POST')
         {
             $this->custom->saveRequiredFields($moduleName);
-            die(js::reload('parent.parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
 
         foreach($this->config->custom->requiredModules as $requiredModule) $this->app->loadLang($requiredModule);
@@ -306,7 +307,7 @@ class custom extends control
         if($_POST)
         {
             $this->loadModel('setting')->setItem('system.common.global.scoreStatus', $this->post->score);
-            die(js::reload('parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
 
         $this->view->title      = $this->lang->custom->score;
@@ -327,31 +328,17 @@ class custom extends control
     public function ajaxSaveCustomFields($module, $section, $key)
     {
         $account = $this->app->user->account;
-        $fields  = $this->post->fields;
-        if(is_array($fields)) $fields = join(',', $fields);
-        $this->loadModel('setting')->setItem("$account.$module.$section.$key", $fields);
-        die(js::reload('parent'));
-    }
-
-    /**
-     * Ajax set homepage.
-     * 
-     * @param  string $module 
-     * @param  string $page 
-     * @access public
-     * @return void
-     */
-    public function ajaxSetHomepage($module, $page = '')
-    {
-        if(empty($page))
+        if($_POST)
         {
-            $this->view->title  = $this->lang->homepage;
-            $this->view->module = $module;
-            die($this->display());
+            $fields  = $this->post->fields;
+            if(is_array($fields)) $fields = join(',', $fields);
+            $this->loadModel('setting')->setItem("$account.$module.$section.$key", $fields);
         }
-
-        $account = $this->app->user->account;
-        $this->loadModel('setting')->setItem("$account.$module.homepage", $page);
+        else
+        {
+            $this->loadModel('setting')->deleteItems("owner=$account&module=$module&section=$section&key=$key");
+        }
+        die(js::reload('parent'));
     }
 
     /**
@@ -420,6 +407,10 @@ class custom extends control
      */
     public function ajaxGetMenu($module = 'main', $method = '', $type = '')
     {
+        if($this->config->global->flow == 'full')     $this->loadModel('project')->setMenu(array(), 0);
+        if($this->config->global->flow == 'onlyTest') $this->loadModel('testcase')->setMenu(array(), 0);
+        if($this->config->global->flow == 'onlyTest') $this->loadModel('bug')->setMenu(array(), 0);
+        if($this->config->global->flow == 'onlyTask') $this->loadModel('project')->setMenu(array(), 0);
         if($type === 'all')
         {
             $menu = array();

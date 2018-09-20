@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     extension
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->extension->common        = 'Extension';
 $lang->extension->browse        = 'Browse';
@@ -98,20 +98,19 @@ $lang->extension->upgradeVersion = '(Upgrade %s to %s.)';
 $lang->extension->waring = 'Warning!';
 
 $lang->extension->errorOccurs                  = 'Error:';
-$lang->extension->errorGetModules              = 'Get Extension Category from www.zentao.net failed. It could be network error. Plase check your network and refresh it.';
-$lang->extension->errorGetExtensions           = 'Get Extension from www.zentao.net failed. It could be network error. Please go to <a href="http://www.zentao.net/extension/" target="_blank" class="alert-link">www.zentao.net</a> and download the extension, and then upload it to install.';
+$lang->extension->errorGetModules              = 'Get Extension Category from www.zentao.pm failed. It could be network error. Plase check your network and refresh it.';
+$lang->extension->errorGetExtensions           = 'Get Extension from www.zentao.pm failed. It could be network error. Please go to <a href="https://www.zentao.pm/extension/" target="_blank" class="alert-link">www.zentao.pm</a> and download the extension, and then upload it to install.';
 $lang->extension->errorDownloadPathNotFound    = 'Extension download path <strong>%s</strong> is not found.<br /> Please run <strong>mkdir -p %s</strong> in Linux to fix it.';
 $lang->extension->errorDownloadPathNotWritable = 'Extensiond ownload path <strong>%s</strong>is not writable. <br />Please run <strong>sudo chmod 777 %s</strong> in Linux to fix it.';
 $lang->extension->errorPackageFileExists       = '<strong>%s</strong> has existed in the download path.<h5> Please %s it again, <a href="%s" class="alert-link">CLICK HERE</a></h5>';
 $lang->extension->errorDownloadFailed          = 'Download failed. Please try it again. If still not OK, try to download it manually and upload it to install.';
 $lang->extension->errorMd5Checking             = 'Incomplete File. Please download it again. If still not OK, try to download it manually and upload it to install.';
-$lang->extension->errorExtracted               = 'Unzip <strong> %s </strong> failed. It could be an invailid zip file. Error: <br />%s';
-$lang->extension->errorCheckIncompatible       = 'It is incompatible with this versiosn of ZenTao. %sed it and you might not be able to use it. <h3>Choose <a href="%s">Force %s</a> or <a href="#" onclick=parent.location.href="%s"> Cancel</a></h3>';
-$lang->extension->errorFileConflicted          = '<br />%s <h3> is conflicted with others. Choose <a href="%s">Override</a> or <a href="#" onclick=parent.location.href="%s">Cancel</a></h3>';
+$lang->extension->errorCheckIncompatible       = 'Incompatible with this version of ZenTao. It may not be used %s later.<h5>You can choose to <a href="%s" class="btn btn-sm">force%s</a> or <a href="#" onclick=parent.location.href="%s" class="btn btn-sm">cancel</a></h5>';
+$lang->extension->errorFileConflicted          = '<br />%s <h5> is conflicted with others. Choose <a href="%s" class="btn btn-sm">Override</a> or <a href="#" onclick=parent.location.href="%s" class="btn btn-sm">Cancel</a></h5>';
 $lang->extension->errorPackageNotFound         = '<strong>%s </strong> is not found. Downloading might be failed. Please download it again.';
 $lang->extension->errorTargetPathNotWritable   = '<strong>%s </strong> is not writable.';
 $lang->extension->errorTargetPathNotExists     = '<strong>%s </strong> is not found.';
-$lang->extension->errorInstallDB               = 'Database statements execution failed. Error: %s';
+$lang->extension->errorInstallDB               = 'Database report execution failed. Error: %s';
 $lang->extension->errorConflicts               = 'Conflicted with “%s”!';
 $lang->extension->errorDepends                 = 'Dependent extension has not been installed or the version is incorrect:<br /><br /> %s';
 $lang->extension->errorIncompatible            = 'Incompatible with this version of ZenTao.';

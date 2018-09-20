@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     admin
  * @version     $Id: zh-tw.php 4767 2013-05-05 06:10:13Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->admin->common        = '後台管理';
 $lang->admin->index         = '後台管理首頁';
@@ -21,11 +21,10 @@ $lang->admin->ztCompany     = '認證公司';
 $lang->admin->captcha       = '驗證碼';
 $lang->admin->getCaptcha    = '獲取驗證碼';
 
-$lang->admin->api           = '介面';
-$lang->admin->log           = '日誌';
-$lang->admin->setting       = '設置';
-$lang->admin->days          = '日誌保存天數';
-$lang->admin->saveSuccess   = '保存成功';
+$lang->admin->api     = '介面';
+$lang->admin->log     = '日誌';
+$lang->admin->setting = '設置';
+$lang->admin->days    = '日誌保存天數';
 
 $lang->admin->info = new stdclass();
 $lang->admin->info->version = '當前系統的版本是%s，';
@@ -34,7 +33,7 @@ $lang->admin->info->account = "您的禪道社區賬戶為%s。";
 $lang->admin->info->log     = '超出存天數的日誌會被刪除，需要開啟計劃任務。';
 
 $lang->admin->notice = new stdclass();
-$lang->admin->notice->register = "友情提示：您還未在禪道社區(www.zentao.net)登記，%s進行登記，以及時獲得禪道最新信息。";
+$lang->admin->notice->register = "友情提示：您還未在禪道社區(www.zentao.pm)登記，%s進行登記，以及時獲得禪道最新信息。";
 $lang->admin->notice->ignore   = "不再提示";
 $lang->admin->notice->int      = "『%s』應當是正整數。";
 

@@ -7,19 +7,20 @@
  * @author      Jia Fu <fujia@cnezsoft.com>
  * @package     doc
  * @version     $Id: editlib.html.php 975 2010-07-29 03:30:25Z jajacn@126.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php include '../../common/view/header.lite.html.php';?>
 <?php include '../../common/view/chosen.html.php';?>
-<div id='titlebar'>
-  <div class='heading'>
-    <span class='prefix'><?php echo html::icon($lang->icons['doclib']);?></span>
-    <strong><?php echo $lang->doc->editLib;?></strong>
+<div id='mainContent' class='main-content'>
+  <div class='center-block'>
+    <div class='main-header'>
+    <h2>
+      <span class='prefix'><?php echo html::icon($lang->icons['doclib']);?></span>
+      <?php echo $lang->doc->editLib;?>
+    </h2>
   </div>
-</div>
-<div class='main'>
-  <form method='post' target='hiddenwin' class='form-condensed' style='margin: 20px 0px 200px'>
+  <form method='post' target='hiddenwin'>
     <table class='table table-form'>
       <?php if(!empty($lib->product)):?>
       <tr>
@@ -55,8 +56,7 @@
         </td>
       </tr>
       <tr>
-        <td></td>
-        <td><?php echo html::submitButton();?></td>
+        <td class='text-center form-actions' colspan='2'><?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?></td>
       </tr>
     </table>
   </form>

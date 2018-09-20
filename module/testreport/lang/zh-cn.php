@@ -24,7 +24,7 @@ $lang->testreport->bugs        = '测试的Bug';
 $lang->testreport->builds      = '版本信息';
 $lang->testreport->goal        = '项目目标';
 $lang->testreport->cases       = '用例';
-$lang->testreport->bugInfo     = '缺陷分布';
+$lang->testreport->bugInfo     = 'Bug分布';
 $lang->testreport->report      = '总结';
 $lang->testreport->legacyBugs  = '遗留的Bug';
 $lang->testreport->createdDate = '创建时间';
@@ -33,11 +33,12 @@ $lang->testreport->profile     = '概况';
 $lang->testreport->value       = '值';
 $lang->testreport->none        = '无';
 $lang->testreport->all         = '所有报告';
+$lang->testreport->deleted     = '已删除';
 
 $lang->testreport->legendBasic       = '基本信息';
 $lang->testreport->legendStoryAndBug = '测试范围';
 $lang->testreport->legendBuild       = '测试轮次';
-$lang->testreport->legendCase        = '执行的用例';
+$lang->testreport->legendCase        = '关联的用例';
 $lang->testreport->legendLegacyBugs  = '遗留的Bug';
 $lang->testreport->legendReport      = '报表';
 $lang->testreport->legendComment     = '总结';
@@ -58,7 +59,7 @@ $lang->testreport->caseSummary    = '共有<strong>%s</strong>个用例，共执
 $lang->testreport->buildSummary   = '共测试了<strong>%s</strong>个版本。';
 $lang->testreport->confirmDelete  = '是否删除该报告？';
 $lang->testreport->moreNotice     = '更多功能可以参考禅道扩展机制进行扩展，也可以联系我们进行定制。';
-$lang->testreport->exportNotice   = "由<a href='http://www.zentao.net' target='_blank' style='color:grey'>禅道项目管理软件</a>导出";
+$lang->testreport->exportNotice   = "由<a href='https://www.zentao.pm' target='_blank' style='color:grey'>禅道项目管理软件</a>导出";
 $lang->testreport->noReport       = "报表还没有生成，请稍候查看。";
 $lang->testreport->foundBugTip    = "影响版本在测试轮次内，并且创建时间在测试时间范围内产生的Bug数。";
 $lang->testreport->legacyBugTip   = "Bug状态是激活，或Bug的解决时间在测试结束时间之后。";
@@ -67,8 +68,8 @@ $lang->testreport->errorTrunk     = "主干版本不能创建测试报告，请�
 $lang->testreport->moreProduct    = "只能对同一个产品生成测试报告。";
 
 $lang->testreport->bugSummary = <<<EOD
-共发现<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->foundBugTip}'><i class='icon-info-sign'></i></a>，
-遗留<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->legacyBugTip}'><i class='icon-info-sign'></i></a>。
-用例执行产生<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->fromCaseBugTip}'><i class='icon-info-sign'></i></a>。
+共发现<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->foundBugTip}'><i class='icon-exclamation-sign'></i></a>，
+遗留<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->legacyBugTip}'><i class='icon-exclamation-sign'></i></a>。
+用例执行产生<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->fromCaseBugTip}'><i class='icon-exclamation-sign'></i></a>。
 有效Bug率（方案为已解决或延期 / 状态为已解决或已关闭）：<strong>%s</strong>，用例发现Bug率（用例创建的Bug / 发现Bug数）：<strong>%s</strong>
 EOD;

@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testsuite
  * @version     $Id: control.php 5114 2013-07-12 06:02:59Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class testsuite extends control
 {
@@ -15,7 +15,7 @@ class testsuite extends control
 
     /**
      * Index page, header to browse.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -25,13 +25,13 @@ class testsuite extends control
     }
 
     /**
-     * Browse test suites. 
-     * 
-     * @param  int    $productID 
-     * @param  string $orderBy 
-     * @param  int    $recTotal 
-     * @param  int    $recPerPage 
-     * @param  int    $pageID 
+     * Browse test suites.
+     *
+     * @param  int    $productID
+     * @param  string $orderBy
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
      * @access public
      * @return void
      */
@@ -69,8 +69,8 @@ class testsuite extends control
 
     /**
      * Create a test suite.
-     * 
-     * @param  int    $productID 
+     *
+     * @param  int    $productID
      * @access public
      * @return void
      */
@@ -78,10 +78,19 @@ class testsuite extends control
     {
         if(!empty($_POST))
         {
+            $response['result']  = 'success';
+            $response['message'] = '';
             $suiteID = $this->testsuite->create($productID);
-            if(dao::isError()) die(js::error(dao::getError()));
+            if(dao::isError())
+            {
+                $response['result']  = 'fail';
+                $response['message'] = dao::getError();
+                $this->send($response);
+            }
             $actionID = $this->loadModel('action')->create('testsuite', $suiteID, 'opened');
-            die(js::locate($this->createLink('testsuite', 'browse', "productID=$productID"), 'parent'));
+            $response['locate']  = $this->createLink('testsuite', 'browse', "productID=$productID");
+            $response['message'] = $this->lang->testsuite->successSaved;
+            $this->send($response);
         }
 
         /* Set menu. */
@@ -100,12 +109,12 @@ class testsuite extends control
 
     /**
      * View a test suite.
-     * 
-     * @param  int    $suiteID 
-     * @param  string $orderBy 
-     * @param  int    $recTotal 
-     * @param  int    $recPerPage 
-     * @param  int    $pageID 
+     *
+     * @param  int    $suiteID
+     * @param  string $orderBy
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
      * @access public
      * @return void
      */
@@ -150,8 +159,8 @@ class testsuite extends control
 
     /**
      * Edit a test suite.
-     * 
-     * @param  int    $suiteID 
+     *
+     * @param  int    $suiteID
      * @access public
      * @return void
      */
@@ -160,8 +169,15 @@ class testsuite extends control
         $suite = $this->testsuite->getById($suiteID);
         if(!empty($_POST))
         {
+            $response['result']  = 'success';
+            $response['message'] = '';
             $changes = $this->testsuite->update($suiteID);
-            if(dao::isError()) die(js::error(dao::getError()));
+            if(dao::isError())
+            {
+                $response['result']  = 'fail';
+                $response['message'] = dao::getError();
+                $this->send($response);
+            }
             if($changes)
             {
                 $objectType = $suite->type == 'library' ? 'caselib' : 'testsuite';
@@ -169,7 +185,9 @@ class testsuite extends control
                 $this->action->logHistory($actionID, $changes);
             }
             $method = $suite->type == 'library' ? 'libView' : 'view';
-            die(js::locate(inlink($method, "suiteID=$suiteID"), 'parent'));
+            $response['locate']  = inlink($method, "suiteID=$suiteID");
+            $response['message'] = $this->lang->testsuite->successSaved;
+            $this->send($response);
         }
 
         if($suite->type == 'library')
@@ -208,8 +226,8 @@ class testsuite extends control
 
     /**
      * Delete a test suite.
-     * 
-     * @param  int    $suiteID 
+     *
+     * @param  int    $suiteID
      * @param  string $confirm yes|no
      * @access public
      * @return void
@@ -247,12 +265,12 @@ class testsuite extends control
 
     /**
      * Link cases to a test suite.
-     * 
-     * @param  int    $suiteID 
-     * @param  int    $param 
-     * @param  int    $recTotal 
-     * @param  int    $recPerPage 
-     * @param  int    $pageID 
+     *
+     * @param  int    $suiteID
+     * @param  int    $param
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
      * @access public
      * @return void
      */
@@ -281,21 +299,14 @@ class testsuite extends control
 
         /* Build the search form. */
         $this->loadModel('testcase');
-        $this->config->testcase->search['params']['product']['values']= array('' => '', $productID => $this->products[$productID], 'all' => $this->lang->testcase->allProduct);
         $this->config->testcase->search['params']['module']['values'] = $this->loadModel('tree')->getOptionMenu($productID, $viewType = 'case');
         $this->config->testcase->search['module']    = 'testsuite';
         $this->config->testcase->search['actionURL'] = inlink('linkCase', "suiteID=$suiteID&param=myQueryID");
-        if($this->session->currentProductType == 'normal')
-        {
-            unset($this->config->testcase->search['fields']['branch']);
-            unset($this->config->testcase->search['params']['branch']);
-        }
-        else
-        {
-            $this->config->testcase->search['fields']['branch'] = $this->lang->product->branch;
-            $branches = array('' => '') + $this->loadModel('branch')->getPairs($suite->product, 'noempty');
-            $this->config->testcase->search['params']['branch']['values'] = $branches;
-        }
+        unset($this->config->testcase->search['fields']['product']);
+        unset($this->config->testcase->search['params']['product']);
+        unset($this->config->testcase->search['fields']['branch']);
+        unset($this->config->testcase->search['params']['branch']);
+
         if(!$this->config->testcase->needReview) unset($this->config->testcase->search['params']['status']['values']['wait']);
         $this->loadModel('search')->setSearchParams($this->config->testcase->search);
 
@@ -315,10 +326,10 @@ class testsuite extends control
 
     /**
      * Remove a case from test suite.
-     * 
-     * @param  int    $suiteID 
-     * @param  int    $rowID 
-     * @param  string $confirm 
+     *
+     * @param  int    $suiteID
+     * @param  int    $rowID
+     * @param  string $confirm
      * @access public
      * @return void
      */
@@ -365,14 +376,14 @@ class testsuite extends control
 
     /**
      * Show library case.
-     * 
-     * @param  int    $libID 
-     * @param  string $browseType 
-     * @param  int    $param 
-     * @param  string $orderBy 
-     * @param  int    $recTotal 
-     * @param  int    $recPerPage 
-     * @param  int    $pageID 
+     *
+     * @param  int    $libID
+     * @param  string $browseType
+     * @param  int    $param
+     * @param  string $orderBy
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
      * @access public
      * @return void
      */
@@ -447,8 +458,8 @@ class testsuite extends control
     }
 
     /**
-     * Create lib 
-     * 
+     * Create lib
+     *
      * @access public
      * @return void
      */
@@ -456,10 +467,19 @@ class testsuite extends control
     {
         if(!empty($_POST))
         {
+            $response['result']  = 'success';
+            $response['message'] = '';
             $libID = $this->testsuite->createLib();
-            if(dao::isError()) die(js::error(dao::getError()));
+            if(dao::isError())
+            {
+                $response['result']  = 'fail';
+                $response['message'] = dao::getError();
+                $this->send($response);
+            }
             $this->loadModel('action')->create('caselib', $libID, 'opened');
-            die(js::locate($this->createLink('testsuite', 'library', "libID=$libID"), 'parent'));
+            $response['locate']  = $this->createLink('testsuite', 'library', "libID=$libID");
+            $response['message'] = $this->lang->testsuite->successSaved;
+            $this->send($response);
         }
 
         /* Set menu. */
@@ -476,9 +496,9 @@ class testsuite extends control
 
     /**
      * Create case for library.
-     * 
-     * @param  int    $libID 
-     * @param  int    $moduleID 
+     *
+     * @param  int    $libID
+     * @param  int    $moduleID
      * @access public
      * @return void
      */
@@ -563,9 +583,9 @@ class testsuite extends control
 
     /**
      * Batch create case.
-     * 
-     * @param  int    $libID 
-     * @param  int    $moduleID 
+     *
+     * @param  int    $libID
+     * @param  int    $moduleID
      * @access public
      * @return void
      */
@@ -605,8 +625,8 @@ class testsuite extends control
 
     /**
      * View library
-     * 
-     * @param  int    $libID 
+     *
+     * @param  int    $libID
      * @access public
      * @return void
      */
@@ -632,15 +652,15 @@ class testsuite extends control
 
     /**
      * Ajax get drop menu.
-     * 
-     * @param  int    $libID 
-     * @param  string $module 
-     * @param  string $method 
-     * @param  string $extra 
+     *
+     * @param  int    $libID
+     * @param  string $module
+     * @param  string $method
+     * @param  string $extra
      * @access public
      * @return void
      */
-    public function ajaxGetDropMenu($libID, $module, $method, $extra)
+    public function ajaxGetDropMenu($libID, $module, $method, $extra = '')
     {
         $this->view->link      = $this->testsuite->getLibLink($module, $method, $extra);
         $this->view->libID     = $libID;
@@ -657,11 +677,11 @@ class testsuite extends control
 
     /**
      * The results page of search.
-     * 
-     * @param  string  $keywords 
-     * @param  string  $module 
-     * @param  string  $method 
-     * @param  mix     $extra 
+     *
+     * @param  string  $keywords
+     * @param  string  $module
+     * @param  string  $method
+     * @param  mix     $extra
      * @access public
      * @return void
      */
@@ -676,8 +696,8 @@ class testsuite extends control
 
     /**
      * Export templet.
-     * 
-     * @param  int    $libID 
+     *
+     * @param  int    $libID
      * @access public
      * @return void
      */
@@ -702,25 +722,29 @@ class testsuite extends control
 
             $modules = $this->loadModel('tree')->getOptionMenu($libID, $viewType = 'caselib', $startModuleID = 0);
             $rows    = array();
-            foreach($modules as $moduleID => $module)
+            $num     = (int)$this->post->num;
+            for($i = 0; $i < $num; $i++)
             {
-                $row = new stdclass();
-                $row->module     = $module . "(#$moduleID)";
-                $row->stepDesc   = "1. \n2. \n3.";
-                $row->stepExpect = "1. \n2. \n3.";
-
-                if(empty($rows))
+                foreach($modules as $moduleID => $module)
                 {
-                    $row->typeValue   = join("\n", $this->lang->testcase->typeList);
-                    $row->stageValue  = join("\n", $this->lang->testcase->stageList);
+                    $row = new stdclass();
+                    $row->module     = $module . "(#$moduleID)";
+                    $row->stepDesc   = "1. \n2. \n3.";
+                    $row->stepExpect = "1. \n2. \n3.";
+
+                    if(empty($rows))
+                    {
+                        $row->typeValue   = join("\n", $this->lang->testcase->typeList);
+                        $row->stageValue  = join("\n", $this->lang->testcase->stageList);
+                    }
+                    $rows[] = $row;
                 }
-                $rows[] = $row;
             }
 
             $this->post->set('fields', $fields);
             $this->post->set('kind', 'testcase');
             $this->post->set('rows', $rows);
-            $this->post->set('extraNum',   $this->post->num);
+            $this->post->set('extraNum', $num);
             $this->post->set('fileName', 'templet');
             $this->fetch('file', 'export2csv', $_POST);
         }
@@ -730,8 +754,8 @@ class testsuite extends control
 
     /**
      * Import case csv file.
-     * 
-     * @param  int    $libID 
+     *
+     * @param  int    $libID
      * @access public
      * @return void
      */
@@ -797,8 +821,8 @@ class testsuite extends control
 
     /**
      * Show import case.
-     * 
-     * @param  int    $libID 
+     *
+     * @param  int    $libID
      * @access public
      * @return void
      */
@@ -863,7 +887,7 @@ class testsuite extends control
                     {
                         $id = trim(substr($cellValue, strrpos($cellValue,'(#') + 2), ')');
                         $case->$field = $id;
-                    }   
+                    }
                 }
                 elseif(in_array($field, $caseConfig->export->listFields))
                 {

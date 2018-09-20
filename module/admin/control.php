@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     admin
  * @version     $Id: control.php 4460 2013-02-26 02:28:02Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class admin extends control
 {
@@ -172,7 +172,7 @@ class admin extends control
         {
             $data = fixer::input('post')->get();
             $this->loadModel('setting')->setItems('system.common.safe', $data);
-            die(js::reload('parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
         $this->view->title      = $this->lang->admin->safe->common . $this->lang->colon . $this->lang->admin->safe->set;
         $this->view->position[] = $this->lang->admin->safe->common;
@@ -328,7 +328,7 @@ class admin extends control
 
             $this->loadModel('setting')->setItem('system.admin.log.saveDays', $this->post->days);
             if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            $this->send(array('result' => 'success', 'message' => $this->lang->admin->saveSuccess, 'locate' => 'reload'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
 
         $this->loadModel('message');

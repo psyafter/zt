@@ -7,7 +7,7 @@
  * @author      Gang Liu <liugang@cnezsoft.com>
  * @package     webhook 
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class webhookModel extends model
 {
@@ -220,7 +220,7 @@ class webhookModel extends model
 
         $object   = $this->dao->select('*')->from($this->config->objectTables[$objectType])->where('id')->eq($objectID)->fetch();
         $field    = $this->config->action->objectNameFields[$objectType];
-        $host     = common::getSysURL();
+        $host     = empty($webhook->domain) ? common::getSysURL() : $webhook->domain;
         $viewLink = $this->getViewLink($objectType, $objectID);
         $title    = $this->app->user->realname . $this->lang->action->label->$actionType . $this->lang->action->objectTypes[$objectType];
         $text     = $title . ' ' . "[#{$objectID}::{$object->$field}](" . $host . $viewLink . ")";
@@ -342,7 +342,7 @@ class webhookModel extends model
                 {
                     $attachment = array();
                     $attachment['title'] = $file->title;
-                    $attachment['images'][]['url'] = $data->host . $this->file->webPath . $file->pathname; 
+                    $attachment['images'][]['url'] = common::getSysURL() . $this->file->webPath . $file->pathname; 
                     $data->attachments[] = $attachment;
                 }
             }
@@ -368,6 +368,9 @@ class webhookModel extends model
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $webhook->url);
         curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $sendData);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

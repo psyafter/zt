@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     common
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class commonModel extends model
 {
@@ -27,7 +27,13 @@ class commonModel extends model
             $this->setCompany();
             $this->setUser();
             $this->loadConfigFromDB();
-            $this->loadCustomFromDB();
+            if((strpos($this->config->global->version, 'pro') !== false && version_compare($this->config->global->version, 'pro2.3.beta', '>'))
+                || (strpos($this->config->global->version, 'biz') !== false)
+                || version_compare($this->config->global->version, '4.3.beta', '>'))
+            {
+                $this->loadCustomFromDB();
+            }
+
             if(!$this->checkIP()) die($this->lang->ipLimited);
             $this->app->loadLang('company');
         }
@@ -144,23 +150,24 @@ class commonModel extends model
     {
         if($module == 'user' and strpos('login|logout|deny|reset', $method) !== false) return true;
         if($module == 'api'  and $method == 'getsessionid') return true;
-        if($module == 'misc' and $method == 'ping')  return true;
         if($module == 'misc' and $method == 'checktable') return true;
         if($module == 'misc' and $method == 'qrcode') return true;
         if($module == 'misc' and $method == 'about') return true;
         if($module == 'misc' and $method == 'checkupdate') return true;
-        if($module == 'misc' and $method == 'changelog') return true;
+        if($module == 'misc' and $method == 'ping')  return true;
         if($module == 'sso' and $method == 'login')  return true;
         if($module == 'sso' and $method == 'logout') return true;
         if($module == 'sso' and $method == 'bind') return true;
         if($module == 'sso' and $method == 'gettodolist') return true;
-        if($module == 'block' and $method == 'main') return true;
+        if($module == 'block' and $method == 'main' and isset($_GET['hash'])) return true;
         if($module == 'file' and $method == 'read') return true;
 
         if($this->loadModel('user')->isLogon() or ($this->app->company->guest and $this->app->user->account == 'guest'))
         {
             if(stripos($method, 'ajax') !== false) return true;
             if(stripos($method, 'downnotify') !== false) return true;
+            if($module == 'block' and $method == 'main') return true;
+            if($module == 'misc' and $method == 'changelog') return true;
             if($module == 'tutorial') return true;
             if($module == 'block') return true;
             if($module == 'product' and $method == 'showerrornone') return true;
@@ -196,7 +203,7 @@ class commonModel extends model
         if(strpos($this->server->http_user_agent, 'Trident') !== false)
         {
             echo "<a href='$denyLink' id='denylink' style='display:none'>deny</a>";
-            echo "<script language='javascript'>document.getElementById('denylink').click();</script>";
+            echo "<script>document.getElementById('denylink').click();</script>";
         }
         else
         {
@@ -228,7 +235,7 @@ class commonModel extends model
      * @access public
      * @return void
      */
-    public static function printTopBar()
+    public static function printUserBar()
     {
         global $lang, $app;
 
@@ -236,37 +243,50 @@ class commonModel extends model
         {
             $isGuest = $app->user->account == 'guest';
 
-            echo "<div class='dropdown' id='userMenu'>";
-            echo "<a href='javascript:;' data-toggle='dropdown'><i class='icon-user'></i> " . $app->user->realname . " <span class='caret'></span></a>";
-
-            echo "<ul class='dropdown-menu'>";
-
+            echo "<a class='dropdown-toggle' data-toggle='dropdown'>";
+            echo "<div class='avatar avatar-sm bg-secondary avatar-circle'>" . strtoupper($app->user->account{0}) . "</div>\n";
+            echo "<span class='user-name'>" . (empty($app->user->realname) ? $app->user->account : $app->user->realname) . '</span>';
+            echo "<span class='caret'></span>";
+            echo '</a>';
+            echo "<ul class='dropdown-menu pull-right'>";
             if(!$isGuest)
             {
+                echo '<li class="user-profile-item">';
+                echo "<a href='". helper::createLink('my', 'profile', '', '', true) . "' class='iframe" . (!empty($app->user->role) && isset($lang->user->roleList[$app->user->role]) ? '' : ' no-role') . "' data-width='600'>";
+                echo "<div class='avatar avatar bg-secondary avatar-circle'>" . strtoupper($app->user->account{0}) . "</div>\n";
+                echo '<div class="user-profile-name">' . (empty($app->user->realname) ? $app->user->account : $app->user->realname) . '</div>';
+                if(isset($lang->user->roleList[$app->user->role])) echo '<div class="user-profile-role">' . $lang->user->roleList[$app->user->role] . '</div>';
+                echo '</a></li><li class="divider"></li>';
                 echo '<li>' . html::a(helper::createLink('my', 'profile', '', '', true), $lang->profile, '', "class='iframe' data-width='600'") . '</li>';
                 echo '<li>' . html::a(helper::createLink('my', 'changepassword', '', '', true), $lang->changePassword, '', "class='iframe' data-width='500'") . '</li>';
 
                 echo "<li class='divider'></li>";
             }
 
-            echo "<li class='dropdown-submenu left'>";
-            echo "<a href='javascript:;'>" . $lang->theme . "</a><ul class='dropdown-menu'>";
-            foreach ($app->lang->themes as $key => $value)
+            echo "<li class='dropdown-submenu'>";
+            echo "<a href='javascript:;'>" . $lang->theme . "</a><ul class='dropdown-menu pull-left'>";
+            foreach($app->lang->themes as $key => $value)
             {
-                echo "<li class='theme-option" . ($app->cookie->theme == $key ? " active" : '') . "'><a href='javascript:selectTheme(\"$key\");' data-value='" . $key . "'>" . $value . "</a></li>";
+                echo "<li " . ($app->cookie->theme == $key ? "class='selected'" : '') . "><a href='javascript:selectTheme(\"$key\");' data-value='" . $key . "'>" . $value . "</a></li>";
             }
             echo '</ul></li>';
 
-            echo "<li class='dropdown-submenu left'>";
-            echo "<a href='javascript:;'>" . $lang->lang . "</a><ul class='dropdown-menu'>";
+            echo "<li class='dropdown-submenu'>";
+            echo "<a href='javascript:;'>" . $lang->lang . "</a><ul class='dropdown-menu pull-left'>";
             foreach ($app->config->langs as $key => $value)
             {
-                echo "<li class='lang-option" . ($app->cookie->lang == $key ? " active" : '') . "'><a href='javascript:selectLang(\"$key\");' data-value='" . $key . "'>" . $value . "</a></li>";
+                echo "<li " . ($app->cookie->lang == $key ? "class='selected'" : '') . "><a href='javascript:selectLang(\"$key\");'>" . $value . "</a></li>";
             }
             echo '</ul></li>';
 
-            echo '</ul></div>';
+            if(!$isGuest and !commonModel::isTutorialMode() and $app->viewType != 'mhtml')
+            {
+                $customLink = helper::createLink('custom', 'ajaxMenu', "module={$app->getModuleName()}&method={$app->getMethodName()}", '', true);
+                echo "<li class='custom-item'><a href='$customLink' data-toggle='modal' data-type='iframe' data-icon='cog' data-width='80%'>$lang->customMenu</a></li>";
+            }
 
+            echo '<li class="divider"></li>';
+            echo '<li>';
             if($isGuest)
             {
                 echo html::a(helper::createLink('user', 'login'), $lang->login);
@@ -275,19 +295,30 @@ class commonModel extends model
             {
                 echo html::a(helper::createLink('user', 'logout'), $lang->logout);
             }
+            echo '</li></ul>';
         }
+    }
 
-        if($app->company->website)  echo html::a($app->company->website,  $lang->company->website,  '_blank');
-        if($app->company->backyard) echo html::a($app->company->backyard, $lang->company->backyard, '_blank');
-
-        echo "<div class='dropdown'>";
-        echo "<a href='javascript:;' data-toggle='dropdown'>" . $lang->help . " <span class='caret'></span></a>";
-        echo "<ul class='dropdown-menu pull-right'>";
-        echo '<li>' . html::a('javascript:;', $lang->manual, '', "class='open-help-tab'") . '</li>';
-        if(!commonModel::isTutorialMode() and $app->user->account != 'guest') echo '<li>' . html::a(helper::createLink('tutorial', 'start'), $lang->tutorial, '', "class='iframe' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . "</li>";
+    /**
+     * Print about bar.
+     *
+     * @static
+     * @access public
+     * @return void
+     */
+    public static function printAboutBar()
+    {
+        global $app, $config, $lang;
+        echo "<ul id='extraNav' class='nav nav-default'>";
+        echo "<li class='dropdown'>";
+        echo "<a data-toggle='dropdown'>" . $lang->help . " <span class='caret'></span></a>";
+        echo "<ul class='dropdown-menu'>";
+        if($config->global->flow == 'full' && !commonModel::isTutorialMode() and $app->user->account != 'guest') echo '<li>' . html::a(helper::createLink('tutorial', 'start'), $lang->tutorial, '', "class='iframe' data-class-name='modal-inverse' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . "</li>";
+        echo '<li>' . html::a($lang->manualUrl, $lang->manual, '_blank', "class='open-help-tab'") . '</li>';
         echo '<li>' . html::a(helper::createLink('misc', 'changeLog'), $lang->changeLog, '', "class='iframe' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . '</li>';
-        echo "</ul></div>";
-        echo html::a(helper::createLink('misc', 'about'), $lang->aboutZenTao, '', "class='about iframe' data-width='900' data-headerless='true' data-backdrop='true' data-keyboard='true' data-class='modal-about'");
+        echo "</ul></li>\n";
+        echo '<li>' . html::a(helper::createLink('misc', 'about'), $lang->aboutZenTao, '', "class='about iframe' data-width='900' data-headerless='true' data-backdrop='true' data-keyboard='true' data-class='modal-about'") . '</li>';
+        echo '</ul>';
     }
 
     /**
@@ -319,6 +350,40 @@ class commonModel extends model
     }
 
     /**
+     * Create sub menu by settings in lang files.
+     *
+     * @param  array    $items
+     * @param  mixed    $replace
+     * @static
+     * @access public
+     * @return array
+     */
+    public static function createSubMenu($items, $replace)
+    {
+        $subMenu = array();
+        foreach($items as $subMenuKey => $subMenuLink)
+        {
+            if(is_array($subMenuLink) and isset($subMenuLink['link'])) $subMenuLink = $subMenuLink['link'];
+            $subMenuLink = vsprintf($subMenuLink, $replace);
+            list($subMenuName, $subMenuModule, $subMenuMethod, $subMenuParams) = explode('|', $subMenuLink);
+
+            $link = array();
+            $link['module'] = $subMenuModule;
+            $link['method'] = $subMenuMethod;
+            $link['vars']   = $subMenuParams;
+
+            $menu = new stdclass();
+            $menu->name   = $subMenuKey;
+            $menu->link   = $link;
+            $menu->text   = $subMenuName;
+            $menu->hidden = false;
+            $subMenu[$subMenuKey] = $menu;
+        }
+
+        return $subMenu;
+    }
+
+    /**
      * Print the main menu.
      *
      * @param  string $moduleName
@@ -339,17 +404,21 @@ class commonModel extends model
         /* Print all main menus. */
         $menu       = customModel::getMainMenu();
         $activeName = 'active';
+        $lastMenu   = end($menu);
 
-        echo "<ul class='nav'>\n";
+        echo "<ul class='nav nav-default'>\n";
         foreach($menu as $menuItem)
         {
-            if(isset($menuItem->hidden) && $menuItem->hidden) continue;
-            $active = $menuItem->name == $mainMenu ? "class='$activeName'" : '';
-            $link   = commonModel::createMenuLink($menuItem);
-            echo "<li $active data-id='$menuItem->name'><a href='$link' $active>$menuItem->text</a></li>\n";
+            if(empty($menuItem->hidden))
+            {
+                $active = $menuItem->name == $mainMenu ? "class='$activeName'" : '';
+                $link   = commonModel::createMenuLink($menuItem);
+                echo "<li $active data-id='$menuItem->name'><a href='$link' $active>$menuItem->text</a></li>\n";
+            }
+
+            if(($lastMenu->name != $menuItem->name) && strpos($lang->dividerMenu, ",{$menuItem->name},") !== false) echo "<li class='divider'></li>";
+
         }
-        $customLink = helper::createLink('custom', 'ajaxMenu', "module={$app->getModuleName()}&method={$app->getMethodName()}", '', true);
-        if(!commonModel::isTutorialMode() and $app->viewType != 'mhtml' and $app->user->account != 'guest') echo "<li class='custom-item'><a href='$customLink' data-toggle='modal' data-type='iframe' title='$lang->customMenu' data-icon='cog' data-width='80%'><i class='icon icon-cog'></i></a></li>";
         echo "</ul>\n";
     }
 
@@ -386,18 +455,21 @@ class commonModel extends model
             if($config->global->flow == 'onlyTask')  $searchObject = 'task';
         }
 
-        echo "<div class='input-group input-group-sm' id='searchbox'>";
-        echo "<div class='input-group-btn' id='typeSelector'>";
-        echo "<button type='button' class='btn dropdown-toggle' data-toggle='dropdown'><span id='searchTypeName'>" . $lang->searchObjects[$searchObject] . "</span> <span class='caret'></span></button>";
+        echo "<div id='searchbox'>";
+        echo "<div class='input-group'>";
+        echo "<div class='input-group-btn'>";
+        echo "<a data-toggle='dropdown' class='btn btn-link'><span id='searchTypeName'>" . $lang->searchObjects[$searchObject] . "</span> <span class='caret'></span></a>";
         echo html::hidden('searchType', $searchObject);
-        echo "<ul class='dropdown-menu'>";
+        echo "<ul id='searchTypeMenu' class='dropdown-menu'>";
         foreach ($lang->searchObjects as $key => $value)
         {
-            echo "<li><a href='javascript:;' data-value='{$key}'>{$value}</a></li>";
+            $class = $key == $searchObject ? "class='selected'" : '';
+            echo "<li $class><a href='javascript:$.setSearchType(\"$key\");' data-value='{$key}'>{$value}</a></li>";
         }
         echo '</ul></div>';
-        echo html::input('searchQuery', '', "onclick='this.value=\"\"' onkeydown='if(event.keyCode==13) shortcut()' class='form-control' placeholder='" . $lang->searchTips . "'");
-        echo "<div id='objectSwitcher' class='input-group-btn'><a href='javascript:shortcut();' class='btn'>GO! </a></div>";
+        echo "<input id='searchInput' class='form-control search-input' type='search' onclick='this.value=\"\"' onkeydown='if(event.keyCode==13) $.gotoObject();' placeholder='" . $lang->searchTips . "'/>";
+        echo '</div>';
+        echo "<a href='javascript:$.gotoObject();' class='btn btn-link' id='searchGo'>GO!</a>";
         echo "</div>\n";
     }
 
@@ -411,7 +483,7 @@ class commonModel extends model
      */
     public static function printModuleMenu($moduleName)
     {
-        global $lang, $app;
+        global $config, $lang, $app;
 
         if(!isset($lang->$moduleName->menu))
         {
@@ -427,45 +499,85 @@ class commonModel extends model
         $isMobile       = $app->viewType === 'mhtml';
 
         /* The beginning of the menu. */
-        echo $isMobile ? '' : "<ul class='nav'>\n";
+        echo $isMobile ? '' : "<ul class='nav nav-default'>\n";
 
-        /* Cycling to print every sub menus. */
+        if(isset($lang->menugroup->$moduleName)) $moduleName = $lang->menugroup->$moduleName;
+        /* Cycling to print every sub menu. */
         foreach($menu as $menuItem)
         {
+            if(isset($lang->$moduleName->dividerMenu) and strpos($lang->$moduleName->dividerMenu, ",{$menuItem->name},") !== false) echo "<li class='divider'></li>";
             if(isset($menuItem->hidden) && $menuItem->hidden) continue;
             if($isMobile and empty($menuItem->link)) continue;
 
             /* Init the these vars. */
+            $alias     = isset($menuItem->alias) ? $menuItem->alias : '';
+            $subModule = isset($menuItem->subModule) ? explode(',', $menuItem->subModule) : array();
+            $class     = isset($menuItem->class) ? $menuItem->class : '';
+            $active    = '';
+            if($subModule and in_array($currentModule, $subModule)) $active = 'active';
+            if($alias and $moduleName == $currentModule and strpos(",$alias,", ",$currentMethod,") !== false) $active = 'active';
             if($menuItem->link)
             {
-                $active = '';
-                $float  = isset($menuItem->float) ? $menuItem->float : '';
-                $alias  = '';
                 $target = '';
                 $module = '';
                 $method = '';
                 $link   = commonModel::createMenuLink($menuItem);
                 if(is_array($menuItem->link))
                 {
-                    if(isset($menuItem->link['subModule']))
-                    {
-                        $subModules = explode(',', $menuItem->link['subModule']);
-                        if(in_array($currentModule, $subModules) and $float != 'right') $active = 'active';
-                    }
-                    if(isset($menuItem->link['alias']))  $alias  = $menuItem->link['alias'];
                     if(isset($menuItem->link['target'])) $target = $menuItem->link['target'];
                     if(isset($menuItem->link['module'])) $module = $menuItem->link['module'];
                     if(isset($menuItem->link['method'])) $method = $menuItem->link['method'];
                 }
-                if($float != 'right' and $module == $currentModule and ($method == $currentMethod or strpos(",$alias,", ",$currentMethod,") !== false)) $active = 'active';
+                if($module == $currentModule and ($method == $currentMethod or strpos(",$alias,", ",$currentMethod,") !== false)) $active = 'active';
 
-                $menuItemHtml = "<li class='$float $active' data-id='$menuItem->name'>" . html::a($link, $menuItem->text, $target) . "</li>\n";
-                if($isMobile) $menuItemHtml = html::a($link, $menuItem->text, $target, "class='$active'") . "\n";
+                /* Avoid user thinking the page is shaking when the menu toggle class 'active' */
+                if($config->global->flow == 'onlyTest')
+                {
+                    if($currentModule == 'bug'       && $currentMethod == 'browse')  $active = '';
+                    if($currentModule == 'testcase'  && $currentMethod == 'browse')  $active = '';
+                    if($currentModule == 'testtask'  && $currentMethod == 'browse')  $active = '';
+                    if($currentModule == 'testsuite' && $currentMethod == 'library') $active = '';
+                }
+
+                $label   = $menuItem->text;
+                $subMenu = '';
+                /* Print sub menus. */
+                if(isset($menuItem->subMenu))
+                {
+                    foreach($menuItem->subMenu as $subMenuItem)
+                    {
+                        if($subMenuItem->hidden) continue;
+
+                        $subActive = '';
+                        $subModule = '';
+                        $subMethod = '';
+                        $subParams = '';
+                        $subLabel  = $subMenuItem->text;
+                        if(isset($subMenuItem->link['module'])) $subModule = $subMenuItem->link['module'];
+                        if(isset($subMenuItem->link['method'])) $subMethod = $subMenuItem->link['method'];
+                        if(isset($subMenuItem->link['vars']))   $subParams = $subMenuItem->link['vars'];
+
+                        $subLink = helper::createLink($subModule, $subMethod, $subParams);
+
+                        if($config->global->flow != 'onlyTest' && $currentModule == strtolower($subModule) && $currentMethod == strtolower($subMethod)) $subActive = 'active';
+
+                        $subMenu .= "<li class='$subActive' data-id='$subMenuItem->name'>" . html::a($subLink, $subLabel) . '</li>';
+                    }
+
+                    if($subMenu)
+                    {
+                        $label   .= "<span class='caret'></span>";
+                        $subMenu  = "<ul class='dropdown-menu'>{$subMenu}</ul>";
+                    }
+                }
+
+                $menuItemHtml = "<li class='$class $active' data-id='$menuItem->name'>" . html::a($link, $label, $target) . $subMenu . "</li>\n";
+                if($isMobile) $menuItemHtml = html::a($link, $menuItem->text, $target, "class='$class $active'") . "\n";
                 echo $menuItemHtml;
             }
             else
             {
-                echo $isMobile ? $menuItem->text : "<li data-id='$menuItem->name'>$menuItem->text</li>\n";
+                echo $isMobile ? $menuItem->text : "<li class='$class $active' data-id='$menuItem->name'>$menuItem->text</li>\n";
             }
         }
         echo $isMobile ? '' : "</ul>\n";
@@ -485,24 +597,29 @@ class commonModel extends model
         global $lang;
         $mainMenu = $moduleName;
         if(isset($lang->menugroup->$moduleName)) $mainMenu = $lang->menugroup->$moduleName;
-        echo html::a(helper::createLink('my', 'index'), $lang->zentaoPMS) . $lang->arrow;
+        echo "<ul class='breadcrumb'>";
+        echo '<li>' . html::a(helper::createLink('my', 'index'), $lang->zentaoPMS) . '</li>';
         if($moduleName != 'index')
         {
             if(!isset($lang->menu->$mainMenu)) return;
-            list($menuLabel, $module, $method) = explode('|', $lang->menu->$mainMenu);
-            echo html::a(helper::createLink($module, $method), $menuLabel);
+            $menuLink = $mainMenu == 'admin' ? $lang->adminMenu : $lang->menu->$mainMenu;
+            list($menuLabel, $module, $method) = explode('|', $menuLink);
+            echo '<li>' . html::a(helper::createLink($module, $method), $menuLabel) . '</li>';
         }
         else
         {
-            echo $lang->index->common;
+            echo '<li>' . $lang->index->common . '</li>';
         }
-        if(empty($position)) return;
-        echo $lang->arrow;
+        if(empty($position))
+        {
+            echo '</ul>';
+            return;
+        }
         foreach($position as $key => $link)
         {
-            echo $link;
-            if(isset($position[$key + 1])) echo $lang->arrow;
+            echo "<li class='active'>" . $link . '</li>';
         }
+        echo '</ul>';
     }
 
     /**
@@ -517,7 +634,7 @@ class commonModel extends model
         if(strpos(strtolower($_SERVER['HTTP_USER_AGENT']), 'windows') !== false)
         {
             global $lang;
-            echo html::a(helper::createLink('misc', 'downNotify'), "<i class='icon-bell'></i>", '', "title='$lang->downNotify'") . ' &nbsp; ';
+            echo html::a(helper::createLink('misc', 'downNotify'), "<i class='icon-bell'></i>", '', "title='$lang->downNotify' class='text-primary'") . ' &nbsp; ';
         }
     }
 
@@ -570,12 +687,12 @@ class commonModel extends model
             if(isset($order[1]) and $order[1] == 'asc')
             {
                 $orderBy   = "{$order[0]}_desc";
-                $className = $isMobile ? 'SortUp' : 'headerSortDown';
+                $className = $isMobile ? 'SortUp' : 'sort-up';
             }
             else
             {
                 $orderBy = "{$order[0]}_asc";
-                $className = $isMobile ? 'SortDown' : 'headerSortUp';
+                $className = $isMobile ? 'SortDown' : 'sort-down';
             }
         }
         else
@@ -584,7 +701,7 @@ class commonModel extends model
             $className = 'header';
         }
         $link = helper::createLink($module, $method, sprintf($vars, $orderBy));
-        echo $isMobile ? html::a($link, $label, '', "class='$className'") : "<div class='$className'>" . html::a($link, $label) . '</div>';
+        echo $isMobile ? html::a($link, $label, '', "class='$className'") : html::a($link, $label, '', "class='$className'");
     }
 
     /**
@@ -629,21 +746,42 @@ class commonModel extends model
     /**
      * Print icon of comment.
      *
-     * @param string $module
-     * @param        $object
+     * @param string $commentFormLink
+     * @param object $object
      *
      * @static
      * @access public
      * @return mixed
      */
-    public static function printCommentIcon($module, $object = null)
+    public static function printCommentIcon($commentFormLink, $object = null)
     {
-        if(isonlybody()) return false;
-
         global $lang;
 
         if(!commonModel::hasPriv('action', 'comment', $object)) return false;
-        echo html::a('#commentBox', '<i class="icon-comment-alt"></i>', '', "title='$lang->comment' onclick='setComment()' class='btn'");
+        echo html::commonButton('<i class="icon icon-chat-line"></i> ' . $lang->action->create, '', 'btn btn-link pull-right btn-comment');
+        echo <<<EOD
+<div class="modal fade modal-comment">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><i class="icon icon-close"></i></button>
+        <h4 class="modal-title">{$lang->action->create}</h4>
+      </div>
+      <div class="modal-body">
+    <form action="$commentFormLink" target='hiddenwin' method='post'>
+          <div class="form-group">
+            <textarea id='comment' name='comment' class="form-control" rows="8" autofocus="autofocus"></textarea>
+          </div>
+          <div class="form-group form-actions text-center">
+            <button type="submit" class="btn btn-primary btn-wide">{$lang->save}</button>
+            <button type="button" class="btn btn-wide" data-dismiss="modal">{$lang->close}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+EOD;
     }
 
     /**
@@ -710,7 +848,7 @@ class commonModel extends model
         if(strpos(',edit,copy,report,export,delete,', ",$method,") !== false) $module = 'common';
         $class = "icon-$module-$method";
         if(!$clickable) $class .= ' disabled';
-        if($icon) $class       .= ' icon-' . $icon;
+        if($icon)       $class .= ' icon-' . $icon;
 
 
         /* Create the icon link. */
@@ -724,23 +862,23 @@ class commonModel extends model
             {
                 if($method != 'edit' and $method != 'copy' and $method != 'delete')
                 {
-                    return html::a($link, "<i class='$class'></i> " . $title, $target, "class='btn $extraClass' $misc", true);
+                    return html::a($link, "<i class='$class'></i> " . "<span class='text'>{$title}</span>", $target, "class='btn btn-link $extraClass' $misc", true);
                 }
                 else
                 {
-                    return html::a($link, "<i class='$class'></i>", $target, "class='btn $extraClass' title='$title' $misc", false);
+                    return html::a($link, "<i class='$class'></i>", $target, "class='btn btn-link $extraClass' title='$title' $misc", false);
                 }
             }
             else
             {
-                return html::a($link, "<i class='$class'></i>", $target, "class='btn-icon $extraClass' title='$title' $misc", false);
+                return html::a($link, "<i class='$class'></i>", $target, "class='btn $extraClass' title='$title' $misc", false) . "\n";
             }
         }
         else
         {
             if($type == 'list')
             {
-                return "<button type='button' class='disabled btn-icon $extraClass'><i class='$class' title='$title' $misc></i></button>";
+                return "<button type='button' class='disabled btn $extraClass'><i class='$class' title='$title' $misc></i></button>\n";
             }
         }
     }
@@ -784,7 +922,7 @@ class commonModel extends model
         if(isonlybody()) return false;
 
         $title = $lang->goback . $lang->backShortcutKey;
-        echo html::a($backLink, '<i class="icon-goback icon-level-up icon-large icon-rotate-270"></i>', '', "id='back' class='btn' title={$title}");
+        echo html::a($backLink, '<i class="icon-goback icon-back icon-large"></i>', '', "id='back' class='btn' title={$title}");
 
         if(isset($preAndNext->pre) and $preAndNext->pre)
         {
@@ -805,6 +943,58 @@ class commonModel extends model
     }
 
     /**
+     * Print back link
+     *
+     * @param  string $backLink
+     * @static
+     * @access public
+     * @return void
+     */
+    static public function printBack($backLink, $class = '')
+    {
+        global $lang, $app;
+        if(isonlybody()) return false;
+
+        if(empty($class)) $class = 'btn';
+        $title = $lang->goback . $lang->backShortcutKey;
+        echo html::a($backLink, '<i class="icon-goback icon-back"></i> ' . $lang->goback, '', "id='back' class='{$class}' title={$title}");
+    }
+
+    /**
+     * Print pre and next link
+     *
+     * @param  string $preAndNext
+     * @param  string $linkTemplate
+     * @static
+     * @access public
+     * @return void
+     */
+    public static function printPreAndNext($preAndNext = '', $linkTemplate = '')
+    {
+        global $lang, $app;
+        if(isonlybody()) return false;
+
+        echo "<nav class='container'>";
+        if(isset($preAndNext->pre) and $preAndNext->pre)
+        {
+            $id = (isset($_SESSION['testcaseOnlyCondition']) and !$_SESSION['testcaseOnlyCondition'] and $app->getModuleName() == 'testcase' and isset($preAndNext->pre->case)) ? 'case' : 'id';
+            $title = isset($preAndNext->pre->title) ? $preAndNext->pre->title : $preAndNext->pre->name;
+            $title = '#' . $preAndNext->pre->$id . ' ' . $title . ' ' . $lang->preShortcutKey;
+            $link  = $linkTemplate ? sprintf($linkTemplate, $preAndNext->pre->$id) : inLink('view', "ID={$preAndNext->pre->$id}");
+            echo html::a($link, '<i class="icon-pre icon-chevron-left"></i>', '', "id='prevPage' class='btn btn-info' title='{$title}'");
+        }
+        if(isset($preAndNext->next) and $preAndNext->next)
+        {
+            $id = (isset($_SESSION['testcaseOnlyCondition']) and !$_SESSION['testcaseOnlyCondition'] and $app->getModuleName() == 'testcase' and isset($preAndNext->next->case)) ? 'case' : 'id';
+            $title = isset($preAndNext->next->title) ? $preAndNext->next->title : $preAndNext->next->name;
+            $title = '#' . $preAndNext->next->$id . ' ' . $title . ' ' . $lang->nextShortcutKey;
+            $link  = $linkTemplate ? sprintf($linkTemplate, $preAndNext->next->$id) : inLink('view', "ID={$preAndNext->next->$id}");
+            echo html::a($link, '<i class="icon-pre icon-chevron-right"></i>', '', "id='nextPage' class='btn btn-info' title='$title'");
+        }
+        echo '</nav>';
+    }
+
+    /**
      * Create changes of one object.
      *
      * @param mixed $old    the old object
@@ -820,12 +1010,13 @@ class commonModel extends model
         $magicQuote = get_magic_quotes_gpc();
         foreach($new as $key => $value)
         {
-            if(strtolower($key) == 'lastediteddate') continue;
-            if(strtolower($key) == 'lasteditedby')   continue;
-            if(strtolower($key) == 'assigneddate')   continue;
-            if(strtolower($key) == 'editedby')       continue;
-            if(strtolower($key) == 'editeddate')     continue;
-            if(strtolower($key) == 'uid')            continue;
+            if(is_object($value) or is_array($value)) continue;
+            if(strtolower($key) == 'lastediteddate')  continue;
+            if(strtolower($key) == 'lasteditedby')    continue;
+            if(strtolower($key) == 'assigneddate')    continue;
+            if(strtolower($key) == 'editedby')        continue;
+            if(strtolower($key) == 'editeddate')      continue;
+            if(strtolower($key) == 'uid')             continue;
             if(strtolower($key) == 'finisheddate' && $value == '')  continue;
             if(strtolower($key) == 'canceleddate' && $value == '')  continue;
             if(strtolower($key) == 'closeddate'   && $value == '')  continue;
@@ -1143,7 +1334,7 @@ class commonModel extends model
         global $app, $lang;
 
         /* Check is the super admin or not. */
-        if(!empty($app->user->admin)) return true;
+        if(!empty($app->user->admin) || strpos($app->company->admins, ",{$app->user->account},") !== false) return true;
         /* If not super admin, check the rights. */
         $rights  = $app->user->rights['rights'];
         $acls    = $app->user->rights['acls'];
@@ -1186,21 +1377,21 @@ class commonModel extends model
 
         if(!empty($app->user->admin)) return true;
         if($module == 'todo' and ($method == 'create' or $method == 'batchcreate')) return true;
-        if($module == 'effort' and $method == 'batchcreate') return true;
+        if($module == 'effort' and ($method == 'batchcreate' or $method == 'createforobject')) return true;
 
         // limited project
         $limitedProject = false;
         if(!empty($module) && $module == 'task' && !empty($object->project) or
-            !empty($module) && $module == 'project' && !empty($object->id))
+            !empty($module) && $module == 'project' && !empty($object->id)
+        )
         {
             $objectID = '';
-            if(!empty($object->id)) $objectID = $object->id;
-            if(!empty($object->id) && !empty($object->project)) $objectID = $object->project;
+            if($module == 'project' and !empty($object->id))  $objectID = $object->id;
+            if($module == 'task' and !empty($object->project))$objectID = $object->project;
 
             $limitedProjects = !empty($_SESSION['limitedProjects']) ? $_SESSION['limitedProjects'] : '';
             if(strpos(",{$limitedProjects},", ",$objectID,") !== false) $limitedProject = true;
         }
-
         if(empty($app->user->rights['rights']['my']['limited']) && !$limitedProject) return true;
 
         if(!is_null($method) && strpos($method, 'batch')  === 0) return false;
@@ -1465,6 +1656,7 @@ class commonModel extends model
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
         curl_setopt($curl, CURLOPT_ENCODING, "");
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
         curl_setopt($curl, CURLOPT_HEADER, FALSE);
 
         $headers[] = "API-RemoteIP: " . $_SERVER['REMOTE_ADDR'];
@@ -1478,6 +1670,7 @@ class commonModel extends model
         }
 
         $response = curl_exec($curl);
+        $errors   = curl_error($curl);
         curl_close($curl);
 
         $logFile = $app->getLogRoot() . 'saas.'. date('Ymd') . '.log.php';
@@ -1488,7 +1681,9 @@ class commonModel extends model
         {
             fwrite($fh, date('Ymd H:i:s') . ": " . $app->getURI() . "\n");
             fwrite($fh, "url:    " . $url . "\n");
+            if(!empty($data)) fwrite($fh, "data:   " . print_r($data, true) . "\n");
             fwrite($fh, "results:" . print_r($response, true) . "\n");
+            if(!empty($errors)) fwrite($fh, "errors: " . $errors . "\n");
             fclose($fh);
         }
 

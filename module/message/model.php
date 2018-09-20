@@ -7,7 +7,7 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     message
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class messageModel extends model
 {
@@ -112,6 +112,8 @@ class messageModel extends model
      */
     public function saveNotice($objectType, $objectID, $actionType, $actionID)
     {
+        if(empty($this->app->user->account)) return false;
+
         $this->loadModel('action');
         $table  = $this->config->objectTables[$objectType];
         $field  = $this->config->action->objectNameFields[$objectType];

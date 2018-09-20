@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     project
  * @version     $Id: model.php 5118 2013-07-12 07:41:41Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -64,11 +64,12 @@ class projectModel extends model
      *
      * @param  array  $projects
      * @param  int    $projectID
+     * @param  int    $buildID
      * @param  string $extra
      * @access public
      * @return void
      */
-    public function setMenu($projects, $projectID, $extra = '')
+    public function setMenu($projects, $projectID, $buildID = 0, $extra = '')
     {
         /* Check the privilege. */
         $project = $this->getById($projectID);
@@ -77,9 +78,10 @@ class projectModel extends model
         if($project and $project->type == 'ops')
         {
             unset($this->lang->project->menu->story);
-            unset($this->lang->project->menu->bug);
-            unset($this->lang->project->menu->build);
-            unset($this->lang->project->menu->testtask);
+            unset($this->lang->project->menu->qa);
+            unset($this->lang->project->subMenu->qa->bug);
+            unset($this->lang->project->subMenu->qa->build);
+            unset($this->lang->project->subMenu->qa->testtask);
         }
 
         if($projects and !isset($projects[$projectID]) and !$this->checkPriv($project))
@@ -99,11 +101,66 @@ class projectModel extends model
             $this->cookie->projectMode = 'all';
         }
 
-        $selectHtml = $this->select($projects, $projectID, $moduleName, $methodName, $extra);
+        $selectHtml = $this->select($projects, $projectID, $buildID, $moduleName, $methodName, $extra);
+
+        $label = $this->lang->project->index;
+        if($moduleName == 'project' && $methodName == 'all')    $label = $this->lang->project->allProjects;
+        if($moduleName == 'project' && $methodName == 'create') $label = $this->lang->project->create;
+
+        $projectIndex = '';
+        $isMobile     = $this->app->viewType == 'mhtml';
+        if($isMobile)
+        {
+            $projectIndex  = html::a(helper::createLink('project', 'index'), $this->lang->project->index) . $this->lang->colon;
+            $projectIndex .= $selectHtml;
+        }
+        else
+        {
+            $projectIndex  = '<div class="btn-group angle-btn"><div class="btn-group"><button data-toggle="dropdown" type="button" class="btn">' . $label . ' <span class="caret"></span></button>';
+            $projectIndex .= '<ul class="dropdown-menu">';
+            if(common::hasPriv('project', 'index'))  $projectIndex .= '<li>' . html::a(helper::createLink('project', 'index', 'locate=no'), '<i class="icon icon-home"></i> ' . $this->lang->project->index) . '</li>';
+            if(common::hasPriv('project', 'all'))    $projectIndex .= '<li>' . html::a(helper::createLink('project', 'all', 'status=all'), '<i class="icon icon-cards-view"></i> ' . $this->lang->project->allProjects) . '</li>';
+
+            if(common::isTutorialMode())
+            {
+                $wizardParams = helper::safe64Encode('');
+                $link = helper::createLink('tutorial', 'wizard', "module=project&method=create&params=$wizardParams");
+                $projectIndex .= '<li>' . html::a($link, "<i class='icon icon-plus'></i> {$this->lang->project->create}", '', "class='create-project-btn'") . '</li>';
+            }
+            else
+            {
+                if(common::hasPriv('project', 'create')) $projectIndex .= '<li>' . html::a(helper::createLink('project', 'create'), '<i class="icon icon-plus"></i> ' . $this->lang->project->create) . '</li>';
+            }
+
+            $projectIndex .= '</ul></div></div>';
+            $projectIndex .= $selectHtml;
+        }
+
+        $this->lang->modulePageNav = $projectIndex;
+        if($moduleName != 'project') $this->lang->$moduleName->dividerMenu = $this->lang->project->dividerMenu;
+
         foreach($this->lang->project->menu as $key => $menu)
         {
-            $replace = $key == 'list' ? $selectHtml : $projectID;
-            common::setMenuVars($this->lang->project->menu, $key,  $replace);
+            common::setMenuVars($this->lang->project->menu, $key, $projectID);
+
+            /* Replace for dropdown submenu. */
+            if(isset($this->lang->project->subMenu->$key))
+            {
+                $subMenu = common::createSubMenu($this->lang->project->subMenu->$key, $projectID);
+
+                if(!empty($subMenu))
+                {
+                    foreach($subMenu as $menu)
+                    {
+                        if($moduleName == strtolower($menu->link['module']) and $methodName == strtolower($menu->link['method']))
+                        {
+                            $this->lang->project->menu->{$key}['link'] = $menu->text . "|" . join('|', $menu->link);
+                            break;
+                        }
+                    }
+                    $this->lang->project->menu->{$key}['subMenu'] = $subMenu;
+                }
+            }
         }
     }
 
@@ -112,13 +169,14 @@ class projectModel extends model
      *
      * @param  array     $projects
      * @param  int       $projectID
+     * @param  int       $buildID
      * @param  string    $currentModule
      * @param  string    $currentMethod
      * @param  string    $extra
      * @access public
      * @return string
      */
-    public function select($projects, $projectID, $currentModule, $currentMethod, $extra = '')
+    public function select($projects, $projectID, $buildID, $currentModule, $currentMethod, $extra = '')
     {
         if(!$projectID) return;
 
@@ -126,8 +184,27 @@ class projectModel extends model
 
         setCookie("lastProject", $projectID, $this->config->cookieLife, $this->config->webRoot);
         $currentProject = $this->getById($projectID);
-        $output = "<a id='currentItem' href=\"javascript:showSearchMenu('project', '$projectID', '$currentModule', '$currentMethod', '$extra')\"><span class='title'>{$currentProject->name}</span> <span class='icon-caret-down'></span></a><div id='dropMenu'><i class='icon icon-spin icon-spinner'></i></div>";
+
+        $dropMenuLink = helper::createLink('project', 'ajaxGetDropMenu', "objectID=$projectID&module=$currentModule&method=$currentMethod&extra=$extra");
+        $output  = "<div class='btn-group angle-btn'><div class='btn-group'><button data-toggle='dropdown' type='button' class='btn btn-limit' id='currentItem' title='{$currentProject->name}'>{$currentProject->name} <span class='caret'></span></button><div id='dropMenu' class='dropdown-menu search-list' data-ride='searchList' data-url='$dropMenuLink'>";
+        $output .= '<div class="input-control search-box has-icon-left has-icon-right search-example"><input type="search" class="form-control search-input" /><label class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label><a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a></div>';
+        $output .= "</div></div></div>";
         if($isMobile) $output  = "<a id='currentItem' href=\"javascript:showSearchMenu('project', '$projectID', '$currentModule', '$currentMethod', '$extra')\">{$currentProject->name} <span class='icon-caret-down'></span></a><div id='currentItemDropMenu' class='hidden affix enter-from-bottom layer'></div>";
+
+        if($buildID and !$isMobile)
+        {
+            setCookie('lastBuild', $buildID, $this->config->cookieLife, $this->config->webRoot);
+            $currentBuild = $this->loadModel('build')->getById($buildID);
+
+            if($currentBuild)
+            {
+                $dropMenuLink = helper::createLink('build', 'ajaxGetProjectBuilds', "projectID=$projectID&productID=&varName=dropdownList");
+                $output .= "<div class='btn-group angle-btn'><div class='btn-group'><button data-toggle='dropdown' type='button' class='btn btn-limit' id='currentItem'>{$currentBuild->name} <span class='caret'></span></button><div id='dropMenu' class='dropdown-menu search-list' data-ride='searchList' data-url='$dropMenuLink'>";
+                $output .= '<div class="input-control search-box has-icon-left has-icon-right search-example"><input type="search" class="form-control search-input" /><label class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label><a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a></div>';
+                $output .= "</div></div></div>";
+            }
+        }
+
         return $output;
     }
 
@@ -230,6 +307,8 @@ class projectModel extends model
         $project = fixer::input('post')
             ->setDefault('status', 'wait')
             ->setIF($this->post->acl != 'custom', 'whitelist', '')
+            ->setDefault('openedBy', $this->app->user->account)
+            ->setDefault('openedDate', helper::now())
             ->setDefault('openedVersion', $this->config->version)
             ->setDefault('team', substr($this->post->name,0, 30))
             ->join('whitelist', ',')
@@ -264,6 +343,7 @@ class projectModel extends model
                 $members = $this->dao->select('*')->from(TABLE_TEAM)->where('root')->eq($copyProjectID)->andWhere('type')->eq('project')->fetchAll();
                 foreach($members as $member)
                 {
+                    unset($member->id);
                     $member->root = $projectID;
                     $member->join = $today;
                     $member->days = $project->days;
@@ -309,7 +389,8 @@ class projectModel extends model
      */
     public function update($projectID)
     {
-        $oldProject = $this->dao->findById((int)$projectID)->from(TABLE_PROJECT)->fetch();
+        $projectID  = (int)$projectID;
+        $oldProject = $this->dao->findById($projectID)->from(TABLE_PROJECT)->fetch();
         $team = $this->getTeamMemberPairs($projectID);
         $this->lang->project->team = $this->lang->project->teamname;
         $projectID = (int)$projectID;
@@ -374,6 +455,7 @@ class projectModel extends model
         $oldProjects = $this->getByIdList($this->post->projectIDList);
         foreach($data->projectIDList as $projectID)
         {
+            $projectID = (int)$projectID;
             $projects[$projectID] = new stdClass();
             $projects[$projectID]->name   = $data->names[$projectID];
             $projects[$projectID]->code   = $data->codes[$projectID];
@@ -535,6 +617,7 @@ class projectModel extends model
             $tasks = $this->dao->select('id,estStarted,deadline,status')->from(TABLE_TASK)
                 ->where('deadline')->ne('0000-00-00')
                 ->andWhere('status')->in('wait,doing')
+                ->andWhere('project')->eq($project->id)
                 ->fetchAll();
             foreach($tasks as $task)
             {
@@ -859,7 +942,7 @@ class projectModel extends model
         foreach($projects as $key => $project)
         {
             // Process the end time.
-            $project->end = date("Y-m-d", strtotime($project->end));
+            $project->end = date(DT_DATE1, strtotime($project->end));
 
             /* Judge whether the project is delayed. */
             if($project->status != 'done' and $project->status != 'closed' and $project->status != 'suspended')
@@ -1308,6 +1391,32 @@ class projectModel extends model
     }
 
     /**
+     * Stat story, task, bug data for project.
+     *
+     * @param  int    $projectID
+     * @access public
+     * @return void
+     */
+    public function statRelatedData($projectID)
+    {
+        $storyCount = $this->dao->select('count(t2.story) as storyCount')->from(TABLE_STORY)->alias('t1')
+            ->leftJoin(TABLE_PROJECTSTORY)->alias('t2')->on('t1.id = t2.story')
+            ->where('project')->eq($projectID)
+            ->andWhere('t1.deleted')->eq(0)
+            ->fetch('storyCount');
+
+        $taskCount = $this->dao->select('count(id) as taskCount')->from(TABLE_TASK)->where('project')->eq($projectID)->andWhere('parent')->eq(0)->andWhere('deleted')->eq(0)->fetch('taskCount');
+        $bugCount  = $this->dao->select('count(id) as bugCount')->from(TABLE_BUG)->where('project')->eq($projectID)->andWhere('deleted')->eq(0)->fetch('bugCount');
+
+        $statData = new stdclass();
+        $statData->storyCount = $storyCount;
+        $statData->taskCount  = $taskCount;
+        $statData->bugCount   = $bugCount;
+
+        return $statData;
+    }
+
+    /**
      * Import task from Bug.
      *
      * @param  int    $projectID
@@ -1500,15 +1609,26 @@ class projectModel extends model
         {
             foreach($plans as $planID => $productID)
             {
-                $planStory = $this->loadModel('story')->getPlanStories($planID, 'active');
+                $planStory = $this->loadModel('story')->getPlanStories($planID);
                 if(!empty($planStory))
                 {
+                    $count = 0;
+                    foreach($planStory as $id => $story) 
+                    {
+                        if($story->status == 'draft') 
+                        {
+                            $count++;
+                            unset($planStory[$id]);
+                            continue;
+                        }
+                        $planProducts[$story->id] = $story->product;
+                    }
                     $planStories = array_merge($planStories, array_keys($planStory));
-                    foreach($planStory as $story) $planProducts[$story->id] = $story->product;
                 }
             }
         }
         $this->linkStory($projectID, $planStories, $planProducts);
+        if($count != 0) echo js::alert(sprintf($this->lang->project->haveDraft, $count)) . js::locate(helper::createLink('project', 'create', "projectID=$projectID"));
     }
 
     /**
@@ -1580,7 +1700,7 @@ class projectModel extends model
             ->andWhere('t2.deleted')->eq(0)
             ->fi()
             ->fetchPairs();
-        if(!$users) return array();
+        if(!$users) return array('' => '');
         foreach($users as $account => $realName)
         {
             $firstLetter = ucfirst(substr($account, 0, 1)) . ':';
@@ -1924,28 +2044,17 @@ class projectModel extends model
 
         foreach($tasks as $task)
         {
-            if($task->status != 'cancel')
-            {
-                $totalEstimate  += $task->estimate;
-                $totalConsumed  += $task->consumed;
-            }
+            $totalEstimate  += $task->estimate;
+            $totalConsumed  += $task->consumed;
+
             if($task->status != 'cancel' and $task->status != 'closed') $totalLeft += $task->left;
 
             $statusVar = 'status' . ucfirst($task->status);
             $$statusVar ++;
-
-            if(!empty($task->children))
-            {
-                $taskSum += count($task->children);
-                foreach($task->children as $child)
-                {
-                    if($child->status == 'wait') $statusWait ++;
-                }
-            }
             $taskSum ++;
         }
 
-        return sprintf($this->lang->project->taskSummary, $taskSum, $statusWait, $statusDoing, $totalEstimate, round($totalConsumed, 1), $totalLeft);
+        return sprintf($this->lang->project->taskSummary, $taskSum, $statusWait, $statusDoing, $totalEstimate, round($totalConsumed, 1), round($totalLeft, 1));
     }
 
     /**
@@ -2362,8 +2471,6 @@ class projectModel extends model
         $showOption = '0';
         if(isset($this->config->project->kanbanSetting->allCols)) $allCols = $this->config->project->kanbanSetting->allCols;
 
-        if(isset($this->config->project->kanbanSetting->showOption)) $showOption = $this->config->project->kanbanSetting->showOption;
-
         $colorList = $this->config->project->kanbanSetting->colorList;
         if(!is_array($colorList)) $colorList = json_decode($colorList, true);
 
@@ -2397,7 +2504,7 @@ class projectModel extends model
         $days         = count($dateList) - 1;
         $rate         = $firstTime / $days;
         $baselineJSON = '[';
-        foreach($dateList as $i => $date) $baselineJSON .= ($days - $i) * $rate . ',';
+        foreach($dateList as $i => $date) $baselineJSON .= round(($days - $i) * $rate, 1) . ',';
         $baselineJSON = rtrim($baselineJSON, ',') . ']';
 
         $chartData['labels']   = $this->report->convertFormat($dateList, 'j/n');
@@ -2449,7 +2556,7 @@ class projectModel extends model
                 $taskGroups[$task->module][$task->story][$task->id] = $task;
                 if(!empty($childTasks[$task->id]))
                 {
-                    $taskGroups[$task->module][$task->story][$task->id]->children =  $childTasks[$task->id];
+                    $taskGroups[$task->module][$task->story][$task->id]->children = $childTasks[$task->id];
                 }
             }
         }
@@ -2485,6 +2592,8 @@ class projectModel extends model
                 $storyItem->color         = $story->color;
                 $storyItem->pri           = $story->pri;
                 $storyItem->storyId       = $story->id;
+                $storyItem->openedBy      = $story->openedBy;
+                $storyItem->assignedTo    = $story->assignedTo;
                 $storyItem->url           = helper::createLink('story', 'view', "storyID=$story->id&version=$story->version&from=project&param=$projectID");
                 $storyItem->taskCreateUrl = helper::createLink('task', 'batchCreate', "projectID={$projectID}&story={$story->id}");
 
@@ -2565,10 +2674,12 @@ class projectModel extends model
             $taskItem->color        = $task->color;
             $taskItem->pri          = (int)$task->pri;
             $taskItem->status       = $task->status;
+            $taskItem->parent       = $task->parent;
             $taskItem->estimate     = $task->estimate;
             $taskItem->consumed     = $task->consumed;
             $taskItem->left         = $task->left;
-            $taskItem->assignedTo   = $users[$task->assignedTo];
+            $taskItem->openedBy     = $users[$task->openedBy];
+            $taskItem->assignedTo   = zget($users, $task->assignedTo);
             $taskItem->url          = helper::createLink('task', 'view', "task=$task->id");
             $taskItem->storyChanged = $story and $story->status == 'active' and $story->version > $story->taskVersion;
 
@@ -2602,7 +2713,7 @@ class projectModel extends model
      */
     public function getProjectTree($projectID)
     {
-        $fullTrees = $this->loadModel('tree')->getTaskStructure($projectID, 0, $manage = false);
+        $fullTrees = $this->loadModel('tree')->getTaskStructure($projectID, 0);
         array_unshift($fullTrees, array('id' => 0, 'name' => '/', 'type' => 'task', 'actions' => false, 'root' => $projectID));
         foreach($fullTrees as $i => $tree)
         {
@@ -2635,8 +2746,56 @@ class projectModel extends model
         $productPlans = array();
         foreach($products as $productID => $product)
         {
-            $productPlans[$productID] = $this->productplan->getPairs($product->id, $product->branch);
+            $productPlans[$productID] = $this->productplan->getPairs($product->id, isset($product->branch) ? $product->branch : '');
         }
         return $productPlans;
+    }
+
+    /**
+     * Print html for tree.
+     *
+     * @param object $trees
+     * @access pubic
+     * @return string
+     */
+    public function printTree($trees)
+    {
+        $html = '';
+        foreach($trees as $tree)
+        {
+            if(is_array($tree)) $tree = (object)$tree;
+            switch($tree->type)
+            {
+                case 'module':
+                    $this->app->loadLang('tree');
+                    $html .= "<li class='item-module'>";
+                    $html .= '<a class="tree-toggle"><span class="label label-type">' . (empty($tree->parent) ? $this->lang->tree->module : $this->lang->tree->child) . "</span><span class='title' title='{$tree->name}'>" . $tree->name . '</span></a>';
+                    break;
+                case 'task':
+                    $link = helper::createLink('project', 'treeTask', "taskID={$tree->id}");
+                    $html .= '<li class="item-task">';
+                    $html .= '<a class="tree-link" href="' . $link . '"><span class="label label-id">' . $tree->id . '</span><span class="label label-type">' . (empty($tree->parent) ? $this->lang->task->common : $this->lang->task->children) . "</span><span class='title' title='{$tree->title}'>" . $tree->title . '</span> <span class="user"><i class="icon icon-person"></i> ' . (empty($tree->assignedTo) ? $tree->openedBy : $tree->assignedTo) . '</span></a>';
+                    break;
+                case 'product':
+                    $this->app->loadLang('product');
+                    $html .= '<li class="item-product">';
+                    $html .= '<a class="tree-toggle"><span class="label label-type">' . $this->lang->productCommon . "</span><span class='title' title='{$tree->name}'>" . $tree->name . '</span></a>';
+                    break;
+                case 'story':
+                    $this->app->loadLang('story');
+                    $link = helper::createLink('project', 'treeStory', "storyID={$tree->storyId}");
+                    $html .= '<li class="item-story">';
+                    $html .= '<a class="tree-link" href="' . $link . '"><span class="label label-id">' . $tree->storyId . '</span><span class="label label-type">' . $this->lang->story->common . "</span><span class='title' title='{$tree->title}'>" . $tree->title . '</span> <span class="user"><i class="icon icon-person"></i> ' . (empty($tree->assignedTo) ? $tree->openedBy : $tree->assignedTo) . '</span></a>';
+                    break;
+            }
+            if(isset($tree->children))
+            {
+                $html .= '<ul>';
+                $html .= $this->printTree($tree->children);
+                $html .= '</ul>';
+            }
+            $html .= '</li>';
+        }
+        return $html;
     }
 }

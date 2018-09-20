@@ -8,7 +8,7 @@
  * @uses      control
  * @license   LGPL
  * @version   $Id$
- * @Link      http://www.zentao.net
+ * @Link      https://www.zentao.pm
  */
 class dev extends control
 {

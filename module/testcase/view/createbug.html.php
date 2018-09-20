@@ -7,14 +7,33 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     testcase
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php include '../../common/view/header.lite.html.php';?>
-<div class='main' id='resultsContainer'>
+<div id='mainContent' class='main-content'>
+  <div class='main-header'>
+    <h2><?php echo $lang->testcase->createBug;?></h2>
+  </div>
+  <div class='main' id='resultsContainer'></div>
 </div>
-</form>
 <script>
+function createBug(obj)
+{
+    var $form  = $(obj).closest('form');
+    var params = $form.data('params');
+    var stepIdList = '';
+    $form.find('.step .step-id :checkbox').each(function()
+    {
+        if($(this).prop('checked')) stepIdList += $(this).val() + '_';
+    });
+
+    var onlybody    = config.onlybody;
+    config.onlybody = 'no';
+    window.open(createLink('bug', 'create', params + ',stepIdList=' + stepIdList), '_blank');
+    config.onlybody = onlybody;
+}
+
 $(function()
 {
     $('#resultsContainer').load("<?php echo $this->createLink('testtask', 'results', "runID={$runID}&caseID=$caseID&version=$version");?> #casesResults", function()

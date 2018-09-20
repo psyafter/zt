@@ -7,7 +7,7 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     branch
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class branchModel extends model
 {
@@ -24,6 +24,7 @@ class branchModel extends model
         {
             if(empty($productID)) $productID = $this->session->product;
             $product = $this->loadModel('product')->getById($productID);
+            if(empty($product) or !isset($this->lang->product->branchName[$product->type])) return false;
             return $this->lang->branch->all . $this->lang->product->branchName[$product->type];
         }
         return $this->dao->select('*')->from(TABLE_BRANCH)->where('id')->eq($branchID)->fetch('name');
@@ -95,7 +96,6 @@ class branchModel extends model
         $branchGroups = array();
         foreach($branches as $branch)
         {
-            if(!isset($branchGroups[$branch->product]) and strpos($params, 'noempty') === false) $branchGroups[$branch->product][0] = $this->lang->branch->all . $this->lang->product->branchName[$products[$branch->product]->type];
             if($products[$branch->product]->type == 'normal')
             {
                 $branchGroups[$branch->product][0] = '';
@@ -104,6 +104,14 @@ class branchModel extends model
             {
                 $branchGroups[$branch->product][$branch->id] = $branch->name;
             }
+        }
+
+        foreach($products as $product)
+        {
+            if($product->type == 'normal') continue;
+
+            if(!isset($branchGroups[$product->id]))  $branchGroups[$product->id] = array();
+            if(strpos($params, 'noempty') === false) $branchGroups[$product->id] = array('0' => $this->lang->branch->all . $this->lang->product->branchName[$product->type]) + $branchGroups[$product->id];
         }
 
         return $branchGroups;

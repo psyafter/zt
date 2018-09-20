@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     report
  * @version     $Id: en.php 5080 2013-07-10 00:46:59Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->report->common     = 'Report';
 $lang->report->index      = 'Home';
@@ -38,21 +38,21 @@ $lang->report->singleColor[] = 'F6BD0F';
 
 $lang->report->projectDeviation = $lang->projectCommon . ' Deviation';
 $lang->report->productSummary   = $lang->productCommon . ' Summary';
-$lang->report->bugCreate        = 'Bug Submission Report';
-$lang->report->bugAssign        = 'Bug Assignment Report';
-$lang->report->workload         = 'Workload';
+$lang->report->bugCreate        = 'Bug Reported';
+$lang->report->bugAssign        = 'Bug Assigned';
+$lang->report->workload         = 'Team Workload ';
 $lang->report->workloadAB       = 'Workload';
-$lang->report->bugOpenedDate    = 'Bug Created From';
+$lang->report->bugOpenedDate    = 'Bug reported from';
 $lang->report->taskAssignedDate = 'From';
-$lang->report->beginAndEnd      = ' From';
+$lang->report->beginAndEnd      = ' : from';
 $lang->report->dept             = 'Dept';
 $lang->report->deviationChart   = $lang->projectCommon . ' Deviation Chart';
 
 $lang->reportList->project->lists[10] = $lang->projectCommon . ' Deviation|report|projectdeviation';
 $lang->reportList->product->lists[10] = $lang->productCommon . ' Summary|report|productsummary';
-$lang->reportList->test->lists[10]    = 'Bugs Creation|report|bugcreate';
-$lang->reportList->test->lists[13]    = 'Bug Assignment|report|bugassign';
-$lang->reportList->staff->lists[10]   = 'Workload|report|workload';
+$lang->reportList->test->lists[10]    = 'Bugs Reported|report|bugcreate';
+$lang->reportList->test->lists[13]    = 'Bugs Assigned|report|bugassign';
+$lang->reportList->staff->lists[10]   = 'Team Workload|report|workload';
 
 $lang->report->id            = 'ID';
 $lang->report->project       = $lang->projectCommon;
@@ -86,10 +86,10 @@ $lang->report->overduePlan   = 'Expired Plan';
 
 /* daily reminder. */
 $lang->report->idAB  = 'ID';
-$lang->report->bugTitle     = 'Bug Title';
+$lang->report->bugTitle     = 'Bug Name';
 $lang->report->taskName     = 'Task Name';
 $lang->report->todoName     = 'Todo Name';
-$lang->report->testTaskName = 'Test Task Name';
+$lang->report->testTaskName = 'TestTask Name';
 $lang->report->deadline     = 'Deadline';
 
 $lang->report->mailTitle           = new stdclass();
@@ -99,4 +99,5 @@ $lang->report->mailTitle->task     = " Task (%s),";
 $lang->report->mailTitle->todo     = " Todo (%s),";
 $lang->report->mailTitle->testTask = " Test Task (%s),";
 
-$lang->report->proVersion = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';
+$lang->report->proVersion   = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';
+$lang->report->proVersionEn = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';

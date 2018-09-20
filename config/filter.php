@@ -13,7 +13,7 @@ $filter->rules->word       = '/^\w+$/';
 $filter->rules->paramName  = '/^[a-zA-Z0-9_\.]+$/';
 $filter->rules->paramValue = '/^[a-zA-Z0-9=_,`#+\^\/\.%\|\x7f-\xff]+$/';
 
-$filter->default = new stdclass(); 
+$filter->default = new stdclass();
 $filter->default->moduleName = 'code';
 $filter->default->methodName = 'code';
 $filter->default->paramName  = 'reg::paramName';
@@ -97,9 +97,11 @@ $filter->bug->default->cookie['preProductID']  = 'int';
 $filter->bug->create->cookie['preBranch']      = 'int';
 $filter->bug->export->cookie['checkedItem']    = 'reg::checked';
 
-$filter->doc->browse->cookie['browseType'] = 'reg::browseType';
-$filter->doc->default->cookie['from']      = 'code';
-$filter->doc->default->cookie['product']   = 'int';
+$filter->doc->browse->cookie['browseType']          = 'reg::browseType';
+$filter->doc->alllibs->cookie['browseType']         = 'reg::browseType';
+$filter->doc->objectlibs->cookie['browseType']      = 'reg::browseType';
+$filter->doc->default->cookie['from']               = 'code';
+$filter->doc->default->cookie['product']            = 'int';
 $filter->doc->showfiles->cookie['docFilesViewType'] = 'code';
 
 $filter->file->download->cookie[$config->sessionVar] = 'code';
@@ -153,7 +155,7 @@ $filter->testsuite->library->cookie['libCaseModule'] = 'int';
 $filter->testsuite->library->cookie['preCaseLibID']  = 'int';
 
 $filter->testtask->browse->cookie['preBranch']     = 'int';
-$filter->testtask->cases->cookie['preProductID']   = 'int';
+$filter->testtask->cases->cookie['preTaskID']      = 'int';
 $filter->testtask->cases->cookie['taskCaseModule'] = 'int';
 $filter->testtask->default->cookie['lastProduct']  = 'int';
 $filter->testtask->default->cookie['preProductID'] = 'int';
@@ -192,6 +194,7 @@ $filter->sso->login->get['md5']         = 'reg::md5';
 $filter->sso->login->get['referer']     = 'reg::base64';
 $filter->sso->login->get['status']      = 'code';
 $filter->sso->login->get['token']       = 'reg::md5';
+$filter->sso->login->get['sessionid']   = 'reg::base64';
 $filter->sso->logout->get['status']     = 'code';
 $filter->sso->logout->get['token']      = 'reg::md5';
 

@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     search
  * @version     $Id: model.php 5082 2013-07-10 01:14:45Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -73,7 +73,7 @@ class searchModel extends model
             if($andOr != 'AND' and $andOr != 'OR') $andOr = 'AND';
 
             /* Set operator. */
-            $value    = $this->post->$valueName;
+            $value    = trim($this->post->$valueName);
             $operator = $this->post->$operatorName;
             if(!isset($this->lang->search->operators[$operator])) $operator = '=';
 
@@ -270,49 +270,12 @@ class searchModel extends model
             ->skipSpecial('sql,form')
             ->remove('onMenuBar')
             ->get();
+        if($this->post->onMenuBar) $query->shortcut = 1;
         $this->dao->insert(TABLE_USERQUERY)->data($query)->autoCheck()->check('title', 'notempty')->exec();
 
         if(!dao::isError())
         {
             $queryID = $this->dao->lastInsertID();
-            /* Set this query show on menu bar. */
-            if($this->post->onMenuBar)
-            {
-                $queryModule      = $query->module == 'task' ? 'project' : ($query->module == 'story' ? 'product' : $query->module);
-                $featureBarConfig = $this->dao->select('*')->from(TABLE_CONFIG)->where('owner')->eq($this->app->user->account)->andWhere('module')->eq('common')->andWhere('section')->eq('customMenu')->andWhere('`key`')->like($this->config->global->flow ."_feature_{$queryModule}_%")->fetch();
-
-                $this->app->loadLang($queryModule);
-                if(!isset($this->lang->$queryModule->featureBar)) return $queryID;
-
-                $method    = key($this->lang->$queryModule->featureBar);
-                $newConfig = array();
-                if(isset($featureBarConfig->id)) $newConfig = json_decode($featureBarConfig->value);
-                if(empty($newConfig))
-                {
-                    $order = 1;
-                    foreach($this->lang->$queryModule->featureBar[$method] as $menuKey => $menuName)
-                    {
-                        $menu = new stdclass();
-                        $menu->name  = $menuKey;
-                        $menu->order = $order;
-                        $newConfig[] = $menu;
-                        $order++;
-                    }
-                }
-
-                $menu = new stdclass();
-                $menu->name  = 'QUERY' . $queryID;
-                $menu->order = $order;
-                $newConfig[] = $menu;
-
-                $featureBarConfig = new stdclass();
-                $featureBarConfig->owner   = $this->app->user->account;
-                $featureBarConfig->module  = 'common';
-                $featureBarConfig->section = 'customMenu';
-                $featureBarConfig->key     = $this->config->global->flow . "_feature_{$queryModule}_{$method}";
-                $featureBarConfig->value   = json_encode($newConfig);
-                $this->dao->replace(TABLE_CONFIG)->data($featureBarConfig)->exec();
-            }
             if(!dao::isError()) $this->loadModel('score')->create('search', 'saveQuery', $queryID);
             return $queryID;
         }
@@ -329,6 +292,7 @@ class searchModel extends model
     public function deleteQuery($queryID)
     {
         $this->dao->delete()->from(TABLE_USERQUERY)->where('id')->eq($queryID)->andWhere('account')->eq($this->app->user->account)->exec();
+        die('success');
     }
 
     /**

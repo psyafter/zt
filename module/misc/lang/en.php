@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     misc
  * @version     $Id: English.php 824 2010-05-02 15:32:06Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->misc = new stdclass();
 $lang->misc->common = 'Misc';
@@ -16,10 +16,10 @@ $lang->misc->api    = 'http://api.zentao.pm';
 
 $lang->misc->zentao = new stdclass();
 $lang->misc->zentao->version           = 'Version %s';
-$lang->misc->zentao->labels['about']   = 'About ZenTao';
-$lang->misc->zentao->labels['support'] = 'Technical Support';
+$lang->misc->zentao->labels['about']   = 'About';
+$lang->misc->zentao->labels['support'] = 'Support';
 $lang->misc->zentao->labels['cowin']   = 'Help Us';
-$lang->misc->zentao->labels['service'] = 'Service List';
+$lang->misc->zentao->labels['service'] = 'Service';
 
 $lang->misc->zentao->icons['about']   = 'group';
 $lang->misc->zentao->icons['support'] = 'question-sign';

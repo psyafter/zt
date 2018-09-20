@@ -7,7 +7,7 @@
  * @author      Yangyang Shi <shiyangyang@cnezsoft.com>
  * @package     mail
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class mail extends control
 {
@@ -218,7 +218,7 @@ class mail extends control
         $mailConfig = new stdclass();
         if($this->config->mail->turnon)
         {
-            $mailConfig = $this->config->mail->sendcloud;
+            $mailConfig = isset($this->config->mail->sendcloud) ? $this->config->mail->sendcloud : new stdclass();
             $mailConfig->fromAddress = $this->config->mail->fromAddress;
             $mailConfig->fromName    = $this->config->mail->fromName;
             $mailConfig->turnon      = $this->config->mail->turnon;

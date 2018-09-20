@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     install
  * @version     $Id: model.php 5006 2013-07-03 08:52:21Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -61,7 +61,7 @@ class installModel extends model
     {
         if(!function_exists('json_decode')) return false;
         $snoopy = $this->app->loadClass('snoopy');
-        if(@$snoopy->fetchText('http://www.zentao.net/misc-getlatestrelease.json'))
+        if(@$snoopy->fetchText('https://www.zentao.pm/misc-getlatestrelease.json'))
         {
             $result = json_decode($snoopy->results);
             if(isset($result->release) and $this->config->version != $result->release->version)
@@ -231,7 +231,18 @@ class installModel extends model
     public function checkSessionSavePath()
     {
         $sessionSavePath = preg_replace("/\d;/", '', session_save_path());
-        return $result   = (is_dir($sessionSavePath) and is_writable($sessionSavePath)) ? 'ok' : 'fail'; 
+        $result = (is_dir($sessionSavePath) and is_writable($sessionSavePath)) ? 'ok' : 'fail'; 
+        if($result == 'fail') return $result;
+
+        /* Test session path again. Fix bug #1527. */
+        file_put_contents($sessionSavePath . '/zentaotest', 'zentao');
+        $sessionContent = file_get_contents($sessionSavePath . '/zentaotest');
+        if($sessionContent == 'zentao')
+        {
+            unlink($sessionSavePath . '/zentaotest');
+            return 'ok';
+        }
+        return 'fail';
     }
 
     /**

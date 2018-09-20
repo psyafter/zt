@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     productplan
  * @version     $Id: model.php 4639 2013-04-11 02:06:35Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -24,6 +24,8 @@ class productplanModel extends model
     public function getByID($planID, $setImgSize = false)
     {
         $plan = $this->dao->findByID((int)$planID)->from(TABLE_PRODUCTPLAN)->fetch();
+        if(!$plan) return false;
+
         $plan = $this->loadModel('file')->replaceImgURL($plan, 'desc');
         if($setImgSize) $plan->desc = $this->file->setImgSize($plan->desc);
         return $plan;
@@ -106,6 +108,7 @@ class productplanModel extends model
      * Get plan pairs.
      *
      * @param  array|int    $product
+     * @param  int          $branch
      * @param  string       $expired
      * @access public
      * @return array
@@ -138,7 +141,41 @@ class productplanModel extends model
         {
             $plans[$key] = str_replace('[2030-01-01 ~ 2030-01-01]', '[' . $this->lang->productplan->future . ']', $value);
         }
-        return array('' => '') + $plans;
+        return array('' => '') + $this->processFuture($plans);
+    }
+
+    /**
+     * Get plan pairs for story.
+     *
+     * @param  array|int    $product
+     * @param  int          $branch
+     * @access public
+     * @return array
+     */
+    public function getPairsForStory($product = 0, $branch = 0)
+    {
+        $date = date('Y-m-d');
+        $plans = $this->dao->select('id, CONCAT(title, " [", begin, " ~ ", end, "]") AS title')->from(TABLE_PRODUCTPLAN)
+            ->where('product')->in($product)
+            ->andWhere('deleted')->eq(0)
+            ->andWhere('end')->ge($date)
+            ->beginIF($branch)->andWhere("branch")->in("0,$branch")->fi()
+            ->orderBy('begin desc')
+            ->fetchPairs();
+
+        if(!$plans)
+        {
+            $plans = $this->dao->select('id, CONCAT(title, " [", begin, " ~ ", end, "]") AS title')->from(TABLE_PRODUCTPLAN)
+                ->where('product')->in($product)
+                ->andWhere('deleted')->eq(0)
+                ->andWhere('end')->lt($date)
+                ->beginIF($branch)->andWhere("branch")->in("0,$branch")->fi()
+                ->orderBy('begin desc')
+                ->limit(5)
+                ->fetchPairs();
+        }
+
+        return array('' => '') + $this->processFuture($plans);
     }
 
     /**
@@ -169,6 +206,16 @@ class productplanModel extends model
             ->setIF($this->post->future || empty($_POST['end']), 'end', '2030-01-01')
             ->remove('delta,uid,future')
             ->get();
+        if(!$this->post->future and strpos($this->config->productplan->create->requiredFields, 'begin') !== false and empty($_POST['begin']))
+        {
+            dao::$errors['begin'] = sprintf($this->lang->error->notempty, $this->lang->productplan->begin);
+        }
+        if(!$this->post->future and strpos($this->config->productplan->create->requiredFields, 'end') !== false and empty($_POST['end']))
+        {
+            dao::$errors['end'] = sprintf($this->lang->error->notempty, $this->lang->productplan->end);
+        }
+        if(dao::isError()) return false;
+
         $plan = $this->loadModel('file')->processImgURL($plan, $this->config->productplan->editor->create['id'], $this->post->uid);
         $this->dao->insert(TABLE_PRODUCTPLAN)
             ->data($plan)
@@ -200,6 +247,15 @@ class productplanModel extends model
             ->setIF($this->post->future || empty($_POST['end']), 'end', '2030-01-01')
             ->remove('delta,uid,future')
             ->get();
+        if(!$this->post->future and strpos($this->config->productplan->edit->requiredFields, 'begin') !== false and empty($_POST['begin']))
+        {
+            dao::$errors['begin'] = sprintf($this->lang->error->notempty, $this->lang->productplan->begin);
+        }
+        if(!$this->post->future and strpos($this->config->productplan->edit->requiredFields, 'end') !== false and empty($_POST['end']))
+        {
+            dao::$errors['end'] = sprintf($this->lang->error->notempty, $this->lang->productplan->end);
+        }
+        if(dao::isError()) return false;
 
         $plan = $this->loadModel('file')->processImgURL($plan, $this->config->productplan->editor->edit['id'], $this->post->uid);
         $this->dao->update(TABLE_PRODUCTPLAN)
@@ -280,10 +336,19 @@ class productplanModel extends model
         $stories = $this->story->getByList($this->post->stories);
         $plan    = $this->getByID($planID);
 
+        $currentOrder = $plan->order;
         foreach($this->post->stories as $storyID)
         {
             if(!isset($stories[$storyID])) continue;
             $story = $stories[$storyID];
+
+            /* Fix Bug #1538*/
+            $currentOrder = $currentOrder . $storyID . ',';
+            $oldOrder = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where("id")->eq($story->plan)->fetch('order'); 
+            $oldOrder = explode(',', $oldOrder);
+            unset($oldOrder[array_search($storyID,  $oldOrder)]);
+            $oldOrder = implode(',', $oldOrder);
+            $this->dao->update(TABLE_PRODUCTPLAN)->set("order")->eq($oldOrder)->where('id')->eq($story->plan)->exec();
 
             if($this->session->currentProductType == 'normal' or $story->branch != 0 or empty($story->plan))
             {
@@ -297,7 +362,10 @@ class productplanModel extends model
             }
             $this->action->create('story', $storyID, 'linked2plan', '', $planID);
             $this->story->setStage($storyID);
+
         }
+
+        $this->dao->update(TABLE_PRODUCTPLAN)->set("order")->eq($currentOrder)->where('id')->eq((int)$planID)->exec();
     }
 
     /**
@@ -312,6 +380,14 @@ class productplanModel extends model
         $story = $this->dao->findByID($storyID)->from(TABLE_STORY)->fetch();
         $plans = array_unique(explode(',', trim(str_replace(",$planID,", ',', ',' . trim($story->plan) . ','). ',')));
         $this->dao->update(TABLE_STORY)->set('plan')->eq(join(',', $plans))->where('id')->eq((int)$storyID)->exec();
+
+        /* Fix Bug #1538. */ 
+        $oldOrder = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where("id")->eq($story->plan)->fetch('order');
+        $oldOrder = explode(',', $oldOrder);
+        unset($oldOrder[array_search($storyID, $oldOrder)]);
+        $oldOrder = implode(',', $oldOrder);
+        $this->dao->update(TABLE_PRODUCTPLAN)->set('order')->eq($oldOrder)->where('id')->eq($story->plan)->exec();
+
         $this->loadModel('story')->setStage($storyID);
         $this->loadModel('action')->create('story', $storyID, 'unlinkedfromplan', '', $planID);
     }
@@ -346,5 +422,21 @@ class productplanModel extends model
         $planID = $this->dao->findByID($bugID)->from(TABLE_BUG)->fetch('plan');
         $this->dao->update(TABLE_BUG)->set('plan')->eq(0)->where('id')->eq((int)$bugID)->exec();
         $this->loadModel('action')->create('bug', $bugID, 'unlinkedfromplan', '', $planID);
+    }
+
+    /**
+     * Process future of plans.
+     *
+     * @param  array  $plans
+     * @access public
+     * @return array
+     */
+    public function processFuture($plans)
+    {
+        foreach($plans as $key => $value)
+        {
+            $plans[$key] = str_replace('[2030-01-01 ~ 2030-01-01]', '[' . $this->lang->productplan->future . ']', $value);
+        }
+        return $plans;
     }
 }

@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     case
  * @version     $Id: control.php 5112 2013-07-12 02:51:33Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class testcase extends control
 {
@@ -80,7 +80,7 @@ class testcase extends control
         $queryID  = ($browseType == 'bysearch') ? (int)$param : 0;
 
         /* Set menu, save session. */
-        $this->testcase->setMenu($this->products, $productID, $branch, $moduleID, $suiteID);
+        $this->testcase->setMenu($this->products, $productID, $branch, $moduleID, $suiteID, $orderBy);
         $this->session->set('caseList', $this->app->getURI(true));
         $this->session->set('productID', $productID);
         $this->session->set('moduleID', $moduleID);
@@ -124,6 +124,7 @@ class testcase extends control
         $this->view->moduleTree    = $this->tree->getTreeMenu($productID, $viewType = 'case', $startModuleID = 0, array('treeModel', 'createCaseLink'), '', $branch);
         $this->view->moduleName    = $moduleID ? $this->tree->getById($moduleID)->name : $this->lang->tree->all;
         $this->view->moduleID      = $moduleID;
+        $this->view->summary       = $this->testcase->summary($cases);
         $this->view->pager         = $pager;
         $this->view->users         = $this->user->getPairs('noletter');
         $this->view->orderBy       = $orderBy;
@@ -173,6 +174,9 @@ class testcase extends control
                 $groupByList[$case->story]  = $case->storyTitle;
             }
         }
+
+        $this->app->loadLang('project');
+        $this->app->loadLang('task');
 
         $this->view->title       = $this->products[$productID] . $this->lang->colon . $this->lang->testcase->common;
         $this->view->position[]  = html::a($this->createLink('testcase', 'groupTask', "productID=$productID&groupBy=$groupBy"), $this->products[$productID]);
@@ -637,7 +641,7 @@ class testcase extends control
      */
     public function batchEdit($productID = 0, $branch = 0, $type = 'case')
     {
-        if($this->post->titles)
+        if($this->post->title)
         {
             $allChanges = $this->testcase->batchUpdate();
             if($allChanges)
@@ -927,14 +931,6 @@ class testcase extends control
      */
     public function linkCases($caseID, $browseType = '', $param = 0)
     {
-        /* Link cases. */
-        if(!empty($_POST))
-        {
-            $this->testcase->linkCases($caseID);
-            if(isonlybody()) die(js::closeModal('parent.parent', '', "function(){parent.parent.loadLinkCases('$caseID')}"));
-            die(js::locate($this->createLink('testcase', 'edit', "caseID=$caseID"), 'parent'));
-        }
-
         /* Get case and queryID. */
         $case    = $this->testcase->getById($caseID);
         $queryID = ($browseType == 'bySearch') ? (int)$param : 0;
@@ -959,47 +955,6 @@ class testcase extends control
         $this->view->users      = $this->loadModel('user')->getPairs('noletter');
 
         $this->display();
-    }
-
-    /**
-     * AJAX: get linkCases.
-     *
-     * @param  int    $caseID
-     * @access public
-     * @return string
-     */
-    public function ajaxGetLinkCases($caseID)
-    {
-        /* Get linkCases. */
-        $cases = $this->testcase->getLinkCases($caseID);
-
-        /* Build linkCase list. */
-        $output = '';
-        foreach($cases as $caseId => $caseTitle)
-        {
-            $output .= '<li>';
-            $output .= html::a(inlink('view', "caseID=$caseId"), "#$caseId " . $caseTitle, '_blank');
-            $output .= html::a("javascript:unlinkCase($caseID, $caseId)", '<i class="icon-remove"></i>', '', "title='{$this->lang->unlink}' style='float:right'");
-            $output .= '</li>';
-        }
-
-        die($output);
-    }
-
-    /**
-     * Unlink related case.
-     *
-     * @param  int    $caseID
-     * @param  int    $case2Unlink
-     * @access public
-     * @return string
-     */
-    public function unlinkCase($caseID, $case2Unlink = 0)
-    {
-        /* Unlink related case. */
-        $this->testcase->unlinkCase($caseID, $case2Unlink);
-
-        die('success');
     }
 
     /**
@@ -1157,7 +1112,7 @@ class testcase extends control
                 $case->stepExpect = '';
                 $case->real       = '';
                 $result = isset($results[$case->id]) ? $results[$case->id] : array();
-                if($case->lastRunResult == 'fail' and !isset($relatedSteps[$case->id]) and !empty($result)) $case->real = $result[0]['real'];
+                $case->real = $result[0]['real'];
                 if(isset($relatedSteps[$case->id]))
                 {
                     $i = $childId = 0;
@@ -1178,7 +1133,7 @@ class testcase extends control
                         $sign = (in_array($this->post->fileType, array('html', 'xml'))) ? '<br />' : "\n";
                         $case->stepDesc   .= $stepId . ". " . $step->desc . $sign;
                         $case->stepExpect .= $stepId . ". " . $step->expect . $sign;
-                        if($case->lastRunResult == 'fail') $case->real .= $stepId . ". " . (isset($result[$step->id]) ? $result[$step->id]['real'] : '') . $sign;
+                        $case->real .= $stepId . ". " . (isset($result[$step->id]) ? $result[$step->id]['real'] : '') . $sign;
                         $childId ++;
                     }
                 }
@@ -1275,26 +1230,30 @@ class testcase extends control
 
             $modules = $this->loadModel('tree')->getOptionMenu($productID, 'case');
             $rows    = array();
-            foreach($modules as $moduleID => $module)
+            $num     = (int)$this->post->num;
+            for($i = 0; $i < $num; $i++)
             {
-                $row = new stdclass();
-                $row->module     = $module . "(#$moduleID)";
-                $row->stepDesc   = "1. \n2. \n3.";
-                $row->stepExpect = "1. \n2. \n3.";
-
-                if(empty($rows))
+                foreach($modules as $moduleID => $module)
                 {
-                    $row->typeValue   = join("\n", $this->lang->testcase->typeList);
-                    $row->stageValue  = join("\n", $this->lang->testcase->stageList);
-                    if($product->type != 'normal') $row->branchValue = join("\n", $branches);
+                    $row = new stdclass();
+                    $row->module     = $module . "(#$moduleID)";
+                    $row->stepDesc   = "1. \n2. \n3. num:" . $num;
+                    $row->stepExpect = "1. \n2. \n3.";
+
+                    if(empty($rows))
+                    {
+                        $row->typeValue   = join("\n", $this->lang->testcase->typeList);
+                        $row->stageValue  = join("\n", $this->lang->testcase->stageList);
+                        if($product->type != 'normal') $row->branchValue = join("\n", $branches);
+                    }
+                    $rows[] = $row;
                 }
-                $rows[] = $row;
             }
 
             $this->post->set('fields', $fields);
             $this->post->set('kind', 'testcase');
             $this->post->set('rows', $rows);
-            $this->post->set('extraNum',   $this->post->num);
+            $this->post->set('extraNum', $num);
             $this->post->set('fileName', 'templet');
             $this->fetch('file', 'export2csv', $_POST);
         }

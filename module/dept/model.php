@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     dept
  * @version     $Id: model.php 4210 2013-01-22 01:06:12Z zhujinyonging@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -147,7 +147,7 @@ class deptModel extends model
             $deptMenu[$dept->parent] .= "</li>\n"; 
         }
 
-        $lastMenu = "<ul class='tree tree-lines'>" . @array_pop($deptMenu) . "</ul>\n";
+        $lastMenu = "<ul class='tree' data-ride='tree' data-name='tree-dept'>" . @array_pop($deptMenu) . "</ul>\n";
         return $lastMenu; 
     }
 
@@ -423,7 +423,7 @@ class deptModel extends model
     public function getDataStructure($rootDeptID = 0) 
     {
         $tree = array_values($this->getSons($rootDeptID));
-        $users = $this->loadModel('user')->getPairs('noletter|noclosed|nodeleted');
+        $users = $this->loadModel('user')->getPairs('noletter|noclosed|nodeleted|all');
         if(count($tree))
         {
             foreach ($tree as $node)

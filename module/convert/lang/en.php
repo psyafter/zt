@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     convert
  * @version     $Id: en.php 4129 2013-01-18 01:58:14Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->convert->common  = 'Imported';
 $lang->convert->index   = 'Home';
@@ -43,7 +43,7 @@ $lang->convert->sourceList['Redmine'] = array('Redmine_1.1' => '1.1');
 $lang->convert->setting     = 'Settings';
 $lang->convert->checkConfig = 'Check Settings';
 
-$lang->convert->ok          = '<span class="text-success"><i class="icon-ok-sign"></i> OK </span>';
+$lang->convert->ok          = '<span class="text-success"><i class="icon-check-sign"></i> OK </span>';
 $lang->convert->fail        = '<span class="text-danger"><i class="icon-remove-sign"></i> Failed</span>';
 
 $lang->convert->dbHost      = 'Database Server';

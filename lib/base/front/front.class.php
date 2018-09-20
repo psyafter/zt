@@ -392,7 +392,7 @@ class baseHTML
     {
         $html = "<div class='input-append date date-picker' {$options}>";
         $html .= "<input type='text' name='{$name}' id='$name' value='$value' {$attrib} />\n";
-        $html .= "<span class='add-on'><button class='btn btn-default' type='button'><i class='icon-calendar'></i></button></span></div>";
+        $html .= "<span class='add-on'><button class='btn' type='button'><i class='icon-calendar'></i></button></span></div>";
         return $html;
     }
 
@@ -412,7 +412,7 @@ class baseHTML
     {
         $html = "<div class='input-append date time-picker' {$options}>";
         $html .= "<input type='text' name='{$name}' id='$name' value='$value' {$attrib} />\n";
-        $html .= "<span class='add-on'><button class='btn btn-default' type='button'><i class='icon-calendar'></i></button></span></div>";
+        $html .= "<span class='add-on'><button class='btn' type='button'><i class='icon-calendar'></i></button></span></div>";
         return $html;
     }
 
@@ -507,7 +507,7 @@ class baseHTML
      * @access public
      * @return string the common button tag.
      */
-    public static function commonButton($label = '', $class = 'btn btn-default', $misc = '', $icon = '')
+    public static function commonButton($label = '', $class = 'btn', $misc = '', $icon = '')
     {
         if($icon) $label = "<i class='icon-" . $icon . "'></i> " . $label;
         return " <button type='button' class='$class' $misc>$label</button>";
@@ -526,7 +526,7 @@ class baseHTML
      * @access public
      * @return string
      */
-    public static function linkButton($label = '', $link = '', $class='btn btn-default', $misc = '', $target = 'self')
+    public static function linkButton($label = '', $link = '', $class='btn', $misc = '', $target = 'self')
     {
         global $config, $lang;
 
@@ -564,7 +564,7 @@ class baseHTML
     static public function selectAll($scope = "", $type = "button", $checked = false, $class = '')
     {
         $string = <<<EOT
-<script type="text/javascript">
+<script>
 function selectAll(checker, scope, type)
 { 
     if(scope)
@@ -650,7 +650,7 @@ function selectReverse(scope)
 </script>
 EOT;
         global $lang;
-        $string .= "<input type='button' name='reversechecker' id='reversechecker' value='{$lang->selectReverse}' class='btn btn-default' onclick='selectReverse(\"$scope\")'/>";
+        $string .= "<input type='button' name='reversechecker' id='reversechecker' value='{$lang->selectReverse}' class='btn' onclick='selectReverse(\"$scope\")'/>";
 
         return  $string;
     }
@@ -752,7 +752,7 @@ class baseJS
 
         $hasLimit = ($ieParam and stripos($ieParam, 'ie') !== false);
         if($hasLimit) echo "<!--[if $ieParam]>\n";
-        echo "<script src='$url{$mark}v={$config->version}' type='text/javascript'></script>\n";
+        echo "<script src='$url{$mark}v={$config->version}'></script>\n";
         if($hasLimit) echo "<![endif]-->\n";
     }
 
@@ -768,7 +768,7 @@ class baseJS
     static public function start($full = true)
     {
         if($full) return "<html><meta charset='utf-8'/><style>body{background:white}</style><script>";
-        return "<script language='Javascript'>";
+        return "<script>";
     }
 
     /**
@@ -1044,6 +1044,7 @@ EOT;
 
         $jsConfig = new stdclass();
         $jsConfig->webRoot        = $config->webRoot;
+        $jsConfig->debug          = $config->debug;
         $jsConfig->appName        = $app->getAppName();
         $jsConfig->cookieLife     = ceil(($config->cookieLife - time()) / 86400);
         $jsConfig->requestType    = $config->requestType;
@@ -1069,8 +1070,8 @@ EOT;
         $jsLang->timeout    = isset($lang->timeout) ? $lang->timeout : '';
 
         $js  = self::start(false);
-        $js .= 'var config=' . json_encode($jsConfig) . ";\n";
-        $js .= 'var lang=' . json_encode($jsLang) . ";\n";
+        $js .= 'window.config=' . json_encode($jsConfig) . ";\n";
+        $js .= 'window.lang=' . json_encode($jsLang) . ";\n";
         $js .= self::end();
         echo $js;
     }

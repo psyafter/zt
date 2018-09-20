@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 /**
- * 禅道系统命令行访问入口。使用方法：http://www.zentao.net/help-read-78899.html
+ * 禅道系统命令行访问入口。使用方法：https://www.zentao.pm/help-read-78899.html
  * The cli router file of zentaopms.
  *
  * @copyright   Copyright 2009-2013 QingDao Nature Easy Soft Network Technology Co,LTD (www.cnezsoft.com)
@@ -9,7 +9,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     bin
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 error_reporting(E_ALL ^ E_NOTICE ^ E_STRICT);
 define('IN_SHELL', true);
@@ -38,19 +38,19 @@ if($config->requestType == 'PATH_INFO')
 {
     $path = pathinfo($request['path']);
 
-    /* url like http://pms.zentao.net/zentao/my-todo.html, PATH_INFO is 'my-todo.html'. */
+    /* url like http://pms.zentao.pm/zentao/my-todo.html, PATH_INFO is 'my-todo.html'. */
     if(strpos($path['basename'], $config->requestFix))
     {
         $_SERVER['PATH_INFO'] = $path['basename'];
     }
     else 
     {
-        /* url like http://pms.zentao.net/zentao/my/, PATH_INFO is 'my'. */
+        /* url like http://pms.zentao.pm/zentao/my/, PATH_INFO is 'my'. */
         if(is_dir('./module/' . $path['basename']))
         {
             $_SERVER['PATH_INFO'] = $path['basename'];
         }
-        /* url like http://pms.zentao.net/zentao/, PATH_INFO is '/'. */
+        /* url like http://pms.zentao.pm/zentao/, PATH_INFO is '/'. */
         else
         {
             $_SERVER['PATH_INFO'] = '/';

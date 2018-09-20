@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     todo
  * @version     $Id: control.php 4976 2013-07-02 08:15:31Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class todo extends control
 {
@@ -34,7 +34,7 @@ class todo extends control
      * @access public
      * @return void
      */
-    public function create($date = 'today', $account = '')
+    public function create($date = 'today', $account = '', $from = 'todo')
     {
         if($date == 'today') $date = date::today();
         if($account == '')   $account = $this->app->user->account;
@@ -54,6 +54,15 @@ class todo extends control
             }
 
             if(!empty($_POST['idvalue'])) $this->send(array('result' => 'success'));
+            if($from == 'block')
+            {
+                $todo = $this->todo->getById($todoID);
+                $this->app->loadClass('date');
+                $todo->begin = date::formatTime($todo->begin);
+                $this->send(array('result' => 'success', 'id' => $todoID, 'name' => $todo->name, 'pri' => $todo->pri, 'priName' => $this->lang->todo->priList[$todo->pri], 'time' => date(DT_DATE4, strtotime($todo->date)) . ' ' . $todo->begin));
+            }
+
+            if(isonlybody()) die(js::locate($this->createLink('my', 'todo', "type=$date"), 'parent.parent'));
             die(js::locate($this->createLink('my', 'todo', "type=$date"), 'parent'));
         }
 
@@ -93,6 +102,7 @@ class todo extends control
             {
                 $date= 'today';
             }
+            if(isonlybody())die(js::reload('parent.parent'));
             die(js::locate($this->createLink('my', 'todo', "type=$date"), 'parent'));
         }
 
@@ -130,7 +140,6 @@ class todo extends control
                 $actionID = $this->loadModel('action')->create('todo', $todoID, 'edited');
                 $this->action->logHistory($actionID, $changes);
             }
-            if(isonlybody())die(js::closeModal('parent.parent'));
             die(js::locate(inlink('view', "todoID=$todoID"), 'parent'));
         }
 
@@ -186,8 +195,8 @@ class todo extends control
                 if($todo->type == 'story') $todo->name = $this->dao->findById($todo->idvalue)->from(TABLE_STORY)->fetch('title');
                 if($todo->type == 'task')  $todo->name = $this->dao->findById($todo->idvalue)->from(TABLE_TASK)->fetch('name');
                 if($todo->type == 'bug')   $todo->name = $this->dao->findById($todo->idvalue)->from(TABLE_BUG)->fetch('title');
-                $todo->begin = str_replace(':', '', $todo->begin);
-                $todo->end   = str_replace(':', '', $todo->end);
+                $todo->begin = $todo->begin ? str_replace(':', '', $todo->begin) : '2400';
+                $todo->end   = $todo->end ? str_replace(':', '', $todo->end) : '2400';
             }
 
             /* Judge whether the edited todos is too large. */
@@ -242,7 +251,7 @@ class todo extends control
     public function activate($todoID)
     {
         $todo = $this->todo->getById($todoID);
-        if($todo->status == 'done') $this->todo->activate($todoID);
+        if($todo->status == 'done' or $todo->status == 'closed') $this->todo->activate($todoID);
         if(isonlybody()) die(js::reload('parent.parent'));
         die(js::reload('parent'));
     }
@@ -278,8 +287,14 @@ class todo extends control
             if(empty($_POST['assignedTo'])) die(js::error($this->lang->todo->noAssignedTo));
             $this->todo->assignTo($todoID);
             if(dao::isError()) die(js::error(dao::getError()));
-            die(js::reload('parent'));
+            die(js::reload('parent.parent'));
         }
+
+        $this->view->todo    = $this->todo->getById($todoID);
+        $this->view->members = $this->loadModel('user')->getPairs();
+        $this->view->times   = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
+        $this->view->time    = date::now();
+        $this->display();
     }
 
     /**
@@ -387,7 +402,7 @@ class todo extends control
     public function finish($todoID)
     {
         $todo = $this->todo->getById($todoID);
-        if($todo->status != 'done') $this->todo->finish($todoID);
+        if($todo->status != 'done' && $todo->status != 'closed') $this->todo->finish($todoID);
         if(in_array($todo->type, array('bug', 'task', 'story')))
         {
             $confirmNote = 'confirm' . ucfirst($todo->type);
@@ -412,7 +427,26 @@ class todo extends control
             foreach($_POST['todoIDList'] as $todoID)
             {
                 $todo = $this->todo->getById($todoID);
-                if($todo->status != 'done') $this->todo->finish($todoID);
+                if($todo->status != 'done' && $todo->status != 'closed') $this->todo->finish($todoID);
+            }
+            die(js::reload('parent'));
+        }
+    }
+
+    /**
+     * Batch close todos.
+     *
+     * @access public
+     * @return void
+     */
+    public function batchClose()
+    {
+        if(!empty($_POST['todoIDList']))
+        {
+            foreach($_POST['todoIDList'] as $todoID)
+            {
+                $todo = $this->todo->getById($todoID);
+                if($todo->status == 'done') $this->todo->close($todoID);
             }
             die(js::reload('parent'));
         }
@@ -472,9 +506,10 @@ class todo extends control
             foreach($todos as $todo)
             {
                 /* fill some field with useful value. */
+                $todo->begin = $todo->begin == '2400' ? '' : (isset($times[$todo->begin]) ? $times[$todo->begin] : $todo->begin);
+                $todo->end   = $todo->end   == '2400' ? '' : (isset($times[$todo->end])   ? $times[$todo->end] : $todo->end);
+
                 if(isset($users[$todo->account]))               $todo->account = $users[$todo->account];
-                if(isset($times[$todo->begin]))                 $todo->begin   = $times[$todo->begin];
-                if(isset($times[$todo->end]))                   $todo->end     = $times[$todo->end];
                 if($todo->type == 'bug')                        $todo->name    = isset($bugs[$todo->idvalue])  ? $bugs[$todo->idvalue] . "(#$todo->idvalue)" : '';
                 if($todo->type == 'task')                       $todo->name    = isset($tasks[$todo->idvalue]) ? $tasks[$todo->idvalue] . "(#$todo->idvalue)" : '';
                 if(isset($todoLang->typeList[$todo->type]))     $todo->type    = $todoLang->typeList[$todo->type];

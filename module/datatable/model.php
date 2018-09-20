@@ -7,7 +7,7 @@
  * @author      Hao sun <sunhao@cnezsoft.com>
  * @package     datatable 
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -125,12 +125,14 @@ class datatableModel extends model
         $id = $col->id;
         if($col->show)
         {
-            $fixed  = $col->fixed == 'no' ? 'true': 'false';
-            $width  = is_numeric($col->width) ? "{$col->width}px" : $col->width;
-            $sorter = (isset($col->sort) and $col->sort == 'no') ? '' : '{sorter:false}';
-            $title  = isset($col->name) ? "title='$col->name'" : '';
+            $fixed = $col->fixed == 'no' ? 'true': 'false';
+            $width = is_numeric($col->width) ? "{$col->width}px" : $col->width;
+            $title = isset($col->title) ? "title='$col->title'" : '';
+            if($id == 'id' and (int)$width < 90) $width = '90px';
+            $width = "data-width='$width' style='width:$width'";
+            $align = $id == 'actions' ? 'text-center' : '';
 
-            echo "<th data-flex='$fixed' data-width='$width' style='width:$width' class='w-$id $sorter' $title>";
+            echo "<th data-flex='$fixed' $width class='c-$id $align' $title>";
             if($id == 'actions')
             {
                 echo $this->lang->actions;
@@ -141,6 +143,7 @@ class datatableModel extends model
             }
             else
             {
+                if($id == 'id') echo "<div class='checkbox-primary check-all' title='{$this->lang->selectAll}'><label></label></div>";
                 common::printOrderLink($id, $orderBy, $vars, $col->title);
             }
             echo '</th>';

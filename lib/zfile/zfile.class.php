@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     Zfile
  * @version     $Id: zfile.class.php 2605 2013-01-09 07:22:58Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class zfile
 {

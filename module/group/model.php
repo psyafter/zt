@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     group
  * @version     $Id: model.php 4976 2013-07-02 08:15:31Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -114,7 +114,7 @@ class groupModel extends model
      */
     public function getPairs()
     {
-        return $this->dao->select('id, name')->from(TABLE_GROUP)->fetchPairs();
+        return $this->dao->select('id, name')->from(TABLE_GROUP)->orderBy('id')->fetchPairs();
     }
 
     /**

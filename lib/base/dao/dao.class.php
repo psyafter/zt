@@ -346,7 +346,7 @@ class baseDAO
      * The count method, call sql::select() and from().
      * use as $this->dao->select()->from(TABLE_BUG)->where()->count();
      *
-     * @param  string $distinctField 
+     * @param  string $distinctField
      * @access public
      * @return void
      */
@@ -357,7 +357,7 @@ class baseDAO
         $sql        = $this->get();
         $selectPOS  = strpos($sql, 'SELECT') + strlen('SELECT');
         $fromPOS    = strpos($sql, 'FROM');
-        $fields     = substr($sql, $selectPOS, $fromPOS - $selectPOS );
+        $fields     = substr($sql, $selectPOS, $fromPOS - $selectPOS);
         $countField = $distinctField ? 'distinct ' . $distinctField : '*';
         $sql        = str_replace($fields, " COUNT($countField) AS recTotal ", substr($sql, 0, $fromPOS)) . substr($sql, $fromPOS);
 
@@ -373,7 +373,7 @@ class baseDAO
         $sql = substr($sql, 0, $subLength);
         self::$querys[] = $sql;
 
-        /* 
+        /*
          * 获取记录数。
          * Get the records count.
          **/
@@ -381,7 +381,7 @@ class baseDAO
         {
             $row = $this->dbh->query($sql)->fetch(PDO::FETCH_OBJ);
         }
-        catch (PDOException $e) 
+        catch (PDOException $e)
         {
             $this->sqlError($e);
         }
@@ -393,7 +393,7 @@ class baseDAO
      * update方法，调用sql::update()。
      * The update method, call sql::update().
      * 
-     * @param  string $table 
+     * @param  string $table
      * @access public
      * @return object the dao object self.
      */
@@ -532,7 +532,7 @@ class baseDAO
      */
     public function get()
     {
-        return $this->processKeywords($this->processSQL());
+        return $this->processKeywords($this->processSQL(false));
     }
 
     /**
@@ -569,7 +569,7 @@ class baseDAO
      * @access public
      * @return string the sql string after process.
      */
-    public function processSQL()
+    public function processSQL($record = true)
     {
         $sql = $this->sqlobj->get();
 
@@ -626,7 +626,7 @@ class baseDAO
             }
         }
 
-        self::$querys[] = $this->processKeywords($sql);
+        if($record) self::$querys[] = $this->processKeywords($sql);
         return $sql;
     }
 
@@ -793,13 +793,13 @@ class baseDAO
 
         if(empty($field))
         {
-            $data = $this->query()->fetch();
+            $data = $this->query($sql)->fetch();
             dao::$cache[$table][$key] = $data;
             return $this->getRow($data);
         }
 
         $this->setFields($field);
-        $result = $this->query()->fetch(PDO::FETCH_OBJ);
+        $result = $this->query($sql)->fetch(PDO::FETCH_OBJ);
         dao::$cache[$table][$key] = $this->getRow($result);
         return $result ? $result->$field : '';
     }
@@ -826,7 +826,7 @@ class baseDAO
             return $result;
         }
 
-        $stmt = $this->query();
+        $stmt = $this->query($sql);
         dao::$cache[$table][$key] = array();
         if(empty($keyField))
         {
@@ -872,11 +872,11 @@ class baseDAO
             return $result;
         }
 
-        $stmt = $this->query();
+        $stmt = $this->query($sql);
         $rows = array();
         while($row = $stmt->fetch())
         {
-            empty($keyField) ?  $rows[$row->$groupField][] = $row : $rows[$row->$groupField][$row->$keyField] = $this->getRow($row);
+            empty($keyField) ? $rows[$row->$groupField][] = $row : $rows[$row->$groupField][$row->$keyField] = $this->getRow($row);
         }
         dao::$cache[$table][$key] = $rows;
         return $rows;
@@ -906,7 +906,7 @@ class baseDAO
 
         $pairs = array();
         $ready = false;
-        $stmt  = $this->query();
+        $stmt  = $this->query($sql);
         while($row = $stmt->fetch(PDO::FETCH_ASSOC))
         {
             if(!$ready)
@@ -941,16 +941,16 @@ class baseDAO
 
     /**
      * 重新生成数据。
-     * Get row by data. 
-     * 
-     * @param  array/object    $data 
+     * Get row by data.
+     *
+     * @param  array/object    $data
      * @access public
      * @return array/object
      */
     public function getRow($data)
     {
         if(!is_object($data)) return $data;
-        return json_decode(json_encode($data));
+        return clone $data;
     }
 
     //-------------------- 魔术方法(Magic methods) --------------------//
@@ -1618,7 +1618,7 @@ class baseSQL
      * 
      * @param  int    $count 
      * @access public
-     * @return ojbect the sql object.
+     * @return object the sql object.
      */
     public function markLeft($count = 1)
     {
@@ -1999,11 +1999,15 @@ class baseSQL
         $pos    = stripos($order, 'limit');
         $orders = $pos ? substr($order, 0, $pos) : $order;
         $limit  = $pos ? substr($order, $pos) : '';
-        if($limit and !preg_match('/^[0-9]+ *(, *[0-9]+)?$/', $limit)) $limit = '';
+        if(!empty($limit))
+        {
+            $trimedLimit = trim(str_replace('limit', '', $limit));
+            if(!preg_match('/^[0-9]+ *(, *[0-9]+)?$/', $trimedLimit)) die("Limit is bad query, The limit is " . htmlspecialchars($limit));
+        }
 
         $orders = trim($orders);
         if(empty($orders)) return $this;
-        if(!preg_match('/^(\w+\.)?(`\w+`|\w+)( +(desc|asc))?( *(, *(\w+\.)?(`\w+`|\w+)( +(desc|asc))?)?)*$/i', $orders)) die("Order is bad request, The order is $orders");
+        if(!preg_match('/^(\w+\.)?(`\w+`|\w+)( +(desc|asc))?( *(, *(\w+\.)?(`\w+`|\w+)( +(desc|asc))?)?)*$/i', $orders)) die("Order is bad request, The order is " . htmlspecialchars($orders));
 
         $orders = explode(',', $orders);
         foreach($orders as $i => $order)
@@ -2046,7 +2050,11 @@ class baseSQL
 
         /* filter limit. */
         $limit = trim(str_ireplace('limit', '', $limit));
-        if(!preg_match('/^[0-9]+ *(, *[0-9]+)?$/', $limit)) die("Limit is bad query, The limit is $limit");
+        if(!preg_match('/^[0-9]+ *(, *[0-9]+)?$/', $limit))
+        {
+            $limit = htmlspecialchars($limit);
+            die("Limit is bad query, The limit is $limit");
+        }
         $this->sql .= ' ' . DAO::LIMIT . " $limit ";
         return $this;
     }
@@ -2062,6 +2070,11 @@ class baseSQL
     public function groupBy($groupBy)
     {
         if($this->inCondition and !$this->conditionIsTrue) return $this;
+        if(!preg_match('/^\w+[a-zA-Z0-9_`.]+$/', $groupBy))
+        {
+            $groupBy = htmlspecialchars($groupBy);
+            die("Group is bad query, The group is $groupBy");
+        }
         $this->sql .= ' ' . DAO::GROUPBY . " $groupBy";
         return $this;
     }

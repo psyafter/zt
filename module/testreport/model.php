@@ -7,7 +7,7 @@
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     testreport
  * @version     $Id$
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class testreportModel extends model
 {
@@ -26,26 +26,36 @@ class testreportModel extends model
         $selectHtml = $this->product->select($products, $productID, 'testreport', 'browse', '', $branch);
 
         /* Remove branch. */
-        if(strpos($selectHtml, 'currentBranch') !== false)
-        {
-            $selectHtml = substr($selectHtml, 0, strpos($selectHtml, 'currentBranch'));
-            $selectHtml = substr($selectHtml, 0, strrpos($selectHtml, '<'));
-            if(strpos($selectHtml, '</li>') !== false) $selectHtml = substr($selectHtml, 0, strrpos($selectHtml, '</li>'));
-        }
+        if(strpos($selectHtml, 'currentBranch') !== false) $selectHtml = substr($selectHtml, 0, strrpos($selectHtml, "<div class='btn-group'>")) . '</div>';
 
+        $pageNav     = '';
+        $pageActions = '';
+        if($this->config->global->flow == 'full')
+        {
+            $this->app->loadLang('qa');
+            $pageNav = '<div class="btn-group angle-btn"><div class="btn-group">' . html::a(helper::createLink('qa', 'index', 'locate=no'), $this->lang->qa->index, '', "class='btn'") . '</div></div>';
+        }
+        else
+        {
+            if(common::hasPriv('testtask', 'create'))
+            {
+                $link = helper::createLink('testtask', 'create', "productID=$productID");
+                $pageActions .= html::a($link, "<i class='icon icon-plus'></i> {$this->lang->testtask->create}", '', "class='btn btn-primary'");
+            }
+        }
+        $pageNav .= $selectHtml;
+
+        $this->lang->modulePageNav     = $pageNav;
+        $this->lang->modulePageActions = $pageActions;
         foreach($this->lang->testtask->menu as $key => $value)
         {
             if($this->config->global->flow != 'onlyTest')
             {
-                $replace = ($key == 'product') ? $selectHtml : $productID;
+                $replace = $productID;
             }
             else
             {
-                if($key == 'product') 
-                {
-                    $replace = $selectHtml;
-                }
-                elseif($key == 'scope')
+                if($key == 'scope')
                 {
                     $scope = $this->session->testTaskVersionScope;
                     $status = $this->session->testTaskVersionStatus;
@@ -148,6 +158,8 @@ class testreportModel extends model
     public function getById($reportID)
     {
         $report = $this->dao->select('*')->from(TABLE_TESTREPORT)->where('id')->eq($reportID)->fetch();
+        if(!$report) return false;
+
         $report = $this->loadModel('file')->replaceImgURL($report, 'report');
         $report->files = $this->file->getByObject('testreport', $reportID);
         return $report;
@@ -307,14 +319,41 @@ class testreportModel extends model
      * @access public
      * @return array
      */
-    public function getTaskCases($tasks, $idList = '')
+    public function getTaskCases($tasks, $begin, $end, $idList = '')
     {
-        return $this->dao->select('t2.*,t1.assignedTo,t1.lastRunner,t1.lastRunDate,t1.lastRunResult,t1.status')->from(TABLE_TESTRUN)->alias('t1')
+        $cases = $this->dao->select('t2.*,t1.task,t1.assignedTo,t1.status')->from(TABLE_TESTRUN)->alias('t1')
             ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case=t2.id')
             ->where('t1.task')->in(array_keys($tasks))
             ->beginIF($idList)->andWhere('t2.id')->in($idList)->fi()
             ->andWhere('t2.deleted')->eq(0)
             ->fetchAll('id');
+
+        $results = $this->dao->select('t1.*')->from(TABLE_TESTRESULT)->alias('t1')
+            ->leftJoin(TABLE_TESTRUN)->alias('t2')->on('t1.run=t2.id')
+            ->where('t2.task')->in(array_keys($tasks))
+            ->andWhere('t1.`case`')->in(array_keys($cases))
+            ->andWhere('t1.date')->ge($begin)
+            ->andWhere('t1.date')->le($end . " 23:59:59")
+            ->orderBy('date')
+            ->fetchAll('case');
+
+        foreach($cases as $caseID => $case)
+        {
+            $case->lastRunner    = '';
+            $case->lastRunDate   = '';
+            $case->lastRunResult = '';
+            $case->status        = 'wait';
+            if(isset($results[$caseID]))
+            {
+                $result = $results[$caseID];
+                $case->lastRunner    = $result->lastRunner;
+                $case->lastRunDate   = $result->date;
+                $case->lastRunResult = $result->caseResult;
+                $case->status        = $result->caseResult == 'blocked' ? 'blocked' : 'done';
+            }
+        }
+
+        return $cases;
     }
 
     /**
@@ -325,13 +364,16 @@ class testreportModel extends model
      * @access public
      * @return string
      */
-    public function getResultSummary($tasks, $cases)
+    public function getResultSummary($tasks, $cases, $begin, $end)
     {
         $results = $this->dao->select('t1.*')->from(TABLE_TESTRESULT)->alias('t1')
             ->leftJoin(TABLE_TESTRUN)->alias('t2')->on('t1.run=t2.id')
             ->where('t2.task')->in(array_keys($tasks))
             ->andWhere('t1.`case`')->in(array_keys($cases))
-            ->fetchAll();
+            ->andWhere('t1.date')->ge($begin)
+            ->andWhere('t1.date')->le($end . " 23:59:59")
+            ->orderBy('date')
+            ->fetchAll('case');
         $failResults = array();
         $runCasesNum = array();
         foreach($results as $result)

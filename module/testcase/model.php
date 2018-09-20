@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     case
  * @version     $Id: model.php 5108 2013-07-12 01:59:04Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -16,49 +16,152 @@ class testcaseModel extends model
     /**
      * Set menu.
      *
-     * @param  array $products
-     * @param  int   $productID
+     * @param  array  $products
+     * @param  int    $productID
+     * @param  int    $branch
+     * @param  int    $moduleID
+     * @param  int    $suiteID
+     * @param  string $orderBy
      * @access public
      * @return void
      */
-    public function setMenu($products, $productID, $branch = 0, $moduleID = 0, $suiteID = 0)
+    public function setMenu($products, $productID, $branch = 0, $moduleID = 0, $suiteID = 0, $orderBy = 'id_desc')
     {
         $this->loadModel('product')->setMenu($products, $productID, $branch, $moduleID, 'case');
         $selectHtml = $this->product->select($products, $productID, 'testcase', 'browse', '', $branch, $moduleID, 'case');
+
+        $pageNav     = '';
+        $pageActions = '';
+        $isMobile    = $this->app->viewType == 'mhtml';
+        if($isMobile)
+        {
+            $this->app->loadLang('qa');
+            $pageNav  = html::a(helper::createLink('qa', 'index'), $this->lang->qa->index) . $this->lang->colon;
+        }
+        else
+        {
+            if($this->config->global->flow == 'full')
+            {
+                $this->app->loadLang('qa');
+                $pageNav = '<div class="btn-group angle-btn"><div class="btn-group">' . html::a(helper::createLink('qa', 'index', 'locate=no'), $this->lang->qa->index, '', "class='btn'") . '</div></div>';
+            }
+            else
+            {
+                $exportPriv        = common::hasPriv('testcase', 'export');
+                $exportTempletPriv = common::hasPriv('testcase', 'exportTemplet');
+                $importPriv        = common::hasPriv('testcase', 'import');
+                $importFromLibPriv = common::hasPriv('testcase', 'importFromLib');
+                if($exportPriv or $exportTempletPriv)
+                {
+                    $pageActions .= "<div class='btn-group'>";
+                    $pageActions .= "<button type='button' class='btn btn-link dropdown-toggle' data-toggle='dropdown'>";
+                    $pageActions .= "<i class='icon icon-export muted'></i> {$this->lang->export}";
+                    $pageActions .= "<span class='caret'></span>";
+                    $pageActions .= '</button>';
+                    $pageActions .= "<ul class='dropdown-menu' id='exportActionMenu'>";
+                    if($exportPriv)
+                    {
+                        $link = helper::createLink('testcase', 'export', "productID=$productID&orderBy=$orderBy");
+                        $pageActions .= '<li>' . html::a($link, $this->lang->testcase->export, '', "class='export'") . '</li>';
+                    }
+                    if($exportTempletPriv)
+                    {
+                        $link = helper::createLink('testcase', 'exportTemplet', "productID=$productID");
+                        $pageActions .= '<li>' . html::a($link, $this->lang->testcase->exportTemplet, '', "class='export'") . '</li>';
+                    }
+                    $pageActions .= '</ul>';
+                    $pageActions .= '</div>';
+
+                }
+                if($importPriv or $importFromLibPriv)
+                {
+                    $pageActions .= "<div class='btn-group'>";
+                    $pageActions .= "<button type='button' class='btn btn-link dropdown-toggle' data-toggle='dropdown' id='importAction'><i class='icon icon-import muted'></i> {$this->lang->import}<span class='caret'></span></button>";
+                    $pageActions .= "<ul class='dropdown-menu' id='importActionMenu'>";
+                    if($importPriv)
+                    {
+                        $link = helper::createLink('testcase', 'import', "productID=$productID&branch=$branch");
+                        $pageActions .= '<li>' . html::a($link, $this->lang->testcase->importFile, '', "class='export'") . '</li>';
+                    }
+                    if($importFromLibPriv)
+                    {
+                        $link = helper::createLink('testcase', 'importFromLib', "productID=$productID&branch=$branch");
+                        $pageActions .= '<li>' . html::a($link, $this->lang->testcase->importFromLib) . '</li>';
+                    }
+                    $pageActions .= '</ul>';
+                    $pageActions .= '</div>';
+                }
+                $initModule = isset($moduleID) ? (int)$moduleID : 0;
+
+                if(common::hasPriv('testcase', 'batchCreate'))
+                {
+                    $link = helper::createLink('testcase', 'batchCreate', "productID=$productID&branch=$branch&moduleID=$initModule");
+                    $pageActions .= html::a($link, "<i class='icon-plus'></i> " . $this->lang->testcase->batchCreate, '', "class='btn btn-secondary'");
+                }
+
+                if(common::hasPriv('testcase', 'create'))
+                {
+                    $link = helper::createLink('testcase', 'create', "productID=$productID&branch=$branch&moduleID=$initModule");
+                    $pageActions .= html::a($link, "<i class='icon-plus'></i> " . $this->lang->testcase->create, '', "class='btn btn-primary'");
+                }
+            }
+        }
+        $pageNav .= $selectHtml;
+
+        $this->lang->modulePageNav     = $pageNav;
+        $this->lang->modulePageActions = $pageActions;
         foreach($this->lang->testcase->menu as $key => $menu)
         {
             if($this->config->global->flow != 'onlyTest')
             {
-                $replace = ($key == 'product') ? $selectHtml : $productID;
+                $replace = $productID;
             }
             else
             {
-                if($key == 'product')
+                if($key == 'bysuite')
                 {
-                    $replace = $selectHtml;
-                }
-                elseif($key == 'suite' and common::hasPriv('testcase', 'browse'))
-                {
-                      $suiteList      = $this->loadModel('testsuite')->getSuites($productID);
-                      $currentSuiteID = isset($suiteID) ? (int)$suiteID : 0;
-                      $currentSuite   = zget($suiteList, $currentSuiteID, '');
-                      $currentLable   = empty($currentSuite) ? $this->lang->testsuite->common : $currentSuite->name;
+                    $subMenu = array();
+                    if(common::hasPriv('testcase', 'browse'))
+                    {
+                        $suiteList      = $this->loadModel('testsuite')->getSuites($productID);
+                        $currentSuiteID = isset($suiteID) ? (int)$suiteID : 0;
 
-                      $replace  = "<li id='bysuiteTab' class='dropdown'>";
-                      $replace .= html::a('javascript:;', $currentLable . " <span class='caret'></span>", '', "data-toggle='dropdown'");
-                      $replace .="<ul class='dropdown-menu' style='max-height:240px; overflow-y:auto'>";
+                        if($suiteList)
+                        {
+                            foreach($suiteList as $suiteID => $suite)
+                            {
+                                $suiteName = $suite->name;
+                                if($suite->type == 'public') $suiteName .= " <span class='label label-info'>{$this->lang->testsuite->authorList[$suite->type]}</span>";
 
-                      foreach ($suiteList as $suiteID => $suite)
-                      {
-                          $suiteName = $suite->name;
-                          if($suite->type == 'public') $suiteName .= " <span class='label label-info'>{$this->lang->testsuite->authorList[$suite->type]}</span>";
+                                $link = array();
+                                $link['module'] = 'testcase';
+                                $link['method'] = 'browse';
+                                $link['vars']   = "productID=$productID&branch=$branch&browseType=bysuite&param=$suiteID";
 
-                          $replace .= '<li' . ($suiteID == (int)$currentSuiteID ? " class='active'" : '') . '>';
-                          $replace .= html::a(helper::createLink('testcase', 'browse', "productID=$productID&branch=$branch&browseType=bySuite&param=$suiteID"), $suiteName);
-                          $replace .= "</li>";
-                      }
+                                $menu = new stdclass();
+                                $menu->name   = $suiteID;
+                                $menu->link   = $link;
+                                $menu->text   = $suiteName;
+                                $menu->hidden = false;
+                                $subMenu[$suiteID] = $menu;
+                            }
+                        }
+                    }
+                    /* Avoid the menu shaking when change it by js. */
+                    if(isset($subMenu[$currentSuiteID]))
+                    {
+                        $currentSubMenu = $subMenu[$currentSuiteID];
+                        $this->lang->testcase->menu->bysuite['link'] = "$currentSubMenu->text|" . implode('|', $currentSubMenu->link);
+                    }
 
-                      $replace .= '</ul></li>';
+                    /* Replace for dropdown submenu. */
+                    if(isset($this->lang->testcase->subMenu->$key))
+                    {
+                        $subMenu += common::createSubMenu($this->lang->testcase->subMenu->$key, $productID);
+                    }
+                    if(!empty($subMenu)) $this->lang->testcase->menu->{$key}['subMenu'] = $subMenu;
+
+                    if($this->app->getMethodName() != 'view') $this->lang->testcase->menu->bysearch = "<a class='querybox-toggle' id='bysearchTab'><i class='icon icon-search muted'> </i>{$this->lang->testcase->bySearch}</a>";
                 }
                 else
                 {
@@ -140,12 +243,11 @@ class testcaseModel extends model
         $branch      = (int)$branch;
         $now         = helper::now();
         $cases       = fixer::input('post')->get();
-        $batchNum    = count(reset($cases));
 
         $result = $this->loadModel('common')->removeDuplicate('case', $cases, "product={$productID}");
         $cases  = $result['data'];
 
-        for($i = 0; $i < $batchNum; $i++)
+        foreach($cases->title as $i => $title)
         {
             if(!empty($cases->title[$i]) and empty($cases->type[$i])) die(js::alert(sprintf($this->lang->error->notempty, $this->lang->testcase->type)));
         }
@@ -154,12 +256,12 @@ class testcaseModel extends model
         $story  = 0;
         $type   = '';
         $pri    = 3;
-        for($i = 0; $i < $batchNum; $i++)
+        foreach($cases->title as $i => $title)
         {
             $module = $cases->module[$i] == 'ditto' ? $module : $cases->module[$i];
             $story  = $cases->story[$i] == 'ditto'  ? $story  : $cases->story[$i];
             $type   = $cases->type[$i] == 'ditto'   ? $type   : $cases->type[$i];
-            $pri    = $cases->pri[$i] == 'ditto'    ?  $pri   : $cases->pri[$i];
+            $pri    = $cases->pri[$i] == 'ditto'    ? $pri    : $cases->pri[$i];
             $cases->module[$i] = (int)$module;
             $cases->story[$i]  = (int)$story;
             $cases->type[$i]   = $type;
@@ -170,9 +272,9 @@ class testcaseModel extends model
         $storyVersions  = array();
         $forceNotReview = $this->forceNotReview();
         $data           = array();
-        for($i = 0; $i < $batchNum; $i++)
+        foreach($cases->title as $i => $title)
         {
-            if(empty($cases->title[$i])) continue;
+            if(empty($title)) continue;
 
             $data[$i] = new stdclass();
             $data[$i]->product      = $productID;
@@ -559,6 +661,7 @@ class testcaseModel extends model
             ->setIF($this->post->story != false and $this->post->story != $oldCase->story, 'storyVersion', $this->loadModel('story')->getVersion($this->post->story))
             ->setDefault('story,branch', 0)
             ->join('stage', ',')
+            ->join('linkCase', ',')
             ->remove('comment,steps,expects,files,labels,stepType')
             ->get();
         if(!$this->forceNotReview() and $stepChanged) $case->status = 'wait';
@@ -658,26 +761,6 @@ class testcaseModel extends model
     }
 
     /**
-     * Link related cases.
-     *
-     * @param  int    $caseID
-     * @access public
-     * @return void
-     */
-    public function linkCases($caseID)
-    {
-        if($this->post->cases == false) return;
-
-        $case       = $this->getById($caseID);
-        $cases2Link = $this->post->cases;
-
-        $cases = implode(',', $cases2Link) . ',' . trim($case->linkCase, ',');
-        $this->dao->update(TABLE_CASE)->set('linkCase')->eq(trim($cases, ','))->where('id')->eq($caseID)->exec();
-        if(dao::isError()) die(js::error(dao::getError()));
-        $this->loadModel('action')->create('case', $caseID, 'linkRelatedCase', '', implode(',', $cases2Link));
-    }
-
-    /**
      * Get cases to link.
      *
      * @param  int    $caseID
@@ -703,43 +786,6 @@ class testcaseModel extends model
         {
             return array();
         }
-    }
-
-    /**
-     * Unlink related case.
-     *
-     * @param  int    $caseID
-     * @param  int    $case2Unlink
-     * @access public
-     * @return void
-     */
-    public function unlinkCase($caseID, $case2Unlink = 0)
-    {
-        $case = $this->getById($caseID);
-
-        $cases = explode(',', trim($case->linkCase, ','));
-        foreach($cases as $key => $caseId)
-        {
-            if($caseId == $case2Unlink) unset($cases[$key]);
-        }
-        $cases = implode(',', $cases);
-
-        $this->dao->update(TABLE_CASE)->set('linkCase')->eq($cases)->where('id')->eq($caseID)->exec();
-        if(dao::isError()) die(js::error(dao::getError()));
-        $this->loadModel('action')->create('case', $caseID, 'unlinkRelatedCase', '', $case2Unlink);
-    }
-
-    /**
-     * Get linkCases.
-     *
-     * @param  int    $caseID
-     * @access public
-     * @return array
-     */
-    public function getLinkCases($caseID)
-    {
-        $case = $this->getById($caseID);
-        return $this->dao->select('id, title')->from(TABLE_CASE)->where('id')->in($case->linkCase)->fetchPairs();
     }
 
     /**
@@ -784,8 +830,8 @@ class testcaseModel extends model
             $case->branch         = $data->branches[$caseID];
             $case->module         = $data->modules[$caseID];
             $case->story          = $data->stories[$caseID];
-            $case->color          = $data->colors[$caseID];
-            $case->title          = $data->titles[$caseID];
+            $case->color          = $data->color[$caseID];
+            $case->title          = $data->title[$caseID];
             $case->precondition   = $data->precondition[$caseID];
             $case->keywords       = $data->keywords[$caseID];
             $case->type           = $data->types[$caseID];
@@ -1029,7 +1075,7 @@ class testcaseModel extends model
                 }
             }
 
-            $cases[$key] =$caseData;
+            $cases[$key] = $caseData;
         }
 
         $forceNotReview = $this->forceNotReview();
@@ -1221,6 +1267,17 @@ class testcaseModel extends model
                         $this->dao->insert(TABLE_CASESTEP)->data($step)->exec();
                     }
                 }
+                /* Fix bug #1518. */
+                $oldFile = $this->dao->select('*')->from(TABLE_FILE)->where('objectID')->eq($case->fromCaseID)->fetchAll();
+                foreach($oldFile as $fileID => $File)
+                {
+                    $File->objectID  = $caseID;
+                    $File->addedBy   = $this->app->user->account;
+                    $File->addedDate = helper::today();
+                    $File->downloads = 0;
+                    unset($File->id);
+                    $this->dao->insert(TABLE_FILE)->data($File)->exec();
+                }
                 $this->loadModel('action')->create('case', $caseID, 'fromlib', '', $case->lib);
             }
         }
@@ -1275,21 +1332,31 @@ class testcaseModel extends model
         $id = $col->id;
         if($col->show)
         {
-            $class = '';
-            if($id == 'status') $class .= $case->status;
-            if($id == 'title')  $class .= ' text-left';
-            if($id == 'id')     $class .= ' cell-id';
-            if($id == 'lastRunResult') $class .= $case->lastRunResult;
+            $class = 'c-' . $id;
+            $title = '';
+            if($id == 'title')
+            {
+                $class .= ' text-left';
+                $title  = "title='{$case->title}'";
+            }
+            if($id == 'status')
+            {
+                $class .= $case->status;
+                $title  = "title='" . zget($this->lang->testcase->statusList, $case->status) . "'";
+            }
+            if($id == 'actions') $class .= ' c-actions';
+            if($id == 'lastRunResult') $class .= " {$case->lastRunResult}";
+            if(strpos(',stage,precondition,keywords,story,', ",{$id},") !== false) $class .= ' text-ellipsis';
 
-            echo "<td class='" . $class . "'" . ($id=='title' ? " title='{$case->title}'":'') . ">";
+            echo "<td class='{$class}' {$title}>";
             switch($id)
             {
             case 'id':
-                if($mode == 'table') echo "<input type='checkbox' name='caseIDList[]' value='{$case->id}'/> ";
-                echo $canView ? html::a($caseLink, sprintf('%03d', $case->id)) : sprintf('%03d', $case->id);
+                //echo $mode == 'table' ? html::checkbox('caseIDList', array($case->id => sprintf('%03d', $case->id))) : sprintf('%03d', $case->id);
+                echo html::checkbox('caseIDList', array($case->id => sprintf('%03d', $case->id)));
                 break;
             case 'pri':
-                echo "<span class='pri" . zget($this->lang->testcase->priList, $case->pri, $case->pri) . "'>";
+                echo "<span class='label-pri label-pri-" . $case->pri . "' title='" . zget($this->lang->testcase->priList, $case->pri, $case->pri) . "'>";
                 echo zget($this->lang->testcase->priList, $case->pri, $case->pri);
                 echo "</span>";
                 break;
@@ -1311,16 +1378,7 @@ class testcaseModel extends model
                 echo "<span title='$stages'>$stages</span>";
                 break;
             case 'status':
-                if($case->needconfirm)
-                {
-                    echo "(<span class='warning'>{$this->lang->story->changed}</span> ";
-                    echo html::a(helper::createLink('testcase', 'confirmStoryChange', "caseID=$case->id"), $this->lang->confirm, 'hiddenwin');
-                    echo ")";
-                }
-                else
-                {
-                    echo $this->lang->testcase->statusList[$case->status];
-                }
+                $case->needconfirm ? print("<span class='status-changed'><span class='label label-dot'></span> {$this->lang->story->changed}</span>") : print("<span class='status-{$case->status}'><span class='label label-dot'></span><span class='status-text'>{$this->lang->testcase->statusList[$case->status]}</span></span>");
                 break;
             case 'story':
                 static $stories = array();
@@ -1361,7 +1419,8 @@ class testcaseModel extends model
                 if(!helper::isZeroDate($case->lastRunDate)) echo date(DT_MONTHTIME1, strtotime($case->lastRunDate));
                 break;
             case 'lastRunResult':
-                if($case->lastRunResult) echo $this->lang->testcase->resultList[$case->lastRunResult];
+                $lastRunResultText = $case->lastRunResult ? zget($this->lang->testcase->resultList, $case->lastRunResult, $case->lastRunResult) : $this->lang->testcase->unexecuted;
+                echo html::a(helper::createLink('testtask', 'results', "runID=0&caseID=$case->id", '', true), "<i class='icon icon-list-alt'></i> <span>{$lastRunResultText}</span>", '', "class='iframe btn btn-icon-left btn-sm'");
                 break;
             case 'bugs':
                 echo (common::hasPriv('testcase', 'bugs') and $case->bugs) ? html::a(helper::createLink('testcase', 'bugs', "runID=0&caseID={$case->id}"), $case->bugs, '', "class='iframe'") : $case->bugs;
@@ -1373,19 +1432,18 @@ class testcaseModel extends model
                 echo $case->stepNumber;
                 break;
             case 'actions':
-                common::printIcon('testtask', 'runCase', "runID=0&caseID=$case->id&version=$case->version", $case, 'list', 'play', '', 'runCase iframe', false, "data-width='95%'");
-                common::printIcon('testtask', 'results', "runID=0&caseID=$case->id", $case, 'list', '', '', 'results iframe', '', "data-width='90%'");
-                if($this->config->testcase->needReview or !empty($this->config->testcase->forceReview)) common::printIcon('testcase', 'review',  "caseID=$case->id", $case, 'list', 'review', '', 'iframe');
-                common::printIcon('testcase', 'edit',    "caseID=$case->id", $case, 'list');
-                common::printIcon('testcase', 'create',  "productID=$case->product&branch=$case->branch&moduleID=$case->module&from=testcase&param=$case->id", $case, 'list', 'copy');
-
-                if(common::hasPriv('testcase', 'delete', $case))
+                if($case->needconfirm or $browseType == 'needconfirm')
                 {
-                    $deleteURL = helper::createLink('testcase', 'delete', "caseID=$case->id&confirm=yes");
-                    echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"batchForm\",confirmDelete)", '<i class="icon-remove"></i>', '', "title='{$this->lang->testcase->delete}' class='btn-icon'");
+                    common::printIcon('testcase', 'confirmstorychange',  "caseID=$case->id", $case, 'list', 'confirm', 'hiddenwin', '', '', '', $this->lang->confirm);
+                    break;
                 }
 
+                common::printIcon('testtask', 'runCase', "runID=0&caseID=$case->id&version=$case->version", $case, 'list', 'play', '', 'runCase iframe', false, "data-width='95%'");
+                common::printIcon('testcase', 'edit',    "caseID=$case->id", $case, 'list');
+                if($this->config->testcase->needReview or !empty($this->config->testcase->forceReview)) common::printIcon('testcase', 'review',  "caseID=$case->id", $case, 'list', 'glasses', '', 'iframe');
                 common::printIcon('testcase', 'createBug', "product=$case->product&branch=$case->branch&extra=caseID=$case->id,version=$case->version,runID=", $case, 'list', 'bug', '', 'iframe', '', "data-width='90%'");
+                common::printIcon('testcase', 'create',  "productID=$case->product&branch=$case->branch&moduleID=$case->module&from=testcase&param=$case->id", $case, 'list', 'copy');
+
                 break;
             }
             echo '</td>';
@@ -1470,5 +1528,16 @@ class testcaseModel extends model
         if($this->config->testcase->needReview && strpos(",{$this->config->testcase->forceNotReview},", ",{$this->app->user->account},")) return true;
 
         return false;
+    }
+
+    public function summary($cases)
+    {
+        $executed = 0;
+        foreach($cases as $case)
+        {
+            if($case->lastRunResult != '') $executed ++;
+        }
+
+        return sprintf($this->lang->testcase->summary, count($cases), $executed);
     }
 }

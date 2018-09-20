@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     file
  * @version     $Id: control.php 4129 2013-01-18 01:58:14Z wwccss $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 class file extends control
 {
@@ -21,7 +21,7 @@ class file extends control
      * @access public
      * @return void
      */
-    public function buildForm($fileCount = 1, $percent = 0.9, $filesName = 'files', $labelsName = 'labels')
+    public function buildForm($fileCount = 1, $percent = 0.9, $filesName = "files", $labelsName = "labels")
     {
         if(!file_exists($this->file->savePath))
         {
@@ -34,8 +34,6 @@ class file extends control
             return false;
         }
 
-        $this->view->fileCount  = $fileCount;
-        $this->view->percent    = $percent;
         $this->view->filesName  = $filesName;
         $this->view->labelsName = $labelsName;
         $this->display();
@@ -140,9 +138,15 @@ class file extends control
         $file = $this->file->getById($fileID);
 
         /* Judge the mode, down or open. */
-        $mode  = 'down';
+        $mode      = 'down';
         $fileTypes = 'txt|jpg|jpeg|gif|png|bmp|xml|html';
         if(stripos($fileTypes, $file->extension) !== false && $mouse == 'left') $mode = 'open';
+        if($file->extension == 'txt')
+        {
+            $extension = end(explode('.', $file->title));
+            if($extension != 'txt') $mode = 'down';
+            $file->extension = $extension;
+        }
 
         if(file_exists($file->realPath))
         {
@@ -164,7 +168,8 @@ class file extends control
             else
             {
                 /* Down the file. */
-                $fileName = $file->title . '.' . $file->extension;
+                $fileName = $file->title;
+                if(!preg_match("/\.{$file->extension}$/", $fileName)) $fileName .= '.' . $file->extension;
                 $fileData = file_get_contents($file->realPath);
                 $this->sendDownHeader($fileName, $file->extension, $fileData);
             }
@@ -306,7 +311,9 @@ class file extends control
             $file = $this->file->getById($fileID);
             $this->dao->delete()->from(TABLE_FILE)->where('id')->eq($fileID)->exec();
             $this->loadModel('action')->create($file->objectType, $file->objectID, 'deletedFile', '', $extra=$file->title);
-            @unlink($file->realPath);
+            /* Fix Bug #1518. */
+            $fileRecord = $this->dao->select('id')->from(TABLE_FILE)->where('pathname')->eq($file->pathname)->fetch();
+            if(empty($fileRecord)) @unlink($file->realPath);
             die(js::reload('parent'));
         }
     }

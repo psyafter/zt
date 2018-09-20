@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testcase
  * @version     $Id: zh-cn.php 4764 2013-05-05 04:07:04Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 $lang->testcase->id               = '用例编号';
 $lang->testcase->product          = "所属{$lang->productCommon}";
@@ -102,6 +102,7 @@ $lang->testcase->group                   = '分组';
 $lang->testcase->groupName               = '分组名称';
 $lang->testcase->step                    = '步骤';
 $lang->testcase->stepChild               = '子步骤';
+$lang->testcase->viewAll                 = '查看所有';
 
 $lang->testcase->new = '新增';
 
@@ -111,11 +112,13 @@ $lang->testcase->deleteStep   = '删除';
 $lang->testcase->insertBefore = '之前添加';
 $lang->testcase->insertAfter  = '之后添加';
 
-$lang->testcase->assignToMe  = '给我的用例';
-$lang->testcase->openedByMe  = '我建的用例';
-$lang->testcase->allCases    = '所有';
-$lang->testcase->needConfirm = '需求变动';
-$lang->testcase->bySearch    = '搜索';
+$lang->testcase->assignToMe   = '给我的用例';
+$lang->testcase->openedByMe   = '我建的用例';
+$lang->testcase->allCases     = '所有';
+$lang->testcase->allTestcases = '所有用例';
+$lang->testcase->needConfirm  = '需求变动';
+$lang->testcase->bySearch     = '搜索';
+$lang->testcase->unexecuted   = '未执行';
 
 $lang->testcase->lblStory       = '相关需求';
 $lang->testcase->lblLastEdited  = '最后编辑';
@@ -129,6 +132,7 @@ $lang->testcase->legendLinkBugs    = '相关Bug';
 $lang->testcase->legendOpenAndEdit = '创建编辑';
 $lang->testcase->legendComment     = '备注';
 
+$lang->testcase->summary            = "本页共 <strong>%s</strong> 个用例，已执行<strong>%s</strong>个。";
 $lang->testcase->confirmDelete      = '您确认要删除该测试用例吗？';
 $lang->testcase->confirmBatchDelete = '您确认要批量删除这些测试用例吗？';
 $lang->testcase->ditto              = '同上';
@@ -186,6 +190,8 @@ $lang->testcase->noFunction       = '不存在iconv和mb_convert_encoding转码�
 $lang->testcase->noRequire        = "%s行的“%s”是必填字段，不能为空";
 $lang->testcase->noLibrary        = "现在还没有公共库，请先创建！";
 $lang->testcase->mustChooseResult = '必须选择评审结果';
+$lang->testcase->noModule         = '<div>您现在还没有模块信息</div><div>请维护测试模块</div>';
+$lang->testcase->noCase           = '暂时没有用例。';
 
 $lang->testcase->searchStories = '键入来搜索需求';
 $lang->testcase->selectLib     = '请选择库';
@@ -201,4 +207,3 @@ $lang->testcase->featureBar['browse']['group']       = '分组查看';
 $lang->testcase->featureBar['browse']['suite']       = '套件';
 $lang->testcase->featureBar['browse']['zerocase']    = '零用例需求';
 $lang->testcase->featureBar['groupcase']             = $lang->testcase->featureBar['browse'];
-
