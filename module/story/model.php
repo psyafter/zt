@@ -2552,25 +2552,25 @@ class storyModel extends model
                 echo zget($users, $story->openedBy, $story->openedBy);
                 break;
             case 'openedDate':
-                echo substr($story->openedDate, 5, 11);
+                echo substr($story->openedDate, 0, 11);
                 break;
             case 'assignedTo':
                 $this->printAssignedHtml($story, $users);
                 break;
             case 'assignedDate':
-                echo substr($story->assignedDate, 5, 11);
+                echo substr($story->assignedDate, 0, 11);
                 break;
             case 'reviewedBy':
                 foreach(explode(',', $story->reviewedBy) as $user) echo zget($users, $user) . ' ';
                 break;
             case 'reviewedDate':
-                echo substr($story->reviewedDate, 5, 11);
+                echo substr($story->reviewedDate, 0, 11);
                 break;
             case 'closedBy':
                 echo zget($users, $story->closedBy, $story->closedBy);
                 break;
             case 'closedDate':
-                echo substr($story->closedDate, 5, 11);
+                echo substr($story->closedDate, 0, 11);
                 break;
             case 'closedReason':
                 echo zget($this->lang->story->reasonList, $story->closedReason, $story->closedReason);
@@ -2579,7 +2579,7 @@ class storyModel extends model
                 echo zget($users, $story->lastEditedBy, $story->lastEditedBy);
                 break;
             case 'lastEditedDate':
-                echo substr($story->lastEditedDate, 5, 11);
+                echo substr($story->lastEditedDate, 0, 11);
                 break;
             case 'mailto':
                 $mailto = explode(',', $story->mailto);
