@@ -12,7 +12,7 @@
 $lang->todo->common       = 'Todo';
 $lang->todo->index        = "Home";
 $lang->todo->create       = "Add Todo";
-$lang->todo->createCycle  = "Add Recurring Todo";
+$lang->todo->createCycle  = "Add Recur Todo";
 $lang->todo->assignTo     = "Assign";
 $lang->todo->activate     = "Activate";
 $lang->todo->batchCreate  = "Batch Add";
@@ -72,13 +72,13 @@ $lang->todo->statusList['closed'] = 'Closed';
 //$lang->todo->statusList['postpone'] = 'Delayed';
 
 $lang->todo->priList[3] = 'Normal';
-$lang->todo->priList[1] = 'Highest';
-$lang->todo->priList[2] = 'High';
+$lang->todo->priList[1] = 'Critical';
+$lang->todo->priList[2] = 'Important';
 $lang->todo->priList[4] = 'Low';
 $lang->todo->priList[0] = '';
 
 $lang->todo->typeList['custom'] = 'Custom';
-$lang->todo->typeList['cycle']  = 'Recurrence';
+$lang->todo->typeList['cycle']  = 'Recur';
 $lang->todo->typeList['bug']    = 'Bug';
 $lang->todo->typeList['task']   = $lang->projectCommon . 'Task';
 $lang->todo->typeList['story']  = $lang->projectCommon . 'Story';

@@ -1,9 +1,9 @@
 <?php
 $config->entry->create = new stdclass();
-$config->entry->create->requiredFields = 'name, code, key';
+$config->entry->create->requiredFields = 'name, code, account, key';
 
 $config->entry->edit = new stdclass();
-$config->entry->edit->requiredFields = 'name, code, key';
+$config->entry->edit->requiredFields = 'name, code, account, key';
 
 $config->entry->help = 'https://www.zentao.pm/book/zentaopmshelp/integration-287.html';
 
@@ -14,4 +14,5 @@ $config->entry->errcode['EMPTY_KEY']             = 401;
 $config->entry->errcode['INVALID_TOKEN']         = 401;
 $config->entry->errcode['SESSION_VERIFY_FAILED'] = 401;
 $config->entry->errcode['IP_DENIED']             = 403;
+$config->entry->errcode['ACCOUNT_UNBOUND']       = 403;
 $config->entry->errcode['EMPTY_ENTRY']           = 404;

@@ -511,7 +511,7 @@ class testcaseModel extends model
         $caseQuery      = '(' . $this->session->testcaseQuery;
         if(strpos($this->session->testcaseQuery, $allProduct) !== false)
         {
-            $products  = array_keys($this->loadModel('product')->getPrivProducts());
+            $products  = $this->app->user->view->products;
             $caseQuery = str_replace($allProduct, '1', $caseQuery);
             $caseQuery = $caseQuery . ' AND `product` ' . helper::dbIN($products);
             $queryProductID = 'all';
@@ -1240,6 +1240,14 @@ class testcaseModel extends model
     public function importFromLib($productID)
     {
         $data = fixer::input('post')->get();
+
+        $prevModule = 0;
+        foreach($data->module as $i => $module)
+        {
+            if($module != 'ditto') $prevModule = $module;
+            if($module == 'ditto') $data->module[$i] = $prevModule;
+        }
+
         $libCases = $this->dao->select('*')->from(TABLE_CASE)->where('deleted')->eq(0)->andWhere('id')->in($data->caseIdList)->fetchAll('id');
         $libSteps = $this->dao->select('*')->from(TABLE_CASESTEP)->where('`case`')->in($data->caseIdList)->orderBy('id')->fetchGroup('case');
         foreach($libCases as $libCaseID => $case)
@@ -1326,9 +1334,10 @@ class testcaseModel extends model
      */
     public function printCell($col, $case, $users, $branches, $modulePairs = array(), $browseType = '', $mode = 'datatable')
     {
-        $canView  = common::hasPriv('testcase', 'view');
-        $caseLink = helper::createLink('testcase', 'view', "caseID=$case->id&version=$case->version");
-        $account  = $this->app->user->account;
+        $canView    = common::hasPriv('testcase', 'view');
+        $caseLink   = helper::createLink('testcase', 'view', "caseID=$case->id&version=$case->version");
+        $account    = $this->app->user->account;
+        $fromCaseID = $case->fromCaseID;
         $id = $col->id;
         if($col->show)
         {
@@ -1352,8 +1361,7 @@ class testcaseModel extends model
             switch($id)
             {
             case 'id':
-                //echo $mode == 'table' ? html::checkbox('caseIDList', array($case->id => sprintf('%03d', $case->id))) : sprintf('%03d', $case->id);
-                echo html::checkbox('caseIDList', array($case->id => sprintf('%03d', $case->id)));
+                echo html::checkbox('caseIDList', array($case->id => '')) . html::a(helper::createLink('testcase', 'view', "caseID=$case->id"), sprintf('%03d', $case->id));
                 break;
             case 'pri':
                 echo "<span class='label-pri label-pri-" . $case->pri . "' title='" . zget($this->lang->testcase->priList, $case->pri, $case->pri) . "'>";
@@ -1361,9 +1369,9 @@ class testcaseModel extends model
                 echo "</span>";
                 break;
             case 'title':
-                if($case->branch) echo "<span class='label label-info label-badge'>{$branches[$case->branch]}</span> ";
-                if($modulePairs and $case->module) echo "<span class='label label-info label-badge'>{$modulePairs[$case->module]}</span> ";
-                echo $canView ? html::a($caseLink, $case->title, null, "style='color: $case->color'") : "<span style='color: $case->color'>$case->title</span>";
+                if($case->branch) echo "<span class='label label-info label-outline'>{$branches[$case->branch]}</span> ";
+                if($modulePairs and $case->module) echo "<span class='label label-gray label-badge'>{$modulePairs[$case->module]}</span> ";
+                echo $canView ? ($fromCaseID ? html::a($caseLink, $case->title, null, "style='color: $case->color'") . html::a(helper::createLink('testcase', 'view', "caseID=$fromCaseID"), "[{$this->lang->testcase->fromCase}#$fromCaseID]") : html::a($caseLink, $case->title, null, "style='color: $case->color'")) : "<span style='color: $case->color'>$case->title</span>";
                 break;
             case 'branch':
                 echo $branches[$case->branch];
@@ -1378,7 +1386,7 @@ class testcaseModel extends model
                 echo "<span title='$stages'>$stages</span>";
                 break;
             case 'status':
-                $case->needconfirm ? print("<span class='status-changed'><span class='label label-dot'></span> {$this->lang->story->changed}</span>") : print("<span class='status-{$case->status}'><span class='label label-dot'></span><span class='status-text'>{$this->lang->testcase->statusList[$case->status]}</span></span>");
+                $case->needconfirm ? print("<span class='status-story status-changed'>{$this->lang->story->changed}</span>") : print("<span class='status-testcase status-{$case->status}'>{$this->lang->testcase->statusList[$case->status]}</span>");
                 break;
             case 'story':
                 static $stories = array();
@@ -1419,8 +1427,9 @@ class testcaseModel extends model
                 if(!helper::isZeroDate($case->lastRunDate)) echo date(DT_MONTHTIME1, strtotime($case->lastRunDate));
                 break;
             case 'lastRunResult':
+                $class = 'result-' . $case->lastRunResult;
                 $lastRunResultText = $case->lastRunResult ? zget($this->lang->testcase->resultList, $case->lastRunResult, $case->lastRunResult) : $this->lang->testcase->unexecuted;
-                echo html::a(helper::createLink('testtask', 'results', "runID=0&caseID=$case->id", '', true), "<i class='icon icon-list-alt'></i> <span>{$lastRunResultText}</span>", '', "class='iframe btn btn-icon-left btn-sm'");
+                echo "<span class='$class'>" . $lastRunResultText . "</span>";
                 break;
             case 'bugs':
                 echo (common::hasPriv('testcase', 'bugs') and $case->bugs) ? html::a(helper::createLink('testcase', 'bugs', "runID=0&caseID={$case->id}"), $case->bugs, '', "class='iframe'") : $case->bugs;
@@ -1438,6 +1447,7 @@ class testcaseModel extends model
                     break;
                 }
 
+                common::printIcon('testtask', 'results', "runID=0&caseID=$case->id", $case, 'list', '', '', 'iframe', true);
                 common::printIcon('testtask', 'runCase', "runID=0&caseID=$case->id&version=$case->version", $case, 'list', 'play', '', 'runCase iframe', false, "data-width='95%'");
                 common::printIcon('testcase', 'edit',    "caseID=$case->id", $case, 'list');
                 if($this->config->testcase->needReview or !empty($this->config->testcase->forceReview)) common::printIcon('testcase', 'review',  "caseID=$case->id", $case, 'list', 'glasses', '', 'iframe');

@@ -11,8 +11,7 @@ $editorLang   = isset($editorLangs[$app->getClientLang()]) ? $editorLangs[$app->
 /* set uid for upload. */
 $uid = uniqid('');
 ?>
-<link rel="stylesheet" href="<?php echo $jsRoot;?>kindeditor/themes/default/default.css" />
-<script src='<?php echo $jsRoot;?>kindeditor/kindeditor-min.js'></script>
+<script src='<?php echo $jsRoot;?>kindeditor/kindeditor.min.js'></script>
 <script src='<?php echo $jsRoot;?>kindeditor/lang/<?php echo $editorLang;?>.js'></script>
 <script>
 (function($) {
@@ -21,33 +20,34 @@ $uid = uniqid('');
     var K = KindEditor;
 
     var bugTools =
-    [ 'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic','underline', '|', 
+    [ 'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic','underline', '|',
     'justifyleft', 'justifycenter', 'justifyright', 'insertorderedlist', 'insertunorderedlist', '|',
     'emoticons', 'image', 'code', 'link', '|', 'removeformat','undo', 'redo', 'fullscreen', 'source', 'about'];
-    var simpleTools = 
-    [ 'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic','underline', '|', 
+    var simpleTools =
+    [ 'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic','underline', '|',
     'justifyleft', 'justifycenter', 'justifyright', 'insertorderedlist', 'insertunorderedlist', '|',
     'emoticons', 'image', 'code', 'link', '|', 'removeformat','undo', 'redo', 'fullscreen', 'source', 'about'];
-    var fullTools = 
+    var fullTools =
     [ 'formatblock', 'fontname', 'fontsize', 'lineheight', '|', 'forecolor', 'hilitecolor', '|', 'bold', 'italic','underline', 'strikethrough', '|',
     'justifyleft', 'justifycenter', 'justifyright', 'justifyfull', '|',
     'insertorderedlist', 'insertunorderedlist', '|',
     'emoticons', 'image', 'insertfile', 'hr', '|', 'link', 'unlink', '/',
     'undo', 'redo', '|', 'selectall', 'cut', 'copy', 'paste', '|', 'plainpaste', 'wordpaste', '|', 'removeformat', 'clearhtml','quickformat', '|',
     'indent', 'outdent', 'subscript', 'superscript', '|',
-    'table', 'code', '|', 'pagebreak', 'anchor', '|', 
+    'table', 'code', '|', 'pagebreak', 'anchor', '|',
     'fullscreen', 'source', 'preview', 'about'];
     var editorToolsMap = {fullTools: fullTools, simpleTools: simpleTools, bugTools: bugTools};
+    var imageLoadingEle = '<div class="image-loading-ele small" style="padding: 5px; background: #FFF3E0; width: 300px; border-radius: 2px; border: 1px solid #FF9800; color: #ff5d5d; margin: 10px 0;"><i class="icon icon-spin icon-spinner-indicator muted"></i> <?php echo $this->lang->pasteImgUploading?></div>';
 
     // Kindeditor default options
-    var editorDefaults = 
+    var editorDefaults =
     {
         cssPath: [config.themeRoot + 'zui/css/min.css'],
         width: '100%',
         height: '200px',
-        filterMode: true, 
+        filterMode: true,
         bodyClass: 'article-content',
-        urlType: 'absolute', 
+        urlType: 'absolute',
         uploadJson: createLink('file', 'ajaxUpload', 'uid=' + kuid),
         allowFileManager: true,
         langType: '<?php echo $editorLang?>',
@@ -68,10 +68,10 @@ $uid = uniqid('');
             editorID = 'kindeditor-' + $.zui.uuid();
             $editor.attr('id', editorID);
         }
-        
+
         var editorTool  = editorToolsMap[options.tools || editor.tools] || simpleTools;
         var placeholder = $editor.attr('placeholder') || options.placeholder || '';
-        
+
         /* Remove fullscreen in modal. */
         if(config.onlybody == 'yes')
         {
@@ -83,15 +83,15 @@ $uid = uniqid('');
             editorTool = newEditorTool;
         }
 
-        $.extend(options, 
+        $.extend(options,
         {
             items: editorTool,
             afterChange: function(){$editor.change().hide();},
             afterCreate : function()
             {
                 var frame = this.edit;
-                var doc   = this.edit.doc; 
-                var cmd   = this.edit.cmd; 
+                var doc   = this.edit.doc;
+                var cmd   = this.edit.cmd;
                 pasted    = true;
                 if(!K.WEBKIT && !K.GECKO)
                 {
@@ -120,6 +120,29 @@ $uid = uniqid('');
                     placeholder += ' <?php echo $this->lang->noticePasteImg?>';
                 }
 
+                var pasteBegin = function()
+                {
+                    $.enableForm(false, 0, 1);
+                    $('body').one('click.ke' + kuid, function(){$.enableForm(true);});
+                    cmd.inserthtml(imageLoadingEle);
+                    keditor.readonly(true);
+                };
+
+                var pasteEnd = function(error)
+                {
+                    if(error)
+                    {
+                        if(error === true) error = '<?php echo $this->lang->pasteImgFail;?>';
+                        $.zui.messager.danger(error, {placement: 'center'});
+                    }
+                    $.enableForm(true, 0, 1);
+                    $('body').off('.ke' + kuid);
+                    $(doc.body).find('.image-loading-ele').remove();
+                    keditor.readonly(false);
+                };
+
+                var pasteUrl = createLink('file', 'ajaxPasteImage', 'uid=' + kuid);
+
                 /* Paste in chrome.*/
                 /* Code reference from http://www.foliotek.com/devblog/copy-images-from-clipboard-in-javascript/. */
                 if(K.WEBKIT)
@@ -131,11 +154,10 @@ $uid = uniqid('');
                         var file     = original.clipboardData.items[0].getAsFile();
                         if(file)
                         {
-                            $('#submit').attr('disabled', 'disabled');
-                            $("body").click(function(){$('#submit').removeAttr('disabled');});
+                            pasteBegin();
 
                             var reader = new FileReader();
-                            reader.onload = function(evt) 
+                            reader.onload = function(evt)
                             {
                                 var result = evt.target.result;
                                 var arr    = result.split(",");
@@ -143,10 +165,13 @@ $uid = uniqid('');
                                 var contentType = arr[0].split(";")[0].split(":")[1];
 
                                 html = '<img src="' + result + '" alt="" />';
-                                $.post(createLink('file', 'ajaxPasteImage', 'uid=' + kuid), {editor: html}, function(data)
+                                $.post(pasteUrl, {editor: html}, function(data)
                                 {
                                     cmd.inserthtml(data);
-                                    $('#submit').removeAttr('disabled');
+                                    pasteEnd();
+                                }).error(function()
+                                {
+                                    pasteEnd(true);
                                 });
                             };
                             reader.readAsDataURL(file);
@@ -163,13 +188,15 @@ $uid = uniqid('');
                             var html = K(doc.body).html();
                             if(html.search(/<img src="data:.+;base64,/) > -1)
                             {
-                                $('#submit').attr('disabled', 'disabled');
-                                $("body").click(function(){$('#submit').removeAttr('disabled');});
-                                $.post(createLink('file', 'ajaxPasteImage', 'uid=' + kuid), {editor: html}, function(data)
+                                pasteBegin();
+                                $.post(pasteUrl, {editor: html}, function(data)
                                 {
-                                    if(data.indexOf('<img') == 0) data = '<p>' + data + '</p>';
+                                    if(data.indexOf('<img') === 0) data = '<p>' + data + '</p>';
                                     frame.html(data);
-                                    $('#submit').removeAttr('disabled');
+                                    pasteEnd();
+                                }).error(function()
+                                {
+                                    pasteEnd(true);
                                 });
                             }
                         }, 80);
@@ -198,6 +225,7 @@ $uid = uniqid('');
                     $placeholder.hide();
                 }
                 $editor.prev('.ke-container').addClass('focus');
+                $(document).trigger('mousedown'); // see http://pms.zentao.pm/task-view-5115.html
             },
             afterBlur: function()
             {
@@ -237,7 +265,7 @@ $uid = uniqid('');
         });
     };
 
-    // Init all kindeditor    
+    // Init all kindeditor
     var initKindeditor = function(afterInit)
     {
         var $submitBtn = $('form :input[type=submit]');

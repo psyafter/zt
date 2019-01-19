@@ -71,6 +71,5 @@ CREATE TABLE `zt_im_messagestatus` (
   UNIQUE KEY `user` (`user`,`gid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-ALTER TABLE `zt_user` ADD `status` enum('online', 'away', 'busy', 'offline') NOT NULL DEFAULT 'offline';
 ALTER TABLE `zt_file` CHANGE `pathname` `pathname` char(100) NOT NULL;
-
+ALTER TABLE `zt_user` ADD `status` enum('online', 'away', 'busy', 'offline') NOT NULL DEFAULT 'offline';

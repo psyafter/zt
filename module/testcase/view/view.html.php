@@ -15,11 +15,14 @@
 <?php $browseLink  = $app->session->caseList != false ? $app->session->caseList : $this->createLink('testcase', 'browse', "productID=$case->product");?>
 <div id='mainMenu' class='clearfix'>
   <div class='btn-toolbar pull-left'>
-    <?php echo html::a($browseLink, '<i class="icon icon-back icon-sm"></i> ' . $lang->goback, '', "class='btn btn-link'");?>
+    <?php echo html::a($browseLink, '<i class="icon icon-back icon-sm"></i> ' . $lang->goback, '', "class='btn btn-secondary'");?>
     <div class="divider"></div>
     <div class="page-title">
       <span class='label label-id'><?php echo $case->id;?></span>
       <span class='text' title='<?php echo $case->title;?>' style='color: <?php echo $case->color; ?>'><?php echo $case->title;?></span>
+      <?php if($case->fromCaseID):?>
+      <small><?php echo html::a(helper::createLink('testcase', 'view', "caseID=$case->fromCaseID"), html::icon($lang->icons['testcase']) . " {$lang->testcase->fromCase}$lang->colon$case->fromCaseID");?></small>
+      <?php endif;?>
 
       <?php if($case->deleted):?>
       <span class='label label-danger'><?php echo $lang->product->deleted;?></span>
@@ -33,7 +36,7 @@
         for($i = $case->version; $i >= 1; $i --)
         {
             $class = $i == $version ? " class='active'" : '';
-            echo '<li' . $class .'>' . html::a(inlink('view', "caseID=$case->id&version=$i"), '#' . $i) . '</li>'; 
+            echo '<li' . $class .'>' . html::a(inlink('view', "caseID=$case->id&version=$i"), '#' . $i) . '</li>';
         }
         ?>
         </ul>
@@ -41,6 +44,11 @@
       <?php endif; ?>
     </div>
   </div>
+  <?php if(!isonlybody()):?>
+  <div class='btn-toolbar pull-right'>
+    <?php common::printLink('testcase', 'create', "productID={$case->product}&branch={$case->branch}&moduleID={$case->module}", "<i class='icon icon-plus'></i>" . $lang->testcase->create, '', "class='btn btn-primary'"); ?>
+  </div>
+  <?php endif;?>
 </div>
 
 <div id="mainContent" class="main-row">
@@ -76,8 +84,8 @@
                 echo "<th class='step-id'>$stepId</th>";
                 echo "<td class='text-left'><div class='input-group'>";
                 if($step->type == 'item') echo "<span class='step-item-id'>{$stepId}.{$childId}</span>";
-                echo nl2br($step->desc) . "</td>";
-                echo "<td class='text-left'>" . nl2br($step->expect) . "</div></td>";
+                echo nl2br(str_replace(' ', '&nbsp;', $step->desc)) . "</td>";
+                echo "<td class='text-left'>" . nl2br(str_replace(' ', '&nbsp;', $step->expect)) . "</div></td>";
                 echo "</tr>";
                 $childId ++;
             }
@@ -87,6 +95,31 @@
       </div>
       <?php echo $this->fetch('file', 'printFiles', array('files' => $case->files, 'fieldset' => 'true'));?>
       <?php include '../../common/view/action.html.php';?>
+    </div>
+    <div class='main-actions'>
+      <div class="btn-toolbar">
+        <?php common::printBack($browseLink);?>
+        <?php if(!$case->deleted):?>
+        <?php if(!isonlybody()) echo "<div class='divider'></div>";?>
+        <?php
+        if(!$isLibCase)
+        {
+            if(!isonlybody()) echo "<div class='divider'></div>";
+            common::printIcon('testtask', 'runCase', "runID=$runID&caseID=$case->id&version=$case->currentVersion", $case, 'button', '', '', 'runCase', false, "data-width='95%'");
+            common::printIcon('testtask', 'results', "runID=$runID&caseID=$case->id&version=$case->version", $case, 'button', '', '', 'results', false, "data-width='95%'");
+
+            if($caseFails > 0) common::printIcon('testcase', 'createBug', "product=$case->product&branch=$case->branch&extra=caseID=$case->id,version=$case->version,runID=$runID", $case, 'button', 'bug', '', 'iframe', '', "data-width='90%'");
+        }
+        if($config->testcase->needReview or !empty($config->testcase->forceReview)) common::printIcon('testcase', 'review', "caseID=$case->id", $case, 'button', '', '', 'iframe');
+        ?>
+        <?php
+        common::printIcon('testcase', 'edit',"caseID=$case->id", $case);
+        if(!$isLibCase) common::printIcon('testcase', 'create', "productID=$case->product&branch=$case->branch&moduleID=$case->module&from=testcase&param=$case->id", $case, 'button', 'copy');
+        if($isLibCase and common::hasPriv('testsuite', 'createCase')) echo html::a($this->createLink('testsuite', 'createCase', "libID=$case->lib&moduleID=$case->module&param=$case->id", $case), "<i class='icon-copy'></i>", '', "class='btn' title='{$lang->testcase->copy}'");
+        common::printIcon('testcase', 'delete', "caseID=$case->id", $case, 'button', '', 'hiddenwin');
+        ?>
+        <?php endif;?>
+      </div>
     </div>
   </div>
   <div class='side-col col-4'>
@@ -115,7 +148,7 @@
             <tr>
               <th><?php echo $lang->testcase->module;?></th>
               <td>
-                <?php 
+                <?php
                 if(empty($modulePath))
                 {
                     echo "/";
@@ -154,7 +187,7 @@
             <tr>
               <th><?php echo $lang->testcase->stage;?></th>
               <td>
-                <?php 
+                <?php
                 if($case->stage)
                 {
                     $stags = explode(',', $case->stage);
@@ -175,7 +208,7 @@
             <tr>
               <th><?php echo $lang->testcase->status;?></th>
               <td>
-                <?php 
+                <?php
                 echo $lang->testcase->statusList[$case->status];
                 if($case->version > $case->currentVersion and $from == 'testtask')
                 {
@@ -236,8 +269,8 @@
             <tr>
               <th class='w-60px' valign="top"><?php echo $lang->testcase->toBug;?></th>
               <td>
-              <?php 
-              foreach($case->toBugs as $bugID => $bugTitle) 
+              <?php
+              foreach($case->toBugs as $bugID => $bugTitle)
               {
                   echo '<p style="margin-bottom:0;">' . html::a($this->createLink('bug', 'view', "bugID=$bugID", '', true), $bugTitle, '', "class='iframe' data-width='80%'") . '</p>';
               }
@@ -279,30 +312,7 @@
     </div>
   </div>
 </div>
-<div id="mainActions">
+<div id="mainActions" class='main-actions'>
   <?php common::printPreAndNext($preAndNext);?>
-  <div class="btn-toolbar">
-    <?php common::printBack($browseLink);?>
-    <?php if(!$case->deleted):?>
-    <?php if(!isonlybody()) echo "<div class='divider'></div>";?>
-    <?php
-    if(!$isLibCase)
-    {
-        if(!isonlybody()) echo "<div class='divider'></div>";
-        common::printIcon('testtask', 'runCase', "runID=$runID&caseID=$case->id&version=$case->currentVersion", $case, 'button', '', '', 'runCase', false, "data-width='95%'");
-        common::printIcon('testtask', 'results', "runID=$runID&caseID=$case->id&version=$case->version", $case, 'button', '', '', 'results', false, "data-width='95%'");
-
-        if($caseFails > 0) common::printIcon('testcase', 'createBug', "product=$case->product&branch=$case->branch&extra=caseID=$case->id,version=$case->version,runID=$runID", $case, 'button', 'bug', '', 'iframe', '', "data-width='90%'");
-    }
-    if($config->testcase->needReview or !empty($config->testcase->forceReview)) common::printIcon('testcase', 'review', "caseID=$case->id", $case, 'button', '', '', 'iframe');
-    ?>
-    <?php
-    common::printIcon('testcase', 'edit',"caseID=$case->id", $case);
-    if(!$isLibCase) common::printIcon('testcase', 'create', "productID=$case->product&branch=$case->branch&moduleID=$case->module&from=testcase&param=$case->id", $case, 'button', 'copy');
-    if($isLibCase and common::hasPriv('testsuite', 'createCase')) echo html::a($this->createLink('testsuite', 'createCase', "libID=$case->lib&moduleID=$case->module&param=$case->id", $case), "<i class='icon-copy'></i>", '', "class='btn' title='{$lang->testcase->copy}'");
-    common::printIcon('testcase', 'delete', "caseID=$case->id", $case, 'button', '', 'hiddenwin');
-    ?>
-  </div>
-  <?php endif;?>
 </div>
 <?php include '../../common/view/footer.html.php';?>

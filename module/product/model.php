@@ -30,7 +30,7 @@ class productModel extends model
     public function setMenu($products, $productID, $branch = 0, $module = 0, $moduleType = '', $extra = '')
     {
         /* Has access privilege?. */
-        if($products and !isset($products[$productID]) and !$this->checkPriv($this->getById($productID)))
+        if($products and !isset($products[$productID]) and !$this->checkPriv($productID))
         {
             echo(js::alert($this->lang->product->accessDenied));
             $loginLink = $this->config->requestType == 'GET' ? "?{$this->config->moduleVar}=user&{$this->config->methodVar}=login" : "user{$this->config->requestFix}login";
@@ -65,7 +65,7 @@ class productModel extends model
         }
         else
         {
-            $pageNav  = '<div class="btn-group angle-btn"><div class="btn-group"><button data-toggle="dropdown" type="button" class="btn">' . $label . ' <span class="caret"></span></button>';
+            $pageNav  = '<div class="btn-group angle-btn' . ($currentMethod == 'index' ? ' active' : '') . '"><div class="btn-group"><button data-toggle="dropdown" type="button" class="btn">' . $label . ' <span class="caret"></span></button>';
             $pageNav .= '<ul class="dropdown-menu">';
             if($this->config->global->flow == 'full' && common::hasPriv('product', 'index')) $pageNav .= '<li>' . html::a(helper::createLink('product', 'index', 'locate=no'), '<i class="icon icon-home"></i> ' . $this->lang->product->index) . '</li>';
             if(common::hasPriv('product', 'all')) $pageNav .= '<li>' . html::a(helper::createLink('product', 'all'), '<i class="icon icon-cards-view"></i> ' . $this->lang->product->all) . '</li>';
@@ -214,21 +214,13 @@ class productModel extends model
      * @access public
      * @return bool
      */
-    public function checkPriv($product)
+    public function checkPriv($productID)
     {
+        if(empty($productID)) return false;
+
         /* Is admin? */
-        $account = ',' . $this->app->user->account . ',';
         if($this->app->user->admin) return true;
-
-        $acls = $this->app->user->rights['acls'];
-        if(!empty($acls['products']) and !in_array($product->id, $acls['products'])) return false;
-
-        /* Product is open, return true. */
-        if($product->acl == 'open') return true;
-
-        /* Get team members. */
-        $privProducts = $this->getPrivProducts();
-        return isset($privProducts[$product->id]) ? true : false;
+        return (strpos(",{$this->app->user->view->products},", ",{$productID},") !== false);
     }
 
     /**
@@ -273,6 +265,7 @@ class productModel extends model
         return $this->dao->select('*')->from(TABLE_PRODUCT)
             ->where('deleted')->eq(0)
             ->beginIF($line > 0)->andWhere('line')->eq($line)->fi()
+            ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->products)->fi()
             ->beginIF($status == 'noclosed')->andWhere('status')->ne('closed')->fi()
             ->beginIF($status != 'all' and $status != 'noclosed' and $status != 'involved')->andWhere('status')->in($status)->fi()
             ->beginIF($status == 'involved')
@@ -302,14 +295,10 @@ class productModel extends model
             ->from(TABLE_PRODUCT)
             ->where('deleted')->eq(0)
             ->beginIF(strpos($mode, 'noclosed') !== false)->andWhere('status')->ne('closed')->fi()
+            ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->products)->fi()
             ->orderBy($orderBy)
-            ->fetchAll();
-        $pairs = array();
-        foreach($products as $product)
-        {
-            if($this->checkPriv($product)) $pairs[$product->id] = $product->name;
-        }
-        return $pairs;
+            ->fetchPairs('id', 'name');
+        return $products;
     }
 
     /**
@@ -328,6 +317,7 @@ class productModel extends model
             ->leftJoin(TABLE_PRODUCT)->alias('t2')
             ->on('t1.product = t2.id')
             ->where('t1.project')->eq($projectID)
+            ->andWhere('t2.deleted')->eq(0)
             ->orderBy('t2.order desc')
             ->fetchPairs();
     }
@@ -378,9 +368,11 @@ class productModel extends model
         $lib = new stdclass();
         $lib->product = $productID;
         $lib->name    = $this->lang->doclib->main['product'];
+        $lib->type    = 'product';
         $lib->main    = '1';
         $lib->acl     = $product->acl == 'open' ? 'open' : 'private';
         $this->dao->insert(TABLE_DOCLIB)->data($lib)->exec();
+        $this->loadModel('user')->updateUserView($productID, 'product');
 
         return $productID;
     }
@@ -415,6 +407,7 @@ class productModel extends model
             if($product->acl != $oldProduct->acl) $this->dao->update(TABLE_DOCLIB)->set('acl')->eq($product->acl == 'open' ? 'open' : 'private')->where('product')->eq($productID)->exec();
 
             $this->file->updateObjectID($this->post->uid, $productID, 'product');
+            if($product->acl != $oldProduct->acl or $product->whitelist != $oldProduct->whitelist) $this->loadModel('user')->updateUserView($productID, 'product');
             return common::createChanges($oldProduct, $product);
         }
     }
@@ -594,13 +587,13 @@ class productModel extends model
      */
     public function getProjectPairs($productID, $branch = 0, $param = 'all')
     {
-        $projectList  = array_keys($this->loadModel('project')->getPairs());
         $projects = array();
         $datas = $this->dao->select('t2.id, t2.name, t2.deleted')->from(TABLE_PROJECTPRODUCT)
             ->alias('t1')->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
             ->where('t1.product')->eq((int)$productID)
             ->beginIF($branch)->andWhere('t1.branch')->in($branch)->fi()
-            ->andWhere('t2.id')->in($projectList)
+            ->beginIF(!$this->app->user->admin)->andWhere('t2.id')->in($this->app->user->view->projects)->fi()
+            ->andWhere('t2.deleted')->eq(0)
             ->orderBy('t1.project desc')
             ->fetchAll();
 
@@ -617,29 +610,44 @@ class productModel extends model
      * Get roadmap of a proejct
      *
      * @param  int    $productID
+     * @param  int    $branch
+     * @param  int    $count
      * @access public
      * @return array
      */
-    public function getRoadmap($productID, $branch = 0)
+    public function getRoadmap($productID, $branch = 0, $count = 0)
     {
         $plans    = $this->loadModel('productplan')->getList($productID, $branch);
         $releases = $this->loadModel('release')->getList($productID, $branch);
         $roadmap  = array();
+        $total    = 0;
 
         foreach($plans as $plan)
         {
             if(($plan->end != '0000-00-00' and strtotime($plan->end) - time() <= 0) or $plan->end == '2030-01-01') continue;
             $year = substr($plan->end, 0, 4);
             $roadmap[$year][$plan->branch][] = $plan;
+
+            $total++;
+        }
+
+        if($count > 0 and $total >= $count)
+        {
+            krsort($roadmap);
+            return $this->sliceRoadmap($roadmap, $count);
         }
 
         foreach($releases as $release)
         {
             $year = substr($release->date, 0, 4);
             $roadmap[$year][$release->branch][] = $release;
+
+            $total++;
+            if($count > 0 and $total >= $count) break;
         }
 
         krsort($roadmap);
+        if($count > 0) return $this->sliceRoadmap($roadmap, $count);
 
         $groupRoadmap = array();
         foreach($roadmap as $year => $branchRoadmaps)
@@ -656,7 +664,7 @@ class productModel extends model
         }
 
         /* Get last 5 roadmap. */
-        $lastKeys    = array_slice(array_keys($groupRoadmap), -5);
+        $lastKeys    = array_slice(array_keys($groupRoadmap), 0, 5);
         $lastRoadmap = array();
         $lastRoadmap['total'] = 0;
         foreach($lastKeys as $key)
@@ -674,6 +682,34 @@ class productModel extends model
         }
 
         return $lastRoadmap;
+    }
+
+    /**
+     * Slice roadmap.
+     *
+     * @param  string $roadmap
+     * @param  int    $count
+     * @access public
+     * @return array
+     */
+    public function sliceRoadmap($roadmap, $count)
+    {
+        $i = 0;
+        $newRoadmap = array();
+        foreach($roadmap as $year => $branches)
+        {
+            foreach($branches as $branch => $plans)
+            {
+                krsort($plans);
+                foreach($plans as $plan)
+                {
+                    $newRoadmap[$year][$branch][] = $plan;
+                    $i++;
+                    if($i >= $count) break;
+                }
+            }
+        }
+        return $newRoadmap;
     }
 
     /**
@@ -726,8 +762,8 @@ class productModel extends model
      */
     public function getStatByID($productID)
     {
+        if(!$this->checkPriv($productID)) return false;
         $product = $this->getById($productID);
-        if(!$product || !$this->checkPriv($product)) return false;
         $stories = $this->dao->select('product, status, count(status) AS count')->from(TABLE_STORY)->where('deleted')->eq(0)->andWhere('product')->eq($productID)->groupBy('product, status')->fetchAll('status');
         /* Padding the stories to sure all status have records. */
         foreach(array_keys($this->lang->story->statusList) as $status)
@@ -776,10 +812,6 @@ class productModel extends model
         $this->loadModel('bug');
 
         $products = $this->getList($status, $limit = 0, $line);
-        foreach($products as $productID => $product)
-        {
-            if(!$this->checkPriv($product)) unset($products[$productID]);
-        }
         $products = $this->dao->select('*')->from(TABLE_PRODUCT)
             ->where('id')->in(array_keys($products))
             ->orderBy($orderBy)
@@ -860,93 +892,6 @@ class productModel extends model
         }
 
         return $stats;
-    }
-
-    /**
-     * Get priv products.
-     *
-     * @access public
-     * @return array
-     */
-    public function getPrivProducts()
-    {
-        $account = ',' . $this->app->user->account . ',';
-        static $products;
-        if($products === null)
-        {
-            $groups = '';
-            if(isset($this->app->user->groups))
-            {
-                foreach($this->app->user->groups as $group) $groups .= ",$group,";
-            }
-
-            $allProducts     = $this->dao->select('*')->from(TABLE_PRODUCT)->where('deleted')->eq(0)->fetchAll('id');
-            $productProjects = $this->dao->select('t1.product,t1.project')->from(TABLE_PROJECTPRODUCT)->alias('t1')
-                ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project=t2.id')
-                ->where('t1.product')->in(array_keys($allProducts))
-                ->andWhere('t2.deleted')->eq('0')
-                ->fetchGroup('product', 'project');
-
-            $linkedProjects = array();
-            foreach($productProjects as $product => $projects)
-            {
-                foreach($projects as $projectID => $productProject) $linkedProjects[$projectID] = $projectID;
-            }
-
-            $teams = $this->dao->select('root, account')->from(TABLE_TEAM)->where('root')->in($linkedProjects)->andWhere('type')->eq('project')->fetchGroup('root', 'account');
-
-            $products = array();
-            $account  = $this->app->user->account;
-            foreach($allProducts as $id => $product)
-            {
-                if($this->app->user->admin)
-                {
-                    $products[$id] = $id;
-                }
-                else
-                {
-                    if($product->PO == $account OR $product->QD == $account OR $product->RD == $account OR $product->createdBy == $account)
-                    {
-                        $products[$id] = $id;
-                        continue;
-                    }
-                    if($product->acl == 'open')
-                    {
-                        $products[$id] = $id;
-                        continue;
-                    }
-
-                    $hasPriv = false;
-                    if($product->acl == 'custom')
-                    {
-                        foreach(explode(',', $product->whitelist) as $whitelist)
-                        {
-                            if(empty($whitelist)) continue;
-                            if(strpos($groups, ",$whitelist,") !== false)
-                            {
-                                $products[$id] = $id;
-                                $hasPriv       = true;
-                                break;
-                            }
-                        }
-                    }
-                    if($hasPriv) continue;
-
-                    if(!empty($productProjects[$id]))
-                    {
-                        foreach($productProjects[$id] as $projectID => $productProject)
-                        {
-                            if(isset($teams[$projectID][$account]))
-                            {
-                                $products[$id] = $id;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return $products;
     }
 
     /**

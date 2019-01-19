@@ -177,10 +177,11 @@ class todo extends control
             $columns     = 7;
 
             if($account == '') $account = $this->app->user->account;
-            $bugs       = $this->bug->getUserBugPairs($account);
-            $tasks      = $this->task->getUserTaskPairs($account, $status);
-            $allTodos   = $this->todo->getList($type, $account, $status);
-            if($this->post->todoIDList)  $todoIDList = $this->post->todoIDList;
+            $bugs     = $this->bug->getUserBugPairs($account);
+            $tasks    = $this->task->getUserTaskPairs($account, $status);
+            $storys   = $this->loadModel('story')->getUserStoryPairs($account);
+            $allTodos = $this->todo->getList($type, $account, $status);
+            if($this->post->todoIDList) $todoIDList = $this->post->todoIDList;
 
             /* Initialize todos whose need to edited. */
             foreach($allTodos as $todo)
@@ -217,6 +218,7 @@ class todo extends control
             if($showSuhosinInfo) $this->view->suhosinInfo = extension_loaded('suhosin') ? sprintf($this->lang->suhosinInfo, $countInputVars) : sprintf($this->lang->maxVarsInfo, $countInputVars);
             $this->view->bugs        = $bugs;
             $this->view->tasks       = $tasks;
+            $this->view->storys      = $storys;
             $this->view->editedTodos = $editedTodos;
             $this->view->times       = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
             $this->view->time        = date::now();
@@ -340,7 +342,7 @@ class todo extends control
             $this->lang->set('menugroup.todo', $from);
         }
 
-        $this->view->title      = "{$this->lang->todo->common} #$todo->id $todo->name";
+        $this->view->title      = $this->app->user->account == $todo->account ? "{$this->lang->todo->common} #$todo->id $todo->name" : $this->lang->todo->common ;
         $this->view->position[] = $this->lang->todo->view;
         $this->view->todo       = $todo;
         $this->view->times      = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
@@ -388,7 +390,10 @@ class todo extends control
                 }
                 $this->send($response);
             }
-            die(js::closeModal('parent.parent'));
+            if(isonlybody())die(js::reload('parent.parent'));
+
+            $browseLink = $this->session->todoList ? $this->session->todoList : $this->createLink('my', 'todo');
+            die(js::locate($browseLink, 'parent'));
         }
     }
 

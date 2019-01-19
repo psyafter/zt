@@ -11,7 +11,6 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
-<?php include '../../common/view/form.html.php';?>
 <?php js::set('lblDelete', $lang->testcase->deleteStep);?>
 <?php js::set('lblBefore', $lang->testcase->insertBefore);?>
 <?php js::set('lblAfter', $lang->testcase->insertAfter);?>
@@ -83,53 +82,55 @@
         <tr>
           <th><?php echo $lang->testcase->title;?></th>
           <td colspan='2'>
-            <div class="input-control has-icon-right">
-              <?php echo html::input('title', $caseTitle, "class='form-control' autocomplete='off'");?>
-              <div class="colorpicker">
-                <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown"><span class="cp-title"></span><span class="color-bar"></span><i class="ic"></i></button>
-                <ul class="dropdown-menu clearfix">
-                <li class="heading"><?php echo $lang->testcase->colorTag;?><i class="icon icon-close"></i></li>
-                </ul>
-                <input type="hidden" class="colorpicker" id="color" name="color" value="" data-icon="color" data-wrapper="input-control-icon-right" data-update-color="#title"  data-provide="colorpicker">
+            <div class="input-group title-group">
+              <div class="input-control has-icon-right">
+                <?php echo html::input('title', $caseTitle, "class='form-control' autocomplete='off'");?>
+                <div class="colorpicker">
+                  <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown"><span class="cp-title"></span><span class="color-bar"></span><i class="ic"></i></button>
+                  <ul class="dropdown-menu clearfix">
+                  <li class="heading"><?php echo $lang->testcase->colorTag;?><i class="icon icon-close"></i></li>
+                  </ul>
+                  <input type="hidden" class="colorpicker" id="color" name="color" value="" data-icon="color" data-wrapper="input-control-icon-right" data-update-color="#title"  data-provide="colorpicker">
+                </div>
               </div>
+              <?php if(strpos(",$showFields,", ',pri,') !== false): // begin print pri selector?>
+              <span class="input-group-addon fix-border br-0"><?php echo $lang->testcase->pri;?></span>
+              <?php
+              $hasCustomPri = false;
+              foreach($lang->testcase->priList as $priKey => $priValue)
+              {
+                  if(!empty($priKey) and (string)$priKey != (string)$priValue)
+                  {
+                      $hasCustomPri = true;
+                      break;
+                  }
+              }
+              $priList = $lang->testcase->priList;
+              if(end($priList))
+              {
+                  unset($priList[0]);
+                  $priList[0] = '';
+              }
+              ?>
+              <?php if($hasCustomPri):?>
+              <?php echo html::select('pri', (array)$priList, $pri, "class='form-control'");?>
+              <?php else: ?>
+              <div class="input-group-btn pri-selector" data-type="pri">
+                <button type="button" class="btn dropdown-toggle br-0" data-toggle="dropdown">
+                  <span class="pri-text"><span class="label-pri label-pri-<?php echo empty($pri) ? '0' : $pri?>" title="<?php echo $pri?>"><?php echo $pri?></span></span> &nbsp;<span class="caret"></span>
+                </button>
+                <div class='dropdown-menu pull-right'>
+                  <?php echo html::select('pri', (array)$priList, $pri, "class='form-control' data-provide='labelSelector' data-label-class='label-pri'");?>
+                </div>
+              </div>
+              <?php endif; ?>
+              <?php endif; // end print pri selector ?>
+              <?php if(!$this->testcase->forceNotReview()):?>
+                  <span class="input-group-addon"><?php echo html::checkbox('forceNotReview', $lang->testcase->forceNotReview, '', "id='forceNotReview0'");?></span>
+              <?php endif;?>
             </div>
           </td>
         </tr>
-        <?php if(!$this->testcase->forceNotReview()):?>
-        <tr>
-          <th></th>
-          <td><?php echo html::checkbox('forceNotReview', $lang->testcase->forceNotReview, '', "id='forceNotReview0'");?></td>
-        </tr>
-        <?php endif;?>
-        <?php if(strpos(",$showFields,", ',pri,') !== false):?>
-        <tr>
-          <th><?php echo $lang->testcase->pri;?></th>
-          <td>
-            <?php
-            $hasCustomPri = false;
-            foreach($lang->testcase->priList as $priKey => $priValue)
-            {
-                if(!empty($priKey) and (string)$priKey != (string)$priValue)
-                {
-                    $hasCustomPri = true;
-                    break;
-                }
-            }
-            $priList = $lang->testcase->priList;
-            if(end($priList))
-            {
-                unset($priList[0]);
-                $priList[0] = '';
-            }
-            ?>
-            <?php if($hasCustomPri):?>
-                <?php echo html::select('pri', (array)$priList, $pri, "class='form-control chosen'");?>
-            <?php else: ?>
-                <?php echo html::select('pri', (array)$priList, $pri, "class='form-control' data-provide='labelSelector' data-label-class='label-pri'");?>
-            <?php endif; ?>
-          </td>
-        </tr>
-        <?php endif;?>
         <tr>
           <th><?php echo $lang->testcase->precondition;?></th>
           <td colspan='2'><?php echo html::textarea('precondition', $precondition, " rows='2' class='form-control'");?></td>
@@ -140,7 +141,7 @@
             <table class='table table-form mg-0 table-bordered' style='border: 1px solid #ddd'>
               <thead>
                 <tr>
-                  <th class='w-50px text-right'><?php echo $lang->testcase->stepID;?></th>
+                  <th class='w-50px text-center'><?php echo $lang->testcase->stepID;?></th>
                   <th width="45%"><?php echo $lang->testcase->stepDesc;?></th>
                   <th><?php echo $lang->testcase->stepExpect;?></th>
                   <th class='step-actions'><?php echo $lang->actions;?></th>
@@ -167,7 +168,7 @@
                     <div class='btn-group'>
                       <button type='button' class='btn btn-step-add' tabindex='-1'><i class='icon icon-plus'></i></button>
                       <button type='button' class='btn btn-step-move' tabindex='-1'><i class='icon icon-move'></i></button>
-                      <button type='button' class='btn btn-step-delete' tabindex='-1'><i class='icon icon-trash'></i></button>
+                      <button type='button' class='btn btn-step-delete' tabindex='-1'><i class='icon icon-close'></i></button>
                     </div>
                   </td>
                 </tr>
@@ -193,7 +194,7 @@
                     <div class='btn-group'>
                       <button type='button' class='btn btn-step-add' tabindex='-1'><i class='icon icon-plus'></i></button>
                       <button type='button' class='btn btn-step-move' tabindex='-1'><i class='icon icon-move'></i></button>
-                      <button type='button' class='btn btn-step-delete' tabindex='-1'><i class='icon icon-trash'></i></button>
+                      <button type='button' class='btn btn-step-delete' tabindex='-1'><i class='icon icon-close'></i></button>
                     </div>
                   </td>
                 </tr>
@@ -216,8 +217,8 @@
       <tfoot>
         <tr>
           <td colspan='3' class='text-center form-actions'>
-            <?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?>
-            <?php echo html::backButton('', '', 'btn btn-wide');?>
+            <?php echo html::submitButton();?>
+            <?php echo html::backButton();?>
           </td>
         </tr>
       </tfoot>

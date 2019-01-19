@@ -75,10 +75,10 @@ $lang->report->unplanned     = 'Unplanned';
 $lang->report->workday       = 'Hours/Day';
 $lang->report->diffDays      = 'Man-Day';
 
-$lang->report->typeList['']     = 'Default';
-$lang->report->typeList['pie']  = 'Pie';
-$lang->report->typeList['bar']  = 'Bar';
-$lang->report->typeList['line'] = 'Line';
+$lang->report->typeList['default'] = 'Default';
+$lang->report->typeList['pie']     = 'Pie';
+$lang->report->typeList['bar']     = 'Bar';
+$lang->report->typeList['line']    = 'Line';
 
 $lang->report->conditions    = 'Filter by:';
 $lang->report->closedProduct = 'Closed ' . $lang->productCommon;
@@ -99,5 +99,5 @@ $lang->report->mailTitle->task     = " Task (%s),";
 $lang->report->mailTitle->todo     = " Todo (%s),";
 $lang->report->mailTitle->testTask = " Test Task (%s),";
 
-$lang->report->proVersion   = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';
+$lang->report->proVersion   = '<a href="https://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';
 $lang->report->proVersionEn = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';

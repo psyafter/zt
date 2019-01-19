@@ -1,14 +1,15 @@
 <?php
 /**
- * The todo block view file of block module of RanZhi.
+ * The todo block view file of block module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
  * @license     ZPL (http://zpl.pub/page/zplv12.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     block
  * @version     $Id$
- * @link        http://www.ranzhi.org
+ * @link        https://www.zentao.pm
  */
+if(!$selfCall) die(include('./todolist.html.php'));
 ?>
 <style>
 .block-todoes .panel-body {position: relative; padding-top: 42px; overflow: visible !important; padding-bottom: 0;}
@@ -17,8 +18,8 @@
 .block-todoes .todoes-input .form-control::-moz-placeholder {font-size: 12px; line-height: 20px; color: #a4a8b6;}
 .block-todoes .todoes-input .form-control:-ms-input-placeholder {font-size: 12px; line-height: 20px;color: #a4a8b6;}
 .block-todoes .todoes-input .form-control::placeholder {font-size: 12px; line-height: 20px; color: #a4a8b6;}
-.block-todoes .todoes {padding: 0 10px 10px 10px; margin: 0 -20px; max-height: 350px; overflow: auto;}
-.block-todoes .todoes > li {position: relative; padding: 5px 10px 5px 35px; list-style: none;}
+.block-todoes .todoes {padding: 0 10px 10px 10px; margin: 0 -20px; max-height: 350px; overflow: auto; overflow-x:hidden}
+.block-todoes .todoes > li {position: relative; padding: 5px 10px 5px 35px; list-style: none; white-space:nowrap;}
 .block-todoes .todoes > li:hover {background-color: #e9f2fb;}
 .block-todoes .todo-title {padding: 5px;}
 .block-todoes .todo-pri {margin: 0 5px;}
@@ -72,7 +73,7 @@
           <div class="col-sm-2"></div>
           <div class="col-sm-10">
             <div class="checkbox-primary">
-              <input type="checkbox" name="private" id="private" value="1"> 
+              <input type="checkbox" name="private" id="private" value="1">
               <label for="private"><?php echo $lang->todo->private?></label>
             </div>
           </div>
@@ -102,7 +103,7 @@
           <span class="todo-time"><?php echo date(DT_DATE4, strtotime($todo->date)) . ' ' . $todo->begin;?></span>
           <?php endif;?>
           <span class="todo-pri label-pri label-pri-<?php echo $todo->pri?>" title="<?php echo zget($lang->todo->priList, $todo->pri);?>"><?php echo zget($lang->todo->priList, $todo->pri);?></span>
-          <span class="todo-title"><?php echo $todo->name;?></span>
+          <span class="todo-title" title='<?php echo $todo->name;?>'><?php echo $todo->name;?></span>
         </a>
       </li>
       <?php endforeach;?>
@@ -123,7 +124,7 @@
                   $block.data('blockTodoes', 1);
                   var $form = $block.find('form');
                   var $titleInput = $form.find('[name="name"]');
-    
+
                   var toggleForm = function(toggle)
                   {
                       if(toggle === undefined)
@@ -171,7 +172,7 @@
       var $todoes = $(obj).closest('.block-todoes');
       var $form   = $(obj).closest('form');
       var $name   = $form.find("input[name='name']").val();
-      if($name == '') 
+      if($name == '')
       {
           $("input[name='name']").addClass('has-error');
           $('#nameLabel').remove();

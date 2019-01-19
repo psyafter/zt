@@ -16,15 +16,15 @@
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
     <?php if(!isonlybody()):?>
-    <?php echo html::a($browseLink, '<i class="icon icon-back icon-sm"></i> ' . $lang->goback, '', "class='btn btn-link'");?>
+    <?php echo html::a($browseLink, '<i class="icon icon-back icon-sm"></i> ' . $lang->goback, '', "class='btn btn-secondary'");?>
     <div class="divider"></div>
     <?php endif;?>
     <div class="page-title">
       <span class="label label-id"><?php echo $task->id?></span>
       <span class="text" title='<?php echo $task->name;?>' style='color: <?php echo $task->color; ?>'>
-        <?php if(!empty($task->parent)) echo '<span class="label label-badge label-primary no-margin">' . $this->lang->task->childrenAB . '</span>';?>
+        <?php if($task->parent > 0) echo '<span class="label label-badge label-primary no-margin">' . $this->lang->task->childrenAB . '</span>';?>
         <?php if(!empty($task->team)) echo '<span class="label label-badge label-primary no-margin">' . $this->lang->task->multipleAB . '</span>';?>
-        <?php echo isset($task->parentName) ? html::a(inlink('view', "taskID={$task->parent}"), $task->parentName) . ' / ' : '';?><?php echo $task->name;?>
+        <?php if($task->parent > 0) echo isset($task->parentName) ? html::a(inlink('view', "taskID={$task->parent}"), $task->parentName) . ' / ' : '';?><?php echo $task->name;?>
       </span>
       <?php if($task->deleted):?>
       <span class='label label-danger'><?php echo $lang->task->deleted;?></span>
@@ -34,6 +34,16 @@
       <?php endif;?>
     </div>
   </div>
+  <?php if(!isonlybody()):?>
+  <div class="btn-toolbar pull-right">
+    <?php
+    $checkObject = new stdclass();
+    $checkObject->project = $task->project;
+    $link = $this->createLink('task', 'create', "project={$task->project}&storyID={$task->story}&moduleID={$task->module}");
+    if(common::hasPriv('task', 'create', $checkObject)) echo html::a($link, "<i class='icon icon-plus'></i> {$lang->task->create}", '', "class='btn btn-primary'");
+    ?>
+  </div>
+  <?php endif;?>
 </div>
 <div id="mainContent" class="main-row">
   <div class="main-col col-8">
@@ -135,136 +145,192 @@
       <?php $actionFormLink = $this->createLink('action', 'comment', "objectType=task&objectID=$task->id");?>
       <?php include '../../common/view/action.html.php';?>
     </div>
+    <div class='main-actions'>
+      <div class="btn-toolbar">
+        <?php common::printBack($browseLink);?>
+        <?php if(!isonlybody()) echo "<div class='divider'></div>";?>
+        <?php if(!$task->deleted):?>
+        <?php
+        common::printIcon('task', 'assignTo',       "projectID=$task->project&taskID=$task->id", $task, 'button', '', '', 'iframe', true, '', empty($task->team) ? $lang->task->assignTo : $lang->task->transfer);
+        common::printIcon('task', 'start',          "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
+        common::printIcon('task', 'restart',        "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
+        common::printIcon('task', 'recordEstimate', "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
+        common::printIcon('task', 'pause',          "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
+        common::printIcon('task', 'finish',         "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody text-success', true);
+        common::printIcon('task', 'activate',       "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody text-success', true);
+        common::printIcon('task', 'close',          "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
+        common::printIcon('task', 'cancel',         "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
+
+        if(!isonlybody()) echo "<div class='divider'></div>";
+        if(empty($task->team) or empty($task->children)) common::printIcon('task', 'batchCreate', "project=$task->project&storyID=$task->story&moduleID=$task->module&taskID=$task->id", $task, 'button','plus','','','','',' ');
+        common::printIcon('task', 'edit', "taskID=$task->id", $task);
+        common::printIcon('task', 'create', "productID=0&storyID=0&moduleID=0&taskID=$task->id", $task, 'button', 'copy');
+        common::printIcon('task', 'delete', "projectID=$task->project&taskID=$task->id", $task, 'button', '', 'hiddenwin');
+
+        if($task->parent > 0) echo html::a(helper::createLink('task', 'view', "taskID=$task->parent"), "<i class='icon icon-chevron-double-up'></i>", '', "class='btn btn-link' title='{$lang->task->parent}'");
+        ?>
+        <?php endif;?>
+      </div>
+    </div>
   </div>
   <div class="side-col col-4">
     <div class="cell">
-      <details class="detail" open>
-        <summary class="detail-title"><?php echo $lang->task->legendBasic;?></summary>
-        <div class="detail-content">
-          <table class="table table-data">
-            <tbody>
-              <tr>
-                <th><?php echo $lang->task->project;?></th>
-                <td><?php if(!common::printLink('project', 'view', "projectID=$task->project", $project->name)) echo $project->name;?></td>
-              </tr>
-              <tr>
-                <th><?php echo $lang->task->module;?></th>
-                <?php
-                $moduleTitle = '';
-                ob_start();
-                if(empty($modulePath))
-                {
-                    $moduleTitle .= '/';
-                    echo "/";
-                }
-                else
-                {
-                    if($product)
-                    {
-                        $moduleTitle .= $product->name . '/';
-                        echo $product->name . $lang->arrow;
-                    }
-                   foreach($modulePath as $key => $module)
-                   {
-                       $moduleTitle .= $module->name;
-                       if(!common::printLink('project', 'task', "projectID=$task->project&browseType=byModule&param=$module->id", $module->name)) echo $module->name;
-                       if(isset($modulePath[$key + 1]))
-                       {
-                           $moduleTitle .= '/';
-                           echo $lang->arrow;
-                       }
-                   }
-                }
-                $printModule = ob_get_contents();
-                ob_end_clean();
-                ?>
-                <td title='<?php echo $moduleTitle?>'><?php echo $printModule?></td>
-              </tr>
-              <tr class='nofixed'>
-                <th><?php echo $lang->task->story;?></th>
-                <td>
+      <div class='tabs'>
+        <ul class='nav nav-tabs'>
+          <li class='active'><a href='#legendBasic' data-toggle='tab'><?php echo $lang->task->legendBasic;?></a></li>
+          <li><a href='#legendLife' data-toggle='tab'><?php echo $lang->task->legendLife;?></a></li>
+          <?php if(!empty($task->team)) :?>
+          <li><a href='#legendTeam' data-toggle='tab'><?php echo $lang->task->team;?></a></li>
+          <?php endif;?>
+        </ul>
+        <div class='tab-content'>
+          <div class='tab-pane active' id='legendBasic'>
+            <table class="table table-data">
+              <tbody>
+                <tr>
+                  <th><?php echo $lang->task->project;?></th>
+                  <td><?php if(!common::printLink('project', 'view', "projectID=$task->project", $project->name)) echo $project->name;?></td>
+                </tr>
+                <tr>
+                  <th><?php echo $lang->task->module;?></th>
                   <?php
-                  if(!$task->storyTitle) echo $lang->noData;
-                  if($task->storyTitle and !common::printLink('story', 'view', "storyID=$task->story", $task->storyTitle, '', "class='iframe' data-width='80%'", true, true)) echo $task->storyTitle;
-                  if($task->needConfirm)
+                  $moduleTitle = '';
+                  ob_start();
+                  if(empty($modulePath))
                   {
-                      echo "(<span class='warning'>{$lang->story->changed}</span> ";
-                      echo html::a($this->createLink('task', 'confirmStoryChange', "taskID=$task->id"), $lang->confirm, 'hiddenwin', "class='btn btn-mini btn-info'");
-                      echo ")";
-                  }
-                  ?>
-                </td>
-              </tr>
-              <?php if($task->fromBug):?>
-              <tr>
-                <th><?php echo $lang->task->fromBug;?></th>
-                <td><?php echo html::a($this->createLink('bug', 'view', "bugID=$task->fromBug", '', true), "#$task->fromBug " . $fromBug->title, '', "class='iframe' data-width='80%'");?></td>
-              </tr>
-              <?php endif;?>
-              <tr>
-                <th><?php echo empty($task->team) ? $lang->task->assignTo : $lang->task->transferTo;?></th>
-                <td><?php echo $task->assignedTo ? $task->assignedToRealName . $lang->at . $task->assignedDate : $lang->noData;?></td>
-              </tr>
-              <tr>
-                <th><?php echo $lang->task->type;?></th>
-                <td><?php echo $lang->task->typeList[$task->type];?></td>
-              </tr>
-              <tr>
-                <th><?php echo $lang->task->status;?></th>
-                <td><span class='status-<?php echo $task->status;?>'><span class="label label-dot"></span> <?php echo zget($lang->task->statusList, $task->status);?></td>
-              </tr>
-              <tr>
-                <th><?php echo $lang->task->pri;?></th>
-                <td><span class='label-pri <?php echo 'label-pri-' . $task->pri;?>' title='<?php echo zget($lang->task->priList, $task->pri);?>'><?php echo $task->pri == '0' ? $lang->noData : zget($lang->task->priList, $task->pri)?></span></td>
-              </tr>
-              <tr>
-                <th><?php echo $lang->task->mailto;?></th>
-                <td>
-                  <?php
-                  $mailto = explode(',', str_replace(' ', '', $task->mailto));
-                  if(empty($mailto))
-                  {
-                      echo $lang->noData;
+                      $moduleTitle .= '/';
+                      echo "/";
                   }
                   else
                   {
-                      foreach($mailto as $account) echo ' ' . zget($users, $account, $account);
+                      if($product)
+                      {
+                          $moduleTitle .= $product->name . '/';
+                          echo $product->name . $lang->arrow;
+                      }
+                     foreach($modulePath as $key => $module)
+                     {
+                         $moduleTitle .= $module->name;
+                         if(!common::printLink('project', 'task', "projectID=$task->project&browseType=byModule&param=$module->id", $module->name)) echo $module->name;
+                         if(isset($modulePath[$key + 1]))
+                         {
+                             $moduleTitle .= '/';
+                             echo $lang->arrow;
+                         }
+                     }
                   }
+                  $printModule = ob_get_contents();
+                  ob_end_clean();
                   ?>
-                </td>
+                  <td title='<?php echo $moduleTitle?>'><?php echo $printModule?></td>
+                </tr>
+                <tr class='nofixed'>
+                  <th><?php echo $lang->task->story;?></th>
+                  <td>
+                    <?php
+                    if(!$task->storyTitle) echo $lang->noData;
+                    if($task->storyTitle and !common::printLink('story', 'view', "storyID=$task->story", $task->storyTitle, '', "class='iframe' data-width='80%'", true, true)) echo $task->storyTitle;
+                    if($task->needConfirm)
+                    {
+                        echo "(<span class='warning'>{$lang->story->changed}</span> ";
+                        echo html::a($this->createLink('task', 'confirmStoryChange', "taskID=$task->id"), $lang->confirm, 'hiddenwin', "class='btn btn-mini btn-info'");
+                        echo ")";
+                    }
+                    ?>
+                  </td>
+                </tr>
+                <?php if($task->fromBug):?>
+                <tr>
+                  <th><?php echo $lang->task->fromBug;?></th>
+                  <td><?php echo html::a($this->createLink('bug', 'view', "bugID=$task->fromBug", '', true), "#$task->fromBug " . $fromBug->title, '', "class='iframe' data-width='80%'");?></td>
+                </tr>
+                <?php endif;?>
+                <tr>
+                  <th><?php echo empty($task->team) ? $lang->task->assignTo : $lang->task->transferTo;?></th>
+                  <td><?php echo $task->assignedTo ? $task->assignedToRealName . $lang->at . $task->assignedDate : $lang->noData;?></td>
+                </tr>
+                <tr>
+                  <th><?php echo $lang->task->type;?></th>
+                  <td><?php echo $lang->task->typeList[$task->type];?></td>
+                </tr>
+                <tr>
+                  <th><?php echo $lang->task->status;?></th>
+                  <td><span class='status-task status-<?php echo $task->status;?>'><span class="label label-dot"></span> <?php echo zget($lang->task->statusList, $task->status);?></td>
+                </tr>
+                <tr>
+                  <th><?php echo $lang->task->pri;?></th>
+                  <td><span class='label-pri <?php echo 'label-pri-' . $task->pri;?>' title='<?php echo zget($lang->task->priList, $task->pri);?>'><?php echo $task->pri == '0' ? $lang->noData : zget($lang->task->priList, $task->pri)?></span></td>
+                </tr>
+                <tr>
+                  <th><?php echo $lang->task->mailto;?></th>
+                  <td>
+                    <?php
+                    $mailto = explode(',', str_replace(' ', '', $task->mailto));
+                    if(empty($mailto))
+                    {
+                        echo $lang->noData;
+                    }
+                    else
+                    {
+                        foreach($mailto as $account) echo ' ' . zget($users, $account, $account);
+                    }
+                    ?>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class='tab-pane' id='legendLife'>
+            <table class='table table-data'>
+              <tr>
+                <th><?php echo $lang->task->openedBy;?></th>
+                <td><?php echo $task->openedBy ? zget($users, $task->openedBy, $task->openedBy) . $lang->at . $task->openedDate : $lang->noData;?></td>
               </tr>
-            </tbody>
-          </table>
-        </div>
-      </details>
-    </div>
-    <?php if(!empty($task->team)) :?>
-    <div class='cell'>
-      <details class="detail" open>
-        <summary class="detail-title"><?php echo $lang->task->team;?></summary>
-        <div class="detail-content">
-          <table class='table table-data'>
-            <thead>
-            <tr>
-              <th><?php echo $lang->task->team?></th>
-              <th class='text-center'><?php echo $lang->task->estimate?></th>
-              <th class='text-center'><?php echo $lang->task->consumed?></th>
-              <th class='text-center'><?php echo $lang->task->left?></th>
-            </tr>
-            </thead>
-              <?php foreach($task->team as $member):?>
-              <tr class='text-center'>
-                <td class='text-left'><?php echo zget($users, $member->account)?></td>
-                <td><?php echo $member->estimate?></td>
-                <td><?php echo $member->consumed?></td>
-                <td><?php echo $member->left?></td>
+              <tr>
+                <th><?php echo $lang->task->finishedBy;?></th>
+                <td><?php echo ($task->finishedBy) ? zget($users, $task->finishedBy, $task->finishedBy) . $lang->at . $task->finishedDate : $lang->noData;?></td>
               </tr>
-              <?php endforeach;?>
-          </table>
+              <tr>
+                <th><?php echo $lang->task->canceledBy;?></th>
+                <td><?php echo $task->canceledBy ? zget($users, $task->canceledBy, $task->canceledBy) . $lang->at . $task->canceledDate : $lang->noData;?></td>
+              </tr>
+              <tr>
+                <th><?php echo $lang->task->closedBy;?></th>
+                <td><?php echo $task->closedBy ? zget($users, $task->closedBy, $task->closedBy) . $lang->at . $task->closedDate : $lang->noData;?></td>
+              </tr>
+              <tr>
+                <th><?php echo $lang->task->closedReason;?></th>
+                <td><?php echo $task->closedReason ? $lang->task->reasonList[$task->closedReason] : $lang->noData;?></td>
+              </tr>
+              <tr>
+                <th><?php echo $lang->task->lastEdited;?></th>
+                <td><?php echo $task->lastEditedBy ? zget($users, $task->lastEditedBy, $task->lastEditedBy) . $lang->at . $task->lastEditedDate : $lang->noData;?></td>
+              </tr>
+            </table>
+          </div>
+          <div class='tab-pane' id='legendTeam'>
+            <table class='table table-data'>
+              <thead>
+              <tr>
+                <th><?php echo $lang->task->team?></th>
+                <th class='text-center'><?php echo $lang->task->estimate?></th>
+                <th class='text-center'><?php echo $lang->task->consumed?></th>
+                <th class='text-center'><?php echo $lang->task->left?></th>
+              </tr>
+              </thead>
+                <?php foreach($task->team as $member):?>
+                <tr class='text-center'>
+                  <td class='text-left'><?php echo zget($users, $member->account)?></td>
+                  <td><?php echo $member->estimate?></td>
+                  <td><?php echo $member->consumed?></td>
+                  <td><?php echo $member->left?></td>
+                </tr>
+                <?php endforeach;?>
+            </table>
+          </div>
         </div>
-      </details>
+      </div>
     </div>
-    <?php endif;?>
     <div class='cell'>
       <details class="detail" open>
         <summary class="detail-title"><?php echo $lang->task->legendEffort;?></summary>
@@ -303,69 +369,11 @@
         </div>
       </details>
     </div>
-    <div class='cell'>
-      <details class="detail" open>
-        <summary class="detail-title"><?php echo $lang->task->legendLife;?></summary>
-        <div class="detail-content">
-          <table class='table table-data'>
-            <tr>
-              <th><?php echo $lang->task->openedBy;?></th>
-              <td><?php echo $task->openedBy ? zget($users, $task->openedBy, $task->openedBy) . $lang->at . $task->openedDate : $lang->noData;?></td>
-            </tr>
-            <tr>
-              <th><?php echo $lang->task->finishedBy;?></th>
-              <td><?php echo ($task->finishedBy) ? zget($users, $task->finishedBy, $task->finishedBy) . $lang->at . $task->finishedDate : $lang->noData;?></td>
-            </tr>
-            <tr>
-              <th><?php echo $lang->task->canceledBy;?></th>
-              <td><?php echo $task->canceledBy ? zget($users, $task->canceledBy, $task->canceledBy) . $lang->at . $task->canceledDate : $lang->noData;?></td>
-            </tr>
-            <tr>
-              <th><?php echo $lang->task->closedBy;?></th>
-              <td><?php echo $task->closedBy ? zget($users, $task->closedBy, $task->closedBy) . $lang->at . $task->closedDate : $lang->noData;?></td>
-            </tr>
-            <tr>
-              <th><?php echo $lang->task->closedReason;?></th>
-              <td><?php echo $task->closedReason ? $lang->task->reasonList[$task->closedReason] : $lang->noData;?></td>
-            </tr>
-            <tr>
-              <th><?php echo $lang->task->lastEdited;?></th>
-              <td><?php echo $task->lastEditedBy ? zget($users, $task->lastEditedBy, $task->lastEditedBy) . $lang->at . $task->lastEditedDate : $lang->noData;?></td>
-            </tr>
-          </table>
-        </div>
-      </details>
-    </div>
   </div>
 </div>
 
-<div id="mainActions">
+<div id="mainActions" class='main-actions'>
   <?php common::printPreAndNext($preAndNext);?>
-  <div class="btn-toolbar">
-    <?php common::printBack($browseLink);?>
-    <?php if(!isonlybody()) echo "<div class='divider'></div>";?>
-    <?php if(!$task->deleted):?>
-    <?php
-    common::printIcon('task', 'assignTo',       "projectID=$task->project&taskID=$task->id", $task, 'button', '', '', 'iframe', true, '', empty($task->team) ? $lang->task->assignTo : $lang->task->transfer);
-    common::printIcon('task', 'start',          "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
-    common::printIcon('task', 'restart',        "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
-    common::printIcon('task', 'recordEstimate', "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
-    common::printIcon('task', 'pause',          "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
-    common::printIcon('task', 'finish',         "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody text-success', true);
-    common::printIcon('task', 'activate',       "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody text-success', true);
-    common::printIcon('task', 'close',          "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
-    common::printIcon('task', 'cancel',         "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
-
-    if(!isonlybody()) echo "<div class='divider'></div>";
-    if(empty($task->team) or empty($task->children)) common::printIcon('task', 'batchCreate', "project=$task->project&storyID=$task->story&moduleID=$task->module&taskID=$task->id", $task, 'button','plus','','','','',' ');
-    common::printIcon('task', 'edit', "taskID=$task->id", $task);
-    common::printIcon('task', 'create', "productID=0&storyID=0&moduleID=0&taskID=$task->id", $task, 'button', 'copy');
-    common::printIcon('task', 'delete', "projectID=$task->project&taskID=$task->id", $task, 'button', '', 'hiddenwin');
-
-    if(!empty($task->parent)) echo html::a(helper::createLink('task', 'view', "taskID=$task->parent"), "<i class='icon icon-chevron-double-up'></i>", '', "class='btn btn-link' title='{$lang->task->parent}'");
-    ?>
-    <?php endif;?>
-  </div>
 </div>
 <?php include '../../common/view/syntaxhighlighter.html.php';?>
 <?php include '../../common/view/footer.html.php';?>

@@ -42,47 +42,80 @@
       <?php $actionFormLink = $this->createLink('action', 'comment', "objectType=testtask&objectID=$task->id");?>
       <?php include '../../common/view/action.html.php';?>
     </div>
+    <div class='main-actions'>
+      <div class="btn-toolbar">
+        <?php common::printBack($browseLink);?>
+        <?php if(!$task->deleted):?>
+        <div class='divider'></div>
+        <?php
+        common::printIcon('testtask', 'start',    "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
+        common::printIcon('testtask', 'close',    "taskID=$task->id", $task, 'button', '', '', 'iframe showinonlybody', true);
+        common::printIcon('testtask', 'block',    "taskID=$task->id", $task, 'button', 'pause', '', 'iframe showinonlybody', true);
+        common::printIcon('testtask', 'activate', "taskID=$task->id", $task, 'button', 'magic', '', 'iframe showinonlybody', true);
+        common::printIcon('testtask', 'cases',    "taskID=$task->id", $task, 'button', 'sitemap');
+        common::printIcon('testtask', 'linkCase', "taskID=$task->id", $task, 'button', 'link');
+        ?>
+        <div class='divider'></div>
+        <?php
+        common::printIcon('testtask', 'edit',     "taskID=$task->id", $task);
+        common::printIcon('testtask', 'delete',   "taskID=$task->id", $task, 'button', '', 'hiddenwin');
+        ?>
+        <?php endif;?>
+      </div>
+    </div>
   </div>
   <div class="col-4 side-col">
     <div class="cell">
       <div class="detail">
         <div class="detail-title"><?php echo $lang->testtask->legendBasicInfo;?></div>
         <div class="detail-content">
-          <table class="table table-data">
+          <table class="table table-data table-fixed">
+            <?php $isOnlybody = helper::inOnlyBodyMode(); ?>
             <?php if($config->global->flow != 'onlyTest'):?>
             <tr>
-              <th class='w-80px'><?php echo $lang->testtask->project;?></th>
-              <td><?php echo html::a($this->createLink('project', 'story', "projectID=$task->project"), $task->projectName);?></td>
-            </tr>  
+              <th class='w-60px'><?php echo $lang->testtask->project;?></th>
+              <td><?php echo $isOnlybody ? $task->projectName : html::a($this->createLink('project', 'story', "projectID=$task->project"), $task->projectName, '', "title='{$task->projectName}'");?></td>
+            </tr>
             <?php endif;?>
             <tr>
               <th><?php echo $lang->testtask->build;?></th>
-              <td><?php $task->build == 'trunk' ? print($lang->trunk) : print(html::a($this->createLink('build', 'view', "buildID=$task->build"), $task->buildName));?></td>
-            </tr>  
+              <td>
+                <?php
+                if($task->build == 'trunk')
+                {
+                    print($lang->trunk);
+                }
+                else
+                {
+                    $isOnlybody ? print($task->buildName) : print(html::a($this->createLink('build', 'view', "buildID=$task->build"), $task->buildName, '', "title='{$task->buildName}'"));
+                }
+                ?>
+              </td>
+            </tr>
             <tr>
               <th><?php echo $lang->testtask->owner;?></th>
               <td><?php echo zget($users, $task->owner);?></td>
-            </tr>  
+            </tr>
             <tr>
               <th><?php echo $lang->testtask->mailto;?></th>
-              <td><?php $mailto = explode(',', str_replace(' ', '', $task->mailto)); foreach($mailto as $account) echo ' ' . zget($users, $account, $account);?></td> 
+              <td><?php $mailto = explode(',', str_replace(' ', '', $task->mailto)); foreach($mailto as $account) echo ' ' . zget($users, $account, $account);?></td>
             </tr>
             <tr>
               <th><?php echo $lang->testtask->pri;?></th>
               <td><?php echo $task->pri;?></td>
-            </tr>  
+            </tr>
             <tr>
               <th><?php echo $lang->testtask->begin;?></th>
               <td><?php echo $task->begin;?></td>
-            </tr>  
+            </tr>
             <tr>
               <th><?php echo $lang->testtask->end;?></th>
               <td><?php echo $task->end;?></td>
-            </tr>  
+            </tr>
             <tr>
               <th><?php echo $lang->testtask->status;?></th>
               <td class='task-<?php echo $task->status?>'><?php echo $lang->testtask->statusList[$task->status];?></td>
-            </tr>  
+            </tr>
           </table>
         </div>
       </div>
@@ -90,26 +123,7 @@
   </div>
 </div>
 
-<div id='mainActions'>
+<div id='mainActions' class='main-actions'>
   <?php common::printPreAndNext($browseLink);?>
-  <div class="btn-toolbar">
-    <?php common::printBack($browseLink);?>
-    <?php if(!$task->deleted):?>
-    <div class='divider'></div>
-    <?php
-    common::printIcon('testtask', 'start',    "taskID=$task->id", $task, 'button', '', '', 'iframe', true);
-    common::printIcon('testtask', 'close',    "taskID=$task->id", $task, 'button', '', '', 'iframe', true);
-    common::printIcon('testtask', 'block',    "taskID=$task->id", $task, 'button', 'pause', '', 'iframe', true);
-    common::printIcon('testtask', 'activate', "taskID=$task->id", $task, 'button', 'magic', '', 'iframe', true);
-    common::printIcon('testtask', 'cases',    "taskID=$task->id", $task, 'button', 'sitemap');
-    common::printIcon('testtask', 'linkCase', "taskID=$task->id", $task, 'button', 'link');
-    ?>
-    <div class='divider'></div>
-    <?php
-    common::printIcon('testtask', 'edit',     "taskID=$task->id", $task);
-    common::printIcon('testtask', 'delete',   "taskID=$task->id", $task, 'button', '', 'hiddenwin');
-    ?>
-    <?php endif;?>
-  </div>
 </div>
 <?php include '../../common/view/footer.html.php';?>

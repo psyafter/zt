@@ -64,10 +64,7 @@ class installModel extends model
         if(@$snoopy->fetchText('https://www.zentao.pm/misc-getlatestrelease.json'))
         {
             $result = json_decode($snoopy->results);
-            if(isset($result->release) and $this->config->version != $result->release->version)
-            {
-                return $result->release;
-            }
+            if(isset($result->release) and $this->config->version != $result->release->version) return $result->release;
         }
         return false;
     }

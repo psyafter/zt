@@ -11,6 +11,9 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
+<div id='mainMenu' class='clearfix'>
+  <div class='btn-toolbar pull-left'><?php common::printAdminSubMenu('system');?></div>
+</div>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
     <div class='main-header'>
@@ -59,7 +62,7 @@
           <td><?php echo html::select('type', $lang->cron->typeList, $cron->type, "class='form-control'")?></td>
         </tr>
         <tr>
-          <td colspan='3' class='text-center'><?php echo html::submitButton('', '', 'btn btn-primary btn-wide');?></td>
+          <td colspan='3' class='text-center'><?php echo html::submitButton();?></td>
         </tr>
       </table>
     </form>

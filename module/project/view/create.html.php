@@ -39,7 +39,7 @@
     <div class='main-header'>
       <h2><?php echo $lang->project->create;?></h2>
       <div class="pull-right btn-toolbar">
-        <button type='button' class='btn btn-link' id='cpmBtn'><?php echo html::icon($lang->icons['copy'], 'muted') . ' ' . $lang->project->copy;?></button>
+        <button type='button' class='btn btn-link' data-toggle='modal' data-target='#copyProjectModal'><?php echo html::icon($lang->icons['copy'], 'muted') . ' ' . $lang->project->copy;?></button>
       </div>
     </div>
     <form class='form-indicator main-form form-ajax' method='post' target='hiddenwin' id='dataform'>
@@ -146,16 +146,16 @@
         </tr>
         <tr>
           <td colspan='4' class='text-center form-actions'>
-            <?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?>
-            <?php echo html::backButton('', '', 'btn btn-wide');?>
+            <?php echo html::submitButton();?>
+            <?php echo html::backButton();?>
           </td>
         </tr>
       </table>
     </form>
   </div>
 </div>
-<div class='modal fade' id='copyProjectModal'>
-  <div class='modal-dialog mw-800px'>
+<div class='modal fade modal-scroll-inside' id='copyProjectModal'>
+  <div class='modal-dialog mw-900px'>
     <div class='modal-header'>
       <button type='button' class='close' data-dismiss='modal'><i class="icon icon-close"></i></button>
       <h4 class='modal-title' id='myModalLabel'><?php echo $lang->project->copyTitle;?></h4>

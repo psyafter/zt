@@ -38,6 +38,14 @@ var assignedTo = '<?php $story->lastEditedBy ? print($story->lastEditedBy) : pri
             <th><?php echo $lang->story->rejectedReason;?></th>
             <td><?php echo html::select('closedReason', $lang->story->reasonList, '', 'class=form-control onchange="setStory(this.value)"');?></td><td></td>
           </tr>
+          <tr id='priBox' class='hide'>
+            <th><?php echo $lang->story->pri;?></th>
+            <td><?php echo html::select('pri', $lang->story->priList, '',"class='form-control' autocomplete='off'");?></td><td></td>
+          </tr>
+          <tr id='estimateBox' class='hide'>
+            <th><?php echo $lang->story->estimate;?></th>
+            <td><?php echo html::input('estimate', '', "class='form-control' autocomplete='off'");?></td><td></td>
+          </tr>
           <tr id='duplicateStoryBox' class='hide'>
             <th><?php echo $lang->story->duplicateStory;?></th>
             <td><?php echo html::input('duplicateStory', '', "class='form-control' autocomplete='off'");?></td><td></td>
@@ -70,7 +78,7 @@ var assignedTo = '<?php $story->lastEditedBy ? print($story->lastEditedBy) : pri
           </tr>
           <tr>
             <td colspan='3' class='text-center form-actions'>
-            <?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?>
+            <?php echo html::submitButton();?>
             <?php echo html::linkButton($lang->goback, $app->session->storyList ? $app->session->storyList : inlink('view', "storyID=$story->id"), 'self', '', 'btn btn-wide');?>
             </td>
           </tr>

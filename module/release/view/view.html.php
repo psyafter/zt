@@ -17,7 +17,7 @@
 <div id='mainMenu' class='clearfix'>
   <div class='btn-toolbar pull-left'>
     <?php $browseLink = $this->session->releaseList ? $this->session->releaseList : inlink('browse', "productID=$release->product");?>
-    <?php common::printBack($browseLink, 'btn btn-link');?>
+    <?php common::printBack($browseLink, 'btn btn-primary');?>
     <div class='divider'></div>
     <div class='page-title'>
       <span class='label label-id'><?php echo $release->id;?></span>
@@ -97,7 +97,7 @@
                     <td class='c-id text-left'>
                       <?php if($canBatchUnlink):?>
                       <div class="checkbox-primary">
-                        <input type='checkbox' name='unlinkStories[]'  value='<?php echo $story->id;?>'/> 
+                        <input type='checkbox' name='unlinkStories[]'  value='<?php echo $story->id;?>'/>
                         <label></label>
                       </div>
                       <?php endif;?>
@@ -107,7 +107,9 @@
                     <td class='text-left nobr' title='<?php echo $story->title?>'><?php echo html::a($storyLink,$story->title, '', "class='preview'");?></td>
                     <td><?php echo $users[$story->openedBy];?></td>
                     <td><?php echo $story->estimate;?></td>
-                    <td><span class='status-<?php echo $story->status;?>'><span class="label label-dot"></span> <?php echo $lang->story->statusList[$story->status];?></span></td>
+                    <td>
+                      <span class='status-story status-<?php echo $story->status;?>'><?php echo $lang->story->statusList[$story->status];?></span>
+                    </td>
                     <td><?php echo $lang->story->stageList[$story->stage];?></td>
                     <td class='c-actions'>
                       <?php
@@ -168,14 +170,16 @@
                     <td class='c-id text-left'>
                       <?php if($canBatchUnlink):?>
                       <div class="checkbox-primary">
-                        <input type='checkbox' name='unlinkBugs[]'  value='<?php echo $bug->id;?>'/> 
+                        <input type='checkbox' name='unlinkBugs[]'  value='<?php echo $bug->id;?>'/>
                         <label></label>
                       </div>
                       <?php endif;?>
                       <?php echo sprintf('%03d', $bug->id);?>
                     </td>
                     <td class='text-left nobr' title='<?php echo $bug->title?>'><?php echo html::a($bugLink, $bug->title, '', "class='preview'");?></td>
-                    <td><span class='status-<?php echo $bug->status?>'><span class="label label-dot"></span> <?php echo zget($lang->bug->statusList, $bug->status);?></td>
+                    <td>
+                      <span class='status-bug status-<?php echo $bug->status?>'><?php echo zget($lang->bug->statusList, $bug->status);?></span>
+                    </td>
                     <td><?php echo $users[$bug->openedBy];?></td>
                     <td><?php echo substr($bug->openedDate, 5, 11)?></td>
                     <td><?php echo $users[$bug->resolvedBy];?></td>
@@ -231,6 +235,17 @@
                     <th class='w-50px'>    <?php echo $lang->actions;?></th>
                   </tr>
                 </thead>
+                <?php
+                $hasCustomSeverity = false;
+                foreach($lang->bug->severityList as $severityKey => $severityValue)
+                {
+                    if(!empty($severityKey) and (string)$severityKey != (string)$severityValue)
+                    {
+                        $hasCustomSeverity = true;
+                        break;
+                    }
+                }
+                ?>
                 <tbody class='text-center'>
                   <?php foreach($leftBugs as $bug):?>
                   <?php $bugLink = $this->createLink('bug', 'view', "bugID=$bug->id", '', true);?>
@@ -238,17 +253,21 @@
                     <td class='c-id text-left'>
                       <?php if($canBatchUnlink):?>
                       <div class="checkbox-primary">
-                        <input type='checkbox' name='unlinkBugs[]'  value='<?php echo $bug->id;?>'/> 
+                        <input type='checkbox' name='unlinkBugs[]'  value='<?php echo $bug->id;?>'/>
                         <label></label>
                       </div>
                       <?php endif;?>
                       <?php echo sprintf('%03d', $bug->id);?>
                     </td>
                     <td class='c-severity'>
+                      <?php if($hasCustomSeverity):?>
+                      <span class='<?php echo 'label-severity-custom';?>' title='<?php echo zget($lang->bug->severityList, $bug->severity);?>' data-severity='<?php echo $bug->severity;?>'><?php echo zget($lang->bug->severityList, $bug->severity, $bug->severity);?></span>
+                      <?php else:?>
                       <span class='label-severity' data-severity='<?php echo $bug->severity;?>' title='<?php echo zget($lang->bug->severityList, $bug->severity, $bug->severity);?>'></span>
+                      <?php endif;?>
                     </td>
                     <td class='text-left nobr' title='<?php echo $bug->title?>'><?php echo html::a($bugLink, $bug->title, '', "class='preview'");?></td>
-                    <td><span class='status-<?php echo $bug->status?>'><span class="label label-dot"></span> <?php echo zget($lang->bug->statusList, $bug->status);?></span></td>
+                    <td><span class='status-<?php echo $bug->status?>'> <?php echo zget($lang->bug->statusList, $bug->status);?></span></td>
                     <td><?php echo zget($users, $bug->openedBy);?></td>
                     <td><?php echo $bug->openedDate?></td>
                     <td class='c-actions'>

@@ -14,7 +14,7 @@
 <div class='empty-tip'><?php common::printLink('project', 'create', '', "<i class='icon-plus'></i> " . $lang->project->create, '', "class='btn btn-primary'")?></div>
 <?php else:?>
 <div class="panel-body has-table scrollbar-hover">
-  <table class='table table-borderless table-hover table-fixed-head tablesorter block-projects tablesorter'>
+  <table class='table table-borderless table-hover table-fixed table-fixed-head tablesorter block-projects tablesorter'>
     <thead>
       <tr class='text-center'>
         <th class='c-name text-left'><?php echo $lang->project->name;?></th>
@@ -44,9 +44,9 @@
         <?php if($longBlock):?>
         <td class="c-status">
           <?php if(isset($project->delay)):?>
-          <span class="status-delayed"><span class="label label-dot"></span> <?php echo $lang->project->delayed;?></span>
+          <span class="status-project status-delayed"><?php echo $lang->project->delayed;?></span>
           <?php else:?>
-          <span class="status-<?php echo $project->status?>"><span class="label label-dot"></span> <?php echo zget($lang->project->statusList, $project->status, '');?></span>
+          <span class="status-project status-<?php echo $project->status?>"><?php echo zget($lang->project->statusList, $project->status, '');?></span>
           <?php endif;?>
         </td>
         <td class="c-hours"><?php echo $project->hours->totalEstimate;?></td>

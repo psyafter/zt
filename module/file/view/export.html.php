@@ -156,7 +156,7 @@ if($isCustomExport)
           <tbody>
             <tr>
               <th><?php echo $lang->file->fileName;?></th>
-              <td class="w-300px"><?php echo html::input('fileName', '', "class='form-control' autofocus autocomplete='off' placeholder='{$lang->file->untitled}'");?></td>
+              <td class="w-300px"><?php echo html::input('fileName', isset($fileName) ? $fileName : '', "class='form-control' autofocus autocomplete='off' placeholder='{$lang->file->untitled}'");?></td>
               <td></td>
             </tr>
             <tr>
@@ -214,7 +214,7 @@ if($isCustomExport)
             <tr>
               <th></th>
               <td>
-                <?php echo html::submitButton($lang->export, "onclick='setDownloading();' ");?>
+                <?php echo html::submitButton($lang->export, "onclick='setDownloading();'", 'btn btn-primary');?>
               </td>
             </tr>
           </tbody>

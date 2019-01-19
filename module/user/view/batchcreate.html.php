@@ -93,7 +93,7 @@
         <?php endfor;?>
         <tr>
           <th colspan='2'><?php echo $lang->user->verifyPassword?></th>
-          <td colspan='<?php echo count($visibleFields) + 3?>'>
+          <td colspan='3'>
             <div class="required required-wrapper"></div>
             <input type='password' style="display:none"> <!-- for disable autocomplete all browser -->
             <?php echo html::password('verifyPassword', '', "class='form-control disabled-ie-placeholder' autocomplete='off' placeholder='{$lang->user->placeholder->verify}'");?>
@@ -103,8 +103,8 @@
         <tfoot>
           <tr>
             <td colspan="<?php echo count($visibleFields) + 6?>" class="text-center form-actions">
-              <?php echo html::submitButton($lang->save, '', 'btn btn-wide btn-primary');?>
-              <?php echo html::backButton('', '', "btn btn-wide");?>
+              <?php echo html::submitButton($lang->save);?>
+              <?php echo html::backButton();?>
             </td>
           </tr>
         </tfoot>

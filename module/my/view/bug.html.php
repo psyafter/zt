@@ -47,12 +47,23 @@
           <th class='w-type'>      <?php common::printOrderLink('type',       $orderBy, $vars, $lang->typeAB);?></th>
           <th>                     <?php common::printOrderLink('title',      $orderBy, $vars, $lang->bug->title);?></th>
           <th class='w-user'>      <?php common::printOrderLink('openedBy',   $orderBy, $vars, $lang->openedByAB);?></th>
-          <th class='w-user'>      <?php common::printOrderLink('assignedTo', $orderBy, $vars, $lang->bug->assignedTo);?></th>
+          <th class='w-100px c-assignedTo'><?php common::printOrderLink('assignedTo', $orderBy, $vars, $lang->bug->assignedTo);?></th>
           <th class='w-user'>      <?php common::printOrderLink('resolvedBy', $orderBy, $vars, $lang->bug->resolvedByAB);?></th>
           <th class='w-resolution'><?php common::printOrderLink('resolution', $orderBy, $vars, $lang->bug->resolutionAB);?></th>
           <th class='c-actions-5'> <?php echo $lang->actions;?></th>
         </tr>
       </thead>
+      <?php
+      $hasCustomSeverity = false;
+      foreach($lang->bug->severityList as $severityKey => $severityValue)
+      {
+          if(!empty($severityKey) and (string)$severityKey != (string)$severityValue)
+          {
+              $hasCustomSeverity = true;
+              break;
+          }
+      }
+      ?>
       <tbody>
         <?php foreach($bugs as $bug):?>
         <tr>
@@ -65,19 +76,18 @@
             <?php endif;?>
             <?php printf('%03d', $bug->id);?>
           </td>
-          <td><span class='<?php echo 'label-severity';?>' data-severity='<?php echo $bug->severity;?>' title='<?php echo zget($lang->bug->severityList, $bug->severity);?>'></span></td>
-          <td><span class='label-pri <?php echo 'label-pri-' . $bug->pri?>' title='<?php echo zget($lang->bug->priList, $bug->pri);?>'><?php echo zget($lang->bug->priList, $bug->pri)?></span></td>
-          <td><?php echo zget($lang->bug->typeList, $bug->type, '');?></td>
-          <td class='text-left nobr'><?php echo html::a($this->createLink('bug', 'view', "bugID=$bug->id"), $bug->title, null, "style='color: $bug->color'");?></td>
-          <td><?php echo zget($users, $bug->openedBy);?></td>
           <td>
-            <?php
-            $assignedToText = !empty($bug->assignedTo) ? zget($users, $bug->assignedTo) : $this->lang->bug->noAssigned;
-            $btnTextClass   = 'text-red';
-            $btnClass = $assignedToText == 'closed' ? ' disabled' : '';
-            echo html::a(helper::createLink('bug', 'assignTo', "bugID=$bug->id", '', true), "<i class='icon icon-hand-right'></i> <span class='{$btnTextClass}'>{$assignedToText}</span>", '', "class='iframe btn btn-sm btn-icon-left{$btnClass}'");
-            ?>
+            <?php if($hasCustomSeverity):?>
+            <span class='<?php echo 'label-severity-custom';?>' title='<?php echo zget($lang->bug->severityList, $bug->severity);?>' data-severity='<?php echo $bug->severity;?>'><?php echo zget($lang->bug->severityList, $bug->severity, $bug->severity);?></span>
+            <?php else:?>
+            <span class='<?php echo 'label-severity';?>' data-severity='<?php echo $bug->severity;?>' title='<?php echo zget($lang->bug->severityList, $bug->severity);?>'></span>
+            <?php endif;?>
           </td>
+          <td><span class='label-pri <?php echo 'label-pri-' . $bug->pri?>' title='<?php echo zget($lang->bug->priList, $bug->pri);?>'><?php echo zget($lang->bug->priList, $bug->pri)?></span></td>
+          <td title="<?php echo zget($lang->bug->typeList, $bug->type, '');?>"><?php echo zget($lang->bug->typeList, $bug->type, '');?></td>
+          <td class='text-left nobr'><?php echo html::a($this->createLink('bug', 'view', "bugID=$bug->id"), $bug->title, null, "style='color: $bug->color' title={$bug->title}");?></td>
+          <td><?php echo zget($users, $bug->openedBy);?></td>
+          <td class='c-assignedTo has-btn'><?php $this->bug->printAssignedHtml($bug, $users);?></td>
           <td><?php echo zget($users, $bug->resolvedBy);?></td>
           <td><?php echo zget($lang->bug->resolutionList, $bug->resolution);?></td>
           <td class='c-actions'>
@@ -127,20 +137,26 @@
           $withSearch = count($memberPairs) > 10;
           $actionLink = $this->createLink('bug', 'batchAssignTo', "productID=0&type=my");
           echo html::select('assignedTo', $memberPairs, '', 'class="hidden"');
-          echo "<div class='dropdown-menu search-list' data-ride='searchList'>";
           if($withSearch)
           {
+              echo "<div class='dropdown-menu search-list search-box-sink' data-ride='searchList'>";
               echo '<div class="input-control search-box has-icon-left has-icon-right search-example">';
               echo '<input id="userSearchBox" type="search" class="form-control search-input" autocomplete="off" />';
               echo '<label for="userSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>';
               echo '<a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a>';
               echo '</div>';
+              $membersPinYin = common::convert2Pinyin($memberPairs);
+          }
+          else
+          {
+              echo "<div class='dropdown-menu search-list'>";
           }
           echo '<div class="list-group">';
           foreach ($memberPairs as $key => $value)
           {
               if(empty($key)) continue;
-              echo html::a('javascript:$(".table-actions #assignedTo").val("' . $key . '");setFormAction("' . $actionLink . '")', '<i class="icon icon-person icon-sm"></i> ' . $value, '', "data-key='@$key'");
+              $searchKey = $withSearch ? ('data-key="' . zget($membersPinYin, $value, '') . " @$key\"") : "data-key='@$key'";
+              echo html::a('javascript:$(".table-actions #assignedTo").val("' . $key . '");setFormAction("' . $actionLink . '")', '<i class="icon icon-person icon-sm"></i> ' . $value, '', $searchKey);
           }
           echo "</div>";
           echo "</div>";

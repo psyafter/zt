@@ -62,12 +62,12 @@
       <tr data-id='<?php echo $groupIndex;?>' <?php if($i == 0) echo "class='divider-top'";?>>
         <?php if($i == 0):?>
         <td rowspan='<?php echo count($groupTasks);?>' class='c-side text-left group-toggle text-top'>
-          <?php echo html::a('###', "<i class='icon-caret-down'></i> $groupName", '', "class='text-primary'");?>
+          <div class='group-header'><?php echo html::a('###', "<i class='icon-caret-down'></i> $groupName", '', "class='text-primary'");?></div>
         </td>
         <?php endif;?>
         <td class='c-id-sm'><?php echo sprintf('%03d', $case->id);?></td>
         <td><span class='label-pri <?php echo 'label-pri-' . $case->pri;?>' title='<?php echo zget($lang->testcase->priList, $case->pri, $case->pri);?>'><?php echo zget($lang->testcase->priList, $case->pri, $case->pri);?></span></td>
-        <td class='text-left'><?php if(!common::printLink('testcase', 'view', "case=$case->id", $case->title)) echo $case->title;?></td>
+        <td class='text-left title' title='<?php echo $case->title?>'><?php if(!common::printLink('testcase', 'view', "case=$case->id", $case->title)) echo $case->title;?></td>
         <td><?php echo zget($lang->case->typeList, $case->type, '');?></td>
         <td><?php echo zget($users, $case->lastRunner);?></td>
         <td><?php if(!helper::isZeroDate($case->lastRunDate)) echo date(DT_MONTHTIME1, strtotime($case->lastRunDate));?></td>
@@ -82,9 +82,9 @@
           }
           else
           {
-              echo "<span class='status-{$case->status}'><span class='label label-dot'></span><span class='status-text'>";
+              echo "<span class='status-case status-{$case->status}'>";
               echo $lang->testcase->statusList[$case->status];
-              echo '</span></span>';
+              echo '</span>';
           }
           ?>
         </td>

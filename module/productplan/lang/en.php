@@ -16,7 +16,7 @@ $lang->productplan->create     = "Create Plan";
 $lang->productplan->edit       = "Edit";
 $lang->productplan->delete     = "Delete";
 $lang->productplan->view       = "Details";
-$lang->productplan->bugSummary = "<strong>%s</strong> Bugs in total on this page.";
+$lang->productplan->bugSummary = "Total <strong>%s</strong> Bugs on this page.";
 $lang->productplan->basicInfo  = 'Basic Info';
 $lang->productplan->batchEdit  = 'Batch Edit';
 
@@ -33,6 +33,8 @@ $lang->productplan->unlinkBug        = "Unlink Bug";
 $lang->productplan->batchUnlinkBug   = "Batch Unlink Bug";
 $lang->productplan->linkedBugs       = 'Linked Bug';
 $lang->productplan->unlinkedBugs     = 'Unlinked';
+$lang->productplan->unexpired        = 'Unexpired Plan';
+$lang->productplan->all              = 'All Plan';
 
 $lang->productplan->confirmDelete      = "Do you want to delete this Plan?";
 $lang->productplan->confirmUnlinkStory = "Do you want to unlink this Story?";

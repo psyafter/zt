@@ -157,14 +157,19 @@ class blockModel extends model
     {
         $data = array();
 
-        $projects = $this->loadModel('project')->getPairs();
-        $products = $this->loadModel('product')->getPairs();
-
         $data['tasks']    = (int)$this->dao->select('count(*) AS count')->from(TABLE_TASK)->where('assignedTo')->eq($this->app->user->account)->andWhere('deleted')->eq(0)->fetch('count');
         $data['bugs']     = (int)$this->dao->select('count(*) AS count')->from(TABLE_BUG)->where('assignedTo')->eq($this->app->user->account)->andWhere('deleted')->eq(0)->fetch('count');
         $data['stories']  = (int)$this->dao->select('count(*) AS count')->from(TABLE_STORY)->where('assignedTo')->eq($this->app->user->account)->andWhere('deleted')->eq(0)->fetch('count');
-        $data['projects'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_PROJECT)->where('id')->in(array_keys($projects))->andWhere("(status='wait' or status='doing')")->andWhere('deleted')->eq(0)->fetch('count');
-        $data['products'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_PRODUCT)->where('status')->ne('closed')->andWhere('id')->in(array_keys($products))->andWhere('deleted')->eq(0)->fetch('count');
+        $data['projects'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_PROJECT)
+            ->where("(status='wait' or status='doing')")
+            ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->projects)->fi()
+            ->andWhere('deleted')->eq(0)
+            ->fetch('count');
+        $data['products'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_PRODUCT)
+            ->where('status')->ne('closed')
+            ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->products)->fi()
+            ->andWhere('deleted')->eq(0)
+            ->fetch('count');
 
         $today = date('Y-m-d');
         $data['delayTask'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_TASK)
@@ -182,8 +187,8 @@ class blockModel extends model
             ->andWhere('deleted')->eq(0)
             ->fetch('count');
         $data['delayProject'] = (int)$this->dao->select('count(*) AS count')->from(TABLE_PROJECT)
-            ->where('id')->in(array_keys($projects))
-            ->andWhere('status')->in('wait,doing')
+            ->where('status')->in('wait,doing')
+            ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->projects)->fi()
             ->andWhere('end')->lt($today)
             ->andWhere('deleted')->eq(0)
             ->fetch('count');
@@ -471,6 +476,9 @@ class blockModel extends model
         $params->type['options'] = $this->lang->block->typeList->product;
         $params->type['control'] = 'select';
 
+        $params->num['name']    = $this->lang->block->num;
+        $params->num['control'] = 'input';
+
         return json_encode($params);
     }
 
@@ -487,6 +495,9 @@ class blockModel extends model
         $params->type['options'] = $this->lang->block->typeList->project;
         $params->type['control'] = 'select';
 
+        $params->num['name']    = $this->lang->block->num;
+        $params->num['control'] = 'input';
+
         return json_encode($params);
     }
 
@@ -502,6 +513,9 @@ class blockModel extends model
         $params->type['name']    = $this->lang->block->type;
         $params->type['options'] = $this->lang->block->typeList->product;
         $params->type['control'] = 'select';
+
+        $params->num['name']    = $this->lang->block->num;
+        $params->num['control'] = 'input';
 
         return json_encode($params);
     }
@@ -635,10 +649,11 @@ class blockModel extends model
      * Get products like drop menu order
      * 
      * @param  strint    $status 
+     * @param  int       $num 
      * @access public
      * @return array
      */
-    public function getProductsLikeDropMenu($status)
+    public function getProducts($status, $num)
     {
         $products = $this->loadModel('product')->getList($status);
         if(empty($products)) return $products;
@@ -662,7 +677,7 @@ class blockModel extends model
         $products = $mineProducts = $otherProducts = $closedProducts = array();
         foreach($productList as $product)
         {
-            if(!$this->app->user->admin and !$this->product->checkPriv($product)) continue;
+            if(!$this->app->user->admin and !$this->product->checkPriv($product->id)) continue;
             if($product->status == 'normal' and $product->PO == $this->app->user->account) 
             {
                 $mineProducts[$product->id] = $product;
@@ -678,17 +693,19 @@ class blockModel extends model
         }
         $products = $mineProducts + $otherProducts + $closedProducts;
 
-        return $products;
+        if(empty($num)) return $products;
+        return array_slice($products, 0, $num, true);
     }
 
     /**
      * Get projects like drop menu order
      * 
      * @param  string    $status 
+     * @param  int       $num 
      * @access public
      * @return array
      */
-    public function getProjectsLikeDropMenu($status)
+    public function getProjects($status, $num)
     {
         $projectList = $this->loadModel('project')->getList($status);
         if(empty($projectList)) return $projectList;
@@ -696,7 +713,7 @@ class blockModel extends model
         $projects = $mineProjects = $otherProjects = $closedProjects = array();
         foreach($projectList as $project)
         {
-            if(!$this->app->user->admin and !$this->project->checkPriv($project)) continue;
+            if(!$this->app->user->admin and !$this->project->checkPriv($project->id)) continue;
             if($project->status != 'done' and $project->status != 'closed' and $project->PM == $this->app->user->account)
             {
                 $mineProjects[$project->id] = $project;
@@ -712,6 +729,7 @@ class blockModel extends model
         }
         $projects = $mineProjects + $otherProjects + $closedProjects;
 
-        return $projects;
+        if(empty($num)) return $projects;
+        return array_slice($projects, 0, $num, true);
     }
 }

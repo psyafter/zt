@@ -23,50 +23,46 @@
     <div class="panel block-files block-sm no-margin">
       <div class="panel-heading">
         <div class="panel-title font-normal">
-          <?php if($type == 'custom')  $panelTitle = $lang->doc->custom;?>
-          <?php if($type == 'product') $panelTitle = $lang->productCommon;?>
-          <?php if($type == 'project') $panelTitle = $lang->projectCommon;?>
+          <?php $panelTitle = zget($lang->doclib->tabList, $type);?>
           <i class="icon icon-folder-open-o text-muted"></i> <?php echo $panelTitle;?>
-        </div>
-        <nav class="panel-actions btn-toolbar">
           <div class="btn-group">
             <?php echo html::a('javascript:setBrowseType("bylist")', "<i class='icon icon-bars'></i>", '', "title='{$lang->doc->browseTypeList['list']}' class='btn btn-icon'");?>
             <?php echo html::a('javascript:setBrowseType("bygrid")', "<i class='icon icon-cards-view'></i>", '', "title='{$lang->doc->browseTypeList['grid']}' class='btn btn-icon text-primary'");?>
           </div>
-        </nav>
+        </div>
       </div>
       <div class="panel-body">
         <div class="row row-grid files-grid" data-size="300">
           <?php if($type == 'product') $icon = 'icon-product text-secondary';?>
           <?php if($type == 'project') $icon = 'icon-project text-green';?>
-          <?php if($type == 'custom')  $icon = 'icon-folder text-yellow';?>
+          <?php if($type != 'product' and $type != 'project')  $icon = 'icon-folder text-yellow';?>
           <?php foreach($libs as $lib):?>
-          <?php $link = $type != 'custom' ? $this->createLink('doc', 'objectLibs', "type=$type&objectID=$lib->id") : $this->createLink('doc', 'browse', "libID=$lib->id");?>
+          <?php $link = ($type == 'product' or $type == 'project') ? $this->createLink('doc', 'objectLibs', "type=$type&objectID=$lib->id") : $this->createLink('doc', 'browse', "libID=$lib->id");?>
           <div class="col">
             <a class="file" href="<?php echo $link;?>">
               <i class="file-icon icon <?php echo $icon;?>"></i>
-              <div class="file-name"><?php echo ($type == 'custom' && strpos($lib->collector, $this->app->user->account) !== false ? "<i class='icon icon-star text-yellow'></i> " : '') . $lib->name;?></div>
-              <?php if($type == 'custom'):?>
-              <div class="text-primary file-info"><?php echo $itemCounts[$lib->id] . $lang->doc->item;?></div>
-              <?php else:?>
+              <div class="file-name"><?php echo ($type != 'product' && $type != 'project' && strpos($lib->collector, $this->app->user->account) !== false ? "<i class='icon icon-star text-yellow'></i> " : '') . $lib->name;?></div>
+              <?php if($type == 'product' or $type == 'project'):?>
               <div class="text-primary file-info"><?php echo count($subLibs[$lib->id]) . $lang->doc->item;?></div>
+              <?php else:?>
+              <div class="text-primary file-info"><?php echo $itemCounts[$lib->id] . $lang->doc->item;?></div>
               <?php endif;?>
             </a>
-            <?php if($type == 'custom'):?>
+            <?php if($type != 'product' and $type != 'project'):?>
             <div class="actions">
               <?php $star = strpos($lib->collector, ',' . $this->app->user->account . ',') !== false ? 'icon-star text-yellow' : 'icon-star-empty';?>
               <?php $collectTitle = strpos($lib->collector, ',' . $this->app->user->account . ',') !== false ? $lang->doc->cancelCollection : $lang->doc->collect;?>
               <a data-url="<?php echo $this->createLink('doc', 'collect', "objectID=$lib->id&objectType=doclib");?>" title="<?php echo $collectTitle;?>" class='btn btn-link ajaxCollect'><i class='icon <?php echo $star;?>'></i></a>
               <?php common::printLink('doc', 'editLib', "libID=$lib->id", "<i class='icon icon-edit'></i>", '', "title='{$lang->edit}' class='btn btn-link iframe'")?>
-              <?php common::printLink('doc', 'deleteLib', "libID=$lib->id", "<i class='icon icon-trash'></i>", 'hiddenwin', "title='{$lang->delete}' class='btn btn-link'")?>
+              <?php common::printLink('doc', 'deleteLib', "libID=$lib->id", "<i class='icon icon-close'></i>", 'hiddenwin', "title='{$lang->delete}' class='btn btn-link'")?>
               <?php common::printLink('tree', 'browse', "rootID=$lib->id&type=doc", "<i class='icon icon-cog'></i>", '', "title='{$lang->doc->manageType}' class='btn btn-link'")?>
             </div>
             <?php endif;?>
           </div>
           <?php endforeach;?>
         </div>
+        <div class='table-footer'><?php $pager->show('right', 'pagerjs');?></div>
       </div>
-      <div class='table-footer'><?php $pager->show('right', 'pagerjs');?></div>
     </div>
   </div>
   <?php endif;?>

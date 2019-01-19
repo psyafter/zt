@@ -39,8 +39,15 @@ class doc extends control
     {
         $this->doc->setMenu();
 
+        $this->session->set('docList', $this->app->getURI(true));
         $this->app->loadClass('pager', $static = true);
         $pager = new pager(0, 5, 1);
+
+        $this->lang->modulePageActions  = $this->doc->setFastMenu($this->lang->doc->fast);
+        $this->lang->modulePageActions .= common::hasPriv('doc', 'createLib') ? html::a(helper::createLink('doc', 'createLib'), "<i class='icon icon-folder-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe'") : '';
+
+        $actionURL = $this->createLink('doc', 'browse', "lib=0&browseType=bySearch&queryID=myQueryID");
+        $this->doc->buildSearchForm(0, array(), 0, $actionURL, 'index');
 
         $this->view->title            = $this->lang->doc->common . $this->lang->colon . $this->lang->doc->index;
         $this->view->position[]       = $this->lang->doc->index;
@@ -48,7 +55,7 @@ class doc extends control
         $this->view->myDocs           = $this->loadModel('doc')->getDocsByBrowseType(0, 'openedbyme', 0, 0, 'addedDate_desc', $pager);
         $this->view->statisticInfo    = $this->doc->getStatisticInfo();
         $this->view->users            = $this->loadModel('user')->getPairs('noletter');
-        $this->view->doingProjects    = $this->loadModel('project')->getList('isdoing', 5);
+        $this->view->doingProjects    = $this->loadModel('project')->getList('undone', 5);
 
         $this->display();
     }
@@ -84,17 +91,13 @@ class doc extends control
         $projectID = 0;
         if($libID)
         {
-            $type = 'custom';
-            $lib  = $this->doc->getLibByID($libID);
-            if($lib->product or $lib->project)
-            {
-                $type = $lib->product ? 'product' : 'project';
-                $productID = $lib->product;
-                $projectID = $lib->project;
-            }
+            $lib       = $this->doc->getLibByID($libID);
+            $type      = $lib->type;
+            $productID = $lib->product;
+            $projectID = $lib->project;
         }
 
-        $this->libs = $this->doc->getLibs($type);
+        $this->libs = $this->doc->getLibs($type, '', $libID);
 
         /* According the from, set menus. */
         if($from == 'product')
@@ -103,8 +106,6 @@ class doc extends control
             $this->lang->doc->menuOrder = $this->lang->product->menuOrder;
             $this->product->setMenu($this->product->getPairs(), $lib->product);
             $this->lang->set('menugroup.doc', 'product');
-
-            if(common::hasPriv('doc', 'create')) $this->lang->modulePageActions = html::a(helper::createLink('doc', 'create', "libID=$libID"), "<i class='icon icon-plus'></i> " . $this->lang->doc->create, '', "class='btn btn-primary'");
         }
         elseif($from == 'project')
         {
@@ -112,14 +113,10 @@ class doc extends control
             $this->lang->doc->menuOrder = $this->lang->project->menuOrder;
             $this->project->setMenu($this->project->getPairs('nocode'), $lib->project);
             $this->lang->set('menugroup.doc', 'project');
+        }
 
-            if(common::hasPriv('doc', 'create')) $this->lang->modulePageActions = html::a(helper::createLink('doc', 'create', "libID=$libID"), "<i class='icon icon-plus'></i> " . $this->lang->doc->create, '', "class='btn btn-primary'");
-        }
-        else
-        {
-            $menuType = (!$type && in_array($browseType, array_keys($this->lang->doc->fastMenuList))) ? $browseType : $type;
-            $this->doc->setMenu($menuType, $libID, $moduleID, $productID, $projectID);
-        }
+        $menuType = (!$type && (in_array($browseType, array_keys($this->lang->doc->fastMenuList)) || $browseType == 'bysearch')) ? $browseType : $type;
+        $this->doc->setMenu($menuType, $libID, $moduleID, $productID, $projectID);
         $this->session->set('docList', $this->app->getURI(true));
 
         /* Set header and position. */
@@ -137,11 +134,13 @@ class doc extends control
         $actionURL = $this->createLink('doc', 'browse', "lib=$libID&browseType=bySearch&queryID=myQueryID&orderBy=$orderBy&from=$from");
         $this->doc->buildSearchForm($libID, $this->libs, $queryID, $actionURL, $type);
 
-        $title  = '';
-        $module = $moduleID ? $this->loadModel('tree')->getByID($moduleID) : '';
+        $title   = '';
+        $module  = $moduleID ? $this->loadModel('tree')->getByID($moduleID) : '';
         if($module) $title = $module->name;
-        if($libID)  $title = $this->libs[$libID];
+        if($libID)  $title = html::a(helper::createLink('doc', 'browse', "libID=$libID"), $this->libs[$libID], '');
         if(in_array($browseType, array_keys($this->lang->doc->fastMenuList))) $title = $this->lang->doc->fastMenuList[$browseType];
+        if($browseType == 'bysearch') $title = $this->lang->doc->search;
+        if($param != 0) $title = $this->doc->buildCrumbTitle($libID, $param, $title);
         if($browseType == 'fastsearch')
         {
             if($this->post->searchDoc) $this->session->set('searchDoc', $this->post->searchDoc);
@@ -159,11 +158,24 @@ class doc extends control
             $this->view->itemCounts = $this->doc->statLibCounts(array_keys($libs));
         }
 
-        $this->view->title      = $title;
+        $attachLibs = array();
+        if(!empty($lib) and (!empty($lib->product) or !empty($lib->project)) and $browseType != 'bymodule')
+        {
+            $count = $this->dao->select('count(*) as count')->from(TABLE_DOCLIB)->where('project')->eq($lib->project)->andWhere('product')->eq($lib->product)->fetch('count');
+            if($count == 1 and $type and isset($lib->$type))
+            {
+                $objectLibs = $this->doc->getLibsByObject($type, $lib->$type);
+                if(isset($objectLibs['project'])) $attachLibs['project'] = $objectLibs['project'];
+                if(isset($objectLibs['files']))   $attachLibs['files']   = $objectLibs['files'];
+            }
+        }
+
+        $this->view->breadTitle = $title;
         $this->view->libID      = $libID;
         $this->view->moduleID   = $moduleID;
         $this->view->modules    = $this->doc->getDocMenu($libID, $moduleID, $orderBy == 'title_asc' ? 'name_asc' : 'id_desc', $browseType);
         $this->view->docs       = $this->doc->getDocsByBrowseType($libID, $browseType, $queryID, $moduleID, $sort, $pager);
+        $this->view->attachLibs = $attachLibs;
         $this->view->users      = $this->loadModel('user')->getPairs('noletter');
         $this->view->orderBy    = $orderBy;
         $this->view->browseType = $browseType;
@@ -172,6 +184,7 @@ class doc extends control
         $this->view->from       = $from;
         $this->view->pager      = $pager;
         $this->view->libs       = $libs;
+        $this->view->currentLib = $libID ? $lib : '';
 
         $this->display();
     }
@@ -304,7 +317,7 @@ class doc extends control
         }
 
         $lib  = $this->doc->getLibByID($libID);
-        $type = $lib->product ? 'product' : ($lib->project ? 'project' : 'custom');
+        $type = $lib->type;
 
         /* According the from, set menus. */
         if($this->from == 'product')
@@ -335,6 +348,7 @@ class doc extends control
         $this->view->position[] = $this->lang->doc->create;
 
         $this->view->libID            = $libID;
+        $this->view->libName          = $this->dao->findByID($libID)->from(TABLE_DOCLIB)->fetch('name');
         $this->view->moduleOptionMenu = $this->tree->getOptionMenu($libID, 'doc', $startModuleID = 0);
         $this->view->moduleID         = $moduleID;
         $this->view->type             = $type;
@@ -379,8 +393,8 @@ class doc extends control
 
         if($doc->contentType == 'markdown') $this->config->doc->markdown->edit = array('id' => 'content', 'tools' => 'toolbar');
 
-        $lib        = $this->doc->getLibByID($libID);
-        $type       = $lib->product ? 'product' : ($lib->project ? 'project' : 'custom');
+        $lib  = $this->doc->getLibByID($libID);
+        $type = $lib->type;
         $this->doc->setMenu($type, $libID, $doc->module, $lib->product, $lib->project);
 
         $this->view->title      = $lib->name . $this->lang->colon . $this->lang->doc->edit;
@@ -390,6 +404,7 @@ class doc extends control
         $this->view->doc              = $doc;
         $this->view->moduleOptionMenu = $this->tree->getOptionMenu($libID, 'doc', $startModuleID = 0);
         $this->view->type             = $type;
+        $this->view->libs             = $this->doc->getLibs($type = 'all', $extra = 'withObject');
         $this->view->groups           = $this->loadModel('group')->getPairs();
         $this->view->users            = $this->user->getPairs('noletter', $doc->users);
         $this->display();
@@ -417,7 +432,7 @@ class doc extends control
 
         /* Check priv when lib is product or project. */
         $lib  = $this->doc->getLibByID($doc->lib);
-        $type = $lib->product ? 'product' : ($lib->project ? 'project' : 'custom');
+        $type = $lib->type;
 
         /* Set menu. */
         $this->doc->setMenu($type, $doc->lib, $doc->module, $lib->product, $lib->project);
@@ -598,6 +613,19 @@ class doc extends control
     }
 
     /**
+     * Ajax get all child module. 
+     *
+     * @access public
+     * @return void
+     */
+    public function ajaxGetChild($libID, $type = 'module')
+    {
+        $childModules = $this->loadModel('tree')->getOptionMenu($libID, 'doc');
+        $select = ($type == 'module') ? html::select('module', $childModules, '', "class='form-control chosen'") : html::select('parent', $childModules, '', "class='form-control chosen'");
+        die($select);
+    }
+
+    /**
      * Show all libs by type.
      *
      * @param  string $type
@@ -612,7 +640,7 @@ class doc extends control
     {
         setcookie('product', $product, $this->config->cookieLife, $this->config->webRoot);
 
-        $libName = isset($this->lang->doc->systemLibs[$type]) ? $this->lang->doc->systemLibs[$type] : $this->lang->doc->customAB;
+        $libName = $this->lang->doc->libTypeList[$type];
         $crumb   = html::a(inlink('allLibs', "type=$type&product=$product"), $libName);
         if($product and $type == 'project') $crumb = $this->doc->getProductCrumb($product);
 
@@ -632,7 +660,10 @@ class doc extends control
             $subLibs = $this->doc->getSubLibGroups($type, array_keys($libs));
             if($this->cookie->browseType == 'bylist') $this->view->users = $this->loadModel('user')->getPairs('noletter');
         }
-        if($type == 'custom') $this->view->itemCounts = $this->doc->statLibCounts(array_keys($libs));
+        else
+        {
+            $this->view->itemCounts = $this->doc->statLibCounts(array_keys($libs));
+        }
 
         $this->view->type    = $type;
         $this->view->libs    = $libs;
@@ -690,15 +721,13 @@ class doc extends control
             if($type == 'product')
             {
                 $productID = $objectID;
-                $lib = $this->product->getById($objectID);
-                if(!$this->product->checkPriv($lib)) $this->accessDenied();
+                if(!$this->product->checkPriv($objectID)) $this->accessDenied();
             }
 
             if($type == 'project')
             {
                 $projectID = $objectID;
-                $lib = $this->project->getById($objectID);
-                if(!$this->project->checkPriv($lib)) $this->accessDenied();
+                if(!$this->project->checkPriv($objectID)) $this->accessDenied();
             }
 
             $this->doc->setMenu($type, $libID = 0, $moduleID = 0, $productID, $projectID, $crumb);
@@ -782,6 +811,10 @@ class doc extends control
 
         /* Set Custom. */
         foreach(explode(',', $this->config->doc->customObjectLibs) as $libType) $customObjectLibs[$libType] = $this->lang->doc->customObjectLibs[$libType];
+
+        $actionURL = $this->createLink('doc', 'browse', "lib=0&browseType=bySearch&queryID=myQueryID");
+        $this->doc->buildSearchForm(0, array(), 0, $actionURL, 'objectLibs');
+
         $this->view->customObjectLibs = $customObjectLibs;
         $this->view->showLibs         = $this->config->doc->custom->objectLibs;
 

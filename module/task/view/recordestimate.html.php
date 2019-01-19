@@ -62,7 +62,7 @@
               if($task->status == 'wait' or $task->status == 'pause' or $task->status == 'doing')
               {
                   common::printIcon('task', 'editEstimate', "estimateID=$estimate->id", '', 'list', 'pencil', '', 'showinonlybody', true);
-                  common::printIcon('task', 'deleteEstimate', "estimateID=$estimate->id", '', 'list', 'trash', 'hiddenwin', 'showinonlybody');
+                  common::printIcon('task', 'deleteEstimate', "estimateID=$estimate->id", '', 'list', 'close', 'hiddenwin', 'showinonlybody');
               }
               ?>
             </td>
@@ -85,7 +85,7 @@
           <?php for($i = 1; $i <= 3; $i++):?>
           <tr class="text-center">
             <td><?php echo $i . html::hidden("id[$i]", $i);?></td>
-            <td><?php echo html::input("dates[$i]", '', "class='form-control text-center form-date'");?></td>
+            <td><?php echo html::input("dates[$i]", helper::today(), "class='form-control text-center form-date'");?></td>
             <td><?php echo html::input("consumed[$i]", '', "class='form-control text-center' autocomplete='off'");?></td>
             <td><?php echo html::input("left[$i]", '', "class='form-control text-center left' autocomplete='off'");?></td>
             <td class="text-left"><?php echo html::textarea("work[$i]", '', "class='form-control' style='height:50px;'");?></td>
@@ -93,7 +93,7 @@
           </tr>
           <?php endfor;?>
           <tr>
-            <td colspan='6' class='text-center form-actions'><?php echo html::submitButton('', '', 'btn btn-wide btn-primary') . html::backButton('', '', 'btn btn-wide');?></td>
+            <td colspan='6' class='text-center form-actions'><?php echo html::submitButton() . html::backButton('', '', 'btn btn-wide');?></td>
           </tr>
           <?php endif;?>
         </tbody>

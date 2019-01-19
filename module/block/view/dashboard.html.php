@@ -1,13 +1,13 @@
 <?php
 /**
- * The dashboard view file of block module of RanZhi.
+ * The dashboard view file of block module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
  * @license     ZPL (http://zpl.pub/page/zplv12.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     block
  * @version     $Id$
- * @link        http://www.ranzhico.com
+ * @link        https://www.zentao.pm
  */
 if($extView = $this->getExtViewFile(__FILE__)){include $extView; return helper::cd();}
 $webRoot   = $config->webRoot;
@@ -101,10 +101,10 @@ var useGuest = <?php echo $useGuest ? 'true' : 'false';?>;
 <?php if(!$useGuest):?>
 <?php
 $dropmenu  = "<div class='btn-group'>";
-$dropmenu .= html::a($this->createLink("block", "admin", "id=0&module=$module"), "<i class='icon icon-plus text-muted'></i> {$lang->block->createBlock}", '', "class='btn' data-toggle='modal' data-type='ajax' data-width='700' data-title='{$lang->block->createBlock}'");
-$dropmenu .= "<button type='button' class='btn dropdown-toggle' data-toggle='dropdown' style='padding-bottom:7px;'><span class='caret'></span></button>";
+$dropmenu .= "<button type='button' class='btn dropdown-toggle' data-toggle='dropdown' style='padding-bottom:7px;'>{$lang->block->common} <span class='caret'></span></button>";
 $dropmenu .= "<ul class='dropdown-menu pull-right' role='menu'>";
-$dropmenu .= "<li>" . html::a($this->createLink("block", "ajaxReset", "module=$module"), $lang->block->reset, 'hiddenwin') . "</li>";
+$dropmenu .= "<li>" . html::a($this->createLink("block", "admin", "id=0&module=$module"), "<i class='icon icon-plus'></i> {$lang->block->createBlock}", '', "data-toggle='modal' data-type='ajax' data-width='700' data-title='{$lang->block->createBlock}'") . "</li>";
+$dropmenu .= "<li>" . html::a($this->createLink("block", "ajaxReset", "module=$module"), "<i class='icon icon-refresh'></i> {$lang->block->reset}", 'hiddenwin') . "</li>";
 $dropmenu .= '</ul></div>';
 ?>
 $('#subHeader #pageActions .btn-toolbar:last').append(<?php echo json_encode($dropmenu)?>);

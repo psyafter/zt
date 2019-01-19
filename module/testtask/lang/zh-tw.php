@@ -14,7 +14,7 @@ $lang->testtask->create           = "提交測試";
 $lang->testtask->reportChart      = '報表統計';
 $lang->testtask->delete           = "刪除版本";
 $lang->testtask->view             = "概況";
-$lang->testtask->edit             = "編輯版本";
+$lang->testtask->edit             = "編輯測試單";
 $lang->testtask->browse           = "版本列表";
 $lang->testtask->linkCase         = "關聯用例";
 $lang->testtask->selectVersion    = "選擇版本";
@@ -105,6 +105,7 @@ $lang->testtask->confirmDelete     = '您確認要刪除該版本嗎？';
 $lang->testtask->confirmUnlinkCase = '您確認要移除該用例嗎？';
 $lang->testtask->noticeNoOther     = '該產品還沒有其他測試版本';
 $lang->testtask->noTesttask        = '暫時沒有測試版本。';
+$lang->testtask->checkLinked       = '請檢查測試單的產品是否與項目相關聯';
 
 $lang->testtask->assignedToMe  = '指派給我';
 $lang->testtask->allCases      = '所有用例';

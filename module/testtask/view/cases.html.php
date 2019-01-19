@@ -33,7 +33,7 @@
         <nav class="btn-toolbar pull-right"></nav>
       </div>
       <?php
-      $vars         = "taskID=$task->id&browseType=$browseType&param=$param&orderBy=%s&recToal={$pager->recTotal}&recPerPage={$pager->recPerPage}";
+      $vars = "taskID=$task->id&browseType=$browseType&param=$param&orderBy=%s&recToal={$pager->recTotal}&recPerPage={$pager->recPerPage}";
 
       $canBatchEdit   = common::hasPriv('testcase', 'batchEdit');
       $canBatchUnlink = common::hasPriv('testtask', 'batchUnlinkCases');
@@ -45,7 +45,7 @@
       if(!$useDatatable) include '../../common/view/tablesorter.html.php';
 
       $config->testcase->datatable->defaultField = $config->testtask->datatable->defaultField;
-      $config->testcase->datatable->fieldList['actions']['width'] = '90';
+      $config->testcase->datatable->fieldList['actions']['width'] = '120';
 
       $setting = $this->datatable->getSetting('testtask');
       $widths  = $this->datatable->setFixedFieldWidth($setting);
@@ -101,13 +101,14 @@
           <?php if($canBatchAssign):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->testtask->assign;?> <span class="caret"></span></button>
-            <div class="dropdown-menu search-list" data-ride="searchList">
-              <?php
-              $withSearch = count($assignedTos) > 10;
-              $actionLink = inLink('batchAssign', "taskID=$task->id");
-              echo html::select('assignedTo', $assignedTos, '', 'class="hidden"');
-              if($withSearch):
-              ?>
+            <?php
+            $withSearch = count($assignedTos) > 10;
+            $actionLink = inLink('batchAssign', "taskID=$task->id");
+            echo html::select('assignedTo', $assignedTos, '', 'class="hidden"');
+            ?>
+            <div class="dropdown-menu search-list<?php if($withSearch) echo ' search-box-sink';?>" data-ride="searchList">
+              <?php if($withSearch):?>
+              <?php $membersPinYin = common::convert2Pinyin($assignedTos);?>
               <div class="input-control search-box has-icon-left has-icon-right search-example">
                 <input id="userSearchBox" type="search" autocomplete="off" class="form-control search-input">
                 <label for="userSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
@@ -116,10 +117,11 @@
               <?php endif;?>
               <div class="list-group">
               <?php foreach ($assignedTos as $key => $value):?>
-              <?php
-              if(empty($key) or $key == 'closed') continue;
-              echo html::a("javascript:$(\"#assignedTo\").val(\"$key\");setFormAction(\"$actionLink\", \"hiddenwin\")", $value);
-              ?>
+                  <?php
+                  if(empty($key) or $key == 'closed') continue;
+                  $searchKey = $withSearch ? ('data-key="' . zget($membersPinYin, $value, '') . " @$key\"") : "data-key='@$key'";
+                  echo html::a("javascript:$(\"#assignedTo\").val(\"$key\");setFormAction(\"$actionLink\", \"hiddenwin\")", $value, '', $searchKey);
+                  ?>
               <?php endforeach;?>
               </div>
             </div>

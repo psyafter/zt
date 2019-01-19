@@ -25,9 +25,12 @@
     <form class='load-indicator main-form form-ajax' method='post' enctype='multipart/form-data' id='dataform'>
       <table class='table table-form'> 
         <tr>
+          <th><?php echo $lang->doc->lib;?></th>
+          <td> <?php echo html::select('lib', $libs, $doc->lib, "class='form-control chosen' onchange=loadDocModule(this.value)");?> </td><td></td>
+        </tr>  
+        <tr>
           <th><?php echo $lang->doc->module;?></th>
           <td>
-            <?php echo html::hidden('lib', $doc->lib)?>
             <span id='moduleBox'><?php echo html::select('module', $moduleOptionMenu, $doc->module, "class='form-control chosen'");?></span>
           </td><td></td>
         </tr>  
@@ -76,8 +79,8 @@
           <td colspan='3' class='text-center form-actions'>
             <?php
             echo html::hidden('editedDate', $doc->editedDate);
-            echo html::submitButton('', '', 'btn btn-wide btn-primary');
-            echo html::backButton('', '', 'btn btn-wide');
+            echo html::submitButton();
+            echo html::backButton();
             ?>
           </td>
         </tr>

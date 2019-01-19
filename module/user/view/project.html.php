@@ -15,7 +15,7 @@
 <?php include './featurebar.html.php';?>
 <div id='mainContent'>
   <div class='main-table'>
-    <table class='table has-sort-head table-fixed'>
+    <table class='table has-sort-head table-fixed tablesorter'>
       <thead>
         <tr class='colhead'>
           <th class='w-id'><?php echo $lang->idAB;?></th>
@@ -32,10 +32,10 @@
       <tbody>
         <?php foreach($projects as $project):?>
         <?php $projectLink = $this->createLink('project', 'browse', "projectID=$project->id");?>
-        <tr class='text-center'>
+        <tr>
           <td><?php echo html::a($projectLink, $project->id);?></td>
           <td><?php echo $project->code;?></td>
-          <td class="text-left"><?php echo html::a($projectLink, $project->name);?></td>
+          <td><?php echo html::a($projectLink, $project->name);?></td>
           <td><?php echo $project->begin;?></td>
           <td><?php echo $project->end;?></td>
           <?php if(isset($project->delay)):?>

@@ -16,7 +16,7 @@
     <div class='table-header hl-primary text-primary strong'>
       <?php echo html::icon('unlink');?>  <?php echo $lang->productplan->unlinkedBugs;?>
     </div>
-    <table class='table tablesorter'> 
+    <table class='table tablesorter'>
       <thead>
         <tr class='text-center'>
           <th class='c-id text-left'>
@@ -27,7 +27,7 @@
             <?php endif;?>
             <?php echo $lang->idAB;?>
           </th>
-          <th class='w-pri'>  <?php echo $lang->priAB;?></th>
+          <th class='w-100px'>  <?php echo $lang->priAB;?></th>
           <th class='text-left'><?php echo $lang->bug->title;?></th>
           <th class='w-user'> <?php echo $lang->openedByAB;?></th>
           <th class='w-150px'><?php echo $lang->bug->resolvedBy;?></th>
@@ -48,8 +48,7 @@
           <td><?php echo $users[$bug->openedBy];?></td>
           <td style='overflow:visible;padding-top:1px;padding-bottom:1px;'><?php echo ($bug->status == 'resolved' or $bug->status == 'closed') ? $users[$bug->resolvedBy] : html::select("resolvedBy[{$bug->id}]", $users, $this->app->user->account, "class='form-control chosen'");?></td>
           <td>
-            <span class='status-<?php echo $bug->status?>'>
-              <span class='label label-dot'></span>
+            <span class='status-bug status-<?php echo $bug->status?>'>
               <?php echo $lang->bug->statusList[$bug->status];?>
             </span>
           </td>

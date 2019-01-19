@@ -24,6 +24,7 @@ function setBrowseType(type)
 
 $(document).ready(function()
 {
+    $('#pageActions ul.dropdown-menu').css('left', '67px');
     $('.libs-group.sort').sortable(
     {
         trigger:  '.lib',
@@ -131,15 +132,12 @@ $(document).ready(function()
         };
 
         var resizeCols = function() {
-            var $cells = $cols.children('.panel,.cell').height('auto');
-            if($firstCol.next('.col-spliter').css('display') != 'none')
-            {
-                var bestHeight = $firstCol.height();
-                $cells.css('height', bestHeight);
-            }
+            var cellHeight = $(window).height() - $('#footer').outerHeight() - $('#header').outerHeight() - 42;
+            $cols.children('.panel').height(cellHeight).css('maxHeight', cellHeight).find('.panel-body').css('position', 'absolute');
+            $cols.find('.tab-content').height(cellHeight - $cols.find('.nav-tabs').height() - 35).css('maxHeight', cellHeight - $cols.find('.nav-tabs').height() - 35).css('overflow-y', 'auto');
         };
 
-        $element.find('.tree').on('resize', resizeCols);
+        $(window).on('resize', resizeCols);
         $firstCol.on('resize', function(e) {fixColClass($firstCol);});
         $secondCol.on('resize', function(e) {fixColClass($secondCol);});
         fixColClass($firstCol);

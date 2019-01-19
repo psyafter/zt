@@ -22,7 +22,7 @@
       <table class='table table-form'>
         <tr>
           <th><?php echo $lang->webhook->type;?></th>
-          <td><?php echo html::select('type', $lang->webhook->typeList, 'default', "class='form-control'");?></td>
+          <td><?php echo html::select('type', $lang->webhook->typeList, '', "class='form-control'");?></td>
           <td></td>
         </tr>
         <tr>
@@ -71,8 +71,8 @@
         <tr>
           <th></th>
           <td colspan='2' class='text-center form-actions'>
-            <?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?>
-            <?php echo html::backButton('', '', 'btn btn-wide');?>
+            <?php echo html::submitButton();?>
+            <?php echo html::backButton();?>
           </td>
         </tr>
       </table>

@@ -47,8 +47,7 @@
           <td><?php echo $users[$bug->openedBy];?></td>
           <td><?php echo $users[$bug->assignedTo];?></td>
           <td>
-            <span class='status-<?php echo $bug->status?>'>
-              <span class='label label-dot'></span>
+            <span class='status-bug status-<?php echo $bug->status?>'>
               <?php echo $lang->bug->statusList[$bug->status];?>
             </span>
           </td>

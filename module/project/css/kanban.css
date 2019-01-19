@@ -1,4 +1,4 @@
-.boards {display: table; table-layout: fixed; width: auto; }
+.boards {display: table; table-layout: fixed; width: auto; min-height: 50px;}
 .boards .board:not(:last-child) {border-right: 1px solid #ddd;}
 .board {display: table-cell; width: 16.666666667%; padding: 10px; border: 1px solid transparent; transition: background-color .2s, opacity .2s; vertical-align: top;}
 .board-item {border: 1px solid #EBEBEB; padding: 5px 10px; cursor: move; border-radius: 2px; background-color: #fff; transition: border .2s, opacity .2s; overflow: hidden;}
@@ -16,13 +16,15 @@
 .board.drop-to .board-drag-holder {display: block;}
 .board-item + .board-drag-holder {margin-top: 10px;}
 .board-item.dragging {opacity: .35;}
-.board-item .btn {padding: 2px 10px 2px 23px; font-size: 12px; position: relative; left: -2px;}
-.board-item .btn-icon-left > .icon {width: 22px; height: 22px; line-height: 20px; font-size: 14px;}
+.board-item .btn {padding: 2px 10px 2px 23px; font-size: 12px; position: relative; left: -2px; height: 24px;}
+.board-item .btn-icon-left > .icon {width: 22px; height: 22px; line-height: 20px; font-size: 14px; opacity: 1; top: 1px}
+.board-item .btn-icon-left > span {max-width: 80px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; display: inline-block;}
 #kanban {overflow-y: auto}
 #kanban > .table {min-width: 1100px;}
 #kanban.dragging .boards.dragging .board {background: #eee; opacity: .35; border-color: #f1f1f1}
-#kanban thead .c-side {padding: 5px;}
-#kanban .label-pri {width: 16px; height: 16px; line-height: 16px; min-width: 16px; font-size: 12px;}
+#kanban thead > tr > th {padding-left: 0; padding-right: 0;}
+#kanban thead .c-side {padding: 5px; max-width: 15%;}
+#kanban .label-pri {width: 16px; height: 16px; line-height: 12px; min-width: 16px; font-size: 12px; padding: 0;}
 #kanban tbody > tr > td {line-height: 24px;}
 #kanban .c-board {border-bottom: 4px #EAF3FC solid;}
 #kanban .c-board.s-wait {border-color: #7EC5FF;}
@@ -39,3 +41,6 @@
 #kanban .fix-table-copy-wrapper th.c-board {color: #eee;}
 #kanban .fix-table-copy-wrapper th.c-board .btn-link {color: #fff;}
 #kanban .group-title {word-break: break-all; line-height: 16px; padding: 3px 0; display: block;}
+
+.table-grouped > tbody > tr,
+.table-grouped > tbody > tr:hover {background: #fff!important;}

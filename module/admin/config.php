@@ -7,7 +7,7 @@ $config->url->feedback  = 'https://www.zentao.pm/forum-board-1074.html';
 $config->url->faq       = 'https://www.zentao.pm/ask-faq.html';
 $config->url->extension = 'https://www.zentao.pm/extension-browse.html';
 $config->url->donation  = 'https://www.zentao.pm/help-donation.html';
-$config->url->service   = 'http://www.cnezsoft.com/article-browse-1078.html';
+$config->url->service   = 'https://www.cnezsoft.com/article-browse-1078.html';
 
 $config->admin->apiRoot = 'https://www.zentao.pm';
 

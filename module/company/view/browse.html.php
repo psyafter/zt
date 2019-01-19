@@ -10,7 +10,7 @@
  * @link        https://www.zentao.pm
  */
 ?>
-<?php 
+<?php
 include '../../common/view/header.html.php';
 js::set('deptID', $deptID);
 js::set('confirmDelete', $lang->user->confirmDelete);
@@ -26,7 +26,6 @@ js::set('confirmDelete', $lang->user->confirmDelete);
     <a class="btn btn-link querybox-toggle" id='bysearchTab'><i class="icon icon-search muted"></i> <?php echo $lang->user->search;?></a>
   </div>
   <div class='btn-toolbar pull-right'>
-    <?php common::printIcon('group', 'create', '', '', 'button', '', '', 'iframe', true, "data-width='550px'");?>
     <?php common::printLink('user', 'batchCreate', "dept={$deptID}", "<i class='icon icon-plus'></i> " . $lang->user->batchCreate, '', "class='btn btn-secondary'");?>
     <?php
       if(commonModel::isTutorialMode())
@@ -85,7 +84,7 @@ js::set('confirmDelete', $lang->user->confirmDelete);
         <tr>
           <td class='c-id'>
             <?php if($canBatchEdit):?>
-            <?php echo html::checkbox('users', array($user->account => sprintf('%03d', $user->id)));?>
+            <?php echo html::checkbox('users', array($user->account => '')) . html::a(helper::createLink('user', 'view', "account=$user->account"), sprintf('%03d', $user->id));?>
             <?php else:?>
             <?php printf('%03d', $user->id);?>
             <?php endif;?>
@@ -101,31 +100,12 @@ js::set('confirmDelete', $lang->user->confirmDelete);
           <td class='c-num text-center'><?php echo $user->visits;?></td>
           <td class='c-actions'>
             <?php
-            if($user->ranzhi) 
-            {
-                common::printIcon('user', 'unbind', "userID=$user->account", '', 'list', 'unlink', "hiddenwin");
-            }
-            else
-            {
-                echo html::a('javascript:;', "<i class='icon icon-unlink'></i>", '', "class='btn disabled'");
-            }
-            if((strtotime(date('Y-m-d H:i:s')) - strtotime($user->locked)) < $config->user->lockMinutes * 60)
-            {
-                common::printIcon('user', 'unlock', "userID=$user->account", '', 'list', 'unlock', "hiddenwin");
-            }
-            else
-            {
-                echo html::a('javascript:;', "<i class='icon icon-unlock'></i>", '', "class='btn disabled'");
-            }
+            if(!empty($config->sso->turnon)) common::printIcon('user', 'unbind', "userID=$user->account", $user, 'list', 'unlink', "hiddenwin");
+            common::printIcon('user', 'unlock', "userID=$user->account", $user, 'list', 'unlock', "hiddenwin");
             common::printIcon('user', 'edit', "userID=$user->id&from=company", '', 'list');
-            if(strpos($this->app->company->admins, ",{$user->account},") === false and common::hasPriv('user', 'delete'))
-            {
-                echo html::a($this->createLink('user', 'delete', "userID=$user->id"), '<i class="icon-trash"></i>', '', "title='{$lang->user->delete}' class='btn iframe'");
-            }
-            else
-            {
-                echo html::a('javascript:;', "<i class='icon icon-trash'></i>", '', "class='btn disabled'");
-            }
+
+            $deleteClass = (strpos($this->app->company->admins, ",{$user->account},") === false and common::hasPriv('user', 'delete')) ? 'btn iframe' : 'btn disabled';
+            echo html::a($this->createLink('user', 'delete', "userID=$user->id"), '<i class="icon-close"></i>', '', "title='{$lang->user->delete}' class='{$deleteClass}'");
             ?>
           </td>
         </tr>

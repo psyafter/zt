@@ -312,6 +312,15 @@ class baseRouter
     public $cookie;
 
     /**
+     * 原始SESSIONID
+     * SESSIONID
+     *
+     * @var int
+     * @access public
+     */
+    public $sessionID;
+
+    /**
      * 网站代号。
      * The code of current site.
      * 
@@ -813,8 +822,11 @@ class baseRouter
         {
             $sessionName = $this->config->sessionVar;
             session_name($sessionName);
-            if(isset($_GET[$this->config->sessionVar])) session_id($_GET[$this->config->sessionVar]);
             session_start();
+
+            $this->sessionID = session_id();
+            if(isset($_GET[$this->config->sessionVar]) and $this->sessionID != $_GET[$this->config->sessionVar]) helper::restartSession($_GET[$this->config->sessionVar]);
+
             define('SESSION_STARTED', true);
         }
     }
@@ -2142,7 +2154,14 @@ class baseRouter
         }
         catch (PDOException $exception)
         {
-            self::triggerError($exception->getMessage(), __FILE__, __LINE__, $exit = true);
+            $message = $exception->getMessage();
+            if(empty($message))
+            {
+                /* Try to repair table. */
+                header("location: {$this->config->webRoot}checktable.php");
+                exit;
+            }
+            self::triggerError($message, __FILE__, __LINE__, $exit = true);
         }
     }
 

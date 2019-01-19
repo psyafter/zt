@@ -14,8 +14,8 @@ $(function()
 var newRowID = 0;
 /**
  * Load modules and stories of a product.
- * 
- * @param  int     $productID 
+ *
+ * @param  int     $productID
  * @access public
  * @return void
  */
@@ -43,7 +43,7 @@ function loadBranch()
 /**
  * Load product branches.
  *
- * @param  int $productID 
+ * @param  int $productID
  * @access public
  * @return void
  */
@@ -61,7 +61,7 @@ function loadProductBranches(productID)
 }
 
 /**
- * Load stories of module. 
+ * Load stories of module.
  *
  * @access public
  * @return void
@@ -74,7 +74,7 @@ function loadModuleRelated()
 /**
  * Load module.
  *
- * @param  int    $productID 
+ * @param  int    $productID
  * @access public
  * @return void
  */
@@ -85,16 +85,18 @@ function loadProductModules(productID, branch)
     link = createLink('tree', 'ajaxGetOptionMenu', 'productID=' + productID + '&viewtype=case&branch=' + branch + '&rootModuleID=0&returnType=html&fieldID=&needManage=true');
     $('#moduleIdBox').load(link, function()
     {
-        $(this).find('select').chosen()
-        if(typeof(caseModule) == 'string') $('#moduleIdBox').prepend("<span class='input-group-addon'>" + caseModule + "</span>")
+        var $inputGroup = $(this);
+        $inputGroup.find('select').chosen()
+        if(typeof(caseModule) == 'string') $('#moduleIdBox').prepend("<span class='input-group-addon'>" + caseModule + "</span>");
+        $inputGroup.fixInputGroup();
     });
     setStories();
 }
 
 /**
  * Load module.
- * 
- * @param  int    $libID 
+ *
+ * @param  int    $libID
  * @access public
  * @return void
  */
@@ -112,7 +114,7 @@ function loadLibModules(libID, branch)
 
 /**
  * Set story field.
- * 
+ *
  * @access public
  * @return void
  */
@@ -136,35 +138,20 @@ function setStories()
 
 /**
  * Init testcase steps in form
- * 
+ *
  * @param  string selector
  * @access public
  * @return void
  */
 function initSteps(selector)
 {
-    $(document).on('input keyup paste change', 'textarea.autosize', function()
-    {
-        var height = (this.scrollHeight + 2) + "px";
-        this.style.height = 'auto';
-        this.style.height = height; 
-        $(this).closest('tr').find('textarea').each(function()
-        {
-            this.style.height = height; 
-        });
-    });
-
-    /* Fix bug #4832. Auto adjust textarea height. */
-    $('textarea.autosize').each(function()
-    {
-        var height = (this.scrollHeight + 2) + "px";
-        this.style.height = 'auto';
-        this.style.height = height; 
+    /* Fix task #4832. Auto adjust textarea height. */
+    $('textarea.autosize').each(function() {
+        $.autoResizeTextarea(this);
     });
 
     var $steps = $(selector || '#steps');
     var $stepTemplate = $('#stepTemplate').detach().removeClass('template').attr('id', null);
-    var initSortableCallTask = null;
     var groupNameText = $steps.data('groupName');
     var insertStepRow = function($row, count, type, notFocus)
     {
@@ -240,7 +227,7 @@ function initSteps(selector)
         {
             isMouseDown = true;
             $moveStep = $(this).closest('.step').addClass('drag-row');
-            
+
             $(document).off('.sortable').one('mouseup.sortable', function()
             {
                 isMouseDown = false;
@@ -286,7 +273,7 @@ function initSteps(selector)
         var $step = $checkbox.closest('.step');
         var isChecked = $checkbox.is(':checked');
         var suggestType = isChecked ? 'group' : 'item';
-        if(!isChecked) 
+        if(!isChecked)
         {
             var $prevStep = $step.prev('.step:not(.drag-shadow)');
             var suggestChild = $prevStep.length && $prevStep.is('.step-group') && $step.next('.step:not(.drag-shadow)').length;
@@ -314,7 +301,7 @@ function initSteps(selector)
 
 /**
  * Update the step id.
- * 
+ *
  * @access public
  * @return void
  */

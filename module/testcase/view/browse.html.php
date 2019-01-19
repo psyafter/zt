@@ -64,9 +64,11 @@ js::set('suiteID',        $suiteID);
       </div>
       <?php
       $vars = "productID=$productID&branch=$branch&browseType=$browseType&param=$param&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}";
-  
+
       if($useDatatable)  include '../../common/view/datatable.html.php';
       else               include '../../common/view/tablesorter.html.php';
+
+      if($config->testcase->needReview or !empty($config->testcase->forceReview)) $config->testcase->datatable->fieldList['actions']['width'] = '170';
       $setting = $this->datatable->getSetting('testcase');
       $widths  = $this->datatable->setFixedFieldWidth($setting);
       $columns = 0;
@@ -102,18 +104,18 @@ js::set('suiteID',        $suiteID);
           <div class='btn-group dropup'>
             <?php
             $class = "class='disabled'";
-  
+
             $actionLink = $this->createLink('testcase', 'batchEdit', "productID=$productID&branch=$branch");
             $misc       = common::hasPriv('testcase', 'batchEdit') ? "onclick=\"setFormAction('$actionLink')\"" : "disabled='disabled'";
             echo html::commonButton($lang->edit, $misc);
             ?>
             <button type='button' class='btn dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>
             <ul class='dropdown-menu' id='moreActionMenu'>
-              <?php 
+              <?php
               $actionLink = $this->createLink('testcase', 'batchDelete', "productID=$productID");
               $misc = common::hasPriv('testcase', 'batchDelete') ? "onclick=\"confirmBatchDelete('$actionLink')\"" : $class;
               echo "<li>" . html::a('#', $lang->delete, '', $misc) . "</li>";
-  
+
               if(common::hasPriv('testcase', 'batchReview') and ($config->testcase->needReview or !empty($config->testcase->forceReview)))
               {
                   echo "<li class='dropdown-submenu'>";
@@ -127,19 +129,19 @@ js::set('suiteID',        $suiteID);
                   }
                   echo '</ul></li>';
               }
-  
+
               if(common::hasPriv('testcase', 'batchConfirmStoryChange'))
               {
                   $actionLink = $this->createLink('testcase', 'batchConfirmStoryChange', "productID=$productID");
                   $misc = common::hasPriv('testcase', 'batchConfirmStoryChange') ? "onclick=\"setFormAction('$actionLink')\"" : $class;
                   echo "<li>" . html::a('#', $lang->testcase->confirmStoryChange, '', $misc) . "</li>";
               }
-  
-  
+
+
               $actionLink = $this->createLink('testtask', 'batchRun', "productID=$productID&orderBy=$orderBy");
               $misc = common::hasPriv('testtask', 'batchRun') ? "onclick=\"setFormAction('$actionLink')\"" : $class;
               echo "<li>" . html::a('#', $lang->testtask->runCase, '', $misc) . "</li>";
-  
+
               if(common::hasPriv('testcase', 'batchCaseTypeChange'))
               {
                   echo "<li class='dropdown-submenu'>";
@@ -161,21 +163,23 @@ js::set('suiteID',        $suiteID);
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->product->branchName[$this->session->currentProductType];?> <span class="caret"></span></button>
             <?php $withSearch = count($branches) > 10;?>
             <?php if($withSearch):?>
-            <div class="dropdown-menu search-list" data-ride="searchList">
+            <div class="dropdown-menu search-list search-box-sink" data-ride="searchList">
               <div class="input-control search-box has-icon-left has-icon-right search-example">
                 <input id="userSearchBox" type="search" autocomplete="off" class="form-control search-input">
                 <label for="userSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
                 <a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a>
               </div>
+            <?php $branchsPinYin = common::convert2Pinyin($branches);?>
             <?php else:?>
-            <div class="dropdown-menu">
+            <div class="dropdown-menu search-list">
             <?php endif;?>
               <div class="list-group">
                 <?php
                 foreach($branches as $branchID => $branchName)
                 {
+                    $searchKey = $withSearch ? ('data-key="' . zget($branchsPinYin, $branchName, '') . '"') : '';
                     $actionLink = $this->createLink('testcase', 'batchChangeBranch', "branchID=$branchID");
-                    echo html::a('#', $branchName, '', "onclick=\"setFormAction('$actionLink', 'hiddenwin')\" data-key='$branchID'");
+                    echo html::a('#', $branchName, '', "$searchKey onclick=\"setFormAction('$actionLink', 'hiddenwin')\"");
                 }
                 ?>
               </div>
@@ -187,21 +191,23 @@ js::set('suiteID',        $suiteID);
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->story->moduleAB;?> <span class="caret"></span></button>
             <?php $withSearch = count($modules) > 10;?>
             <?php if($withSearch):?>
-            <div class="dropdown-menu search-list" data-ride="searchList">
+            <div class="dropdown-menu search-list search-box-sink" data-ride="searchList">
               <div class="input-control search-box has-icon-left has-icon-right search-example">
                 <input id="userSearchBox" type="search" autocomplete="off" class="form-control search-input">
                 <label for="userSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
                 <a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a>
               </div>
+              <?php $modulesPinYin = common::convert2Pinyin($modules);?>
             <?php else:?>
-            <div class="dropdown-menu">
+            <div class="dropdown-menu search-list">
             <?php endif;?>
               <div class="list-group">
                 <?php
                 foreach($modules as $moduleId => $module)
                 {
+                    $searchKey = $withSearch ? ('data-key="' . zget($modulesPinYin, $module, '') . '"') : '';
                     $actionLink = $this->createLink('testcase', 'batchChangeModule', "moduleID=$moduleId");
-                    echo html::a('#', $module, '', "onclick=\"setFormAction('$actionLink','hiddenwin')\" data-key='$moduleID'");
+                    echo html::a('#', $module, '', "$searchKey onclick=\"setFormAction('$actionLink','hiddenwin')\"");
                 }
                 ?>
               </div>
@@ -217,7 +223,7 @@ js::set('suiteID',        $suiteID);
   </div>
 </div>
 <script>
-$('#module' + moduleID).closest('li').addClass('active'); 
+$('#module' + moduleID).closest('li').addClass('active');
 $('#' + caseBrowseType + 'Tab').addClass('btn-active-text').find('.text').after(" <span class='label label-light label-badge'><?php echo $pager->recTotal;?></span>");
 <?php if($useDatatable):?>
 $(function(){$('#caseForm').table();})

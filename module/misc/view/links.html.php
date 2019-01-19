@@ -1,6 +1,5 @@
 <div class='container mw-800px' id="zentaoLinks">
   <div class='row'>
-    <?php unset($lang->misc->zentao->version);?>
     <?php foreach($lang->misc->zentao as $label => $groupItems):?>
     <?php if(strpos(',labels,icons,version,', ",$label,") !== false) continue; ?>
     <div class='col-sm-3'>
@@ -10,8 +9,9 @@
         </div>
         <div class='panel-body'>
           <ul>
+            <?php $api = (isset($config->isINT) && !empty($config->isINT)) ? $lang->misc->enApi : $lang->misc->api;?>
             <?php foreach($groupItems as $item => $label):?>
-            <li><?php echo html::a($lang->misc->api . "/goto.php?item=$item&from=about", $label, '_blank', "id='$item'");;?></li>
+            <li><?php echo html::a($api . "/goto.php?item=$item&from=about", $label, '_blank', "id='$item'");;?></li>
             <?php endforeach;?>
           </ul>
         </div>

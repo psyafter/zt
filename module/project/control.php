@@ -130,18 +130,18 @@ class project extends control
         if($this->cookie->preProjectID != $projectID)
         {
             $_COOKIE['moduleBrowseParam'] = $_COOKIE['productBrowseParam'] = 0;
-            setcookie('moduleBrowseParam',  0, $this->config->cookieLife, $this->config->webRoot);
-            setcookie('productBrowseParam', 0, $this->config->cookieLife, $this->config->webRoot);
+            setcookie('moduleBrowseParam',  0, 0, $this->config->webRoot);
+            setcookie('productBrowseParam', 0, 0, $this->config->webRoot);
         }
         if($browseType == 'bymodule')
         {
-            setcookie('moduleBrowseParam',  (int)$param, $this->config->cookieLife, $this->config->webRoot);
-            setcookie('productBrowseParam', 0, $this->config->cookieLife, $this->config->webRoot);
+            setcookie('moduleBrowseParam',  (int)$param, 0, $this->config->webRoot);
+            setcookie('productBrowseParam', 0, 0, $this->config->webRoot);
         }
         elseif($browseType == 'byproduct')
         {
-            setcookie('moduleBrowseParam',  0, $this->config->cookieLife, $this->config->webRoot);
-            setcookie('productBrowseParam', (int)$param, $this->config->cookieLife, $this->config->webRoot);
+            setcookie('moduleBrowseParam',  0, 0, $this->config->webRoot);
+            setcookie('productBrowseParam', (int)$param, 0, $this->config->webRoot);
         }
         else
         {
@@ -161,7 +161,7 @@ class project extends control
 
         /* Process the order by field. */
         if(!$orderBy) $orderBy = $this->cookie->projectTaskOrder ? $this->cookie->projectTaskOrder : 'status,id_desc';
-        setcookie('projectTaskOrder', $orderBy, $this->config->cookieLife, $this->config->webRoot);
+        setcookie('projectTaskOrder', $orderBy, 0, $this->config->webRoot);
 
         /* Append id for secend sort. */
         $sort = $this->loadModel('common')->appendOrder($orderBy);
@@ -178,18 +178,6 @@ class project extends control
 
         /* Get tasks. */
         $tasks = $this->project->getTasks($productID, $projectID, $this->projects, $browseType, $queryID, $moduleID, $sort, $pager);
-
-        if(strpos('unclosed,all,bymodule,byproduct', $browseType) === false)
-        {
-            foreach($tasks as $task)
-            {
-                if(isset($task->children))
-                {
-                    $task->children = true;
-                    unset($task->children);
-                }
-            }
-        }
 
        /* Build the search form. */
         $actionURL = $this->createLink('project', 'task', "projectID=$projectID&status=bySearch&param=myQueryID");
@@ -221,7 +209,6 @@ class project extends control
         $this->view->modules       = $this->tree->getTaskOptionMenu($projectID);
         $this->view->moduleID      = $moduleID;
         $this->view->moduleTree    = $this->tree->getTaskTreeMenu($projectID, $productID, $startModuleID = 0, array('treeModel', 'createTaskLink'));
-        $this->view->projectTree   = $this->project->tree();
         $this->view->memberPairs   = $memberPairs;
         $this->view->branchGroups  = $this->loadModel('branch')->getByProducts(array_keys($products), 'noempty');
         $this->view->setShowModule = true;
@@ -605,7 +592,7 @@ class project extends control
 
         /* Process the order by field. */
         if(!$orderBy) $orderBy = $this->cookie->projectStoryOrder ? $this->cookie->projectStoryOrder : 'pri';
-        setcookie('projectStoryOrder', $orderBy, $this->config->cookieLife, $this->config->webRoot);
+        setcookie('projectStoryOrder', $orderBy, 0, $this->config->webRoot);
 
         /* Append id for secend sort. */
         $sort = $this->loadModel('common')->appendOrder($orderBy);
@@ -1390,6 +1377,10 @@ class project extends control
         list($dateList, $interval) = $this->project->getDateList($project->begin, $project->end, 'noweekend', 0, 'Y-m-d');
         $chartData = $this->project->buildBurnData($projectID, $dateList, 'noweekend');
 
+        /* Load pager. */
+        $this->app->loadClass('pager', $static = true);
+        $pager = new pager(0, 30, 1);
+
         $this->view->title      = $this->lang->project->view;
         $this->view->position[] = html::a($this->createLink('project', 'browse', "projectID=$projectID"), $project->name);
         $this->view->position[] = $this->view->title;
@@ -1400,7 +1391,7 @@ class project extends control
         $this->view->planGroups   = $this->project->getPlans($products);
         $this->view->groups       = $this->loadModel('group')->getPairs();
         $this->view->actions      = $this->loadModel('action')->getList('project', $projectID);
-        $this->view->dynamics     = $this->loadModel('action')->getDynamic('all', 'all', 'date_desc', $pager = null, 'all', $projectID);
+        $this->view->dynamics     = $this->loadModel('action')->getDynamic('all', 'all', 'date_desc', $pager, 'all', $projectID);
         $this->view->users        = $this->loadModel('user')->getPairs('noletter');
         $this->view->teamMembers  = $this->project->getTeamMembers($projectID);
         $this->view->docLibs      = $this->loadModel('doc')->getLibsByObject('project', $projectID);
@@ -1810,7 +1801,7 @@ class project extends control
      * @access public
      * @return void
      */
-    public function linkStory($projectID = 0, $browseType = '', $param = 0)
+    public function linkStory($projectID = 0, $browseType = '', $param = 0, $recTotal = 0, $recPerPage = 50, $pageID = 1)
     {
         $this->loadModel('story');
         $this->loadModel('product');
@@ -1873,6 +1864,16 @@ class project extends control
         }
         $prjStories = $this->story->getProjectStoryPairs($projectID);
 
+        foreach($allStories as $id => $story)
+        {
+            if(isset($prjStories[$story->id])) unset($allStories[$id]);
+        }
+
+        /* Pager. */
+        $recTotal   = count($allStories);
+        $allStories = array_chunk($allStories, $recPerPage);
+        $this->app->loadClass('pager', $static = true);
+
         /* Assign. */
         $title      = $project->name . $this->lang->colon . $this->lang->project->linkStory;
         $position[] = html::a($browseLink, $project->name);
@@ -1882,8 +1883,8 @@ class project extends control
         $this->view->position     = $position;
         $this->view->project      = $project;
         $this->view->products     = $products;
-        $this->view->allStories   = $allStories;
-        $this->view->prjStories   = $prjStories;
+        $this->view->allStories   = empty($allStories) ? $allStories : $allStories[$pageID - 1];;
+        $this->view->pager        = pager::init($recTotal, $recPerPage, $pageID);
         $this->view->browseType   = $browseType;
         $this->view->productType  = $productType;
         $this->view->modules      = $modules;
@@ -2098,9 +2099,6 @@ class project extends control
         $projects = $this->dao->select('*')->from(TABLE_PROJECT)->where('id')->in(array_keys($this->projects))->orderBy('order desc')->fetchAll();
         $projectPairs = array();
         foreach($projects as $project) $projectPairs[$project->id] = $project->name;
-        $projectsPinyin = common::convert2Pinyin($projectPairs);
-        foreach($projects as $key => $project) $project->key = $projectsPinyin[$project->name];
-
         $this->view->projects = $projects;
         $this->display();
     }
@@ -2325,9 +2323,9 @@ class project extends control
     {
         $planStories  = $planProducts = array();
         $planStory    = $this->loadModel('story')->getPlanStories($planID);
+        $count = 0;
         if(!empty($planStory))
         {
-            $count = 0;
             foreach($planStory as $id => $story)
             {
                 if($story->status == 'draft') 

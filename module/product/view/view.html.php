@@ -11,29 +11,37 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
-  <div class="main-row">
+  <div id='mainContent' class="main-row">
     <div class="col-8 main-col">
       <div class="row">
         <div class="col-sm-6">
           <div class="panel block-release">
             <div class="panel-heading">
-              <div class="panel-title"><?php echo $lang->product->plan;?> <span class="label label-badge label-light"><?php printf($lang->product->iterationInfo, count($releases));?></span></div>
+              <div class="panel-title"><?php echo $lang->product->roadmap;?></div>
             </div>
             <div class="panel-body">
               <div class="release-path">
                 <ul class="release-line">
-                  <?php $i = 0;?>
-                  <?php foreach($releases as $release):?>
-                  <?php $i++;?>
-                  <?php if($i > 6) break;?>
-                  <li <?php if(date('Y-m-d') < $release->date) echo "class='active'";?>>
-                    <a href="<?php echo $this->createLink('release', 'view', "releaseID={$release->id}");?>">
-                      <?php if(!empty($release->marker)) echo "<i class='icon icon-flag text-primary'></i>";?>
-                      <span class="title"><?php echo $release->name;?></span>
-                      <span class="date"><?php echo $release->date;?></span>
-                      <span class="info text-ellipsis" title="<?php echo strip_tags($release->desc);?>"><?php echo $release->desc;?></span>
+                  <?php foreach($roadmaps as $year => $roadmap):?>
+                  <?php foreach($roadmap as $plans):?>
+                  <?php foreach($plans as $plan):?>
+                  <?php if(isset($plan->begin)):?>
+                  <li <?php if(date('Y-m-d') < $plan->begin) echo "class='active'";?>>
+                    <a href="<?php echo $this->createLink('productplan', 'view', "planID={$plan->id}");?>">
+                      <span class="title"><?php echo $plan->title;?></span>
+                      <span class="date"><?php echo $plan->begin;?></span>
                     </a>
                   </li>
+                  <?php else:?>
+                  <li>
+                    <a href="<?php echo $this->createLink('release', 'view', "releaseID={$plan->id}");?>">
+                      <span class="title"><?php echo $plan->name;?></span>
+                      <span class="date"><?php echo $plan->date;?></span>
+                    </a>
+                  </li>
+                  <?php endif;?>
+                  <?php endforeach;?>
+                  <?php endforeach;?>
                   <?php endforeach;?>
                 </ul>
               </div>
@@ -49,11 +57,11 @@
                 <li><a href="<?php echo $this->createLink('product', 'dynamic', "productID={$product->id}&type=all");?>" title="<?php echo $lang->more;?>"><i class="icon icon-more icon-sm"></i></i></a></li>
               </nav>
             </div>
-            <div class="panel-body">
-              <ul class="timeline timeline-tag-left">
+            <div class="panel-body scrollbar-hover">
+              <ul class="timeline timeline-tag-left no-margin">
                 <?php foreach($dynamics as $action):?>
                 <li <?php if($action->major) echo "class='active'";?>>
-                  <div>
+                  <div class='text-ellipsis'>
                     <span class="timeline-tag"><?php echo $action->date;?></span>
                     <span class="timeline-text"><?php echo zget($users, $action->actor) . ' ' . $action->actionLabel . $action->objectLabel . ' ' . html::a($action->objectLink, $action->objectName);?></span>
                   </div>
@@ -66,6 +74,27 @@
         <div class="col-sm-12">
           <?php $blockHistory = true;?>
           <?php include '../../common/view/action.html.php';?>
+        </div>
+      </div>
+      <div class='main-actions'>
+        <div class="btn-toolbar">
+          <?php
+          $params = "product=$product->id";
+          $browseLink = $this->session->productList ? $this->session->productList : inlink('browse', "productID=$product->id");
+          common::printBack($browseLink);
+          if(!$product->deleted)
+          {
+              echo "<div class='divider'></div>";
+              if($product->status != 'closed')
+              {
+                  common::printIcon('product', 'close', $params, $product, 'button', '', '', 'iframe', true);
+                  echo "<div class='divider'></div>";
+              }
+
+              common::printIcon('product', 'edit', $params, $product);
+              common::printIcon('product', 'delete', $params, $product, 'button', '', 'hiddenwin');
+          }
+          ?>
         </div>
       </div>
     </div>
@@ -138,7 +167,7 @@
                     <tr>
                       <th><?php echo $lang->product->acl;?></th>
                       <td><em><?php echo $lang->product->aclList[$product->acl];?></em></td>
-                    </tr>  
+                    </tr>
                     <?php if($product->acl == 'custom'):?>
                     <tr>
                       <th><?php echo $lang->product->whitelist;?></th>
@@ -204,26 +233,7 @@
   </div>
 </div>
 
-<div id="mainActions">
+<div id="mainActions" class='main-actions'>
   <nav class="container"></nav>
-  <div class="btn-toolbar">
-    <?php
-    $params = "product=$product->id";
-    $browseLink = $this->session->productList ? $this->session->productList : inlink('browse', "productID=$product->id");
-    common::printBack($browseLink);
-    if(!$product->deleted)
-    {
-        echo "<div class='divider'></div>";
-        if($product->status != 'closed')
-        {
-            common::printIcon('product', 'close', $params, $product, 'button', '', '', 'iframe', true);
-            echo "<div class='divider'></div>";
-        }
-
-        common::printIcon('product', 'edit', $params, $product);
-        common::printIcon('product', 'delete', $params, $product, 'button', '', 'hiddenwin');
-    }
-    ?>
-  </div>
 </div>
 <?php include '../../common/view/footer.html.php';?>

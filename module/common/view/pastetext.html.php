@@ -28,11 +28,13 @@ $(function()
         var lastIndex = parseInt($formTbody.find('tr:last > td:first').text());
         var $newRow = $(rowTpl.replace(/%s/g, lastIndex + 1));
         $newRow.find('.chosen').chosen();
+        $newRow.find('.iframe').modalTrigger({iframe:true});
         $newRow.find('[data-provide="colorpicker-later"]').colorPicker();
+        $newRow.datepickerAll();
         $formTbody.append($newRow);
         return $newRow;
     };
-    
+
     var $importLines = $('#importLines');
     $('#importLinesBtn').on('click', function()
     {
@@ -75,7 +77,7 @@ $(function()
             }, 3000);
         }, 200);
     });
-    
+
     $importLines.on('scroll', function()
     {
         $importLines.css('background-position-y', -$importLines.scrollTop() + 6);

@@ -20,6 +20,9 @@ $status = $this->session->testTaskVersionStatus;
 ?>
 <?php js::set('status', $status);?>
 <?php if($config->global->flow != 'onlyTest'):?>
+<style>
+#action-divider{display: inline-block; line-height: 0px; border-right: 2px solid #ddd}
+</style>
 <div id="mainMenu" class='clearfix'>
   <div class="btn-toolbar pull-left">
     <div class='btn-group'>
@@ -92,22 +95,23 @@ $status = $this->session->testTaskVersionStatus;
       <td><?php echo $task->begin?></td>
       <td><?php echo $task->end?></td>
       <td title='<?php echo $lang->testtask->statusList[$task->status];?>'>
-        <span class='status-<?php echo $task->status?>'>
-          <span class='label label-dot'></span>
-          <span class='status-text'><?php echo $lang->testtask->statusList[$task->status];?></span>
+        <span class='status-task status-<?php echo $task->status?>'>
+          <?php echo $lang->testtask->statusList[$task->status];?>
         </span>
       </td>
       <td class='c-actions'>
         <?php
+        echo '<div id="action-divider">';
         common::printIcon('testtask',   'cases',    "taskID=$task->id", $task, 'list', 'sitemap');
-        common::printIcon('testtask',   'view',     "taskID=$task->id", '', 'list', 'list-alt','','iframe',true, 'data-width=800px');
         common::printIcon('testtask',   'linkCase', "taskID=$task->id", $task, 'list', 'link');
         common::printIcon('testreport', 'browse',   "objectID=$task->product&objectType=product&extra=$task->id", $task, 'list','flag');
+        echo '</div>';
+        common::printIcon('testtask',   'view',     "taskID=$task->id", '', 'list', 'list-alt','','iframe',true);
         common::printIcon('testtask',   'edit',     "taskID=$task->id", $task, 'list','','','',true);
         if(common::hasPriv('testtask', 'delete', $task))
         {
             $deleteURL = $this->createLink('testtask', 'delete', "taskID=$task->id&confirm=yes");
-            echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"taskList\",confirmDelete)", '<i class="icon-common-delete icon-trash"></i>', '', "title='{$lang->testtask->delete}' class='btn'");
+            echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"taskList\",confirmDelete)", '<i class="icon-common-delete icon-close"></i>', '', "title='{$lang->testtask->delete}' class='btn'");
         }
         ?>
       </td>

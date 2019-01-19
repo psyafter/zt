@@ -86,6 +86,7 @@ class datatableModel extends model
                     unset($setting[$key]);
                     continue;
                 }
+                if($set->id == 'actions') $set->width = $fieldList[$set->id]['width'];
                 $set->title = $fieldList[$set->id]['title'];
                 $set->sort  = isset($fieldList[$set->id]['sort']) ? $fieldList[$set->id]['sort'] : 'yes';
             }
@@ -120,7 +121,7 @@ class datatableModel extends model
      * @access public
      * @return void
      */
-    public function printHead($col, $orderBy, $vars)
+    public function printHead($col, $orderBy, $vars, $checkBox = true)
     {
         $id = $col->id;
         if($col->show)
@@ -128,6 +129,7 @@ class datatableModel extends model
             $fixed = $col->fixed == 'no' ? 'true': 'false';
             $width = is_numeric($col->width) ? "{$col->width}px" : $col->width;
             $title = isset($col->title) ? "title='$col->title'" : '';
+            $title = (isset($col->name) and $col->name) ? "title='$col->name'" : $title;
             if($id == 'id' and (int)$width < 90) $width = '90px';
             $width = "data-width='$width' style='width:$width'";
             $align = $id == 'actions' ? 'text-center' : '';
@@ -143,7 +145,7 @@ class datatableModel extends model
             }
             else
             {
-                if($id == 'id') echo "<div class='checkbox-primary check-all' title='{$this->lang->selectAll}'><label></label></div>";
+                if($id == 'id' && $checkBox) echo "<div class='checkbox-primary check-all' title='{$this->lang->selectAll}'><label></label></div>";
                 common::printOrderLink($id, $orderBy, $vars, $col->title);
             }
             echo '</th>';

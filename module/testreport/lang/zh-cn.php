@@ -63,13 +63,13 @@ $lang->testreport->exportNotice   = "由<a href='https://www.zentao.pm' target='
 $lang->testreport->noReport       = "报表还没有生成，请稍候查看。";
 $lang->testreport->foundBugTip    = "影响版本在测试轮次内，并且创建时间在测试时间范围内产生的Bug数。";
 $lang->testreport->legacyBugTip   = "Bug状态是激活，或Bug的解决时间在测试结束时间之后。";
-$lang->testreport->fromCaseBugTip = "测试时间范围内，用例执行失败后创建的Bug";
+$lang->testreport->fromCaseBugTip = "测试时间范围内，用例执行失败后创建的Bug。";
 $lang->testreport->errorTrunk     = "主干版本不能创建测试报告，请修改关联版本！";
 $lang->testreport->moreProduct    = "只能对同一个产品生成测试报告。";
 
 $lang->testreport->bugSummary = <<<EOD
-共发现<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->foundBugTip}'><i class='icon-exclamation-sign'></i></a>，
-遗留<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->legacyBugTip}'><i class='icon-exclamation-sign'></i></a>。
-用例执行产生<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->fromCaseBugTip}'><i class='icon-exclamation-sign'></i></a>。
+共发现<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->foundBugTip}'><i class='icon-help'></i></a>，
+遗留<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->legacyBugTip}'><i class='icon-help'></i></a>。
+用例执行产生<strong>%s</strong>个Bug <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->fromCaseBugTip}'><i class='icon-help'></i></a>。
 有效Bug率（方案为已解决或延期 / 状态为已解决或已关闭）：<strong>%s</strong>，用例发现Bug率（用例创建的Bug / 发现Bug数）：<strong>%s</strong>
 EOD;

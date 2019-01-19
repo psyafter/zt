@@ -23,7 +23,7 @@ $lang->testcase->type             = 'Type';
 $lang->testcase->status           = 'Status';
 $lang->testcase->steps            = 'Steps';
 $lang->testcase->openedBy         = 'Created by';
-$lang->testcase->openedDate       = 'Created on';
+$lang->testcase->openedDate       = 'Created';
 $lang->testcase->lastEditedBy     = 'Edited by';
 $lang->testcase->result           = 'Result';
 $lang->testcase->real             = 'Details';
@@ -34,15 +34,15 @@ $lang->testcase->linkCases        = 'Link Cases';
 $lang->testcase->unlinkCase       = 'Unlink Cases';
 $lang->testcase->stage            = 'Phase';
 $lang->testcase->reviewedBy       = 'Reviewed by';
-$lang->testcase->reviewedDate     = 'Reviewed on';
+$lang->testcase->reviewedDate     = 'Reviewed';
 $lang->testcase->reviewResult     = 'Review Result';
 $lang->testcase->reviewedByAB     = 'By';
 $lang->testcase->reviewedDateAB   = 'Date';
 $lang->testcase->reviewResultAB   = 'Result';
 $lang->testcase->forceNotReview   = 'No Review';
 $lang->testcase->lastEditedByAB   = 'Edited by';
-$lang->testcase->lastEditedDateAB = 'Edited on';
-$lang->testcase->lastEditedDate   = 'Edited on';
+$lang->testcase->lastEditedDateAB = 'Edited';
+$lang->testcase->lastEditedDate   = 'Edited';
 $lang->testcase->version          = 'Case Version';
 $lang->testcase->lastRunner       = 'LastRun';
 $lang->testcase->lastRunDate      = 'Time';
@@ -59,10 +59,11 @@ $lang->testcase->bugs             = 'Bugs Generated';
 $lang->testcase->bugsAB           = 'B';
 $lang->testcase->results          = 'Results';
 $lang->testcase->resultsAB        = 'R';
-$lang->testcase->stepNumber       = 'Number of steps';
+$lang->testcase->stepNumber       = 'No.. of steps';
 $lang->testcase->stepNumberAB     = 'S';
 $lang->testcase->createBug        = 'Convert to Bug';
 $lang->testcase->fromModule       = 'Source Module';
+$lang->testcase->fromCase         = 'Source Case';
 $lang->case = $lang->testcase;  // For dao checking using. Because 'case' is a php keywords, so the module name is testcase, table name is still case.
 
 $lang->testcase->stepID      = 'ID';
@@ -102,7 +103,7 @@ $lang->testcase->group                   = 'Group';
 $lang->testcase->groupName               = 'Group Name';
 $lang->testcase->step                    = 'Step';
 $lang->testcase->stepChild               = 'Child';
-$lang->testcase->viewAll                 = 'View All';
+$lang->testcase->viewAll                 = 'All';
 
 $lang->testcase->new = 'New';
 
@@ -141,6 +142,7 @@ $lang->testcase->dittoNotice        = 'This Case does not belong to the Product 
 $lang->testcase->reviewList[0] = 'NO';
 $lang->testcase->reviewList[1] = 'YES';
 
+$lang->testcase->priList[0] = '';
 $lang->testcase->priList[3] = 3;
 $lang->testcase->priList[1] = 1;
 $lang->testcase->priList[2] = 2;
@@ -176,7 +178,7 @@ $lang->testcase->statusList['']            = '';
 $lang->testcase->statusList['wait']        = 'Wait';
 $lang->testcase->statusList['normal']      = 'Normal';
 $lang->testcase->statusList['blocked']     = 'Blocked';
-$lang->testcase->statusList['investigate'] = 'Investigating';
+$lang->testcase->statusList['investigate'] = 'Studying';
 
 $lang->testcase->resultList['n/a']     = 'Ignore';
 $lang->testcase->resultList['pass']    = 'Pass';
@@ -193,7 +195,7 @@ $lang->testcase->mustChooseResult = 'Review result is required.';
 $lang->testcase->noModule         = '<div>You have no modules</div><div>Manage now</div>';
 $lang->testcase->noCase           = 'No cases. ';
 
-$lang->testcase->searchStories = 'Enter to searcu Story';
+$lang->testcase->searchStories = 'Enter to search Story';
 $lang->testcase->selectLib     = 'Select Library';
 
 $lang->testcase->action = new stdclass();

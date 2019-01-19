@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     upgrade
  * @version     $Id: model.php 5019 2013-07-05 02:02:31Z wyd621@gmail.com $
- * @link        https://www.zentao.pm
+ * @link        http://www.zentao.net
  */
 ?>
 <?php
@@ -15,6 +15,12 @@ class upgradeModel extends model
 {
     static $errors = array();
 
+    /**
+     * Construct
+     * 
+     * @access public
+     * @return void
+     */
     public function __construct()
     {
         parent::__construct();
@@ -233,6 +239,16 @@ class upgradeModel extends model
                 $this->execSQL($xuanxuanSql);
             case '10_2':
             case '10_3':
+            case '10_3_1':
+                $this->execSQL($this->getUpgradeFile('10.3.1'));
+                $this->removeCustomMenu();
+                $this->initUserView();
+            case '10_4':
+                $this->execSQL($this->getUpgradeFile('10.4'));
+                $this->changeTaskParentValue();
+            case '10_5':
+            case '10_5_1':
+                $this->execSQL($this->getUpgradeFile('10.5.1'));
         }
 
         $this->deletePatch();
@@ -347,6 +363,10 @@ class upgradeModel extends model
             case '10_1':       $confirmContent .= file_get_contents($this->app->getAppRoot() . 'db' . DS . 'xuanxuan.sql');
             case '10_2':
             case '10_3':
+            case '10_3_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('10.3.1'));
+            case '10_4':       $confirmContent .= file_get_contents($this->getUpgradeFile('10.4'));
+            case '10_5':
+            case '10_5_1':     $confirmContent .= file_get_contents($this->getUpgradeFile('10.5.1'));
         }
         return str_replace('zt_', $this->config->db->prefix, $confirmContent);
     }
@@ -379,6 +399,79 @@ class upgradeModel extends model
             }
         }
     }
+
+    /**
+     * Check consistency.
+     * 
+     * @access public
+     * @return string
+     */
+    public function checkConsistency()
+    {
+        $alterSQL    = '';
+        $standardSQL = $this->app->getAppRoot() . 'db' . DS . 'standard' . DS . 'zentao' . $this->config->installedVersion . '.sql';
+        if(!file_exists($standardSQL)) return $alterSQL;
+
+        $tableExists = true;
+        $handle      = fopen($standardSQL, 'r');
+        if($handle)
+        {
+            while(!feof($handle))
+            {
+                $line = trim(fgets($handle));
+                if(strpos($line, 'DROP TABLE ') !== false) continue;
+                if(strpos($line, 'CREATE TABLE ') !== false)
+                {
+                    preg_match_all('/`([^`]*)`/', $line, $out);
+                    if(isset($out[1][0]))
+                    {
+                        $fields = array();
+                        $table  = $out[1][0];
+                        $table = str_replace('zt_', $this->config->db->prefix, $out[1][0]);
+                        try
+                        {
+                            $tableExists = true;
+                            $stmt        = $this->dbh->query("show fields from `{$table}`");
+                            while($row = $stmt->fetch()) $fields[$row->Field] = $row->Field;
+                        }
+                        catch(PDOException $e)
+                        {
+                            $errorInfo = $e->errorInfo;
+                            $errorCode = $errorInfo[1];
+                            if($errorCode == '1146') $tableExists = false;
+                        }
+                    }
+                }
+                if(!$tableExists) $alterSQL .= $line . "\n";
+
+                if(!empty($fields))
+                {
+                    if(preg_match('/^`([^`]*)` /', $line))
+                    {
+                        list($field) = explode(' ', $line);
+                        $field = trim($field, '`');
+                        if(!isset($fields[$field]))
+                        {
+                            $line = rtrim($line, ',');
+                            if(stripos($line, 'auto_increment') !== false) $line .= ' primary key';
+                            try
+                            {
+                                $this->dbh->exec("ALTER TABLE `{$table}` ADD $line");
+                            }
+                            catch(PDOException $e)
+                            {
+                                $alterSQL .= "ALTER TABLE `{$table}` ADD $line;\n";
+                            }
+                        }
+                    }
+                }
+            }
+            fclose($handle);
+        }
+
+        return $alterSQL;
+    }
+
 
     /**
      * Update ubb code in bug table and user Templates table to html.
@@ -824,7 +917,7 @@ class upgradeModel extends model
             {
                 $this->dbh->exec($sql);
             }
-            catch (PDOException $e)
+            catch(PDOException $e)
             {
                 $errorInfo = $e->errorInfo;
                 $errorCode = $errorInfo[1];
@@ -1834,7 +1927,7 @@ class upgradeModel extends model
     {
         $fromVersion = $this->config->installedVersion;
         $needProcess = array();
-        if(strpos($fromVersion, 'pro') === false ? $fromVersion < '8.3' : $fromVersion < 'pro5.4') $needProcess['updateFile'] = true;
+        if(strpos($fromVersion, 'biz') === false and (strpos($fromVersion, 'pro') === false ? version_compare($fromVersion, '8.3', '<') : version_compare($fromVersion, 'pro5.4', '<'))) $needProcess['updateFile'] = true;
         return $needProcess;
     }
 
@@ -2359,14 +2452,10 @@ class upgradeModel extends model
      */
     public function fixStorySpecTitle()
     {
-        $stories = $this->dao->select('story')->from(TABLE_STORYSEPC)->groupBy('story')->having('COUNT(story, version) = 1');
-
         $stories = $this->dao->select('t1.id, t1.title')->from(TABLE_STORY)->alias('t1')
-            ->leftJoin(TABLE_STORYSPEC)->alias('t2')->on('t1.id=t2.story')
-            ->where('t1.id')->in($stories)
-            ->andWhere('t1.title')->ne('t2.title')
-            ->andWhere('t2.version')->eq(1)
-            ->fetchPairs();
+            ->leftJoin(TABLE_STORYSPEC)->alias('t2')->on('t1.id=t2.story && t1.title != t2.title && t1.version = t2.version')
+            ->where('t2.version')->eq(1)
+            ->fetchPairs('id', 'title');
 
         foreach($stories as $story => $title)
         {
@@ -2397,5 +2486,63 @@ class upgradeModel extends model
             ->exec();
 
         return !dao::isError();
+    }
+
+    /**
+     * Change task parent to -1 for 10.4 .
+     * @return bool
+     */
+    public function changeTaskParentValue()
+    {
+        $tasks = $this->dao->select('*')->from(TABLE_TASK)->where('parent')->gt(0)->fetchGroup('parent');
+        if($tasks)
+        {
+            $this->dao->update(TABLE_TASK)->set('parent')->eq('-1')->where('id')->in(array_keys($tasks))->exec();
+        }
+        return !dao::isError();
+    }
+    
+    /**
+     * Remove custom menu.
+     * 
+     * @access public
+     * @return bool
+     */
+    public function removeCustomMenu()
+    {
+        $customMenuMain = $this->dao->select('*')->from(TABLE_CONFIG)->where('module')->eq('common')->andWhere('section')->eq('customMenu')->andWhere("(`key`='full_main' OR `key`='onlyTask_main' OR `key`='onlyStory_main' OR `key`='onlyTest_main')")->fetchAll('id');
+        foreach($customMenuMain as $mainMenu)
+        {
+            $mainMenuValue = json_decode($mainMenu->value);
+            foreach($mainMenuValue as $menu)
+            {
+                /* If has admin in custom value, then delete old custom menu config. */
+                if($menu->name == 'admin')
+                {
+                    $this->dao->delete()->from(TABLE_CONFIG)->where('module')->eq('common')
+                        ->andWhere('section')->eq('customMenu')
+                        ->andWhere('owner')->eq($mainMenu->owner)
+                        ->exec();
+               }
+            }
+        }
+
+        $this->dao->delete()->from(TABLE_CONFIG)->where('module')->eq('common')->andWhere('section')->eq('customMenu')->andWhere('`key`')->eq('full_project')->exec();
+        $this->dao->delete()->from(TABLE_CONFIG)->where('module')->eq('common')->andWhere('section')->eq('customMenu')->andWhere('`key`')->eq('onlyTask_project')->exec();
+        return !dao::isError();
+    }
+
+    /**
+     * Init user view.
+     * 
+     * @access public
+     * @return bool
+     */
+    public function initUserView()
+    {
+        $users = $this->dao->select('account')->from(TABLE_USER)->fetchAll();
+        $this->loadModel('user');
+        foreach($users as $user) $this->user->computeUserView($user->account, $force = true);
+        return true;
     }
 }

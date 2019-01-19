@@ -70,13 +70,10 @@
       </tbody>
       <tfoot>
         <tr>
-          <td colspan='<?php echo count($lang->message->typeList) + 1?>' class='text-center form-actions'><?php echo html::submitButton('', '', 'btn btn-primary btn-wide');?> <?php echo html::backButton('', '', 'btn btn-wide');?></td>
+          <td colspan='<?php echo count($lang->message->typeList) + 1?>' class='text-center form-actions'><?php echo html::submitButton();?> <?php echo html::backButton();?></td>
         </tr>
       </tfoot>
     </table>
   </form>
 </div>
-<script>
-$(function(){$('#mainMenu #settingTab').addClass('btn-active-text');})
-</script>
 <?php include '../../common/view/footer.html.php';?>

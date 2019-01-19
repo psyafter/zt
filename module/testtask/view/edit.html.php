@@ -71,6 +71,10 @@
           <td colspan='2'><?php echo html::textarea('desc', htmlspecialchars($task->desc), "rows=10 class='form-control'");?></td>
         </tr>
         <tr>
+          <th><?php echo $lang->comment;?></th>
+          <td colspan='2'><?php echo html::textarea('comment', '',  "rows='5' class='form-control'");?></td>
+        </tr>
+        <tr>
           <th><?php echo $lang->testtask->mailto;?></th>
           <td colspan='2'>
             <div class='input-group'>
@@ -81,8 +85,8 @@
         </tr>
         <tr>
           <td class='text-center form-actions' colspan='3'>
-            <?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?>
-            <?php echo html::backButton('', '', 'btn btn-wide');?>
+            <?php echo html::submitButton();?>
+            <?php echo html::backButton();?>
           </td>
         </tr>
       </table>

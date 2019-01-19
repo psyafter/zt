@@ -94,7 +94,7 @@
           <td class="c-name" title="<?php echo $todo->name;?>"><?php echo html::a($this->createLink('todo', 'view', "id=$todo->id&from=my", '', true), $todo->name, '', "data-toggle='modal' data-type='iframe' data-title='" . $lang->todo->view . "' data-icon='check'");?></td>
           <td class="c-begin"><?php echo $todo->begin;?></td>
           <td class="c-end"><?php echo $todo->end;?></td>
-          <td class="c-status"><span class="status-<?php echo $todo->status;?>"><span class="label label-dot"></span> <?php echo $lang->todo->statusList[$todo->status];?></span></td>
+          <td class="c-status"><span class="status-todo status-<?php echo $todo->status;?>"><?php echo $lang->todo->statusList[$todo->status];?></span></td>
           <td class="c-actions">
             <?php
             if($todo->status == 'done' or $todo->status == 'closed')
@@ -119,7 +119,7 @@
             if(common::hasPriv('todo', 'delete'))
             {
                 $deleteURL = $this->createLink('todo', 'delete', "todoID=$todo->id&confirm=yes");
-                echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"todoList\",confirmDelete)", '<i class="icon-trash"></i>', '', "class='btn' title='{$lang->todo->delete}'");
+                echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"todoList\",confirmDelete)", '<i class="icon-close"></i>', '', "class='btn' title='{$lang->todo->delete}'");
             }
             ?>
           </td>

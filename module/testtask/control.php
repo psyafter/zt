@@ -138,15 +138,13 @@ class testtask extends control
         /* Create testtask from testtask of test.*/
         if($projectID == 0)
         {
-            $projectList  = array_keys($this->loadModel('project')->getPairs());
-        
             $params   = 'nodeleted';
             $projects = array();
             $datas = $this->dao->select('t2.id, t2.name, t2.deleted')->from(TABLE_PROJECTPRODUCT)
                 ->alias('t1')->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
                 ->where('t1.product')->eq((int)$productID)
                 ->beginIF('0')->andWhere('t1.branch')->in('0')->fi()
-                ->andWhere('t2.id')->in($projectList)
+                ->beginIF(!$this->app->user->admin)->andWhere('t2.id')->in($this->app->user->view->projects)->fi()
                 ->andWhere('t2.type')->ne('ops')
                 ->orderBy('t1.project desc')
                 ->fetchAll();
@@ -257,7 +255,7 @@ class testtask extends control
 
         /* Get task and product info, set menu. */
         $task = $this->testtask->getById($taskID);
-        if(!$task) die(js::error($this->lang->notFound) . js::locate('back'));
+        if(!$task) die(js::error($this->lang->testtask->checkLinked) . js::locate('back'));
         $productID = $task->product;
         $this->testtask->setMenu($this->products, $productID, $task->branch, $taskID);
         setcookie('preTaskID', $taskID, $this->config->cookieLife, $this->config->webRoot);
@@ -265,9 +263,9 @@ class testtask extends control
         if($this->cookie->preTaskID != $taskID)
         {
             $_COOKIE['taskCaseModule'] = 0;
-            setcookie('taskCaseModule', 0, $this->config->cookieLife, $this->config->webRoot);
+            setcookie('taskCaseModule', 0, 0, $this->config->webRoot);
         }
-        if($browseType == 'bymodule') setcookie('taskCaseModule', (int)$param, $this->config->cookieLife, $this->config->webRoot);
+        if($browseType == 'bymodule') setcookie('taskCaseModule', (int)$param, 0, $this->config->webRoot);
         if($browseType != 'bymodule') $this->session->set('taskCaseBrowseType', $browseType);
 
         $moduleID = ($browseType == 'bymodule') ? (int)$param : ($browseType == 'bysearch' ? 0 : ($this->cookie->taskCaseModule ? $this->cookie->taskCaseModule : 0));
@@ -383,6 +381,8 @@ class testtask extends control
     {
         /* Save the session. */
         $this->loadModel('testcase');
+        $this->app->loadLang('project');
+        $this->app->loadLang('task');
         $this->session->set('caseList', $this->app->getURI(true));
 
         /* Get task and product info, set menu. */
@@ -451,9 +451,9 @@ class testtask extends control
         {
             $changes = $this->testtask->update($taskID);
             if(dao::isError()) die(js::error(dao::getError()));
-            if($changes)
+            if($changes or $this->post->comment)
             {
-                $actionID = $this->loadModel('action')->create('testtask', $taskID, 'edited');
+                $actionID = $this->loadModel('action')->create('testtask', $taskID, 'edited', $this->post->comment);
                 $this->action->logHistory($actionID, $changes);
             }
             die(js::locate(inlink('view', "taskID=$taskID"), 'parent'));
@@ -715,7 +715,7 @@ class testtask extends control
 
         /* Build the search form. */
         $this->loadModel('testcase');
-        $this->config->testcase->search['params']['product']['values']= array($productID => $this->products[$productID], 'all' => $this->lang->testcase->allProduct);
+        $this->config->testcase->search['params']['product']['values']= array($productID => $this->products[$productID]);
         $this->config->testcase->search['params']['module']['values'] = $this->loadModel('tree')->getOptionMenu($productID, $viewType = 'case');
         $this->config->testcase->search['actionURL'] = inlink('linkcase', "taskID=$taskID");
         if($this->session->currentProductType == 'normal')

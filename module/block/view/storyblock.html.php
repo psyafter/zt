@@ -1,13 +1,13 @@
 <?php
 /**
- * The story block view file of block module of RanZhi.
+ * The story block view file of block module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
  * @license     ZPL (http://zpl.pub/page/zplv12.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     block
  * @version     $Id$
- * @link        http://www.ranzhi.org
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php if(empty($stories)): ?>
@@ -21,15 +21,14 @@
 .block-stories .c-stage {width: 80px;}
 .block-stories.block-sm .estimate,
 .block-stories.block-sm .c-stage,
-.block-stories.block-sm .c-status .label-dot {display: none;}
 .block-stories.block-sm .c-status {text-align: center;}
 </style>
 <div class='panel-body has-table scrollbar-hover'>
-  <table class='table table-borderless table-hover table-fixed-head tablesorter block-stories <?php if(!$longBlock) echo 'block-sm'?>'>
+  <table class='table table-borderless table-hover table-fixed table-fixed-head tablesorter block-stories <?php if(!$longBlock) echo 'block-sm'?>'>
     <thead>
       <tr>
         <?php if($longBlock):?>
-        <th class="c-id-xs"><?php echo $lang->idAB?></th>
+        <th class="c-id"><?php echo $lang->idAB?></th>
         <?php endif;?>
         <th class="c-pri"><?php echo $lang->priAB?></th>
         <th class="c-name"><?php echo $lang->story->title;?></th>
@@ -58,10 +57,7 @@
         <td class='c-estimate text-center'><?php echo $story->estimate?></td>
         <?php endif;?>
         <td class='c-status' title='<?php echo zget($lang->story->statusList, $story->status);?>'>
-          <span class="status-<?php echo $story->status?>">
-            <span class="label label-dot"></span>
-            <span class='status-text'><?php echo zget($lang->story->statusList, $story->status);?></span>
-          </span>
+          <span class="status-story status-<?php echo $story->status?>"><?php echo zget($lang->story->statusList, $story->status);?></span>
         </td>
         <?php if($longBlock):?>
         <td class='c-stage'>

@@ -25,7 +25,7 @@
           </div>
         </th>
         <th class='c-id-sm'><?php echo $lang->idAB;?></th>
-        <th class='w-pri'>  <?php echo $lang->priAB;?></th>
+        <th class='w-80px'>  <?php echo $lang->priAB;?></th>
         <th><?php echo $lang->testcase->title;?></th>
         <th class='w-80px'> <?php echo $lang->typeAB;?></th>
         <th class='w-user'> <?php echo $lang->testtask->assignedTo;?></th>
@@ -52,7 +52,7 @@
       <tr data-id='<?php echo $groupIndex;?>' <?php if($i == 0) echo "class='divider-top'";?>>
         <?php if($i == 0):?>
         <td rowspan='<?php echo count($groupCases);?>' class='c-side text-left group-toggle text-top'>
-          <?php echo html::a('###', "<i class='icon-caret-down'></i> $groupName", '', "class='text-primary'");?>
+          <div class='group-header'><?php echo html::a('###', "<i class='icon-caret-down'></i> $groupName", '', "class='text-primary'");?></div>
         </td>
         <?php endif;?>
         <?php 
@@ -64,7 +64,7 @@
         ?>
         <td class='c-id-sm'><?php echo sprintf('%03d', $run->case);?></td>
         <td><span class='label-pri <?php echo 'label-pri-' . $run->pri;?>' title='<?php echo zget($lang->testcase->priList, $run->pri, $run->pri);?>'><?php echo zget($lang->testcase->priList, $run->pri, $run->pri);?></span></td>
-        <td class='text-left'><?php if(!common::printLink('testcase', 'view', "case=$run->case", $run->title)) echo $run->title;?></td>
+        <td class='text-left case-title' title='<?php echo $run->title?>'><?php if(!common::printLink('testcase', 'view', "case=$run->case", $run->title)) echo $run->title;?></td>
         <td><?php echo zget($lang->testcase->typeList, $run->type, '');?></td>
         <td><?php echo zget($users, $run->assignedTo);?></td>
         <td><?php echo zget($users, $run->lastRunner);?></td>

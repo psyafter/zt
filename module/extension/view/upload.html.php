@@ -20,15 +20,14 @@
     <div class='text-left'>
       <div class='container mw-500px'>
         <p class='text-danger'><?php echo $error;?></p>
+        <?php echo html::commonButton($lang->extension->refreshPage, 'onclick=location.href=location.href', 'btn btn-primary');?>
       </div>
-      <hr class='small'>
-      <?php echo html::commonButton($lang->extension->refreshPage, 'onclick=location.href=location.href');?>
     </div>
     <?php else:?>
     <form method='post' target='hiddenwin' enctype='multipart/form-data' style='padding: 20px 20%'>
       <div class='input-group'>
         <input type='file' name='file' class='form-control' />
-        <span class='input-group-btn'><?php echo html::submitButton($lang->extension->install);?></span>
+        <span class='input-group-btn'><?php echo html::submitButton($lang->extension->install, '', 'btn btn-primary');?></span>
       </div>
     </form>
     <?php endif;?>

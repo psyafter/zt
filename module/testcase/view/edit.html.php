@@ -43,15 +43,15 @@
           </div>
           <div class='detail'>
             <div class='detail-title'><?php echo $lang->testcase->precondition;?></div>
-            <div class='detail-content'><?php echo html::textarea('precondition', $case->precondition, "rows='4' class='form-control'");?></div>
+            <div class='detail-content'><?php echo html::textarea('precondition', $case->precondition, "rows='2' class='form-control'");?></div>
           </div>
           <div class='detail'>
             <div class='detail-title'><?php echo $lang->testcase->steps;?></div>
-            <div class='form-group'>
+            <div class='detail-content'>
               <table class='table table-form table-bordered'>
                 <thead>
                   <tr>
-                    <th class='w-40px'><?php echo $lang->testcase->stepID;?></th>
+                    <th class='w-50px'><?php echo $lang->testcase->stepID;?></th>
                     <th width="45%"><?php echo $lang->testcase->stepDesc;?></th>
                     <th><?php echo $lang->testcase->stepExpect;?></th>
                     <th class='step-actions'><?php echo $lang->actions;?></th>
@@ -78,7 +78,7 @@
                       <div class='btn-group'>
                         <button type='button' class='btn btn-step-add' tabindex='-1'><i class='icon icon-plus'></i></button>
                         <button type='button' class='btn btn-step-move' tabindex='-1'><i class='icon icon-move'></i></button>
-                        <button type='button' class='btn btn-step-delete' tabindex='-1'><i class='icon icon-trash'></i></button>
+                        <button type='button' class='btn btn-step-delete' tabindex='-1'><i class='icon icon-close'></i></button>
                       </div>
                     </td>
                   </tr>
@@ -104,7 +104,7 @@
                       <div class='btn-group'>
                         <button type='button' class='btn btn-step-add' tabindex='-1'><i class='icon icon-plus'></i></button>
                         <button type='button' class='btn btn-step-move' tabindex='-1'><i class='icon icon-move'></i></button>
-                        <button type='button' class='btn btn-step-delete' tabindex='-1'><i class='icon icon-trash'></i></button>
+                        <button type='button' class='btn btn-step-delete' tabindex='-1'><i class='icon icon-close'></i></button>
                       </div>
                     </td>
                   </tr>
@@ -123,7 +123,7 @@
           </div>
           <div class='text-center detail form-actions'>
             <?php echo html::hidden('lastEditedDate', $case->lastEditedDate);?>
-            <?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?>
+            <?php echo html::submitButton();?>
             <input type='button' value='<?php echo $lang->testcase->buttonToList;?>' class='btn btn-wide' onclick='location.href="<?php echo $isLibCase ? $this->createLink('testsuite', 'library', "libID=$libID") : $this->createLink('testcase', 'browse', "productID=$productID");?>"' />
           </div>
           <?php include '../../common/view/action.html.php';?>

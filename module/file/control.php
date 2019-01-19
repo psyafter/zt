@@ -42,6 +42,7 @@ class file extends control
     /**
      * AJAX: get upload request from the web editor.
      *
+     * @param  $uid
      * @access public
      * @return void
      */
@@ -51,7 +52,17 @@ class file extends control
         $file = $file[0];
         if($file)
         {
-            if($file['size'] == 0) die(json_encode(array('error' => 1, 'message' => $this->lang->file->errorFileUpload)));
+            if($file['size'] == 0)
+            {
+                if(defined('RUN_MODE') && RUN_MODE == 'api')
+                {
+                    die(json_encode(array('status' => 'error', 'message' => $this->lang->file->errorFileUpload)));
+                }
+                else
+                {
+                    die(json_encode(array('error' => 1, 'message' => $this->lang->file->errorFileUpload)));
+                }
+            }
             if(@move_uploaded_file($file['tmpname'], $this->file->savePath . $this->file->getSaveName($file['pathname'])))
             {
                 /* Compress image for jpg and bmp. */
@@ -65,14 +76,30 @@ class file extends control
                 $fileID = $this->dao->lastInsertID();
                 $url    = $this->createLink('file', 'read', "fileID=$fileID", $file['extension']);
                 if($uid) $_SESSION['album'][$uid][] = $fileID;
-                die(json_encode(array('error' => 0, 'url' => $url)));
+                if(defined('RUN_MODE') && RUN_MODE == 'api')
+                {
+                    $_SERVER['SCRIPT_NAME'] = 'index.php';
+                    die(json_encode(array('status' => 'success', 'data' => commonModel::getSysURL() . $this->config->webRoot . $url)));
+                }
+                else
+                {
+                    die(json_encode(array('error' => 0, 'url' => $url)));
+                }
             }
             else
             {
                 $error = strip_tags(sprintf($this->lang->file->errorCanNotWrite, $this->file->savePath, $this->file->savePath));
-                die(json_encode(array('error' => 1, 'message' => $error)));
+                if(defined('RUN_MODE') && RUN_MODE == 'api')
+                {
+                    die(json_encode(array('status' => 'error', 'message' => $error)));
+                }
+                else
+                {
+                    die(json_encode(array('error' => 1, 'message' => $error)));
+                }
             }
         }
+        die(json_encode(array('status' => 'error', 'message' => $this->lang->file->uploadImagesExplain)));
     }
 
     /**
@@ -126,15 +153,7 @@ class file extends control
      */
     public function download($fileID, $mouse = '')
     {
-        /* When get sid then change session id. */
-        if(isset($_GET[$this->config->sessionVar]))
-        {
-            $sessionID = isset($_COOKIE[$this->config->sessionVar]) ? $_COOKIE[$this->config->sessionVar] : sha1(mt_rand());
-            session_write_close();
-            session_id($sessionID);
-            session_start();
-        }
-
+        if(session_id() != $this->app->sessionID) helper::restartSession($this->app->sessionID);
         $file = $this->file->getById($fileID);
 
         /* Judge the mode, down or open. */
@@ -143,7 +162,8 @@ class file extends control
         if(stripos($fileTypes, $file->extension) !== false && $mouse == 'left') $mode = 'open';
         if($file->extension == 'txt')
         {
-            $extension = end(explode('.', $file->title));
+            $extension = 'txt';
+            if(($postion = strrpos($file->title, '.')) !== false) $extension = substr($file->title, $postion + 1);
             if($extension != 'txt') $mode = 'down';
             $file->extension = $extension;
         }
@@ -347,11 +367,17 @@ class file extends control
             $this->app->loadLang('action');
             $file = $this->file->getByID($fileID);
             $data = fixer::input('post')->get();
-            $this->dao->update(TABLE_FILE)->set('title')->eq($data->fileName)->where('id')->eq($fileID)->exec();
+            if(validater::checkLength($data->fileName, 80, 1) == false)
+            {
+                $errTip = $this->lang->error->length;
+                die(js::alert(sprintf($errTip[1], $this->lang->file->title, 80, 1)));
+            }
+            $fileName = $data->fileName . '.' . $data->extension;
+            $this->dao->update(TABLE_FILE)->set('title')->eq($fileName)->where('id')->eq($fileID)->exec();
 
             $extension = "." . $file->extension;
-            $actionID = $this->loadModel('action')->create($file->objectType, $file->objectID, 'editfile', '', $data->fileName . $extension);
-            $changes[] = array('field' => 'fileName', 'old' => $file->title . $extension, 'new' => $data->fileName . $extension);
+            $actionID  = $this->loadModel('action')->create($file->objectType, $file->objectID, 'editfile', '', $fileName);
+            $changes[] = array('field' => 'fileName', 'old' => $file->title . $extension, 'new' => $fileName);
             $this->action->logHistory($actionID, $changes);
 
             die(js::reload('parent.parent'));

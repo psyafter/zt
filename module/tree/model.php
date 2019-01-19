@@ -212,7 +212,7 @@ class treeModel extends model
         }
         $treeMenu   = array();
         $lastMenu[] = '/';
-        $projectModules   = $this->getTaskTreeModules($rootID, false, false);
+        $projectModules   = $this->getTaskTreeModules($rootID, true);
         $noProductModules = $this->dao->select('*')->from(TABLE_MODULE)->where("root = '" . (int)$rootID . "' and type = 'task' and parent = 0")->andWhere('deleted')->eq(0)->fetchPairs('id', 'name');
 
         /* Fix for not in product modules. */
@@ -223,7 +223,7 @@ class treeModel extends model
             {
                 if($type == 'product')
                 {
-                    $modules = $this->dao->select('*')->from(TABLE_MODULE)->where("((root = '" . (int)$rootID . "' and type = 'task') OR (root = $id and type = 'story'))")
+                    $modules = $this->dao->select('*')->from(TABLE_MODULE)->where("((root = '" . (int)$rootID . "' and type = 'task' and parent != 0) OR (root = $id and type = 'story'))")
                         ->beginIF($startModulePath)->andWhere('path')->like($startModulePath)->fi()
                         ->andWhere('deleted')->eq(0)
                         ->orderBy('grade desc, branch, type, `order`')
@@ -1230,7 +1230,13 @@ class treeModel extends model
         $childs         = $data->modules;
         $parentModuleID = $data->parentModuleID;
 
-        $this->checkUnique($rootID, $type, $parentModuleID, $childs);
+        $module         = new stdClass();
+        $module->root   = $rootID;
+        $module->type   = $type;
+        $module->parent = $parentModuleID;
+        $repeatName     = $this->checkUnique($module, $childs);
+        if($repeatName) die(js::alert(sprintf($this->lang->tree->repeatName, $repeatName)));
+
         $parentModule = $this->getByID($parentModuleID);
 
         $branches = isset($data->branch) ? $data->branch : array();
@@ -1299,7 +1305,10 @@ class treeModel extends model
     {
         $module = fixer::input('post')->get();
         $self   = $this->getById($moduleID);
-        $this->checkUnique($self->root, $self->type, $self->parent, array("id{$self->id}" => $module->name), array("id{$self->id}" => $self->branch));
+
+        $repeatName = $this->checkUnique($self, array("id{$self->id}" => $module->name), array("id{$self->id}" => $self->branch));
+        if($repeatName) die(js::alert(sprintf($this->lang->tree->repeatName, $repeatName)));
+
         $parent = $this->getById($this->post->parent);
         $childs = $this->getAllChildId($moduleID);
         $module->name  = strip_tags(trim($module->name));
@@ -1477,11 +1486,16 @@ class treeModel extends model
      * @access public
      * @return bool
      */
-    public function checkUnique($rootID, $viewType, $parentModuleID, $modules = array(), $branches = array())
+    public function checkUnique($module, $modules = array(), $branches = array())
     {
         if(empty($branches)) $branches = $this->post->branch;
+        if(empty($branches) and isset($module->branch)) $branches = array($module->branch);
         if(empty($branches)) $branches = array(0);
-        $branches = array_unique($branches);
+        if(empty($modules) and isset($module->name)) $modules = array($module->name);
+        $branches       = array_unique($branches);
+        $rootID         = $module->root;
+        $viewType       = $module->type;
+        $parentModuleID = $module->parent;
 
         if($this->isMergeModule($rootID, $viewType) and $viewType != 'task') $viewType .= ',story';
 
@@ -1513,8 +1527,8 @@ class treeModel extends model
             }
             $checkedModules .= "$name,";
         }
-        if($repeatName) die(js::alert(sprintf($this->lang->tree->repeatName, $repeatName)));
-        return true;
+        if($repeatName) return $repeatName;
+        return false;
     }
 
     /**
@@ -1630,7 +1644,7 @@ class treeModel extends model
      */
     public function getDocStructure()
     {
-        $stmt = $this->dbh->query($this->dao->select('*')->from(TABLE_MODULE)->where('type')->eq('doc')->get());
+        $stmt = $this->dbh->query($this->dao->select('*')->from(TABLE_MODULE)->where('type')->eq('doc')->andWhere('deleted')->eq(0)->orderBy('`order`')->get());
         $parent = array();
         while($module = $stmt->fetch())
         {
@@ -1652,11 +1666,18 @@ class treeModel extends model
             {
                 foreach($module->children as $children)
                 {
-                    if($children->parent != 0) continue;//Filter project children modules.
+                    if($children->parent != 0 && !empty($tree[$root])) 
+                    {
+                        foreach($tree[$root] as $firstChildren)
+                        {
+                            if($firstChildren->id == $children->parent) $firstChildren->children[] = $children;
+                        }
+                    }
                     $tree[$root][] = $children;
                 }
             }
         }
+
         return $tree;
     }
 }

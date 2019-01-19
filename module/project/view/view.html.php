@@ -11,7 +11,7 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
-  <div class="main-row">
+  <div id='mainContent' class="main-row">
     <div class="col-8 main-col">
       <div class="row">
         <div class="col-sm-6">
@@ -46,8 +46,8 @@
                 <li><?php common::printLink('project', 'dynamic', "projectID=$project->id&type=all", '<i class="icon icon-more icon-sm"></i>', '', "title=$lang->more");?></li>
               </nav>
             </div>
-            <div class="panel-body">
-              <ul class="timeline timeline-tag-left">
+            <div class="panel-body scrollbar-hover">
+              <ul class="timeline timeline-tag-left no-margin">
                 <?php foreach($dynamics as $action):?>
                 <li <?php if($action->major) echo "class='active'";?>>
                   <div class='text-ellipsis'>
@@ -118,7 +118,7 @@
             </div>
             <div class="panel-body">
               <div class="row row-grid">
-                <?php if(common::hasPriv('project', 'objectLibs')):?>
+                <?php if(common::hasPriv('doc', 'objectLibs')):?>
                 <?php $i = 0;?>
                 <?php foreach($docLibs as $libID => $docLib):?>
                 <?php if($i > 8) break;?>
@@ -142,6 +142,28 @@
         <div class="col-sm-12">
           <?php $blockHistory = true;?>
           <?php include '../../common/view/action.html.php';?>
+        </div>
+      </div>
+      <div class='main-actions'>
+        <div class="btn-toolbar">
+          <?php
+          $params = "project=$project->id";
+          $browseLink = $this->session->projectList ? $this->session->projectList : inlink('browse', "projectID=$project->id");
+          common::printBack($browseLink);
+          if(!$project->deleted)
+          {
+              echo "<div class='divider'></div>";
+              common::printIcon('project', 'start',    "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
+              common::printIcon('project', 'activate', "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
+              common::printIcon('project', 'putoff',   "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
+              common::printIcon('project', 'suspend',  "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
+              common::printIcon('project', 'close',    "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
+
+              echo "<div class='divider'></div>";
+              common::printIcon('project', 'edit', $params, $project);
+              common::printIcon('project', 'delete', $params, $project, 'button', '', 'hiddenwin');
+          }
+          ?>
         </div>
       </div>
     </div>
@@ -275,28 +297,8 @@
   </div>
 </div>
 
-<div id="mainActions">
+<div id="mainActions" class='main-actions'>
   <nav class="container"></nav>
-  <div class="btn-toolbar">
-    <?php
-    $params = "project=$project->id";
-    $browseLink = $this->session->projectList ? $this->session->projectList : inlink('browse', "projectID=$project->id");
-    common::printBack($browseLink);
-    if(!$project->deleted)
-    {
-        echo "<div class='divider'></div>";
-        common::printIcon('project', 'start',    "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
-        common::printIcon('project', 'activate', "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
-        common::printIcon('project', 'putoff',   "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
-        common::printIcon('project', 'suspend',  "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
-        common::printIcon('project', 'close',    "projectID=$project->id", $project, 'button', '', '', 'iframe', true);
-
-        echo "<div class='divider'></div>";
-        common::printIcon('project', 'edit', $params, $project);
-        common::printIcon('project', 'delete', $params, $project, 'button', '', 'hiddenwin');
-    }
-    ?>
-  </div>
 <script>
 $(function()
 {

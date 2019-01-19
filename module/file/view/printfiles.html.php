@@ -9,7 +9,7 @@ $sessionString .= session_name() . '=' . session_id();
   <div class="detail-content">
 <?php endif;?>
   <style>
-  .files-list>li>a {display: inline;}
+  .files-list>li>a {display: inline; word-wrap: break-word;}
   .files-list>li>.right-icon {opacity: 1;}
   </style>
   <script>
@@ -20,15 +20,16 @@ $sessionString .= session_name() . '=' . session_id();
       hiddenwin.location.href =createLink('file', 'delete', 'fileID=' + fileID);
   }
   /* Download a file, append the mouse to the link. Thus we call decide to open the file in browser no download it. */
-  function downloadFile(fileID, extension, imageWidth)
+  function downloadFile(fileID, extension, imageWidth, fileTitle)
   {
       if(!fileID) return;
-      var fileTypes     = 'txt,jpg,jpeg,gif,png,bmp';
-      var sessionString = '<?php echo $sessionString;?>';
-      var windowWidth   = $(window).width();
-      var url           = createLink('file', 'download', 'fileID=' + fileID + '&mouse=left') + sessionString;
-      width = (windowWidth > imageWidth) ? ((imageWidth < windowWidth*0.5) ? windowWidth*0.5 : imageWidth) : windowWidth;
-      if(fileTypes.indexOf(extension) >= 0)
+      var fileTypes      = 'txt,jpg,jpeg,gif,png,bmp';
+      var sessionString  = '<?php echo $sessionString;?>';
+      var windowWidth    = $(window).width();
+      var url            = createLink('file', 'download', 'fileID=' + fileID + '&mouse=left') + sessionString;
+      var width          = (windowWidth > imageWidth) ? ((imageWidth < windowWidth * 0.5) ? windowWidth * 0.5 : imageWidth) : windowWidth;
+      var checkExtension = fileTitle.lastIndexOf('.' + extension) == (fileTitle.length - extension.length - 1);
+      if(fileTypes.indexOf(extension) >= 0 && checkExtension)
       {
           $('<a>').modalTrigger({url: url, type: 'iframe', width: width}).trigger('click');
       }
@@ -46,7 +47,7 @@ $sessionString .= session_name() . '=' . session_id();
           if(common::hasPriv('file', 'download'))
           {
               $uploadDate = $lang->file->uploadDate . substr($file->addedDate, 0, 10);
-              $fileTitle  = "<li title='{$uploadDate}'><i class='icon icon-file-text'></i> &nbsp;" . $file->title;
+              $fileTitle  = "<i class='icon icon-file-text'></i> &nbsp;" . $file->title;
               if(strpos($file->title, ".{$file->extension}") === false && $file->extension != 'txt') $fileTitle .= ".{$file->extension}";
               $imageWidth = 0;
               if(stripos('jpg|jpeg|gif|png|bmp', $file->extension) !== false)
@@ -76,7 +77,7 @@ $sessionString .= session_name() . '=' . session_id();
                   $file->size = round($file->size / (1024 * 1024 * 1024), 2);
                   $fileSize = $file->size . 'G';
               }
-              echo html::a($this->createLink('file', 'download', "fileID=$file->id") . $sessionString, $fileTitle . " ({$fileSize})", '_blank', "onclick=\"return downloadFile($file->id, '$file->extension', $imageWidth)\"");
+              echo "<li title='{$uploadDate}'>" . html::a($this->createLink('file', 'download', "fileID=$file->id") . $sessionString, $fileTitle . " <span class='text-muted'>({$fileSize})</span>", '_blank', "onclick=\"return downloadFile($file->id, '$file->extension', $imageWidth, '$file->title')\"");
 
 
               if(common::hasPriv($file->objectType, 'edit', $file->objectID))

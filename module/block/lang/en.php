@@ -1,13 +1,13 @@
 <?php
 /**
- * The en file of crm block module of RanZhi.
+ * The en file of crm block module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
  * @license     ZPL (http://zpl.pub/page/zplv12.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     block 
  * @version     $Id$
- * @link        http://www.ranzhi.org
+ * @link        https://www.zentao.pm
  */
 $lang->block = new stdclass();
 $lang->block->common = 'Block';
@@ -34,6 +34,7 @@ $lang->block->dynamic      = 'Dynamic';
 $lang->block->assignToMe   = 'Assign To Me';
 $lang->block->lblFlowchart = 'Workflow';
 $lang->block->welcome      = 'Welcome';
+$lang->block->lblTesttask  = 'Show test task';
 
 $lang->block->leftToday = 'Works for Today';
 $lang->block->myTask    = 'My Task';
@@ -60,15 +61,14 @@ $lang->block->confirmClose       = 'Do you want to permanently close this block?
 $lang->block->remove             = 'Remove';
 $lang->block->refresh            = 'Refresh';
 $lang->block->hidden             = 'Hide';
-$lang->block->dynamicInfo        = "<span class='timeline-tag'>%s</span> <span class='timeline-text'>%s <em>%s</em> %s <a href='%s'>%s</a></span>";
+$lang->block->dynamicInfo        = "<span class='timeline-tag'>%s</span> <span class='timeline-text'>%s <em>%s</em> %s <a href='%s' title='%s'>%s</a></span>";
 
 $lang->block->default['product']['1']['title'] = $lang->productCommon . ' Report';
 $lang->block->default['product']['1']['block'] = 'statistic';
 $lang->block->default['product']['1']['grid']  = 8;
 
-$lang->block->default['product']['1']['params']['orderBy'] = 'id_desc';
-$lang->block->default['product']['1']['params']['type']    = 'all';
-$lang->block->default['product']['1']['params']['num']     = 5;
+$lang->block->default['product']['1']['params']['type'] = 'all';
+$lang->block->default['product']['1']['params']['num']  = '20';
 
 $lang->block->default['product']['2']['title'] = $lang->productCommon . ' Overview';
 $lang->block->default['product']['2']['block'] = 'overview';
@@ -93,9 +93,8 @@ $lang->block->default['project']['1']['title'] = $lang->projectCommon . ' Report
 $lang->block->default['project']['1']['block'] = 'statistic';
 $lang->block->default['project']['1']['grid']  = 8;
 
-$lang->block->default['project']['1']['params']['orderBy'] = 'id_desc';
-$lang->block->default['project']['1']['params']['type']    = 'all';
-$lang->block->default['project']['1']['params']['num']     = 5;
+$lang->block->default['project']['1']['params']['type'] = 'all';
+$lang->block->default['project']['1']['params']['num']  = '20';
 
 $lang->block->default['project']['2']['title'] = $lang->projectCommon . ' Overview';
 $lang->block->default['project']['2']['block'] = 'overview';
@@ -121,8 +120,8 @@ $lang->block->default['qa']['1']['title'] = 'Test Report';
 $lang->block->default['qa']['1']['block'] = 'statistic';
 $lang->block->default['qa']['1']['grid']  = 8;
 
-$lang->block->default['qa']['1']['params']['orderBy'] = 'id_desc';
-$lang->block->default['qa']['1']['params']['type']    = 'noclosed';
+$lang->block->default['qa']['1']['params']['type'] = 'noclosed';
+$lang->block->default['qa']['1']['params']['num']  = '20';
 
 //$lang->block->default['qa']['2']['title'] = 'Testcase Overview';
 //$lang->block->default['qa']['2']['block'] = 'overview';
@@ -358,7 +357,7 @@ $lang->block->typeList->product['all']      = 'All';
 $lang->block->typeList->product['involved'] = 'Involved';
 
 $lang->block->typeList->project['undone']   = 'Unfinished';
-$lang->block->typeList->project['isdoing']  = 'Doing';
+$lang->block->typeList->project['doing']    = 'Doing';
 $lang->block->typeList->project['all']      = 'All';
 $lang->block->typeList->project['involved'] = 'Involved';
 
@@ -368,20 +367,24 @@ $lang->block->typeList->testtask['blocked'] = 'Blocked';
 $lang->block->typeList->testtask['done']    = 'Done';
 $lang->block->typeList->testtask['all']     = 'All';
 
-$lang->block->modules['product']->moreLinkList = new stdclass();
+$lang->block->modules['product']->moreLinkList        = new stdclass();
 $lang->block->modules['product']->moreLinkList->list  = 'product|all|product=&line=0&status=%s';
 $lang->block->modules['product']->moreLinkList->story = 'my|story|type=%s';
-$lang->block->modules['project']->moreLinkList = new stdclass();
+
+$lang->block->modules['project']->moreLinkList        = new stdclass();
 $lang->block->modules['project']->moreLinkList->list  = 'project|all|status=%s&project=';
 $lang->block->modules['project']->moreLinkList->task  = 'my|task|type=%s';
-$lang->block->modules['qa']->moreLinkList = new stdclass();
+
+$lang->block->modules['qa']->moreLinkList           = new stdclass();
 $lang->block->modules['qa']->moreLinkList->bug      = 'my|bug|type=%s';
 $lang->block->modules['qa']->moreLinkList->case     = 'my|testcase|type=%s';
 $lang->block->modules['qa']->moreLinkList->testtask = 'testtask|browse|type=%s';
-$lang->block->modules['todo']->moreLinkList = new stdclass();
+
+$lang->block->modules['todo']->moreLinkList       = new stdclass();
 $lang->block->modules['todo']->moreLinkList->list = 'my|todo|type=all';
-$lang->block->modules['common'] = new stdclass();
-$lang->block->modules['common']->moreLinkList = new stdclass();
+
+$lang->block->modules['common']                        = new stdclass();
+$lang->block->modules['common']->moreLinkList          = new stdclass();
 $lang->block->modules['common']->moreLinkList->dynamic = 'company|dynamic|';
 
 $lang->block->welcomeList['06:00'] = 'Good morning, %s';

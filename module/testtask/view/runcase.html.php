@@ -67,12 +67,12 @@
         </td>
         <?php if($step->type != 'group'):?>
         <td class='text-left'><?php echo nl2br($step->expect);?></td>
-        <td class='text-center'><?php echo html::select("steps[$step->id]", $lang->testcase->resultList, 'pass', "class='form-control'");?></td>
+        <td class='text-center'><?php echo html::select("steps[$step->id]", $lang->testcase->resultList, 'pass', "class='form-control' onchange='checkStepValue(this.value)'");?></td>
         <td>
-          <table class='w-p100 fix-border fix-position'>
+          <table class='w-p100'>
             <tr>
-              <td><?php echo html::textarea("reals[$step->id]", '', "rows=1 class='form-control autosize'");?></td>
-              <td><button type='button' title='<?php echo $lang->testtask->files?>' class='btn' data-toggle='modal' data-target='#fileModal<?php echo $step->id?>'><i class='icon icon-paper-clip'></i></button></td>
+              <td class='no-padding bd-0'><?php echo html::textarea("reals[$step->id]", '', "rows=1 class='form-control autosize'");?></td>
+              <td class='no-padding bd-0 w-50px text-right'><button type='button' title='<?php echo $lang->testtask->files?>' class='btn' data-toggle='modal' data-target='#fileModal<?php echo $step->id?>'><i class='icon icon-paper-clip'></i></button></td>
             </tr>
           </table>
         </td>
@@ -84,7 +84,7 @@
         <td colspan='5' class='form-actions'>
           <?php
           if($preCase)  echo html::a(inlink('runCase', "runID={$preCase['runID']}&caseID={$preCase['caseID']}&version={$preCase['version']}"), $lang->testtask->pre, '', "id='pre' class='btn btn-wide'");
-          echo html::submitButton('', '', 'btn btn-wide btn-primary');
+          echo html::submitButton();
           if($nextCase)  echo '&nbsp;' . html::a(inlink('runCase', "runID={$nextCase['runID']}&caseID={$nextCase['caseID']}&version={$nextCase['version']}"), $lang->testtask->next, '', "id='next' class='btn btn-wide'");
           echo html::hidden('case',    $run->case->id);
           echo html::hidden('version', $run->case->currentVersion);
@@ -102,14 +102,8 @@
             <h4 class="modal-title"><?php echo $lang->testtask->files;?></h4>
           </div>
           <div class="modal-body">
-            <table class='table table-form'>
-              <tr>
-                <td><?php echo $this->fetch('file', 'buildform', array('fileCount' => 1, 'percent' => 0.9, 'filesName' => "files{$step->id}", 'labelsName' => "labels{$step->id}"));?></td>
-              </tr>
-              <tr>
-                <td class='text-center'><button type="button" class="btn" onclick='loadFilesName()' data-dismiss="modal"><?php echo $lang->save;?></button></td>
-              <tr>
-            </table>
+            <?php echo $this->fetch('file', 'buildform', array('fileCount' => 1, 'percent' => 0.9, 'filesName' => "files{$step->id}", 'labelsName' => "labels{$step->id}"));?>
+            <div class="text-center"><button type="button" class="btn btn-wide btn-primary" onclick='loadFilesName()' data-dismiss="modal"><?php echo $lang->save;?></button></div>
           </div>
         </div>
       </div>

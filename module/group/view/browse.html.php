@@ -18,7 +18,7 @@
     <span class='btn btn-link btn-active-text'><span class='text'><?php echo $lang->group->browse;?></span></span>
   </div>
   <div class='btn-toolbar pull-right'>
-    <?php common::printIcon('group', 'create', '', '', 'button', '', '', 'iframe', true, "data-width='550'");?>
+    <?php common::printIcon('group', 'create', '', '', 'button', '', '', 'btn btn-primary iframe', true, "data-width='550'");?>
     <?php if(common::hasPriv('group', 'managePriv')):?>
     <?php echo html::a($this->createLink('group', 'managePriv', 'type=byModule', '', true), $lang->group->managePrivByModule, '', 'class="btn btn-primary iframe"');?>
     <?php endif;?>
@@ -55,11 +55,11 @@
           if(common::hasPriv('group', 'delete') and $group->role != 'limited')
           {
               $deleteURL = $this->createLink('group', 'delete', "groupID=$group->id&confirm=yes");
-              echo html::a("javascript:ajaxDelete(\"$deleteURL\", \"groupList\", confirmDelete)", '<i class="icon icon-trash"></i>', '', "title='{$lang->group->delete}' class='btn'");
+              echo html::a("javascript:ajaxDelete(\"$deleteURL\", \"groupList\", confirmDelete)", '<i class="icon icon-close"></i>', '', "title='{$lang->group->delete}' class='btn'");
           }
           else
           {
-              echo "<button class='btn disabled'><i class='icon icon-trash disabled' title='{$lang->group->delete}'></i></button>";
+              echo "<button class='btn disabled'><i class='icon icon-close disabled' title='{$lang->group->delete}'></i></button>";
           }
           ?>
         </td>

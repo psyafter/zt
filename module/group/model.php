@@ -306,17 +306,30 @@ class groupModel extends model
      */
     public function updateUser($groupID)
     {
-        /* Delete old. */
-        $this->dao->delete()->from(TABLE_USERGROUP)->where('`group`')->eq($groupID)->exec();
+        $members    = $this->post->members ? $this->post->members : array();
+        $groupUsers = $this->dao->select('account')->from(TABLE_USERGROUP)->where('`group`')->eq($groupID)->fetchPairs('account');
+        $newUsers   = array_diff($members, $groupUsers);
+        $delUsers   = array_diff($groupUsers, $members);
 
-        /* Insert new. */
-        if($this->post->members == false) return;
-        foreach($this->post->members as $account)
+        $this->dao->delete()->from(TABLE_USERGROUP)->where('`group`')->eq($groupID)->andWhere('account')->in($delUsers)->exec();
+
+        if($newUsers)
         {
-            $data          = new stdclass();
-            $data->account = $account;
-            $data->group   = $groupID;
-            $this->dao->insert(TABLE_USERGROUP)->data($data)->exec();
+            foreach($newUsers as $account)
+            {
+                $data          = new stdclass();
+                $data->account = $account;
+                $data->group   = $groupID;
+                $this->dao->insert(TABLE_USERGROUP)->data($data)->exec();
+            }
+        }
+
+        /* Adjust user view. */
+        $changedUsers = array_merge($newUsers, $delUsers);
+        if(!empty($changedUsers))
+        {
+            $this->loadModel('user');
+            foreach($changedUsers as $account) $this->user->computeUserView($account, true);
         }
     }
     

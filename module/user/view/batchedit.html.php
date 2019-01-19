@@ -84,7 +84,7 @@
         <?php endforeach;?>
         <tr>
           <th colspan='2'><?php echo $lang->user->verifyPassword?></th>
-          <td colspan='<?php echo count($visibleFields) + 1?>'>
+          <td colspan='2'>
             <div class="required required-wrapper"></div>
             <input type='text'     style="display:none"> <!-- for disable autocomplete all browser -->
             <input type='password' style="display:none"> <!-- for disable autocomplete all browser -->
@@ -95,8 +95,8 @@
         <tfoot>
           <tr>
             <td colspan="<?php echo count($visibleFields) + 4;?>" class="text-center form-actions">
-              <?php echo html::submitButton($lang->save, '', 'btn btn-wide btn-primary');?>
-              <?php echo html::backButton('', '', "btn btn-wide");?>
+              <?php echo html::submitButton($lang->save);?>
+              <?php echo html::backButton();?>
             </td>
           </tr>
         </tfoot>

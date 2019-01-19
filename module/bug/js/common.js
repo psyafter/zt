@@ -141,7 +141,14 @@ function loadAllProjectBuilds(projectID, productID)
     {
         oldOpenedBuild = $('#openedBuild').val() ? $('#openedBuild').val() : 0;
         link = createLink('build', 'ajaxGetProjectBuilds', 'projectID=' + projectID + '&productID=' + productID + '&varName=openedBuild&build=' + oldOpenedBuild + '&branch=' + branch + '&index=0&needCreate=true&type=all');
-        $('#buildBox').load(link, function(){ notice(); $('#openedBuild').chosen();});
+        $.get(link, function(data)
+        {
+            if(!data) data = '<select id="openedBuild" name="openedBuild" class="form-control" multiple=multiple></select>';
+            $('#openedBuild').replaceWith(data);
+            $('#openedBuild_chosen').remove();
+            $("#openedBuild").chosen();
+            notice();
+        })
     }
     if(page == 'edit')
     {
@@ -172,7 +179,14 @@ function loadAllProductBuilds(productID)
     if(page == 'create') 
     {
         link = createLink('build', 'ajaxGetProductBuilds', 'productID=' + productID + '&varName=openedBuild&build=' + oldOpenedBuild + '&branch=' + branch + '&index=0&type=all');
-        $('#buildBox').load(link, function(){ notice(); $('#openedBuild').chosen();});
+        $.get(link, function(data)
+        {
+            if(!data) data = '<select id="openedBuild" name="openedBuild" class="form-control" multiple=multiple></select>';
+            $('#openedBuild').replaceWith(data);
+            $('#openedBuild_chosen').remove();
+            $("#openedBuild").chosen();
+            notice();
+        })
     }
     if(page == 'edit')
     {
@@ -202,8 +216,9 @@ function loadProductModules(productID)
     if(typeof(branch) == 'undefined') branch = 0;
     link = createLink('tree', 'ajaxGetOptionMenu', 'productID=' + productID + '&viewtype=bug&branch=' + branch + '&rootModuleID=0&returnType=html&fieldID=&needManage=true');
     $('#moduleIdBox').load(link, function()
-    {
+    {   
         $(this).find('select').chosen()
+        if(typeof(bugModule) == 'string') $('#moduleIdBox').prepend("<span class='input-group-addon' style='border-left-width: 1px;'>" + bugModule + "</span>");
     });
 }
 
@@ -267,7 +282,14 @@ function loadProductBuilds(productID)
 
     if(page == 'create')
     {
-        $('#buildBox').load(link, function(){ notice(); $('#openedBuild').chosen();});
+        $.get(link, function(data)
+        {
+            if(!data) data = '<select id="openedBuild" name="openedBuild" class="form-control" multiple=multiple></select>';
+            $('#openedBuild').replaceWith(data);
+            $('#openedBuild_chosen').remove();
+            $("#openedBuild").chosen();
+            notice();
+        })
     }
     else
     {
@@ -311,7 +333,13 @@ function loadProjectRelated(projectID)
 function loadProjectTasks(projectID)
 {
     link = createLink('task', 'ajaxGetProjectTasks', 'projectID=' + projectID + '&taskID=' + oldTaskID);
-    $('#taskIdBox').load(link, function(){$('#task').chosen();});
+    $.post(link, function(data)
+    {
+        if(!data) data = '<select id="task" name="task" class="form-control"></select>';
+        $('#task').replaceWith(data);
+        $('#task_chosen').remove();
+        $("#task").chosen();
+    })
 }
 
 /**
@@ -346,7 +374,14 @@ function loadProjectBuilds(projectID)
     if(page == 'create')
     {
         link = createLink('build', 'ajaxGetProjectBuilds', 'projectID=' + projectID + '&productID=' + productID + '&varName=openedBuild&build=' + oldOpenedBuild + "&branch=" + branch + "&index=0&needCreate=true");
-        $('#buildBox').load(link, function(){ notice(); $('#openedBuild').chosen();});
+        $.get(link, function(data)
+        {
+            if(!data) data = '<select id="openedBuild" name="openedBuild" class="form-control" multiple=multiple></select>';
+            $('#openedBuild').replaceWith(data);
+            $('#openedBuild_chosen').remove();
+            $("#openedBuild").chosen();
+            notice();
+        })
     }
     else
     {
@@ -391,12 +426,14 @@ function setStories(moduleID, productID)
 function loadProductBranches(productID)
 {
     $('#branch').remove();
+    $('#branch_chosen').remove();
     $.get(createLink('branch', 'ajaxGetBranches', "productID=" + productID), function(data)
     {
         if(data)
         {
             $('#product').closest('.input-group').append(data);
             $('#branch').css('width', page == 'create' ? '120px' : '65px');
+            $('#branch').chosen();
         }
     })
 }
@@ -411,7 +448,12 @@ function loadProductBranches(productID)
 function loadAssignedTo(projectID)
 {
     link = createLink('bug', 'ajaxLoadAssignedTo', 'projectID=' + projectID + '&selectedUser=' + $('#assignedTo').val());
-    $('#assignedToBox').load(link, function(){$('#assignedTo').chosen();});
+    $.get(link, function(data)
+    {
+        $('#assignedTo_chosen').remove();
+        $('#assignedTo').replaceWith(data);
+        $('#assignedTo').chosen();
+    });
 }
 
 /**

@@ -86,6 +86,7 @@ class commonModel extends model
     {
         if($this->session->user)
         {
+            if(!defined('IN_UPGRADE')) $this->session->user->view = $this->loadModel('user')->grantUserView();
             $this->app->user = $this->session->user;
         }
         elseif($this->app->company->guest or PHP_SAPI == 'cli')
@@ -98,6 +99,7 @@ class commonModel extends model
             $user->admin      = false;
             $user->rights     = $this->loadModel('user')->authorize('guest');
             $user->groups     = array('group');
+            if(!defined('IN_UPGRADE')) $user->view = $this->user->grantUserView($user->account, $user->rights['acls']);
             $this->session->set('user', $user);
             $this->app->user = $this->session->user;
         }
@@ -244,7 +246,6 @@ class commonModel extends model
             $isGuest = $app->user->account == 'guest';
 
             echo "<a class='dropdown-toggle' data-toggle='dropdown'>";
-            echo "<div class='avatar avatar-sm bg-secondary avatar-circle'>" . strtoupper($app->user->account{0}) . "</div>\n";
             echo "<span class='user-name'>" . (empty($app->user->realname) ? $app->user->account : $app->user->realname) . '</span>';
             echo "<span class='caret'></span>";
             echo '</a>';
@@ -286,6 +287,8 @@ class commonModel extends model
             }
 
             echo '<li class="divider"></li>';
+            commonModel::printAboutBar();
+            echo '<li class="divider"></li>';
             echo '<li>';
             if($isGuest)
             {
@@ -309,16 +312,14 @@ class commonModel extends model
     public static function printAboutBar()
     {
         global $app, $config, $lang;
-        echo "<ul id='extraNav' class='nav nav-default'>";
-        echo "<li class='dropdown'>";
-        echo "<a data-toggle='dropdown'>" . $lang->help . " <span class='caret'></span></a>";
-        echo "<ul class='dropdown-menu'>";
+        echo "<li class='dropdown-submenu'>";
+        echo "<a data-toggle='dropdown'>" . $lang->help . "</a>";
+        echo "<ul class='dropdown-menu pull-left'>";
         if($config->global->flow == 'full' && !commonModel::isTutorialMode() and $app->user->account != 'guest') echo '<li>' . html::a(helper::createLink('tutorial', 'start'), $lang->tutorial, '', "class='iframe' data-class-name='modal-inverse' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . "</li>";
         echo '<li>' . html::a($lang->manualUrl, $lang->manual, '_blank', "class='open-help-tab'") . '</li>';
         echo '<li>' . html::a(helper::createLink('misc', 'changeLog'), $lang->changeLog, '', "class='iframe' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . '</li>';
         echo "</ul></li>\n";
         echo '<li>' . html::a(helper::createLink('misc', 'about'), $lang->aboutZenTao, '', "class='about iframe' data-width='900' data-headerless='true' data-backdrop='true' data-keyboard='true' data-class='modal-about'") . '</li>';
-        echo '</ul>';
     }
 
     /**
@@ -364,7 +365,14 @@ class commonModel extends model
         foreach($items as $subMenuKey => $subMenuLink)
         {
             if(is_array($subMenuLink) and isset($subMenuLink['link'])) $subMenuLink = $subMenuLink['link'];
-            $subMenuLink = vsprintf($subMenuLink, $replace);
+            if(is_array($replace))
+            {
+                $subMenuLink = vsprintf($subMenuLink, $replace);
+            }
+            else
+            {
+                $subMenuLink = sprintf($subMenuLink, $replace);
+            }
             list($subMenuName, $subMenuModule, $subMenuMethod, $subMenuParams) = explode('|', $subMenuLink);
 
             $link = array();
@@ -381,6 +389,49 @@ class commonModel extends model
         }
 
         return $subMenu;
+    }
+
+    /**
+     * Print admin subMenu.
+     * 
+     * @param  string    $subMenu 
+     * @static
+     * @access public
+     * @return void
+     */
+    public static function printAdminSubMenu($subMenu)
+    {
+        global $app, $lang;
+        $moduleName  = $app->getModuleName();
+        $methodName  = $app->getMethodName();
+        if(isset($lang->admin->subMenuOrder->$subMenu))
+        {
+            ksort($lang->admin->subMenuOrder->$subMenu);
+            foreach($lang->admin->subMenuOrder->$subMenu as $type)
+            {
+                if(isset($lang->admin->subMenu->$subMenu->$type))
+                {
+                    $subModule = '';
+                    $alias     = '';
+                    $link      = $lang->admin->subMenu->$subMenu->$type;
+                    if(is_array($lang->admin->subMenu->$subMenu->$type))
+                    {
+                        $subMenuType = $lang->admin->subMenu->$subMenu->$type;
+                        if(isset($subMenuType['subModule'])) $subModule = $subMenuType['subModule'];
+                        if(isset($subMenuType['alias']))     $alias     = $subMenuType['alias'];
+                        if(isset($subMenuType['link']))      $link      = $subMenuType['link'];
+                    }
+
+                    list($text, $currentModule, $currentMethod)= explode('|', $link);
+                    if(!common::hasPriv($currentModule, $currentMethod)) continue;
+
+                    $active = ($moduleName == $currentModule and $methodName == $currentMethod) ? 'btn-active-text' : '';
+                    if($subModule and strpos(",{$subModule}," , ",{$moduleName},") !== false) $active = 'btn-active-text';
+                    if($alias and $moduleName == $currentModule and strpos(",$alias,", ",$currentMethod,") !== false) $active = 'btn-active-text';
+                    echo html::a(helper::createLink($currentModule, $currentMethod), "<span class='text'>$text</span>", '', "class='btn btn-link {$active}' id='{$type}Tab'");
+                }
+            }
+        }
     }
 
     /**
@@ -602,7 +653,7 @@ class commonModel extends model
         if($moduleName != 'index')
         {
             if(!isset($lang->menu->$mainMenu)) return;
-            $menuLink = $mainMenu == 'admin' ? $lang->adminMenu : $lang->menu->$mainMenu;
+            $menuLink = $lang->menu->$mainMenu;
             list($menuLabel, $module, $method) = explode('|', $menuLink);
             echo '<li>' . html::a(helper::createLink($module, $method), $menuLabel) . '</li>';
         }
@@ -768,7 +819,7 @@ class commonModel extends model
         <h4 class="modal-title">{$lang->action->create}</h4>
       </div>
       <div class="modal-body">
-    <form action="$commentFormLink" target='hiddenwin' method='post'>
+        <form class="load-indicator" action="{$commentFormLink}" target='hiddenwin' method='post'>
           <div class="form-group">
             <textarea id='comment' name='comment' class="form-control" rows="8" autofocus="autofocus"></textarea>
           </div>
@@ -804,6 +855,9 @@ EOD;
     public static function buildIconButton($module, $method, $vars = '', $object = '', $type = 'button', $icon = '', $target = '', $extraClass = '', $onlyBody = false, $misc = '', $title = '')
     {
         if(isonlybody() and strpos($extraClass, 'showinonlybody') === false) return false;
+
+        /* Remove iframe for operation button in modal. Prevent pop up in modal. */
+        if(isonlybody() and strpos($extraClass, 'showinonlybody') !== false) $extraClass = str_replace('iframe', '', $extraClass);
 
         global $app, $lang;
 
@@ -981,7 +1035,7 @@ EOD;
             $title = isset($preAndNext->pre->title) ? $preAndNext->pre->title : $preAndNext->pre->name;
             $title = '#' . $preAndNext->pre->$id . ' ' . $title . ' ' . $lang->preShortcutKey;
             $link  = $linkTemplate ? sprintf($linkTemplate, $preAndNext->pre->$id) : inLink('view', "ID={$preAndNext->pre->$id}");
-            echo html::a($link, '<i class="icon-pre icon-chevron-left"></i>', '', "id='prevPage' class='btn btn-info' title='{$title}'");
+            echo html::a($link, '<i class="icon-pre icon-chevron-left"></i>', '', "id='prevPage' class='btn' title='{$title}'");
         }
         if(isset($preAndNext->next) and $preAndNext->next)
         {
@@ -989,7 +1043,7 @@ EOD;
             $title = isset($preAndNext->next->title) ? $preAndNext->next->title : $preAndNext->next->name;
             $title = '#' . $preAndNext->next->$id . ' ' . $title . ' ' . $lang->nextShortcutKey;
             $link  = $linkTemplate ? sprintf($linkTemplate, $preAndNext->next->$id) : inLink('view', "ID={$preAndNext->next->$id}");
-            echo html::a($link, '<i class="icon-pre icon-chevron-right"></i>', '', "id='nextPage' class='btn btn-info' title='$title'");
+            echo html::a($link, '<i class="icon-pre icon-chevron-right"></i>', '', "id='nextPage' class='btn' title='$title'");
         }
         echo '</nav>';
     }
@@ -1245,6 +1299,8 @@ EOD;
      */
     public function appendOrder($orderBy, $append = 'id')
     {
+        if(empty($orderBy)) return $append;
+
         list($firstOrder) = explode(',', $orderBy);
         $sort = strpos($firstOrder, '_') === false ? '_asc' : strstr($firstOrder, '_');
         return strpos($orderBy, $append) === false ? $orderBy . ',' . $append . $sort : $orderBy;
@@ -1379,7 +1435,7 @@ EOD;
         if($module == 'todo' and ($method == 'create' or $method == 'batchcreate')) return true;
         if($module == 'effort' and ($method == 'batchcreate' or $method == 'createforobject')) return true;
 
-        // limited project
+        /* Limited project. */
         $limitedProject = false;
         if(!empty($module) && $module == 'task' && !empty($object->project) or
             !empty($module) && $module == 'project' && !empty($object->id)
@@ -1390,7 +1446,7 @@ EOD;
             if($module == 'task' and !empty($object->project))$objectID = $object->project;
 
             $limitedProjects = !empty($_SESSION['limitedProjects']) ? $_SESSION['limitedProjects'] : '';
-            if(strpos(",{$limitedProjects},", ",$objectID,") !== false) $limitedProject = true;
+            if($objectID and strpos(",{$limitedProjects},", ",$objectID,") !== false) $limitedProject = true;
         }
         if(empty($app->user->rights['rights']['my']['limited']) && !$limitedProject) return true;
 
@@ -1592,8 +1648,18 @@ EOD;
         $entry = $this->entry->getByCode($this->get->code);
         if(!$entry)                              $this->response('EMPTY_ENTRY');
         if(!$entry->key)                         $this->response('EMPTY_KEY');
+        if(empty($entry->account))               $this->response('ACCOUNT_UNBOUND');
         if(!$this->checkIP($entry->ip))          $this->response('IP_DENIED');
         if(!$this->checkEntryToken($entry->key)) $this->response('INVALID_TOKEN');
+
+        $this->loadModel('user');
+        $user = $this->dao->findByAccount($entry->account)->from(TABLE_USER)->fetch();
+        $user->rights = $this->user->authorize($user->account);
+        $user->groups = $this->user->getGroups($user->account);
+        $user->view   = $this->user->grantUserView($user->account, $user->rights['acls']);
+        $user->admin  = strpos($this->app->company->admins, ",{$user->account},") !== false;
+        $this->session->set('user', $user);
+        $this->app->user = $user;
 
         $this->session->set('ENTRY_CODE', $this->get->code);
         $this->session->set('VALID_ENTRY', md5(md5($this->get->code) . $this->server->remote_addr));
@@ -1661,7 +1727,7 @@ EOD;
 
         $headers[] = "API-RemoteIP: " . $_SERVER['REMOTE_ADDR'];
         curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers );
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLINFO_HEADER_OUT, TRUE);
         if(!empty($data))
         {

@@ -37,8 +37,8 @@
       <tr>
         <th class='text-right'></th>
         <td class='form-actions'>
-          <?php echo html::submitButton('', "onclick='setNoChecked()'", 'btn btn-wide btn-primary');?>
-          <?php echo html::backButton('', '', 'btn btn-wide');?>
+          <?php echo html::submitButton('', "onclick='setNoChecked()'");?>
+          <?php echo html::backButton();?>
           <?php echo html::hidden('noChecked'); // Save the value of no checked.?>
         </td>
       </tr>
@@ -48,6 +48,7 @@
 <?php else:?>
 <div id='mainMenu' class='clearfix'>
   <div class='btn-toolbar pull-left'>
+  <span id='groupName'><i class='icon-lock'> <?php echo $group->name;?></i><i class="icon icon-chevron-right"></i></span>
     <?php $params = "type=byGroup&param=$groupID&menu=%s&version=$version";?>
     <?php $active = empty($menu) ? 'btn-active-text' : '';?>
     <?php echo html::a(inlink('managePriv', sprintf($params, '')), "<span class='text'>{$lang->group->all}</span>", '', "class='btn btn-link $active'")?>
@@ -122,7 +123,7 @@
         </th>
         <td class='form-actions'>
           <?php echo html::submitButton('', "onclick='setNoChecked()'", 'btn btn-wide btn-primary');?>
-          <?php echo html::backButton('', '', 'btn btn-wide');?>
+          <?php echo html::backButton();?>
           <?php echo html::hidden('noChecked'); // Save the value of no checked.?>
         </td>
       </tr>

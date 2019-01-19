@@ -1,27 +1,10 @@
 $(function()
 {
-    var $assignedTo = $('#assignedTo');
-    var $needNotReview = $('#needNotReview');
-    if($needNotReview.prop('checked'))
+    $('#needNotReview').on('change', function()
     {
-        $assignedTo.attr('disabled', 'disabled');
-    }
-    else
-    {
-        $assignedTo.removeAttr('disabled');
-    }
-    $assignedTo.trigger("chosen:updated");
+        $('#assignedTo').attr('disabled', $(this).is(':checked') ? 'disabled' : null).trigger('chosen:updated');
+    });
+    $('#needNotReview').change();
 
-    $needNotReview.change(function()
-    {
-        if($needNotReview.prop('checked'))
-        {
-            $assignedTo.attr('disabled', 'disabled');
-        }
-        else
-        {
-            $assignedTo.removeAttr('disabled');
-        }
-        $assignedTo.trigger("chosen:updated");
-    })
+    if($('.tabs .tab-content .tab-pane.active').children().length == 0) $('.tabs .nav-tabs li.active').css('border-bottom', '1px solid #ccc');
 });

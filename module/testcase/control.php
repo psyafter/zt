@@ -69,10 +69,10 @@ class testcase extends control
         if($this->cookie->preProductID != $productID or $this->cookie->preBranch != $branch)
         {
             $_COOKIE['caseModule'] = 0;
-            setcookie('caseModule', 0, $this->config->cookieLife, $this->config->webRoot);
+            setcookie('caseModule', 0, 0, $this->config->webRoot);
         }
-        if($browseType == 'bymodule') setcookie('caseModule', (int)$param, $this->config->cookieLife, $this->config->webRoot);
-        if($browseType == 'bysuite')  setcookie('caseSuite', (int)$param, $this->config->cookieLife, $this->config->webRoot);
+        if($browseType == 'bymodule') setcookie('caseModule', (int)$param, 0, $this->config->webRoot);
+        if($browseType == 'bysuite')  setcookie('caseSuite', (int)$param, 0, $this->config->webRoot);
         if($browseType != 'bymodule') $this->session->set('caseBrowseType', $browseType);
 
         $moduleID = ($browseType == 'bymodule') ? (int)$param : ($browseType == 'bysearch' ? 0 : ($this->cookie->caseModule ? $this->cookie->caseModule : 0));
@@ -114,6 +114,7 @@ class testcase extends control
         $this->view->modulePairs = $showModule ? $this->tree->getModulePairs($productID, 'case', $showModule) : array();
 
         /* Assign. */
+        $tree = $moduleID ? $this->tree->getByID($moduleID) : '';
         $this->view->title         = $this->products[$productID] . $this->lang->colon . $this->lang->testcase->common;
         $this->view->position[]    = html::a($this->createLink('testcase', 'browse', "productID=$productID&branch=$branch"), $this->products[$productID]);
         $this->view->position[]    = $this->lang->testcase->common;
@@ -122,7 +123,7 @@ class testcase extends control
         $this->view->productName   = $this->products[$productID];
         $this->view->modules       = $this->tree->getOptionMenu($productID, $viewType = 'case', $startModuleID = 0, $branch);
         $this->view->moduleTree    = $this->tree->getTreeMenu($productID, $viewType = 'case', $startModuleID = 0, array('treeModel', 'createCaseLink'), '', $branch);
-        $this->view->moduleName    = $moduleID ? $this->tree->getById($moduleID)->name : $this->lang->tree->all;
+        $this->view->moduleName    = $moduleID ? $tree->name : $this->lang->tree->all;
         $this->view->moduleID      = $moduleID;
         $this->view->summary       = $this->testcase->summary($cases);
         $this->view->pager         = $pager;
@@ -1008,10 +1009,11 @@ class testcase extends control
      * @param  int    $productID
      * @param  string $orderBy
      * @param  int    $taskID
+     * @param  string $browseType
      * @access public
      * @return void
      */
-    public function export($productID, $orderBy, $taskID = 0)
+    public function export($productID, $orderBy, $taskID = 0, $browseType = '')
     {
         $product = $this->loadModel('product')->getById($productID);
         if($product->type != 'normal') $this->lang->testcase->branch = $this->lang->product->branchName[$product->type];
@@ -1099,7 +1101,7 @@ class testcase extends control
             }
 
             /* Get related objects title or names. */
-            $relatedModules = $this->dao->select('id, name')->from(TABLE_MODULE)->where('id')->in($relatedModuleIdList)->fetchPairs();
+            $relatedModules = $this->loadModel('tree')->getOptionMenu($productID, 'case');
             $relatedStories = $this->dao->select('id,title')->from(TABLE_STORY) ->where('id')->in($relatedStoryIdList)->fetchPairs();
             $relatedCases   = $this->dao->select('id, title')->from(TABLE_CASE)->where('id')->in($relatedCaseIdList)->fetchPairs();
             $relatedSteps   = $this->dao->select('id,parent,`case`,version,type,`desc`,expect')->from(TABLE_CASESTEP)->where('`case`')->in(@array_keys($cases))->orderBy('version desc,id')->fetchGroup('case', 'id');
@@ -1191,6 +1193,13 @@ class testcase extends control
             $this->fetch('file', 'export2' . $this->post->fileType, $_POST);
         }
 
+        $fileName    = $this->lang->testcase->common;
+        $productName = $this->dao->findById($productID)->from(TABLE_PRODUCT)->fetch('name');
+        $browseType  = isset($this->lang->testcase->featureBar['browse'][$browseType]) ? $this->lang->testcase->featureBar['browse'][$browseType] : '';
+
+        if($taskID) $taskName = $this->dao->findById($taskID)->from(TABLE_TESTTASK)->fetch('name');
+
+        $this->view->fileName        = $productName . $this->lang->dash . ($taskID ? $taskName . $this->lang->dash : '') . $browseType . $fileName;
         $this->view->allExportFields = $this->config->testcase->exportFields;
         $this->view->customExport    = true;
         $this->display();
@@ -1296,7 +1305,7 @@ class testcase extends control
                 $columnKey[] = $fields[$title];
             }
 
-            if(count($columnKey) == 0 or $this->post->encode != 'utf-8')
+            if(count($columnKey) <= 3 or $this->post->encode != 'utf-8')
             {
                 $fc     = file_get_contents($fileName);
                 $encode = $this->post->encode != "utf-8" ? $this->post->encode : 'gbk';

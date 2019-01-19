@@ -12,7 +12,8 @@
 $lang->misc = new stdclass();
 $lang->misc->common = '杂项';
 $lang->misc->ping   = '防超时';
-$lang->misc->api    = 'http://api.zentao.pm';
+$lang->misc->api    = 'https://api.zentao.pm';
+$lang->misc->enApi  = 'http://api.zentao.pm';
 
 $lang->misc->zentao = new stdclass();
 $lang->misc->zentao->version           = '版本%s';
@@ -58,6 +59,7 @@ $lang->misc->checkTable  = "检查修复数据表";
 $lang->misc->needRepair  = "修复表";
 $lang->misc->repairTable = "数据库表可能因为断电原因损坏，需要检查修复！！";
 $lang->misc->repairFail  = "修复失败，请到该数据库的数据目录下，尝试执行<code>myisamchk -r -f %s.MYI</code>进行修复。";
+$lang->misc->connectFail = "连接数据库失败，错误：%s，<br/> 请检查mysql错误日志，排查错误。";
 $lang->misc->tableName   = "表名";
 $lang->misc->tableStatus = "状态";
 $lang->misc->novice      = "您可能初次使用禅道，是否进入新手模式？";
@@ -74,19 +76,40 @@ $lang->misc->feature = new stdclass();
 $lang->misc->feature->lastest  = '最新版本';
 $lang->misc->feature->detailed = '详情';
 
-$lang->misc->releaseDate['9.8.stable'] = '2018-01-17';
-$lang->misc->releaseDate['9.7.stable'] = '2017-12-22';
-$lang->misc->releaseDate['9.6.stable'] = '2017-11-06';
-$lang->misc->releaseDate['9.5.1']      = '2017-09-27';
-$lang->misc->releaseDate['9.3.beta']   = '2017-06-21';
-$lang->misc->releaseDate['9.1.stable'] = '2017-03-23';
-$lang->misc->releaseDate['9.0.beta']   = '2017-01-03';
-$lang->misc->releaseDate['8.3.stable'] = '2016-11-09';
-$lang->misc->releaseDate['8.2.stable'] = '2016-05-17';
-$lang->misc->releaseDate['7.4.beta']   = '2015-11-13';
-$lang->misc->releaseDate['7.2.stable'] = '2015-05-22';
-$lang->misc->releaseDate['7.1.stable'] = '2015-03-07';
-$lang->misc->releaseDate['6.3.stable'] = '2014-11-07';
+$lang->misc->releaseDate['10.6.stable'] = '2018-11-20';
+$lang->misc->releaseDate['10.5.stable'] = '2018-10-25';
+$lang->misc->releaseDate['10.4.stable'] = '2018-09-28';
+$lang->misc->releaseDate['10.3.stable'] = '2018-08-10';
+$lang->misc->releaseDate['10.2.stable'] = '2018-08-02';
+$lang->misc->releaseDate['10.0.stable'] = '2018-06-26';
+$lang->misc->releaseDate['9.8.stable']  = '2018-01-17';
+$lang->misc->releaseDate['9.7.stable']  = '2017-12-22';
+$lang->misc->releaseDate['9.6.stable']  = '2017-11-06';
+$lang->misc->releaseDate['9.5.1']       = '2017-09-27';
+$lang->misc->releaseDate['9.3.beta']    = '2017-06-21';
+$lang->misc->releaseDate['9.1.stable']  = '2017-03-23';
+$lang->misc->releaseDate['9.0.beta']    = '2017-01-03';
+$lang->misc->releaseDate['8.3.stable']  = '2016-11-09';
+$lang->misc->releaseDate['8.2.stable']  = '2016-05-17';
+$lang->misc->releaseDate['7.4.beta']    = '2015-11-13';
+$lang->misc->releaseDate['7.2.stable']  = '2015-05-22';
+$lang->misc->releaseDate['7.1.stable']  = '2015-03-07';
+$lang->misc->releaseDate['6.3.stable']  = '2014-11-07';
+
+$lang->misc->feature->all['10.6.stable'][] = array('title'=>'调整备份机制', 'desc' => '<p>增加备份设置，备份更加灵活</p><p>显示备份进度</p><p>可以更改备份目录</p>');
+$lang->misc->feature->all['10.6.stable'][] = array('title'=>'优化和调整菜单', 'desc' => '<p>调整后台菜单</p><p>调整我的地盘和项目的二级菜单</p>');
+
+$lang->misc->feature->all['10.5.stable'][] = array('title'=>'调整文档显示', 'desc' => '<p>调整文档库左侧的布局方式</p><p>文档库左侧导航底部增加筛选条件</p>');
+$lang->misc->feature->all['10.5.stable'][] = array('title'=>'调整子任务逻辑，优化父子任务显示。', 'desc' => '');
+
+$lang->misc->feature->all['10.4.stable'][] = array('title'=>'优化调整新界面', 'desc' => '<p>详情页面还原我们之前的排版布局</p><p>重构添加用户页面的表单</p><p>用例执行时，如果用户手工选择了通过，写结果的时候不要更新用例状态</p>');
+$lang->misc->feature->all['10.4.stable'][] = array('title'=>'用户机器休眠登录失效后，重新刷新session', 'desc' => '');
+$lang->misc->feature->all['10.4.stable'][] = array('title'=>'提升现有的接口机制', 'desc' => '');
+
+$lang->misc->feature->all['10.3.stable'][] = array('title'=>'修复Bug', 'desc' => '');
+$lang->misc->feature->all['10.2.stable'][] = array('title'=>'集成喧喧IM', 'desc' => '');
+
+$lang->misc->feature->all['10.0.stable'][] = array('title'=>'全新的界面和交互体验', 'desc' => '<ol><li>全新的我的地盘</li><li>全新的动态页面</li><li>全新的产品主页</li><li>全新的产品概况</li><li>全新的路线图</li><li>全新的项目主页</li><li>全新的项目概况</li><li>全新的测试主页</li><li>全新的文档主页</li><li>我的地盘新增工作统计区块</li><li>我的地盘待办区块可以直接添加、编辑、完成待办</li><li>产品主页新增产品统计区块</li><li>产品主页新增产品总览区块</li><li>项目主页新增项目统计区块</li><li>项目主页新增项目总览区块</li><li>测试主页新增测试统计区块</li><li>所有产品、产品主页、所有项目、项目主页、测试主页等按钮从二级导航右侧移动到了左侧</li><li>项目任务列表看板、燃尽图、树状图、分组查看等按钮从三级导航中移动到二级导航中，树状图、分组查看和任务列表集成到一个下拉列表中</li><li>项目下二级导航中Bug、版本、测试单三个跟测试相关的导航集成到一个下拉列表中</li><li>版本、测试单列表按照产品分组展示，布局更加合理</li><li>文档左侧增加树状图显示</li><li>文档增加快速访问功能，包括最近更新、我的文档、我的收藏三个入口</li><li>文档增加收藏功能</li><ol>');
 
 $lang->misc->feature->all['9.8.stable'][] = array('title'=>'实现集中的消息处理机制', 'desc' => '<p>邮件，短信，webhook都放统一的消息发送</p><p>移植然之里面的消息通知功能</p>');
 $lang->misc->feature->all['9.8.stable'][] = array('title'=>'实现周期性待办功能', 'desc' => '');

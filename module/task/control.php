@@ -146,6 +146,8 @@ class task extends control
             }
             elseif($this->post->after == 'toTaskList')
             {
+                $moduleID  = $this->post->module ? $this->post->module : 0;
+                $taskLink  = $this->createLink('project', 'task', "projectID=$projectID&browseType=byModule&param=$moduleID");
                 $response['locate'] = $taskLink;
                 $this->send($response);
             }
@@ -256,7 +258,7 @@ class task extends control
         $this->view->moduleID   = $moduleID;
         $this->display();
     }
-    
+
     /**
      * Common actions of task module.
      *
@@ -320,18 +322,28 @@ class task extends control
                     }
                 }
             }
-            die(js::locate($this->createLink('task', 'view', "taskID=$taskID"), 'parent'));
+            if(defined('RUN_MODE') && RUN_MODE == 'api')
+            {
+                die(array('status' => 'success', 'data' => $taskID));
+            }
+            else
+            {
+                die(js::locate($this->createLink('task', 'view', "taskID=$taskID"), 'parent'));
+            }
         }
 
         $noclosedProjects = $this->project->getPairs('noclosed,nocode');
         unset($noclosedProjects[$this->view->project->id]);
         $this->view->projects = array($this->view->project->id => $this->view->project->name) + $noclosedProjects;
+        $tasks = $this->task->getParentTaskPairs($this->view->project->id);
+        if(isset($tasks[$taskID])) unset($tasks[$taskID]);
 
         if(!isset($this->view->members[$this->view->task->assignedTo])) $this->view->members[$this->view->task->assignedTo] = $this->view->task->assignedTo;
         $this->view->title      = $this->lang->task->edit . 'TASK' . $this->lang->colon . $this->view->task->name;
         $this->view->position[] = $this->lang->task->common;
         $this->view->position[] = $this->lang->task->edit;
         $this->view->stories    = $this->story->getProjectStoryPairs($this->view->project->id);
+        $this->view->tasks      = $tasks;
         $this->view->users      = $this->loadModel('user')->getPairs('nodeleted', "{$this->view->task->openedBy},{$this->view->task->canceledBy},{$this->view->task->closedBy}");
         $this->view->modules    = $this->tree->getTaskOptionMenu($this->view->task->project);
         $this->display();
@@ -801,7 +813,14 @@ class task extends control
                 }
             }
             if(isonlybody()) die(js::closeModal('parent.parent', 'this'));
-            die(js::locate($this->createLink('task', 'view', "taskID=$taskID"), 'parent'));
+            if(defined('RUN_MODE') && RUN_MODE == 'api')
+            {
+                die(array('status' => 'success', 'data' => $taskID));
+            }
+            else
+            {
+                die(js::locate($this->createLink('task', 'view', "taskID=$taskID"), 'parent'));
+            }
         }
 
         $task         = $this->view->task;
@@ -923,7 +942,14 @@ class task extends control
                 $this->action->logHistory($actionID, $changes);
             }
             if(isonlybody()) die(js::closeModal('parent.parent', 'this'));
-            die(js::locate($this->createLink('task', 'view', "taskID=$taskID"), 'parent'));
+            if(defined('RUN_MODE') && RUN_MODE == 'api')
+            {
+                die(array('status' => 'success', 'data' => $taskID));
+            }
+            else
+            {
+                die(js::locate($this->createLink('task', 'view', "taskID=$taskID"), 'parent'));
+            }
         }
 
         $this->view->title      = $this->view->project->name . $this->lang->colon .$this->lang->task->finish;
@@ -1257,7 +1283,7 @@ class task extends control
                     $task->progress .= '%';
                 }
             }
-            else
+            elseif($this->session->taskQueryCondition)
             {
                 $stmt = $this->dbh->query($this->session->taskQueryCondition . ($this->post->exportType == 'selected' ? " AND t1.id IN({$this->cookie->checkedItem})" : '') . " ORDER BY " . strtr($orderBy, '_', ' '));
                 while($row = $stmt->fetch()) $tasks[$row->id] = $row;
@@ -1286,7 +1312,7 @@ class task extends control
             $relatedFiles   = $this->dao->select('id, objectID, pathname, title')->from(TABLE_FILE)->where('objectType')->eq('task')->andWhere('objectID')->in(@array_keys($tasks))->andWhere('extra')->ne('editor')->fetchGroup('objectID');
             $relatedModules = $this->loadModel('tree')->getTaskOptionMenu($projectID);
 
-            if(!$this->session->taskWithChildren)
+            if(!$this->session->taskWithChildren and $tasks)
             {
                 $children = $this->dao->select('*')->from(TABLE_TASK)->where('deleted')->eq(0)
                     ->andWhere('parent')->ne(0)
@@ -1338,8 +1364,14 @@ class task extends control
 
             if($type == 'group')
             {
+                $stories    = $this->loadModel('story')->getProjectStories($projectID);
                 $groupTasks = array();
-                foreach($tasks as $task) $groupTasks[$task->$orderBy][] = $task;
+                foreach($tasks as $task)
+                {
+                    $task->storyTitle = isset($stories[$task->story]) ? $stories[$task->story]->title : '';
+                    $groupTasks[$task->$orderBy][] = $task;
+                }
+
                 $tasks = array();
                 foreach($groupTasks as $groupTask)
                 {
@@ -1373,7 +1405,7 @@ class task extends control
                 if(isset($users[$task->closedBy]))     $task->closedBy     = $users[$task->closedBy];
                 if(isset($users[$task->lastEditedBy])) $task->lastEditedBy = $users[$task->lastEditedBy];
 
-                if(!empty($task->parent)) $task->name = '[' . $taskLang->childrenAB . '] ' . $task->name;
+                if($task->parent > 0 && strpos($task->name, htmlentities('>')) !== 0) $task->name = '>' . $task->name;
                 if(!empty($task->team))   $task->name = '[' . $taskLang->multipleAB . '] ' . $task->name;
 
                 $task->openedDate     = substr($task->openedDate,     0, 10);
@@ -1401,8 +1433,24 @@ class task extends control
             $this->fetch('file', 'export2' . $this->post->fileType, $_POST);
         }
 
+        $this->app->loadLang('project');
+        $fileName = $this->lang->task->common;
+        $projectName = $this->dao->findById($projectID)->from(TABLE_PROJECT)->fetch('name');
+        if(isset($this->lang->project->featureBar['task'][$type]))
+        {
+            $browseType = $this->lang->project->featureBar['task'][$type];
+        }
+        else
+        {
+            $browseType = isset($this->lang->project->statusSelects[$type]) ? $this->lang->project->statusSelects[$type] : '';
+        }
+
+        $this->view->fileName        = $projectName . $this->lang->dash . $browseType . $fileName;
         $this->view->allExportFields = $allExportFields;
         $this->view->customExport    = true;
+        $this->view->orderBy         = $orderBy;
+        $this->view->type            = $type;
+        $this->view->projectID       = $projectID;
         $this->display();
     }
 

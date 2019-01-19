@@ -1,15 +1,37 @@
 $(function()
 {
-    $('.c-boards').each(function()
+    var isFirefox = $.zui.browser.firefox;
+    var adjustBoardsHeight = function()
     {
-        var height = $(window).height() - $('#header').height() - $('#footer').height() - 40 - 105;
-        var $boardsWrapper = $(this).find('.boards-wrapper');
-        $boardsWrapper.height(height);
-        if($boardsWrapper.height() > $boardsWrapper.find('.boards').height())
+        var $cBoards = $('.c-boards');
+        var viewHeight = $(window).height() - $('#header').height() - $('#footer').height() - 111;
+        if ($cBoards.length === 1)
         {
-            $boardsWrapper.find('.boards').css('height', $(this).height() - 1);
+            var $boardsWrapper = $cBoards.find('.boards-wrapper');
+            $boardsWrapper.css('min-height', viewHeight);
+            if($boardsWrapper.height() > $boardsWrapper.find('.boards').height())
+            {
+                $boardsWrapper.find('.boards').css(isFirefox ? 'height' : 'min-height', $boardsWrapper.height() - 1);
+            }
+            return
         }
-    });
+
+        $cBoards.each(function()
+        {
+            var $theBoards = $(this);
+
+            var $boardsWrapper = $theBoards.find('.boards-wrapper');
+            var minHeight = Math.min($theBoards.prev().find('.board-story').outerHeight() + 4, viewHeight);
+            $boardsWrapper.css({maxHeight: viewHeight, minHeight: minHeight});
+            if($boardsWrapper.height() > $boardsWrapper.find('.boards').height())
+            {
+                var $boards = $boardsWrapper.find('.boards');
+                $boards.css({maxHeight: $theBoards.height(), minHeight: minHeight});
+                if ($boards.outerHeight() < minHeight) $boards.css('height', minHeight);
+            }
+        });
+    };
+    adjustBoardsHeight();
 
     var boardID  = '';
     var onlybody = config.requestType == 'GET' ? "&onlybody=yes" : "?onlybody=yes";
@@ -44,58 +66,68 @@ $(function()
         outer.style.visibility = "hidden";
         outer.style.width = "100px";
         outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
-    
+
         document.body.appendChild(outer);
-    
+
         var widthNoScroll = outer.offsetWidth;
         // force scrollbars
         outer.style.overflow = "scroll";
-    
+
         // add innerdiv
         var inner = document.createElement("div");
         inner.style.width = "100%";
-        outer.appendChild(inner);        
-    
+        outer.appendChild(inner);
+
         var widthWithScroll = inner.offsetWidth;
 
         // remove divs
         outer.parentNode.removeChild(outer);
-    
+
         return widthNoScroll - widthWithScroll;
     };
 
     var scrollbarWidth = getScrollbarWidth();
     var fixBoardWidth = function()
     {
-        var $table = $kanban.find('.table');
+        var $table = $kanban.children('.table:first');
         var kanbanWidth = $table.width();
         var $cBoards = $table.find('thead>tr>th.c-board:not(.c-side)');
         var boardCount = $cBoards.length;
         var $cSide = $table.find('thead>tr>th.c-board.c-side');
-        var totalWidth = kanbanWidth - scrollbarWidth;
+        var totalWidth = kanbanWidth - scrollbarWidth - 1;
         if ($cSide.length) totalWidth = totalWidth - ($cSide.outerWidth() + 5);
-        var cBoardWidth = Math.floor(totalWidth/boardCount) - 16;
+        var cBoardWidth = Math.floor(totalWidth/boardCount);
         $cBoards.not(':last').width(cBoardWidth);
-        $cBoards.first().width(cBoardWidth + 5);
-        $kanban.find('.boards > .board').width(cBoardWidth + 16 - 22);
+        if ($cSide.length) $cBoards.first().width(cBoardWidth + (isFirefox ? 0 : 5));
+        $kanban.find('.boards > .board').width(cBoardWidth - (isFirefox ? 21 : 22));
     };
     fixBoardWidth();
-    $(window).on('resize', fixBoardWidth);
 
-    var refresh = function()
+    var updateUI = function()
+    {
+        fixBoardWidth();
+        adjustBoardsHeight();
+        $kanban.data('zui.table').updateFixUI();
+    };
+
+    $(window).on('resize', updateUI);
+
+    var refresh = function(force)
     {
         var selfClose = $.cookie('selfClose');
         $.cookie('selfClose', 0, {expires:config.cookieLife, path:config.webRoot});
-        if(selfClose == 1) $kanban.load(location.href + ' #kanban', fixBoardWidth);
+        if(selfClose == 1 || force)
+        {
+            $kanban.load(location.href + ' #kanban>*', updateUI);
+        }
     };
+    window.refreshKanban = refresh;
 
     var kanbanModalTrigger = new $.zui.ModalTrigger({type: 'iframe', width:800});
-    var lastOperation;
     var dropTo = function(id, from, to, type)
     {
         if(statusMap[type][from] && statusMap[type][from][to])
         {
-            lastOperation = {id: id, from: from, to: to};
             kanbanModalTrigger.show(
             {
                 url: $.createLink(type, statusMap[type][from][to], 'id=' + id) + onlybody,
@@ -156,22 +188,26 @@ $(function()
     $kanban.on('click', '.kanbaniframe', function(e)
     {
         var $link = $(this);
-        new $.zui.ModalTrigger($.extend(
+        kanbanModalTrigger.show(
         {
-            type: 'iframe',
             url: $link.attr('href'),
-            width: '80%',
-        }, $link.data())).show(
-        {
-            shown:  function(){$('.modal-iframe').data('cancel-reload', true)},
+            shown:  function(){$('.modal-iframe').addClass('with-titlebar').data('cancel-reload', true)},
             hidden: refresh
         });
-				return false;
+		return false;
     });
 
     $.extend({'closeModal':function(callback, location)
     {
-        kanbanModalTrigger.close();
+        var ref = $('#triggerModal.modal').attr('ref');
+        if(ref.indexOf('export') > 0 && ref.indexOf('kanban') > 0)
+        {
+            $('#triggerModal').modal('hide');
+        }
+        else
+        {
+            kanbanModalTrigger.close();
+        }
         if(callback && $.isFunction(callback)) callback();
     }});
 });

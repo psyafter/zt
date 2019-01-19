@@ -5,22 +5,22 @@
  * @copyright   Copyright 2009-2017 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
  * @license     ZPL (http://zpl.pub/page/zplv12.html)
  * @author      Gang Liu <liugang@cnezsoft.com>
- * @package     entry 
+ * @package     entry
  * @version     $Id$
  * @link        https://www.zentao.pm
  */
 ?>
-<?php include '../../common/view/header.html.php';?>
+<?php include 'header.html.php';?>
 <?php include '../../common/view/form.html.php';?>
 <div id='mainContent' class='main-content'>
   <div class='center-block mw-800px center-block-sm'>
     <div class="main-header">
       <h2>
-        <?php echo $lang->entry->api;?>
+        <?php echo $lang->entry->common;?>
         <small><?php echo $lang->arrow . ' ' . $lang->entry->create;?></small>
       </h2>
     </div>
-    <form class='main-form' id='entryForm' method='post' class='ajaxForm'>
+    <form id='entryForm' method='post' class='ajaxForm'>
       <table class='table table-form'>
         <tr>
           <th class='w-80px'><?php echo $lang->entry->name;?></th>
@@ -30,6 +30,11 @@
         <tr>
           <th><?php echo $lang->entry->code;?></th>
           <td><?php echo html::input('code', '', "class='form-control' title='{$lang->entry->note->code}' placeholder='{$lang->entry->note->code}'");?></td>
+          <td></td>
+        </tr>
+        <tr>
+          <th><?php echo $lang->entry->account;?></th>
+          <td><?php echo html::select("account", $users, '', "class='form-control chosen' data-placeholder='{$lang->entry->note->account}'");?></td>
           <td></td>
         </tr>
         <tr>

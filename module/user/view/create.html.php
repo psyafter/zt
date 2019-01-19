@@ -25,15 +25,11 @@
       <table align='center' class="table table-form">
         <tr>
           <th class='w-verifyPassword'><?php echo $lang->user->dept;?></th>
-          <td class='w-p50'><?php echo html::select('dept', $depts, $deptID, "class='form-control chosen'");?></td>
+          <td class='w-p40'><?php echo html::select('dept', $depts, $deptID, "class='form-control chosen'");?></td>
         </tr>
         <tr>
           <th><?php echo $lang->user->account;?></th>
           <td><?php echo html::input('account', '', "class='form-control' autocomplete='off'");?></td>
-        </tr>
-        <tr>
-          <th><?php echo $lang->user->realname;?></th>
-          <td><?php echo html::input('realname', '', "class='form-control' autocomplete='off'");?></td>
         </tr>
         <tr>
           <th><?php echo $lang->user->password;?></th>
@@ -48,6 +44,10 @@
         <tr>
           <th><?php echo $lang->user->password2;?></th>
           <td><?php echo html::password('password2', '', "class='form-control' autocomplete='off'");?></td>
+        </tr>
+        <tr>
+          <th><?php echo $lang->user->realname;?></th>
+          <td><?php echo html::input('realname', '', "class='form-control' autocomplete='off'");?></td>
         </tr>
         <tr>
           <th><?php echo $lang->user->join;?></th>
@@ -83,9 +83,10 @@
           </td>
         </tr>
         <tr>
-          <td colspan='3' class='text-center form-actions'>
-            <?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?>
-            <?php echo html::backButton('', '', 'btn btn-wide');?>
+          <th></th>
+          <td colspan='2' class='text-left form-actions'>
+            <?php echo html::submitButton();?>
+            <?php echo html::backButton();?>
           </td>
         </tr>
       </table>

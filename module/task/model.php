@@ -64,7 +64,7 @@ class taskModel extends model
             $task = $this->file->processImgURL($task, $this->config->task->editor->create['id'], $this->post->uid);
 
             /* Fix Bug #1525 */
-            $projectType =$this->dao->select('*')->from(TABLE_PROJECT)->where('id')->eq($projectID)->fetch('type'); 
+            $projectType =$this->dao->select('*')->from(TABLE_PROJECT)->where('id')->eq($projectID)->fetch('type');
             $requiredFields =explode(',', $this->config->task->create->requiredFields);
             if($projectType == 'ops')unset($requiredFields[array_search("story",  $requiredFields)]);
             $requiredFields =implode(',', $requiredFields);
@@ -152,7 +152,7 @@ class taskModel extends model
         $preStory  = 0;
 
         /* Judge whether the current task is a parent. */
-        $parentID = !empty($this->post->parent[0]) ? $this->post->parent[0] : 0; 
+        $parentID = !empty($this->post->parent[0]) ? $this->post->parent[0] : 0;
 
         foreach($tasks->story as $key => $storyID)
         {
@@ -171,7 +171,7 @@ class taskModel extends model
             }
             else
             {
-                dao::$errors['message'][] = sprintf($this->lang->duplicate, $this->lang->task->common);
+                dao::$errors['message'][] = sprintf($this->lang->duplicate, $this->lang->task->common) . ' ' . $tasks->name[$key];
                 return false;
             }
         }
@@ -220,7 +220,7 @@ class taskModel extends model
         }
 
         /* Fix bug #1525*/
-        $projectType =$this->dao->select('*')->from(TABLE_PROJECT)->where('id')->eq($projectID)->fetch('type'); 
+        $projectType =$this->dao->select('*')->from(TABLE_PROJECT)->where('id')->eq($projectID)->fetch('type');
         $requiredFields = explode(',', $this->config->task->create->requiredFields);
         if($projectType == 'ops') unset($requiredFields[array_search('story', $requiredFields)]);
         $requiredFields = implode(',', $requiredFields);
@@ -256,7 +256,7 @@ class taskModel extends model
             if(dao::isError()) die(js::error(dao::getError()));
 
             $taskID = $this->dao->lastInsertID();
-            if($story) $this->story->setStage($tasks->story[$i]);
+            if($story) $this->story->setStage($task->story);
             $actionID = $this->action->create('task', $taskID, 'Opened', '');
             if(!dao::isError()) $this->loadModel('score')->create('task', 'create', $taskID);
 
@@ -270,6 +270,7 @@ class taskModel extends model
         {
             $this->updateParentStatus($taskID);
             $this->computeBeginAndEnd($parentID);
+            $this->dao->update(TABLE_TASK)->set('parent')->eq(-1)->where('id')->eq($parentID)->exec();
         }
         return $mails;
     }
@@ -310,8 +311,8 @@ class taskModel extends model
 
     /**
      * Compute begin and end for parent task.
-     * 
-     * @param  int    $taskID 
+     *
+     * @param  int    $taskID
      * @access public
      * @return bool
      */
@@ -363,9 +364,13 @@ class taskModel extends model
         }
         else
         {
-            if(isset($childrenStatus['doing']) or isset($childrenStatus['pause']) or isset($childrenStatus['wait']))
+            if(isset($childrenStatus['doing']) or isset($childrenStatus['pause']))
             {
                 $status = 'doing';
+            }
+            elseif(isset($childrenStatus['wait']))
+            {
+                $status = 'wait';
             }
             elseif(isset($childrenStatus['done']))
             {
@@ -416,8 +421,6 @@ class taskModel extends model
 
             if($status == 'doing')
             {
-                $task->assignedTo   = '';
-                $task->assignedDate = '';
                 $task->finishedBy   = '';
                 $task->finishedDate = '';
                 $task->closedBy     = '';
@@ -443,25 +446,25 @@ class taskModel extends model
             }
         }
     }
-    
+
     /**
      * Compute hours for multiple task.
-     * 
-     * @param  object  $oldTask 
-     * @param  object  $task 
+     *
+     * @param  object  $oldTask
+     * @param  object  $task
      * @access public
      * @return object|bool
      */
-    public function computeHours4Multiple($oldTask, $task = null)
+    public function computeHours4Multiple($oldTask, $task = null, $team = array())
     {
         if(!$oldTask) return false;
 
-        $team = $this->dao->select('*')->from(TABLE_TEAM)->where('root')->eq($oldTask->id)->andWhere('type')->eq('task')->orderBy('order')->fetchAll('account');
+        if(empty($team)) $team = $this->dao->select('*')->from(TABLE_TEAM)->where('root')->eq($oldTask->id)->andWhere('type')->eq('task')->orderBy('order')->fetchAll('account');
         if(!empty($team))
         {
             $now         = helper::now();
             $teams       = array_keys($team);
-            $currentTask = isset($task) ? $task : new stdclass();
+            $currentTask = !empty($task) ? $task : new stdclass();
             if(!isset($currentTask->status)) $currentTask->status = $oldTask->status;
 
             if(!empty($this->post->assignedTo))
@@ -503,7 +506,7 @@ class taskModel extends model
                 $currentTask->left     += (float)$member->left;
             }
 
-            if(isset($task))
+            if(!empty($task))
             {
                 if($this->post->status) return $currentTask;
 
@@ -532,12 +535,20 @@ class taskModel extends model
                     elseif($oldTask->assignedTo == $teams[count($teams) - 1])
                     {
                         $currentTask->status = 'done';
-                        if($oldTask->left > 0)
-                        {
-                            $currentTask->finishedBy   = $this->app->user->account;
-                            $currentTask->finishedDate = $now;
-                        }
+                        $currentTask->finishedBy   = $this->app->user->account;
+                        $currentTask->finishedDate = $now;
                     }
+                }
+
+                if(($oldTask->assignedTo != $currentTask->assignedTo or $currentTask->status == 'done')
+                    and isset($team[$this->app->user->account]) and $team[$this->app->user->account]->left == 0
+                    and strpos($oldTask->finishedList, ",{$this->app->user->account},") === false)
+                {
+                    $currentTask->finishedList = ',' . trim(trim($oldTask->finishedList, ',') . ",{$this->app->user->account}", ',') . ',';
+                }
+                if(($oldTask->status == 'done' or $oldTask->status == 'closed') and $currentTask->status == 'doing' and $this->post->assignedTo)
+                {
+                    $currentTask->finishedList = ',' . trim(substr($oldTask->finishedList, 0, strpos($oldTask->finishedList, ",{$this->post->assignedTo},")), ',') . ',';
                 }
 
                 return $currentTask;
@@ -567,6 +578,7 @@ class taskModel extends model
             ->setDefault('story, estimate, left, consumed', 0)
             ->setDefault('estStarted', '0000-00-00')
             ->setDefault('deadline', '0000-00-00')
+            ->setIF($oldTask->parent == 0 && $this->post->parent == '', 'parent', 0)
             ->setIF(strpos($this->config->task->edit->requiredFields, 'estStarted') !== false, 'estStarted', $this->post->estStarted)
             ->setIF(strpos($this->config->task->edit->requiredFields, 'deadline') !== false, 'deadline', $this->post->deadline)
             ->setIF($this->post->story != false and $this->post->story != $oldTask->story, 'storyVersion', $this->loadModel('story')->getVersion($this->post->story))
@@ -661,7 +673,7 @@ class taskModel extends model
             ->batchCheckIF($task->closedReason == 'cancel', 'finishedBy, finishedDate', 'empty')
             ->where('id')->eq((int)$taskID)->exec();
 
-        if($oldTask->parent)
+        if($oldTask->parent > 0)
         {
             $this->updateParentStatus($taskID);
             $this->computeBeginAndEnd($oldTask->parent);
@@ -672,6 +684,12 @@ class taskModel extends model
         {
             if($task->status == 'done')   $this->loadModel('score')->create('task', 'finish', $taskID);
             if($task->status == 'closed') $this->loadModel('score')->create('task', 'close', $taskID);
+            if($task->parent) 
+            {
+                $this->dao->update(TABLE_TASK)->set('parent')->eq(-1)->where('id')->eq($task->parent)->exec();
+                $this->updateParentStatus($taskID);
+                $this->computeBeginAndEnd($task->parent);
+            }
             $this->file->updateObjectID($this->post->uid, $taskID, 'task');
             return common::createChanges($oldTask, $task);
         }
@@ -921,6 +939,8 @@ class taskModel extends model
 
             $task = $this->computeHours4Multiple($oldTask, $task);
         }
+        
+        if($oldTask->parent > 0) $this->updateParentStatus($taskID);
 
         $this->dao->update(TABLE_TASK)
             ->data($task)
@@ -1034,7 +1054,7 @@ class taskModel extends model
                 $earliestTime = $record->dates[$id];
             }
 
-            if($record->dates[$id])
+            if(!empty($record->work[$id]) or !empty($record->consumed[$id]))
             {
                 if(!$record->consumed[$id])   die(js::alert($this->lang->task->error->consumedThisTime));
                 if($record->left[$id] === '') die(js::alert($this->lang->task->error->left));
@@ -1386,7 +1406,7 @@ class taskModel extends model
         $task->children = $children;
 
         /* Check parent Task. */
-        if(!empty($task->parent)) $task->parentName = $this->dao->findById($task->parent)->from(TABLE_TASK)->fetch('name');
+        if($task->parent > 0) $task->parentName = $this->dao->findById($task->parent)->from(TABLE_TASK)->fetch('name');
 
         $task->team = $this->dao->select('*')->from(TABLE_TEAM)->where('root')->eq($taskID)->andWhere('type')->eq('task')->orderBy('order')->fetchAll('account');
         foreach($children as $child) $child->team = isset($teams[$child->id]) ? $teams[$child->id] : array();
@@ -1475,7 +1495,7 @@ class taskModel extends model
             ->leftJoin(TABLE_TEAM)->alias('t4')->on('t4.root = t1.id')
             ->leftJoin(TABLE_MODULE)->alias('t5')->on('t1.module = t5.id')
             ->where('t1.project')->eq((int)$projectID)
-            ->beginIF($type =='all' || is_array($type))->andWhere('t1.parent')->eq(0)->fi()
+            ->beginIF($type == 'all' || is_array($type))->andWhere('t1.parent')->lt(1)->fi()
             ->beginIF($type == 'myinvolved')
             ->andWhere("((t4.`account` = '{$this->app->user->account}' AND t4.`type` = 'task') OR t1.`assignedTo` = '{$this->app->user->account}' OR t1.`finishedby` = '{$this->app->user->account}')")
             ->fi()
@@ -1483,12 +1503,16 @@ class taskModel extends model
             ->beginIF($type == 'undone')->andWhere("(t1.status = 'wait' or t1.status ='doing')")->fi()
             ->beginIF($type == 'needconfirm')->andWhere('t2.version > t1.storyVersion')->andWhere("t2.status = 'active'")->fi()
             ->beginIF($type == 'assignedtome')->andWhere('t1.assignedTo')->eq($this->app->user->account)->fi()
-            ->beginIF($type == 'finishedbyme')->andWhere('t1.finishedby')->eq($this->app->user->account)->fi()
+            ->beginIF($type == 'finishedbyme')
+            ->andWhere('t1.finishedby', 1)->eq($this->app->user->account)
+            ->orWhere('t1.finishedList')->like("%,{$this->app->user->account},%")
+            ->markRight(1)
+            ->fi()
             ->beginIF($type == 'delayed')->andWhere('t1.deadline')->gt('1970-1-1')->andWhere('t1.deadline')->lt(date(DT_DATE1))->andWhere('t1.status')->in('wait,doing')->fi()
             ->beginIF(is_array($type) or strpos(',all,undone,needconfirm,assignedtome,delayed,finishedbyme,myinvolved,', ",$type,") === false)->andWhere('t1.status')->in($type)->fi()
             ->beginIF($modules)->andWhere('t1.module')->in($modules)->fi()
             ->andWhere('t1.deleted')->eq(0)
-            ->orderBy('t1.`parent`,' . $orderBy)
+            ->orderBy($orderBy)
             ->page($pager, 't1.id')
             ->fetchAll('id');
 
@@ -1503,34 +1527,57 @@ class taskModel extends model
             foreach($taskTeam as $taskID => $team) $tasks[$taskID]->team = $team;
         }
 
-        /* Select children task. */
-        $children = $this->dao->select('DISTINCT t1.*, t2.id AS storyID, t2.title AS storyTitle, t2.product, t2.branch, t2.version AS latestStoryVersion, t2.status AS storyStatus, t3.realname AS assignedToRealName')
-            ->from(TABLE_TASK)->alias('t1')
-            ->leftJoin(TABLE_STORY)->alias('t2')->on('t1.story = t2.id')
-            ->leftJoin(TABLE_USER)->alias('t3')->on('t1.assignedTo = t3.account')
-            ->leftJoin(TABLE_MODULE)->alias('t4')->on('t1.module = t4.id')
-            ->where('t1.project')->eq((int)$projectID)
-            ->andWhere('t1.parent')->in($taskList)
-            ->andWhere('t1.deleted')->eq(0)
-            ->beginIF($productID)->andWhere("((t4.root=" . (int)$productID . " and t4.type='story') OR t2.product=" . (int)$productID . ")")->fi()
-            ->beginIF($type == 'undone')->andWhere("(t1.status = 'wait' or t1.status ='doing')")->fi()
-            ->beginIF($type == 'needconfirm')->andWhere('t2.version > t1.storyVersion')->andWhere("t2.status = 'active'")->fi()
-            ->beginIF($type == 'assignedtome')->andWhere('t1.assignedTo')->eq($this->app->user->account)->fi()
-            ->beginIF($type == 'finishedbyme')->andWhere('t1.finishedby')->eq($this->app->user->account)->fi()
-            ->beginIF($type == 'delayed')->andWhere('t1.deadline')->gt('1970-1-1')->andWhere('t1.deadline')->lt(date(DT_DATE1))->andWhere('t1.status')->in('wait,doing')->fi()
-            ->beginIF(is_array($type) or strpos(',all,undone,needconfirm,assignedtome,delayed,finishedbyme,myinvolved,', ",$type,") === false)->andWhere('t1.status')->in($type)->fi()
-            ->beginIF($modules)->andWhere('t1.module')->in($modules)->fi()
-            ->orderBy("t1.$orderBy")
-            ->fetchAll('id');
-
-        if(!empty($children))
+        $parents = array();
+        foreach($tasks as $task)
         {
-            foreach($children as $child)
+            if($task->parent == -1) $parents[] = $task->id;
+        }
+        if(!empty($parents))
+        {
+            /* Select children task. */
+            $children = $this->dao->select('DISTINCT t1.*, t2.id AS storyID, t2.title AS storyTitle, t2.product, t2.branch, t2.version AS latestStoryVersion, t2.status AS storyStatus, t3.realname AS assignedToRealName')
+                ->from(TABLE_TASK)->alias('t1')
+                ->leftJoin(TABLE_STORY)->alias('t2')->on('t1.story = t2.id')
+                ->leftJoin(TABLE_USER)->alias('t3')->on('t1.assignedTo = t3.account')
+                ->leftJoin(TABLE_MODULE)->alias('t4')->on('t1.module = t4.id')
+                ->where('t1.parent')->in($parents)
+                ->andWhere('t1.deleted')->eq(0)
+                ->beginIF($productID)->andWhere("((t4.root=" . (int)$productID . " and t4.type='story') OR t2.product=" . (int)$productID . ")")->fi()
+                ->beginIF($type == 'undone')->andWhere("(t1.status = 'wait' or t1.status ='doing')")->fi()
+                ->beginIF($type == 'needconfirm')->andWhere('t2.version > t1.storyVersion')->andWhere("t2.status = 'active'")->fi()
+                ->beginIF($type == 'assignedtome')->andWhere('t1.assignedTo')->eq($this->app->user->account)->fi()
+                ->beginIF($type == 'finishedbyme')
+                ->andWhere('t1.finishedby', 1)->eq($this->app->user->account)
+                ->orWhere('t1.finishedList')->like("%,{$this->app->user->account},%")
+                ->markRight(1)
+                ->fi()
+                ->beginIF($type == 'delayed')->andWhere('t1.deadline')->gt('1970-1-1')->andWhere('t1.deadline')->lt(date(DT_DATE1))->andWhere('t1.status')->in('wait,doing')->fi()
+                ->beginIF(is_array($type) or strpos(',all,undone,needconfirm,assignedtome,delayed,finishedbyme,myinvolved,', ",$type,") === false)->andWhere('t1.status')->in($type)->fi()
+                ->beginIF($modules)->andWhere('t1.module')->in($modules)->fi()
+                ->orderBy("t1.$orderBy")
+                ->fetchAll('id');
+            
+            if(!empty($children))
             {
-                $tasks[$child->parent]->children[] = $child;
+                foreach($children as $child)
+                {
+                    $tasks[$child->parent]->children[$child->id] = $child;
+                }
             }
         }
 
+        foreach($tasks as $task)
+        {
+            if($task->parent > 0)
+            {
+                if(isset($tasks[$task->parent]))
+                {
+                    $tasks[$task->parent]->children[$task->id] = $task;
+                    unset($tasks[$task->id]);
+                }
+            }
+        }
+        
         return $this->processTasks($tasks);
     }
 
@@ -1559,6 +1606,25 @@ class taskModel extends model
     }
 
     /**
+     * Get project parent tasks pairs.
+     *
+     * @param  int    $projectID
+     * @access public
+     * @return array
+     */
+    public function getParentTaskPairs($projectID)
+    {
+        $tasks = $this->dao->select('id, name')->from(TABLE_TASK)
+            ->where('deleted')->eq(0)
+            ->andWhere('parent')->le(0)
+            ->andWhere('status')->notin('cancel,closed')
+            ->andWhere('project')->eq($projectID)
+            ->fetchPairs();
+
+        return array('' => '') + $tasks ;
+    }
+
+    /**
      * Get tasks of a user.
      *
      * @param  string $account
@@ -1577,13 +1643,24 @@ class taskModel extends model
             ->leftjoin(TABLE_STORY)->alias('t3')->on('t1.story = t3.id')
             ->where('t1.deleted')->eq(0)
             ->beginIF($type == 'assignedTo')->andWhere('t1.status')->ne('closed')->fi()
-            ->beginIF($type != 'all')->andWhere("t1.`$type`")->eq($account)->fi()
+            ->beginIF($type == 'finishedBy')
+            ->andWhere('t1.finishedby', 1)->eq($account)
+            ->orWhere('t1.finishedList')->like("%,{$account},%")
+            ->markRight(1)
+            ->fi()
+            ->beginIF($type != 'all' and $type != 'finishedBy')->andWhere("t1.`$type`")->eq($account)->fi()
             ->orderBy($orderBy)
             ->beginIF($limit > 0)->limit($limit)->fi()
             ->page($pager)
-            ->fetchAll();
+            ->fetchAll('id');
 
         $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'task');
+
+        $taskTeam = $this->dao->select('*')->from(TABLE_TEAM)->where('root')->in(array_keys($tasks))->andWhere('type')->eq('task')->fetchGroup('root');
+        if(!empty($taskTeam))
+        {
+            foreach($taskTeam as $taskID => $team) $tasks[$taskID]->team = $team;
+        }
 
         if($tasks) return $this->processTasks($tasks);
         return array();
@@ -1748,7 +1825,7 @@ class taskModel extends model
             $data->finishedDate = $now;
             $data->assignedTo   = $task->openedBy;
         }
-        
+
         if(!empty($task->team))
         {
             $oldConsumed = $task->team[$oldEstimate->account]->consumed;
@@ -1850,7 +1927,10 @@ class taskModel extends model
             $task = $this->processTask($task);
             if(!empty($task->children))
             {
-                foreach($task->children as $child) $task = $this->processTask($child);
+                foreach($task->children as $child) 
+                {
+                    $tasks[$task->id]->children[$child->id] = $this->processTask($child);
+                }
             }
         }
         return $tasks;
@@ -1973,20 +2053,20 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerProject()
+    public function getDataOfTasksPerProject()
     {
-        $datas = $this->dao->select('project AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,project')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('project')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
-        if(!$datas) return array();
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,project')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'project');
 
         $projects = $this->loadModel('project')->getPairs('all');
         foreach($datas as $projectID => $data)
         {
-            $data->name = isset($projects[$projectID]) ? $projects[$projectID] : $this->lang->report->undefined;
+            $data->name  = isset($projects[$projectID]) ? $projects[$projectID] : $this->lang->report->undefined;
         }
         return $datas;
     }
@@ -1997,18 +2077,21 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerModule()
+    public function getDataOfTasksPerModule()
     {
-        $datas = $this->dao->select('module AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,module')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('module')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
-        if(!$datas) return array();
+            ->fetchAll('id');
+        if(!$tasks) return array();
 
-        $modules = $this->loadModel('tree')->getModulesName(array_keys($datas),true,true);
-        foreach($datas as $moduleID => $data) $data->name = isset($modules[$moduleID]) ? $modules[$moduleID] : '/';
+        $children = $this->dao->select('id,parent,module')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'module');
+
+        $modules = $this->loadModel('tree')->getModulesName(array_keys($datas), true, true);
+        foreach($datas as $moduleID => $data)
+        {
+            $data->name = isset($modules[$moduleID]) ? $modules[$moduleID] : '/';
+        }
         return $datas;
     }
 
@@ -2018,15 +2101,15 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerAssignedTo()
+    public function getDataOfTasksPerAssignedTo()
     {
-        $datas = $this->dao->select('assignedTo AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,assignedTo')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('assignedTo')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
-        if(!$datas) return array();
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,assignedTo')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'assignedTo');
 
         if(!isset($this->users)) $this->users = $this->loadModel('user')->getPairs('noletter');
         foreach($datas as $account => $data)
@@ -2042,15 +2125,15 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerType()
+    public function getDataOfTasksPerType()
     {
-        $datas = $this->dao->select('type AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,type')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('type')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
-        if(!$datas) return array();
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,type')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'type');
 
         foreach($datas as $type => $data)
         {
@@ -2065,21 +2148,18 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerPri()
+    public function getDataOfTasksPerPri()
     {
-        $priList = $this->dao->select('pri AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,pri')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('pri')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
-        if(!$priList) return array();
+            ->fetchAll('id');
+        if(!$tasks) return array();
 
-        foreach($priList as $index => $pri)
-        {
-            $priList[$index]->name = $this->lang->task->priList[$pri->name];
-        }
-        return $priList;
+        $children = $this->dao->select('id,parent,pri')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'pri');
+
+        foreach($datas as $index => $pri) $pri->name = $this->lang->task->priList[$pri->name];
+        return $datas;
     }
 
     /**
@@ -2088,14 +2168,15 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerDeadline()
+    public function getDataOfTasksPerDeadline()
     {
-        return $this->dao->select('deadline AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,deadline')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('deadline')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,deadline')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        return $this->processData4Report($tasks, $children, 'deadline');
     }
 
     /**
@@ -2104,14 +2185,15 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerEstimate()
+    public function getDataOfTasksPerEstimate()
     {
-        return $this->dao->select('estimate AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,estimate')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('estimate')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,estimate')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        return $this->processData4Report($tasks, $children, 'estimate');
     }
 
     /**
@@ -2120,14 +2202,15 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerLeft()
+    public function getDataOfTasksPerLeft()
     {
-        return $this->dao->select('`left` AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,`left`')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('`left`')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,`left`')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        return $this->processData4Report($tasks, $children, 'left');
     }
 
     /**
@@ -2136,14 +2219,15 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerConsumed()
+    public function getDataOfTasksPerConsumed()
     {
-        return $this->dao->select('consumed AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,consumed')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('consumed')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,consumed')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        return $this->processData4Report($tasks, $children, 'consumed');
     }
 
     /**
@@ -2152,15 +2236,16 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerFinishedBy()
+    public function getDataOfTasksPerFinishedBy()
     {
-        $datas = $this->dao->select('finishedBy AS name, COUNT(finishedBy) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,finishedBy')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
             ->andWhere('finishedBy')->ne('')
-            ->groupBy('finishedBy')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,finishedBy')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->andWhere('finishedBy')->ne('')->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'finishedBy');
 
         if(!isset($this->users)) $this->users = $this->loadModel('user')->getPairs('noletter');
         foreach($datas as $account => $data)
@@ -2176,21 +2261,20 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerClosedReason()
+    public function getDataOfTasksPerClosedReason()
     {
-        $datas = $this->dao->select('closedReason AS name, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,closedReason')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('closedReason')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
+            ->andWhere('closedReason')->ne('')
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,closedReason')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->andWhere('closedReason')->ne('')->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'closedReason');
 
         foreach($datas as $closedReason => $data)
         {
-            if(isset($this->lang->task->reasonList[$closedReason]))
-            {
-                $data->name = $this->lang->task->reasonList[$closedReason];
-            }
+            if(isset($this->lang->task->reasonList[$closedReason])) $data->name = $this->lang->task->reasonList[$closedReason];
         }
         return $datas;
     }
@@ -2203,20 +2287,14 @@ class taskModel extends model
      */
     public function getDataOffinishedTasksPerDay()
     {
-        $datas= $this->dao->select('DATE_FORMAT(finishedDate, "%Y-%m-%d") AS date, COUNT(*) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id, DATE_FORMAT(finishedDate, "%Y-%m-%d") AS date')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('date')
             ->having('date != "0000-00-00"')
-            ->orderBy('finishedDate')
-            ->fetchAll();
+            ->fetchAll('id');
+        if(!$tasks) return array();
 
-        /* Change data to name, because the task table has name field, conflicts. */
-        foreach($datas as $data)
-        {
-            $data->name = $data->date;
-            unset($data->date);
-        }
+        $children = $this->dao->select('id,parent,DATE_FORMAT(finishedDate, "%Y-%m-%d") AS date')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->having('date != "0000-00-00"')->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'date');
         return $datas;
     }
 
@@ -2226,17 +2304,54 @@ class taskModel extends model
      * @access public
      * @return array
      */
-    public function getDataOftasksPerStatus()
+    public function getDataOfTasksPerStatus()
     {
-        $datas = $this->dao->select('status AS name, COUNT(status) AS value')
-            ->from(TABLE_TASK)->alias('t1')
+        $tasks = $this->dao->select('id,status')->from(TABLE_TASK)->alias('t1')
             ->where($this->reportCondition())
-            ->groupBy('status')
-            ->orderBy('value DESC')
-            ->fetchAll('name');
-        if(!$datas) return array();
+            ->fetchAll('id');
+        if(!$tasks) return array();
+
+        $children = $this->dao->select('id,parent,status')->from(TABLE_TASK)->where('parent')->in(array_keys($tasks))->fetchAll('id');
+        $datas    = $this->processData4Report($tasks, $children, 'status');
 
         foreach($datas as $status => $data) $data->name = $this->lang->task->statusList[$status];
+        return $datas;
+    }
+
+    /**
+     * Process data for report.
+     *
+     * @param  array    $tasks
+     * @param  array    $children
+     * @param  string   $field
+     * @access public
+     * @return array
+     */
+    public function processData4Report($tasks, $children, $field)
+    {
+        foreach($children as $taskID => $task)
+        {
+            $tasks[$taskID] = $task;
+            unset($tasks[$task->parent]);
+        }
+
+        $fields = array();
+        $datas  = array();
+        foreach($tasks as $taskID => $task)
+        {
+            if(!isset($fields[$task->$field])) $fields[$task->$field] = 0;
+            $fields[$task->$field] ++;
+        }
+
+        arsort($fields);
+        foreach($fields as $field => $count)
+        {
+            $data = new stdclass();
+            $data->name  = $field;
+            $data->value = $count;
+            $datas[$field] = $data;
+        }
+
         return $datas;
     }
 
@@ -2261,7 +2376,7 @@ class taskModel extends model
         if($action == 'assignto'       and !empty($task->children)) return false;
         if($action == 'close'          and !empty($task->children)) return false;
         if($action == 'batchcreate'    and !empty($task->team))     return false;
-        if($action == 'batchcreate'    and $task->parent)           return false;
+        if($action == 'batchcreate'    and $task->parent > 0)       return false;
 
         if($action == 'start')    return $task->status == 'wait';
         if($action == 'restart')  return $task->status == 'pause';
@@ -2339,9 +2454,9 @@ class taskModel extends model
             if($id == 'status') $class .= ' task-' . $task->status;
             if($id == 'id')     $class .= ' cell-id';
             if($id == 'name')   $class .= ' text-left';
-            if($id == 'deadline' and isset($task->delay)) $class .= ' delayed';
+            if($id == 'deadline' and isset($task->delay)) $class .= ' text-center delayed';
             if($id == 'assignedTo') $class .= ' has-btn text-left';
-            if(strpos('consumed,left,progress', $id) !== false) $class .= ' text-right';
+            if(strpos('progress', $id) !== false) $class .= ' text-right';
 
             $title = '';
             if($id == 'name')
@@ -2355,10 +2470,9 @@ class taskModel extends model
             switch($id)
             {
                 case 'id':
-                    //if($mode == 'table' && $canBatchAction) 
-                    if($canBatchAction) 
+                    if($canBatchAction)
                     {
-                        echo html::checkbox('taskIDList', array($task->id => sprintf('%03d', $task->id)));
+                        echo html::checkbox('taskIDList', array($task->id => '')) . html::a(helper::createLink('task', 'view', "taskID=$task->id"), sprintf('%03d', $task->id));
                     }
                     else
                     {
@@ -2371,19 +2485,19 @@ class taskModel extends model
                     echo "</span>";
                     break;
                 case 'name':
-                    if(!empty($task->children)) echo '<a class="task-toggle" data-id="' . $task->id . '"><i class="icon icon-caret-down"></i></a>';
-                    if(!empty($task->product) && isset($branchGroups[$task->product][$task->branch])) echo "<span class='label label-info label-badge'>" . $branchGroups[$task->product][$task->branch] . '</span> ';
-                    if(empty($task->children) and $task->module and isset($modulePairs[$task->module])) echo "<span class='label label-info label-badge'>" . $modulePairs[$task->module] . '</span> ';
-                    if($child or !empty($task->parent)) echo '<span class="label label-badge label-light">' . $this->lang->task->childrenAB . '</span> ';
+                    if(!empty($task->product) && isset($branchGroups[$task->product][$task->branch])) echo "<span class='label label-info label-outline'>" . $branchGroups[$task->product][$task->branch] . '</span> ';
+                    if(empty($task->children) and $task->module and isset($modulePairs[$task->module])) echo "<span class='label label-gray label-badge'>" . $modulePairs[$task->module] . '</span> ';
+                    if($task->parent > 0) echo '<span class="label label-badge label-light">' . $this->lang->task->childrenAB . '</span> ';
                     if(!empty($task->team)) echo '<span class="label label-badge label-light">' . $this->lang->task->multipleAB . '</span> ';
                     echo $canView ? html::a($taskLink, $task->name, null, "style='color: $task->color'") : "<span style='color: $task->color'>$task->name</span>";
+                    if(!empty($task->children)) echo '<a class="task-toggle" data-id="' . $task->id . '"><i class="icon icon-angle-double-right"></i></a>';
                     if($task->fromBug) echo html::a(helper::createLink('bug', 'view', "id=$task->fromBug"), "[BUG#$task->fromBug]", '_blank', "class='bug'");
                     break;
                 case 'type':
                     echo $this->lang->task->typeList[$task->type];
                     break;
                 case 'status':
-                    $storyChanged ? print("<span class='status-changed'><span class='label label-dot'></span> {$this->lang->story->changed}</span>") : print("<span class='status-{$task->status}'><span class='label label-dot'></span> {$this->lang->task->statusList[$task->status]}</span>");
+                    $storyChanged ? print("<span class='status-story status-changed'>{$this->lang->story->changed}</span>") : print("<span class='status-task status-{$task->status}'> {$this->lang->task->statusList[$task->status]}</span>");
                     break;
                 case 'estimate':
                     echo round($task->estimate, 1);
@@ -2413,17 +2527,7 @@ class taskModel extends model
                     echo $task->realStarted;
                     break;
                 case 'assignedTo':
-                    $btnTextClass   = '';
-                    $assignedToText = zget($users, $task->assignedTo);
-                    $btnTextClass   = '';
-                    if(empty($task->assignedTo))
-                    {
-                        $btnTextClass = 'text-primary';
-                        $assignedToText = $this->lang->task->noAssigned;
-                    } else if($task->assignedTo == $account) $btnTextClass = 'text-red';
-                    $btnClass = $assignedToText == 'closed' ? ' disabled' : '';
-                    
-                    echo html::a(helper::createLink('task', 'assignTo', "projectID=$task->project&taskID=$task->id", '', true), "<i class='icon icon-hand-right'></i> <span class='{$btnTextClass}'>{$assignedToText}</span>", '', "class='iframe btn btn-icon-left btn-sm {$btnClass}'");
+                    $this->printAssignedHtml($task, $users);
                     break;
                 case 'assignedDate':
                     echo substr($task->assignedDate, 5, 11);
@@ -2484,25 +2588,46 @@ class taskModel extends model
                         break;
                     }
 
-                    echo "<div class='more'>";
-                    if($task->status == 'wait') common::printIcon('task', 'finish', "taskID=$task->id", $task, 'list', '', '', 'iframe', true);
-                    echo "</div>";
-                    
-                    if($task->status == 'wait') common::printIcon('task', 'start', "taskID=$task->id", $task, 'list', '', '', 'iframe', true);
+                    if($task->status != 'pause') common::printIcon('task', 'start', "taskID=$task->id", $task, 'list', '', '', 'iframe', true);
                     if($task->status == 'pause') common::printIcon('task', 'restart', "taskID=$task->id", $task, 'list', '', '', 'iframe', true);
-                    if($task->status == 'done' or $task->status == 'cancel' or $task->status == 'closed') common::printIcon('task', 'close',  "taskID=$task->id", $task, 'list', '', '', 'iframe', true);
-                    if($task->status == 'doing') common::printIcon('task', 'finish', "taskID=$task->id", $task, 'list', '', '', 'iframe', true);
+                    common::printIcon('task', 'close',  "taskID=$task->id", $task, 'list', '', '', 'iframe', true);
+                    common::printIcon('task', 'finish', "taskID=$task->id", $task, 'list', '', '', 'iframe', true);
 
                     common::printIcon('task', 'recordEstimate', "taskID=$task->id", $task, 'list', 'time', '', 'iframe', true);
                     common::printIcon('task', 'edit',   "taskID=$task->id", $task, 'list');
-                    if(empty($task->team) or empty($task->children))
-                    {
-                        common::printIcon('task', 'batchCreate', "project=$task->project&storyID=$task->story&moduleID=$task->module&taskID=$task->id&ifame=0", $task, 'list', 'plus', '', '', '', '', $this->lang->task->children);
-                    }
+                    common::printIcon('task', 'batchCreate', "project=$task->project&storyID=$task->story&moduleID=$task->module&taskID=$task->id&ifame=0", $task, 'list', 'treemap-alt', '', '', '', '', $this->lang->task->children);
                     break;
             }
             echo '</td>';
         }
+    }
+
+    /**
+     * Print assigned html
+     *
+     * @param  object $task
+     * @param  array  $users
+     * @access public
+     * @return void
+     */
+    public function printAssignedHtml($task, $users)
+    {
+        $btnTextClass   = '';
+        $assignedToText = zget($users, $task->assignedTo);
+
+        if(empty($task->assignedTo))
+        {
+            $btnTextClass   = 'text-primary';
+            $assignedToText = $this->lang->task->noAssigned;
+        }
+        if($task->assignedTo == $this->app->user->account) $btnTextClass = 'text-red';
+
+        $btnClass     = $task->assignedTo == 'closed' ? ' disabled' : '';
+        $btnClass     = "iframe btn btn-icon-left btn-sm {$btnClass}";
+        $assignToLink = helper::createLink('task', 'assignTo', "projectID=$task->project&taskID=$task->id", '', true);
+        $assignToHtml = html::a($assignToLink, "<i class='icon icon-hand-right'></i> <span class='{$btnTextClass}'>{$assignedToText}</span>", '', "class='$btnClass'");
+
+        echo !common::hasPriv('task', 'assignTo') ? "<span style='padding-left: 21px' class='{$btnTextClass}'>{$assignedToText}</span>" : $assignToHtml;
     }
 
     /**

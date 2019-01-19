@@ -52,7 +52,7 @@
         <td class='nobr'><?php $task->build == 'trunk' ? print($lang->trunk) : print(html::a($this->createLink('build', 'view', "buildID=$task->build"), $task->buildName));?></td>
         <td><?php echo $task->begin?></td>
         <td><?php echo $task->end?></td>
-        <td class='status-<?php echo $task->status?>'><?php echo $lang->testtask->statusList[$task->status];?></td>
+        <td class='status-testtask status-<?php echo $task->status?>'><?php echo $lang->testtask->statusList[$task->status];?></td>
         <td class='c-actions'>
           <?php
           common::printIcon('testtask',   'cases',    "taskID=$task->id", $task, 'list', 'sitemap');
@@ -63,7 +63,7 @@
           if(common::hasPriv('testtask', 'delete', $task))
           {
               $deleteURL = $this->createLink('testtask', 'delete', "taskID=$task->id&confirm=yes");
-              echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"taskList\",confirmDelete)", '<i class="icon-common-delete icon-trash"></i>', '', "title='{$lang->testtask->delete}' class='btn'");
+              echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"taskList\",confirmDelete)", '<i class="icon-common-delete icon-close"></i>', '', "title='{$lang->testtask->delete}' class='btn'");
           }
           ?>
         </td>

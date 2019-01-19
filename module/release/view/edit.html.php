@@ -57,8 +57,8 @@
           </tr>  
           <tr>
             <td colspan='3' class='text-center form-actions'>
-              <?php echo html::submitButton('', '', 'btn btn-wide btn-primary');?>
-              <?php echo html::backButton('', '', 'btn btn-wide');?>
+              <?php echo html::submitButton();?>
+              <?php echo html::backButton();?>
               <?php echo html::hidden('product', $release->product);?>
             </td>
           </tr>

@@ -54,9 +54,11 @@
             <span class="timeline-tag"><?php echo $action->time?></span>
             <span class="timeline-text">
               <?php echo $app->user->realname . ' ' . $action->actionLabel;?>
+              <?php if($action->action != 'login' and $action->action != 'logout'):?>
               <span class="text-muted"><?php echo $action->objectLabel;?></span>
-              <span class="label label-id"><?php echo $action->objectID;?></span>
               <?php echo html::a($action->objectLink, $action->objectName);?>
+              <span class="label label-id"><?php echo $action->objectID;?></span>
+              <?php endif;?>
             </span>
           </div>
         </li>
@@ -77,10 +79,10 @@ $preLink   = $hasPre ? inlink('dynamic', "type=$type&recTotal={$pager->recTotal}
 $nextLink  = $hasNext ? inlink('dynamic', "type=$type&recTotal={$pager->recTotal}&date=" . strtotime($lastDate) . '&direction=next') : 'javascript:;';
 ?>
 <?php if($hasPre or $hasNext):?>
-<div id="mainActions">
+<div id="mainActions" class='main-actions'>
   <nav class="container">
-    <a id="prevPage" class="btn btn-info<?php if(!$hasPre) echo ' disabled';?>" href="<?php echo $preLink;?>"><i class="icon icon-chevron-left"></i></a>
-    <a id="nextPage" class="btn btn-info<?php if(!$hasNext) echo ' disabled';?>" href="<?php echo $nextLink;?>"><i class="icon icon-chevron-right"></i></a>
+    <a id="prevPage" class="btn btn-info<?php if(!$hasNext) echo ' disabled';?>" href="<?php echo $nextLink;?>"><i class="icon icon-chevron-left"></i></a>
+    <a id="nextPage" class="btn btn-info<?php if(!$hasPre) echo ' disabled';?>" href="<?php echo $preLink;?>"><i class="icon icon-chevron-right"></i></a>
   </nav>
 </div>
 <?php endif;?>

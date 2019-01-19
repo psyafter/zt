@@ -58,7 +58,7 @@ tbody tr td:first-child input{display:none;}
   </div>
   <?php echo $this->fetch('file', 'printFiles', array('files' => $build->files, 'fieldset' => 'true'));?>
   <?php include '../../common/view/action.html.php';?>
-  <div id="mainActions">
+  <div id="mainActions" class='main-actions'>
     <nav class="container"></nav>
     <div class="btn-toolbar">
       <?php
@@ -126,8 +126,7 @@ tbody tr td:first-child input{display:none;}
                 <td><?php echo $users[$story->openedBy];?></td>
                 <td><?php echo $story->estimate;?></td>
                 <td>
-                  <span class='status-<?php echo $story->status;?>'>
-                    <span class='label label-dot'></span>
+                  <span class='status-story status-<?php echo $story->status;?>'>
                     <?php echo $lang->story->statusList[$story->status];?>
                   </span>
                 </td>
@@ -198,8 +197,7 @@ tbody tr td:first-child input{display:none;}
                   <?php endif;?>
                 <td class='text-left nobr' title='<?php echo $bug->title?>'><?php echo html::a($bugLink, $bug->title, '', "class='iframe' data-width='1000'");?></td>
                 <td>
-                  <span class='status-<?php echo $bug->status?>'>
-                    <span class='label label-dot'></span>
+                  <span class='status-bug status-<?php echo $bug->status?>'>
                     <?php echo $lang->bug->statusList[$bug->status];?>
                   </span>
                 </td>
@@ -249,18 +247,32 @@ tbody tr td:first-child input{display:none;}
                 <th class='w-100px'>   <?php common::printOrderLink('resolvedDate', $orderBy, $vars, $lang->bug->resolvedDateAB);?></th>
               </tr>
             </thead>
+            <?php
+            $hasCustomSeverity = false;
+            foreach($lang->bug->severityList as $severityKey => $severityValue)
+            {
+                if(!empty($severityKey) and (string)$severityKey != (string)$severityValue)
+                {
+                    $hasCustomSeverity = true;
+                    break;
+                }
+            }
+            ?>
             <tbody class='text-center'>
               <?php foreach($generatedBugs as $bug):?>
               <?php $bugLink = $this->createLink('bug', 'view', "bugID=$bug->id", '', true);?>
               <tr>
                 <td class='text-left'><?php printf('%03d', $bug->id);?></td>
                 <td>
+                  <?php if($hasCustomSeverity):?>
+                  <span class='label-severity-custom' data-severity='<?php echo $bug->severity;?>' title='<?php echo zget($lang->bug->severityList, $bug->severity);?>'><?php echo zget($lang->bug->severityList, $bug->severity, $bug->severity);?></span>
+                  <?php else:?>
                   <span class='label-severity' data-severity='<?php echo $bug->severity;?>' title='<?php echo zget($lang->bug->severityList, $bug->severity, $bug->severity);?>'></span>
+                  <?php endif;?>
                 </td>
                 <td class='text-left nobr' title='<?php echo $bug->title?>'><?php echo html::a($bugLink, $bug->title, '', "class='iframe' data-width='1000'");?></td>
                 <td>
-                  <span class='status-<?php echo $bug->status?>'>
-                    <span class='label label-dot'></span>
+                  <span class='status-bug status-<?php echo $bug->status?>'>
                     <?php echo $lang->bug->statusList[$bug->status];?>
                   </span>
                 </td>

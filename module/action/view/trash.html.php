@@ -12,9 +12,7 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <div id='mainMenu' class='clearfix'>
-  <div class='btn-toolbar pull-left'>
-    <span class='btn btn-link btn-active-text'><span class='text'><?php echo html::icon($lang->icons['trash']);?> <?php echo $lang->action->trash;?></span></span>
-  </div>
+  <div class='btn-toolbar pull-left'><?php common::printAdminSubMenu('data');?></div>
   <div class='btn-toolbar pull-right'>
     <?php if($type == 'hidden') echo html::a(inLink('trash', "type=all"),    $lang->goback, '', "class='btn'");?>
     <?php if($type == 'all')    echo html::a(inLink('trash', "type=hidden"), "<i class='icon-eye-close'></i> " . $lang->action->dynamic->hidden, '', "class='btn btn-danger'");?>
@@ -75,7 +73,7 @@
     <div class="table-footer">
       <div class="table-actions btn-toolbar" style=''>
         <?php echo html::linkButton($lang->action->hideAll, inlink('hideAll'), 'hiddenwin');?>
-        <span class='text'><?php echo $lang->action->trashTips;?></span>
+        <span class='table-statistic'><?php echo $lang->action->trashTips;?></span>
       </div>
       <?php $pager->show('right', 'pagerjs');?>
     </div>

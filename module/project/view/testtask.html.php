@@ -79,7 +79,7 @@
             <div class='small'><span class='text-muted'><?php echo $lang->testtask->allTasks;?></span> <?php echo count($productTasks);?></div>
           </td>
           <?php endif;?>
-          <td class="cell-id">
+          <td class="c-id">
             <?php if($canTestReport):?>
             <?php echo html::checkbox('taskIdList', array($task->id => sprintf('%03d', $task->id)));?>
             <?php else:?>
@@ -92,9 +92,8 @@
           <td><?php echo $task->begin?></td>
           <td><?php echo $task->end?></td>
           <td title='<?php echo $lang->testtask->statusList[$task->status];?>'>
-            <span class='status-<?php echo $task->status?>'>
-              <span class='label label-dot'></span>
-              <span class='status-text'><?php echo $lang->testtask->statusList[$task->status];?></span>
+            <span class='status-testtask status-<?php echo $task->status?>'>
+              <?php echo $lang->testtask->statusList[$task->status];?>
             </span>
           </td>
           <td class='c-actions'>
@@ -106,7 +105,7 @@
             if(common::hasPriv('testtask', 'delete', $task))
             {
                 $deleteURL = $this->createLink('testtask', 'delete', "taskID=$task->id&confirm=yes");
-                echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"taskList\",confirmDelete)", '<i class="icon-trash"></i>', '', "class='btn' title='{$lang->testtask->delete}'");
+                echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"taskList\",confirmDelete)", '<i class="icon-close"></i>', '', "class='btn' title='{$lang->testtask->delete}'");
             }
             ?>
           </td>

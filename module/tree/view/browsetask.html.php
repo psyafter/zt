@@ -14,7 +14,7 @@
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
     <?php $backLink = $this->session->taskList ? $this->session->taskList : 'javascript:history.go(-1)';?>
-    <a href="<?php echo $backLink;?>" class="btn btn-link">
+    <a href="<?php echo $backLink;?>" class="btn btn-secondary">
       <i class="icon icon-back icon-sm"></i> <?php echo $lang->goback;?>
     </a>
     <div class="divider"></div>
@@ -79,14 +79,14 @@
                       <button type="button" class="btn btn-link btn-icon btn-add" onclick="addItem(this)"><i class="icon icon-plus"></i></button>
                     </div>
                   </div>
-                  <?php endforeach;?> 
+                  <?php endforeach;?>
                   <?php for($i = 0; $i < TREE::NEW_CHILD_COUNT ; $i ++):?>
                   <div class="table-row row-module row-module-new">
                     <div class='table-col col-module'><?php echo html::input("modules[]", '', "class='form-control' autocomplete='off' placeholder='{$lang->tree->name}'")?></div>
                     <div class='table-col col-shorts'><?php echo html::input("shorts[]", '', "class='form-control' autocomplete='off' placeholder='{$lang->tree->short}'")?></div>
                     <div class="table-col col-actions">
                       <button type="button" class="btn btn-link btn-icon btn-add" onclick="addItem(this)"><i class="icon icon-plus"></i></button>
-                      <button type="button" class="btn btn-link btn-icon btn-delete" onclick="deleteItem(this)"><i class="icon icon-trash"></i></button>
+                      <button type="button" class="btn btn-link btn-icon btn-delete" onclick="deleteItem(this)"><i class="icon icon-close"></i></button>
                     </div>
                     <?php echo html::hidden('branch[]', empty($module) ? 0 : $module->branch);?>
                   </div>
@@ -98,7 +98,7 @@
                     <div class="table-col col-shorts"><?php echo html::input("shorts[]", '', "class='form-control' autocomplete='off' placeholder='{$lang->tree->short}'");?></div>
                     <div class="table-col col-actions">
                       <button type="button" class="btn btn-link btn-icon btn-add" onclick="addItem(this)"><i class="icon icon-plus"></i></button>
-                      <button type="button" class="btn btn-link btn-icon btn-delete" onclick="deleteItem(this)"><i class="icon icon-trash"></i></button>
+                      <button type="button" class="btn btn-link btn-icon btn-delete" onclick="deleteItem(this)"><i class="icon icon-close"></i></button>
                     </div>
                     <?php echo html::hidden('branch[]', empty($module) ? 0 : (int)$module->branch);?>
                   </div>
@@ -108,12 +108,12 @@
             <tr>
               <td></td>
               <td colspan='2' class="form-actions">
-                <?php 
-                echo html::submitButton('', '', 'btn btn-primary btn-wide');
-                echo $this->session->taskList ? html::linkButton($this->lang->goback, $this->session->taskList, '', '', 'btn btn-wide') : html::backButton('', '', 'btn btn-wide');
+                <?php
+                echo html::submitButton();
+                echo html::a($backLink, $lang->goback, '', "class='btn btn-wide'");
                 echo html::hidden('parentModuleID', $currentModuleID);
                 echo html::hidden('maxOrder', $maxOrder);
-                ?>      
+                ?>
                 <input type='hidden' value='<?php echo $currentModuleID;?>' name='parentModuleID' />
               </td>
             </tr>
@@ -147,30 +147,30 @@ $(function()
             if(item.nodeType) $li.addClass('tree-item-' + item.nodeType);
             return true;
         },
-        actions: 
+        actions:
         {
             sort:
             {
                 title: '<?php echo $lang->tree->dragAndSort ?>',
-                template: '<a class="sort-handler" href="javascript:;"><?php echo $lang->tree->sort ?></a>'
+                template: '<a class="sort-handler" href="javascript:;"><i class="icon icon-move"></i></a>'
             },
             edit:
             {
                 linkTemplate: '<?php echo helper::createLink('tree', 'edit', "moduleID={0}&type=task"); ?>',
                 title: '<?php echo $lang->tree->edit ?>',
-                template: '<a href="javascript:;"><?php echo $lang->edit?></a>'
+                template: '<a href="javascript:;"><i class="icon icon-edit"></i></a>'
             },
             "delete":
             {
                 linkTemplate: '<?php echo helper::createLink('tree', 'delete', "rootID=$rootID&moduleID={0}"); ?>',
                 title: '<?php echo $lang->tree->delete ?>',
-                template: '<a href="javascript:;"><?php echo $lang->delete?></a>'
+                template: '<a href="javascript:;"><i class="icon icon-close"></i></a>'
             },
             subModules:
             {
                 linkTemplate: '<?php echo helper::createLink('tree', 'browsetask', "rootID=$rootID&viewType=task&moduleID={0}"); ?>',
                 title: '<?php echo $lang->tree->child ?>',
-                template: '<a href="javascript:;"><?php echo $lang->tree->child?></a>'
+                template: '<a href="javascript:;"><i class="icon icon-treemap-alt"></i></a>'
             }
         },
         action: function(event)

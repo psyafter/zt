@@ -26,7 +26,7 @@ class entry extends control
         $pager = $this->app->loadClass('pager', $static = true);
         $pager = new pager($recTotal, $recPerPage, $pageID);
 
-        $this->view->title      = $this->lang->entry->api . $this->lang->colon . $this->lang->entry->list;
+        $this->view->title      = $this->lang->entry->common . $this->lang->colon . $this->lang->entry->list;
         $this->view->entries    = $this->entry->getList($orderBy, $pager);
         $this->view->position[] = html::a(inlink('browse'), $this->lang->entry->api);
         $this->view->position[] = $this->lang->entry->common;
@@ -52,7 +52,8 @@ class entry extends control
             $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
         }
 
-        $this->view->title      = $this->lang->entry->api . $this->lang->colon . $this->lang->entry->create;
+        $this->view->title      = $this->lang->entry->common . $this->lang->colon . $this->lang->entry->create;
+        $this->view->users      = $this->loadModel('user')->getPairs('nodeleted|noclosed');
         $this->view->position[] = html::a(inlink('browse'), $this->lang->entry->api);
         $this->view->position[] = html::a(inlink('browse'), $this->lang->entry->common);
         $this->view->position[] = $this->lang->entry->create;
@@ -83,6 +84,7 @@ class entry extends control
 
         $entry = $this->entry->getById($id);
         $this->view->title      = $this->lang->entry->edit . $this->lang->colon . $entry->name;
+        $this->view->users      = $this->loadModel('user')->getPairs('nodeleted|noclosed');
         $this->view->position[] = html::a(inlink('browse'), $this->lang->entry->api);
         $this->view->position[] = html::a(inlink('browse'), $this->lang->entry->common);
         $this->view->position[] = $this->lang->entry->edit;

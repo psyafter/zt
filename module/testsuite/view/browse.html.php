@@ -53,7 +53,7 @@
     <tbody>
     <?php foreach($suites as $suite):?>
     <tr class='text-left'>
-      <td><?php echo sprintf('%03d', $suite->id);?></td>
+      <td><?php echo html::a(helper::createLink('testsuite', 'view', "suiteID=$suite->id"), sprintf('%03d', $suite->id));?></td>
       <td class='text-left' title="<?php echo $suite->name?>">
         <?php if($suite->type == 'public') echo "<span class='label label-success label-badge'>{$lang->testsuite->authorList['public']}</span> ";?>
         <?php if($suite->type == 'private') echo "<span class='label label-info label-badge'>{$lang->testsuite->authorList['private']}</span> ";?>
@@ -70,7 +70,7 @@
         if(common::hasPriv('testsuite', 'delete', $suite))
         {
             $deleteURL = $this->createLink('testsuite', 'delete', "suiteID=$suite->id&confirm=yes");
-            echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"suiteList\",confirmDelete)", '<i class="icon icon-sm icon-trash"></i>', '', "title='{$lang->testsuite->delete}' class='btn'");
+            echo html::a("javascript:ajaxDelete(\"$deleteURL\",\"suiteList\",confirmDelete)", '<i class="icon icon-sm icon-close"></i>', '', "title='{$lang->testsuite->delete}' class='btn'");
         }
         ?>
       </td>

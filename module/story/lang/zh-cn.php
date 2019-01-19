@@ -157,9 +157,9 @@ $lang->story->sourceList['bug']        = 'Bug';
 $lang->story->sourceList['other']      = '其他';
 
 $lang->story->priList[]  = '';
-$lang->story->priList[3] = '3';
 $lang->story->priList[1] = '1';
 $lang->story->priList[2] = '2';
+$lang->story->priList[3] = '3';
 $lang->story->priList[4] = '4';
 
 $lang->story->legendBasicInfo      = '基本信息';
@@ -181,6 +181,7 @@ $lang->story->lblChange            = '变更需求';
 $lang->story->lblReview            = '评审需求';
 $lang->story->lblActivate          = '激活需求';
 $lang->story->lblClose             = '关闭需求';
+$lang->story->lblTBC               = '任务Bug用例';
 
 $lang->story->checkAffection       = '影响范围';
 $lang->story->affectedProjects     = '影响的' . $lang->projectCommon;
@@ -195,6 +196,7 @@ $lang->story->errorEmptyChildStory  = '『细分需求』不能为空。';
 $lang->story->mustChooseResult      = '必须选择评审结果';
 $lang->story->mustChoosePreVersion  = '必须选择回溯的版本';
 $lang->story->noStory               = '暂时没有需求。';
+$lang->story->ignoreChangeStage     = '需求 %s 为草稿状态，没有修改其阶段。';
 
 $lang->story->form = new stdclass();
 $lang->story->form->area      = '该需求所属范围';

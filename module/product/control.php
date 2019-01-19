@@ -118,9 +118,9 @@ class product extends control
         if($this->cookie->preProductID != $productID or $this->cookie->preBranch != $branch)
         {
             $_COOKIE['storyModule'] = 0;
-            setcookie('storyModule', 0, $this->config->cookieLife, $this->config->webRoot);
+            setcookie('storyModule', 0, 0, $this->config->webRoot);
         }
-        if($browseType == 'bymodule') setcookie('storyModule', (int)$param, $this->config->cookieLife, $this->config->webRoot);
+        if($browseType == 'bymodule') setcookie('storyModule', (int)$param, 0, $this->config->webRoot);
         if($browseType != 'bymodule') $this->session->set('storyBrowseType', $browseType);
 
         $moduleID = ($browseType == 'bymodule') ? (int)$param : ($browseType == 'bysearch' ? 0 : ($this->cookie->storyModule ? $this->cookie->storyModule : 0));
@@ -131,7 +131,7 @@ class product extends control
 
         /* Process the order by field. */
         if(!$orderBy) $orderBy = $this->cookie->productStoryOrder ? $this->cookie->productStoryOrder : 'id_desc';
-        setcookie('productStoryOrder', $orderBy, $this->config->cookieLife, $this->config->webRoot);
+        setcookie('productStoryOrder', $orderBy, 0, $this->config->webRoot);
 
         /* Append id for secend sort. */
         $sort = $this->loadModel('common')->appendOrder($orderBy);
@@ -380,10 +380,11 @@ class product extends control
         if(!$product) die(js::error($this->lang->notFound) . js::locate('back'));
 
         $product->desc = $this->loadModel('file')->setImgSize($product->desc);
-
         $this->product->setMenu($this->products, $productID);
 
-        $releases = $this->dao->select('*')->from(TABLE_RELEASE)->where('deleted')->eq(0)->andWhere('product')->eq($productID)->orderBy('date')->fetchAll();
+        /* Load pager. */
+        $this->app->loadClass('pager', $static = true);
+        $pager = new pager(0, 30, 1);
 
         $this->view->title      = $product->name . $this->lang->colon . $this->lang->product->view;
         $this->view->position[] = html::a($this->createLink($this->moduleName, 'browse'), $product->name);
@@ -394,8 +395,8 @@ class product extends control
         $this->view->groups     = $this->loadModel('group')->getPairs();
         $this->view->lines      = array('') + $this->loadModel('tree')->getLinePairs();
         $this->view->branches   = $this->loadModel('branch')->getPairs($productID);
-        $this->view->dynamics   = $this->loadModel('action')->getDynamic('all', 'all', 'date_desc', $pager = null, $productID);
-        $this->view->releases   = $releases;
+        $this->view->dynamics   = $this->loadModel('action')->getDynamic('all', 'all', 'date_desc', $pager, $productID);
+        $this->view->roadmaps   = $this->product->getRoadmap($productID, 0, 6);
 
         $this->display();
     }

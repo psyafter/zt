@@ -21,22 +21,23 @@ $formId = 'searchForm-' . uniqid('');
 #selectPeriod > .dropdown-header {background: #f1f1f1; display: block; text-align: center; padding: 4px 0; line-height: 20px; margin: 5px 10px; font-size: 14px; border-radius: 2px; color: #333; font-size: 12px}
 #groupAndOr {display: inline-block;}
 #<?php echo $formId;?> > table {margin: 0 auto;}
-#<?php echo $formId;?> > table > tbody > tr > td {padding: 10px 15px; color: #838A9D;}
+#<?php echo $formId;?> > table > tbody > tr > td {padding: 10px 15px;}
 #<?php echo $formId;?> .form-actions {padding-bottom: 20px; padding-top: 0;}
 #<?php echo $formId;?> .chosen-container[id^="field"] .chosen-drop {min-width: 140px;}
 #<?php echo $formId;?> [id^="valueBox"] .chosen-container .chosen-single {min-width: 100px;}
 #<?php echo $formId;?> [id^="valueBox"] .chosen-container .chosen-drop {min-width: 300px;}
 #<?php echo $formId;?> .chosen-container .chosen-drop ul.chosen-results li {white-space:normal}
-#<?php echo $formId;?> input.date::-webkit-input-placeholder {color: #000000; opacity: 1;}
-#<?php echo $formId;?> input.date::-moz-placeholder {color: #000000; opacity: 1;}
-#<?php echo $formId;?> input.date:-ms-input-placeholder {color: #000000; opacity: 1;}
+#<?php echo $formId;?> input.date::-webkit-input-placeholder {color: #838A9D; opacity: 1;}
+#<?php echo $formId;?> input.date::-moz-placeholder {color: #838A9D; opacity: 1;}
+#<?php echo $formId;?> input.date:-ms-input-placeholder {color: #838A9D; opacity: 1;}
 #<?php echo $formId;?> .btn-expand-form {background: transparent;}
 #<?php echo $formId;?> .btn-expand-form:hover {background: #e9f2fb;}
 .showmore .btn-expand-form .icon-chevron-double-down:before {content: '\e959';}
 
 #userQueries {border-left: 1px solid #eee; vertical-align: top;}
 #userQueries > h4 {margin: 0 0 6px;}
-#userQueries ul {list-style: none; padding-left: 0; margin: 0; max-height:170px; overflow:auto;}
+#userQueries ul {list-style: none; padding-left: 0; margin: 0; max-height:75px; overflow:auto;}
+.showmore #userQueries ul {max-height:170px;}
 #userQueries ul li + li {margin-top: 5px;}
 #userQueries .label {line-height: 24px; padding: 0 20px 0 8px; display: inline-block; background-color: #EEEEEE; color: #A6AAB8; border-radius: 12px; max-width: 100%; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; position: relative;}
 #userQueries .label:hover {background-color: #aaa; color: #fff;}
@@ -112,7 +113,7 @@ foreach($fieldParams as $fieldName => $param)
 
                     if($fieldValue && strpos('$lastWeek,$thisWeek,$today,$yesterday,$thisMonth,$lastMonth',$fieldValue) !== false)
                     {
-                        echo html::input("value$fieldNO", $fieldValue, "class='form-control $extraClass searchInput' placeholder='{$fieldValue}'");
+                        echo html::input("value$fieldNO", $fieldValue, "class='form-control $extraClass searchInput'");
                     }
                     else
                     {
@@ -207,11 +208,11 @@ foreach($fieldParams as $fieldName => $param)
         echo html::hidden('module',     $module);
         echo html::hidden('actionURL',  $actionURL);
         echo html::hidden('groupItems', $groupItems);
-        echo html::submitButton($lang->search->common, '', 'btn btn-wide btn-primary') . " &nbsp; ";
+        echo html::submitButton($lang->search->common, '', 'btn btn-primary') . " &nbsp; ";
         if($style != 'simple')
         {
-            if(common::hasPriv('search', 'saveQuery')) echo html::a($this->createLink('search', 'saveQuery', "module=$module&onMenuBar=$onMenuBar"), $lang->save, '', "class='btn-save-form btn btn-secondary btn-wide'") . "&nbsp;";
-            echo html::commonButton($lang->search->reset, 'onclick=resetForm(this)', 'btn-reset-form btn btn-wide');
+            if(common::hasPriv('search', 'saveQuery')) echo html::a($this->createLink('search', 'saveQuery', "module=$module&onMenuBar=$onMenuBar"), $lang->save, '', "class='btn-save-form btn btn-secondary'") . "&nbsp;";
+            echo html::commonButton($lang->search->reset, '', 'btn-reset-form btn');
         }
         echo html::commonButton('<i class="icon icon-chevron-double-down"></i>', '', 'btn-expand-form btn btn-info pull-right');
         echo html::hidden('formType', 'lite');

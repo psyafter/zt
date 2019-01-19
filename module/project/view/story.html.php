@@ -82,7 +82,7 @@
     </div>
   </div>
   <div class="main-col">
-    <div class="cell" id="queryBox"></div>
+    <div id='queryBox' class='cell <?php if($type =='bySearch') echo 'show';?>'></div>
     <?php if(empty($stories)):?>
     <div class="table-empty-tip">
       <p>
@@ -140,7 +140,7 @@
           <tr id="story<?php echo $story->id;?>" data-id='<?php echo $story->id;?>' data-order='<?php echo $story->order ?>' data-estimate='<?php echo $story->estimate?>' data-cases='<?php echo zget($storyCases, $story->id, 0)?>'>
             <td class='cell-id'>
               <?php if($canBatchEdit or $canBatchClose):?>
-              <?php echo html::checkbox('storyIDList', array($story->id => sprintf('%03d', $story->id)));?>
+              <?php echo html::checkbox('storyIDList', array($story->id => '')) . html::a(helper::createLink('story', 'view', "storyID=$story->id"), sprintf('%03d', $story->id));?>
               <?php else:?>
               <?php printf('%03d', $story->id);?>
               <?php endif;?>
@@ -150,16 +150,15 @@
             <?php endif;?>
             <td class='c-pri'><span class='label-pri <?php echo 'label-pri-' . $story->pri?>' title='<?php echo zget($lang->story->priList, $story->pri, $story->pri);?>'><?php echo zget($lang->story->priList, $story->pri, $story->pri);?></span></td>
             <td class='c-name' title="<?php echo $story->title?>">
-              <?php if(isset($branchGroups[$story->product][$story->branch])) echo "<span class='label label-info label-badge'>" . $branchGroups[$story->product][$story->branch] . '</span>';?>
+              <?php if(isset($branchGroups[$story->product][$story->branch])) echo "<span class='label label-outline label-badge'>" . $branchGroups[$story->product][$story->branch] . '</span>';?>
               <?php echo html::a($storyLink,$story->title, null, "style='color: $story->color'");?>
             </td>
-            <td class='c-user'><?php echo $users[$story->openedBy];?></td>
-            <td class='c-user'><?php echo $users[$story->assignedTo];?></td>
+            <td class='c-user' title='<?php echo $users[$story->openedBy];?>'><?php echo $users[$story->openedBy];?></td>
+            <td class='c-user' title='<?php echo $users[$story->assignedTo];?>'><?php echo $users[$story->assignedTo];?></td>
             <td class='c-estimate'><?php echo $story->estimate;?></td>
             <td class='c-status' title='<?php echo zget($lang->story->statusList, $story->status);?>'>
-              <span class='status-<?php echo $story->status;?>'>
-                <span class='label label-dot'></span>
-                <span class='status-text'><?php echo zget($lang->story->statusList, $story->status);?></span>
+              <span class='status-story status-<?php echo $story->status;?>'>
+                <?php echo zget($lang->story->statusList, $story->status);?>
               </span>
             </td>
             <td class='c-stage'><?php echo $lang->story->stageList[$story->stage];?></td>
@@ -266,7 +265,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon icon-close"></i></button>
-        <h4 class="modal-title"><?php echo $lang->project->linkStoryByPlan;?></h4>
+        <h4 class="modal-title"><?php echo $lang->project->linkStoryByPlan;?></h4><?php echo '(' . $lang->project->linkStoryByPlanTips . ')';?>
       </div>
       <div class="modal-body">
         <div class='input-group'>
@@ -308,9 +307,6 @@ $(function()
                   .replace('%rate%', rate);
         }
     });
-    <?php if(!$stories):?>
-    $("#main").addClass('hide-sidebar');
-    <?php endif;?>
 });
 </script>
 <?php include '../../common/view/footer.html.php';?>

@@ -24,6 +24,10 @@
       <table class='table table-form'> 
         <tbody>
           <tr>
+            <th><?php echo $lang->doc->lib;?></th>
+            <td><?php echo $libName?></td><td></td>
+          </tr>  
+          <tr>
             <th><?php echo $lang->doc->module;?></th>
             <td>
               <?php echo html::hidden('lib', $libID);?>
@@ -77,7 +81,7 @@
           </tr>
           <tr>
             <td colspan='3' class='text-center form-actions'>
-              <?php echo html::submitButton('', '', 'btn btn-wide btn-primary') . ' ' . html::backButton('', '', 'btn btn-wide') . html::hidden('lib', $libID);?>
+              <?php echo html::submitButton() . ' ' . html::backButton() . html::hidden('lib', $libID);?>
             </td>
           </tr>
         </tbody>

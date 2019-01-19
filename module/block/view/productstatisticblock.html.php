@@ -35,13 +35,19 @@ html[lang="en"] .product-info .type-info {color: #A6AAB8; text-align: center; po
 .block-statistic .tile {margin-bottom: 30px;}
 .block-statistic .tile-title {font-size: 18px; color: #A6AAB8;}
 .block-statistic .tile-amount {font-size: 48px; margin-bottom: 10px;}
-.block-statistic .col-nav {border-left: 1px solid #EBF2FB; width: 260px; padding: 0;}
+.block-statistic .col-nav {border-right: 1px solid #EBF2FB; width: 260px; padding: 0;}
+.block-statistic .nav-secondary > li {position: relative}
+.block-statistic .nav-secondary > li:hover {background: #f5f5f5;}
 .block-statistic .nav-secondary > li > a {font-size: 14px; color: #838A9D; position: relative; box-shadow: none; padding-left: 20px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; transition: all .2s;}
-.block-statistic .nav-secondary > li.active > a {color: #3C4353; background: transparent; box-shadow: none;}
-.block-statistic .nav-secondary > li.active > a:hover,
-.block-statistic .nav-secondary > li.active > a:focus,
-.block-statistic .nav-secondary > li > a:hover {box-shadow: none;}
-.block-statistic .nav-secondary > li.active > a:before {content: ' '; display: block; left: -1px; top: 10px; bottom: 10px; width: 4px; background: #006af1; position: absolute;}
+.block-statistic .nav-secondary > li > a:first-child {padding-right: 36px;}
+.block-statistic .nav-secondary > li.active > a:first-child {color: #3C4353; background: transparent; box-shadow: none;}
+.block-statistic .nav-secondary > li.active > a:first-child:hover,
+.block-statistic .nav-secondary > li.active > a:first-child:focus,
+.block-statistic .nav-secondary > li > a:first-child:hover {box-shadow: none; border-radius: 4px 0 0 4px;}
+.block-statistic .nav-secondary > li.active > a:first-child:before {content: ' '; display: block; left: -1px; top: 10px; bottom: 10px; width: 4px; background: #006af1; position: absolute;}
+.block-statistic .nav-secondary > li > a.btn-view {position: absolute; top: 0; right: 0; bottom: 0; padding: 8px; width: 36px; text-align: center; opacity: 0; background: rgba(0,0,0,.05)}
+.block-statistic .nav-secondary > li.active > a.btn-view {box-shadow: none}
+.block-statistic .nav-secondary > li:hover > a.btn-view {opacity: 1}
 .block-statistic .nav-secondary > li.switch-icon {display: none;}
 .block-statistic.block-sm .panel-body {padding-bottom: 10px; position: relative; padding-top: 45px;}
 .block-statistic.block-sm .panel-body > .table-row,
@@ -60,6 +66,13 @@ html[lang="en"] .product-info .type-info {color: #A6AAB8; text-align: center; po
 .block-statistic.block-sm .nav-secondary > li > a:before {display: none;}
 .block-statistic.block-sm .nav-secondary > li.switch-icon {width: 40px;}
 .block-statistic.block-sm .types-line > li > div {padding: 18px 2px 5px;}
+.block-statistic.block-sm .nav-secondary > li.active > a:first-child:before {display: none}
+.block-statistic.block-sm .nav-secondary > li.active > a.btn-view {width: auto; left: 0; right: 0;}
+.block-statistic.block-sm .nav-secondary > li.active > a.btn-view > i {display: none;}
+.block-statistic.block-sm .nav-secondary > li.active > a.btn-view:hover {cursor: pointer; background: rgba(0,0,0,.1)}
+
+.status-count{margin:auto}
+.status-count tr:first-child td:last-child{color:#000;font-weight:bold}
 </style>
 <script>
 <?php $blockNavId = 'nav-' . uniqid(); ?>
@@ -84,6 +97,17 @@ $(function()
       <p><span class="text-muted"><?php echo $lang->block->noData;?></span></p>
     </div>
     <?php else:?>
+    <div class="col col-nav">
+      <ul class="nav nav-stacked nav-secondary scrollbar-hover" id='<?php echo $blockNavId;?>'>
+        <li class='switch-icon prev'><a><i class='icon icon-arrow-left'></i></a></li>
+        <?php foreach($products as $product):?>
+        <li <?php if($product == reset($products)) echo "class='active'";?> productID='<?php echo $product->id;?>'>
+          <a href="javascript:;" data-target="#tab<?php echo $product->code;?>" data-toggle="tab" title='<?php echo $product->name;?>'><?php echo $product->name;?></a>
+          <?php echo html::a(helper::createLink('product', 'browse', "productID=$product->id"), "<i class='icon-arrow-right text-primary'></i>", '', "class='btn-view' title={$lang->product->browse}");?></li>
+        <?php endforeach;?>
+        <li class='switch-icon next'><a><i class='icon icon-arrow-right'></i></a></li>
+      </ul>
+    </div>
     <div class="col tab-content">
       <?php foreach($products as $product):?>
       <div class="tab-pane fade <?php if($product == reset($products)) echo 'active';?> in" id="tab<?php echo $product->code;?>">
@@ -128,15 +152,21 @@ $(function()
               <?php endif;?>
               <div class="type-info">
                 <div class="type-label">
-                  <span><?php echo $lang->story->planAB;?></span> / <span><?php echo $lang->productplan->featureBar['browse']['unexpired'];?></span>
-                </div>
-                <div class="type-value">
-                  <small><?php echo $totalPlan;?></small> / <strong><?php echo $unexpiredPlan;?></strong>
+                  <table class='status-count'>
+                    <tr>
+                      <td class='text-right'><?php echo $lang->productplan->all;?> :</td>
+                      <td class='text-left'><?php echo $totalPlan;?></td>
+                    </tr>
+                    <tr>
+                      <td class='text-right'><?php echo $lang->productplan->featureBar['browse']['unexpired'];?> :</td>
+                      <td class='text-left'><?php echo $unexpiredPlan;?></td>
+                    </tr>
+                  </table>
                 </div>
               </div>
             </div>
             <div class="product-info">
-              <?php $totalProject = $product->projects ? array_sum($product->projects) : 0;?>
+              <?php $totalProject = $product->projects ? zget($product->projects, 'all', 0) : 0;?>
               <?php $doingProject = $product->projects ? zget($product->projects, 'doing', 0) : 0;?>
               <?php $delayProject = $product->projects ? zget($product->projects, 'delay', 0) : 0;?>
               <?php $doingRate    = $totalProject ? round($doingProject / $totalProject * 100, 2) : 0;?>
@@ -156,10 +186,16 @@ $(function()
               <?php endif;?>
               <div class="type-info">
                 <div class="type-label">
-                  <span><?php echo $lang->projectCommon;?></span> / <span><?php echo $lang->project->statusList['doing'];?></span>
-                </div>
-                <div class="type-value">
-                  <small><?php echo $totalProject;?></small> / <strong><?php echo $doingProject;?></strong>
+                  <table class='status-count'>
+                    <tr>
+                      <td class='text-right'><?php echo $lang->project->allProjects;?> :</td>
+                      <td class='text-left'><?php echo $totalProject;?></td>
+                    </tr>
+                    <tr>
+                      <td class='text-right'><?php echo $lang->project->statusList['doing'];?> :</td>
+                      <td class='text-left'><?php echo $doingProject;?></td>
+                    </tr>
+                  </table>
                 </div>
               </div>
             </div>
@@ -183,10 +219,16 @@ $(function()
               <?php endif;?>
               <div class="type-info">
                 <div class="type-label">
-                  <span><?php echo $lang->release->common;?></span> / <span><?php echo $lang->release->statusList['normal'];?></span>
-                </div>
-                <div class="type-value">
-                  <small><?php echo $totalRelease;?></small> / <strong><?php echo $normalRelease;?></strong>
+                  <table class='status-count'>
+                    <tr>
+                      <td class='text-right'><?php echo $lang->product->allRelease;?> :</td>
+                      <td class='text-left'><?php echo $totalRelease;?></td>
+                    </tr>
+                    <tr>
+                      <td class='text-right'><?php echo $lang->product->maintain;?> :</td>
+                      <td class='text-left'><?php echo $normalRelease;?></td>
+                    </tr>
+                  </table>
                 </div>
               </div>
             </div>
@@ -195,15 +237,6 @@ $(function()
         </div>
       </div>
       <?php endforeach;?>
-    </div>
-    <div class="col col-nav">
-      <ul class="nav nav-stacked nav-secondary scrollbar-hover" id='<?php echo $blockNavId;?>'>
-        <li class='switch-icon prev'><a><i class='icon icon-arrow-left'></i></a></li>
-        <?php foreach($products as $product):?>
-        <li <?php if($product == reset($products)) echo "class='active'";?>><a href="javascript:;" data-target="#tab<?php echo $product->code;?>" data-toggle="tab" title='<?php echo $product->name;?>'><?php echo $product->name;?></a></li>
-        <?php endforeach;?>
-        <li class='switch-icon next'><a><i class='icon icon-arrow-right'></i></a></li>
-      </ul>
     </div>
     <?php endif;?>
   </div>

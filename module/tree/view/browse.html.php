@@ -17,7 +17,7 @@
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
     <?php $backLink = $this->session->{$viewType . 'List'} ? $this->session->{$viewType . 'List'} : 'javascript:history.go(-1)';?>
-    <a href="<?php echo $backLink;?>" class="btn btn-link">
+    <a href="<?php echo $backLink;?>" class="btn btn-secondary">
       <i class="icon icon-back icon-sm"></i> <?php echo $lang->goback;?>
     </a>
     <div class="divider"></div>
@@ -115,7 +115,7 @@
                     <div class="table-col col-shorts"><?php echo html::input("shorts[]", '', "class='form-control' placeholder='{$lang->tree->short}' autocomplete='off'");?></div>
                     <div class="table-col col-actions">
                       <button type="button" class="btn btn-link btn-icon btn-add" onclick="addItem(this)"><i class="icon icon-plus"></i></button>
-                      <button type="button" class="btn btn-link btn-icon btn-delete" onclick="deleteItem(this)"><i class="icon icon-trash"></i></button>
+                      <button type="button" class="btn btn-link btn-icon btn-delete" onclick="deleteItem(this)"><i class="icon icon-close"></i></button>
                     </div>
                   </div>
                   <?php endfor;?>
@@ -130,7 +130,7 @@
                     <div class="table-col col-shorts"><?php echo html::input("shorts[]", '', "class='form-control' placeholder='{$lang->tree->short}' autocomplete='off'");?></div>
                     <div class="table-col col-actions">
                       <button type="button" class="btn btn-link btn-icon btn-add" onclick="addItem(this)"><i class="icon icon-plus"></i></button>
-                      <button type="button" class="btn btn-link btn-icon btn-delete" onclick="deleteItem(this)"><i class="icon icon-trash"></i></button>
+                      <button type="button" class="btn btn-link btn-icon btn-delete" onclick="deleteItem(this)"><i class="icon icon-close"></i></button>
                     </div>
                   </div>
                 </div>
@@ -141,13 +141,13 @@
               <td></td>
               <?php endif;?>
               <td colspan="2" class="form-actions">
-                <?php echo html::submitButton('', '', 'btn btn-primary btn-wide');?>
-                <?php echo $this->session->{$viewType . 'List'} ? html::linkButton($this->lang->goback, $this->session->{$viewType .'List'}, 'self', '', 'btn btn-wide') : html::backButton('', '', 'btn btn-wide');?>
+                <?php echo html::submitButton();?>
+                <?php echo html::a($backLink, $lang->goback, '', "class='btn btn-wide'");?>
                 <?php echo html::hidden('parentModuleID', $currentModuleID);?>
                 <?php echo html::hidden('maxOrder', $maxOrder);?>
               </td>
             </tr>
-            </tbody> 
+            </tbody>
           </table>
         </form>
       </div>
@@ -163,7 +163,7 @@ $(function()
     {
         initialState: 'preserve',
         data: data,
-        sortable: 
+        sortable:
         {
             lazy: true,
             nested: true,
@@ -188,25 +188,25 @@ $(function()
             sort:
             {
                 title: '<?php echo $lang->tree->dragAndSort ?>',
-                template: '<a class="sort-handler"><?php echo $lang->tree->sort ?></a>'
+                template: '<a class="sort-handler"><i class="icon-move"></i></a>'
             },
             edit:
             {
                 linkTemplate: '<?php echo helper::createLink('tree', 'edit', "moduleID={0}&type=$viewType"); ?>',
                 title: '<?php echo $lang->tree->edit ?>',
-                template: '<a><?php echo $lang->edit?></a>'
+                template: '<a><i class="icon-edit"></i></a>'
             },
             "delete":
             {
                 linkTemplate: '<?php echo helper::createLink('tree', 'delete', "rootID=$rootID&moduleID={0}"); ?>',
                 title: '<?php echo $lang->tree->delete ?>',
-                template: '<a><?php echo $lang->delete?></a>'
+                template: '<a><i class="icon-close"></i></a>'
             },
             subModules:
             {
                 linkTemplate: '<?php echo helper::createLink('tree', 'browse', "rootID=$rootID&viewType=$viewType&moduleID={0}&branch={1}"); ?>',
                 title: '<?php echo $viewType == 'line' ? '' : (strpos($viewType, 'doc') !== false ? $lang->doc->childType : $lang->tree->child) ?>',
-                template: '<a><?php echo $viewType == 'line' ? '' : (strpos($viewType, 'doc') !== false ? $lang->doc->childType : $lang->tree->child)?></a>',
+                template: '<a><?php echo $viewType == 'line' ? '' : '<i class="icon-treemap-alt"></i>';?></a>',
             }
         },
         action: function(event)
@@ -269,8 +269,8 @@ $(function()
     if(window.config.viewType == 'line') $('#modulemenu > .nav > li > a[href*=product][href*=all]').parent('li[data-id=all]').addClass('active');
 });
 </script>
-<?php 
-if(strpos($viewType, 'doc') !== false) 
+<?php
+if(strpos($viewType, 'doc') !== false)
 {
     include '../../doc/view/footer.html.php';
 }

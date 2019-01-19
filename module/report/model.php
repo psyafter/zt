@@ -93,8 +93,9 @@ class reportModel extends model
             ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
             ->where('t1.status')->ne('cancel')
             ->andWhere('t1.deleted')->eq(0)
+            ->beginIF(!$this->app->user->admin)->andWhere('t2.id')->in($this->app->user->view->projects)->fi()
             ->andWhere('t2.deleted')->eq(0)
-            ->andWhere('t1.parent')->eq(0)
+            ->andWhere('t1.parent')->lt(1)
             ->andWhere('t2.status')->eq('closed')
             ->beginIF($begin)->andWhere('t2.begin')->ge($begin)->fi()
             ->beginIF($end)->andWhere('t2.end')->le($end)->fi()
@@ -131,6 +132,7 @@ class reportModel extends model
         $products = $this->dao->select('id, code, name, PO')->from(TABLE_PRODUCT)
             ->where('deleted')->eq(0)
             ->beginIF(strpos($conditions, 'closedProduct') === false)->andWhere('status')->ne('closed')->fi()
+            ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->products)->fi()
             ->fetchAll('id');
         $plans    = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where('deleted')->eq(0)->andWhere('product')->in(array_keys($products))
             ->beginIF(strpos($conditions, 'overduePlan') === false)->andWhere('end')->gt(date('Y-m-d'))->fi()
@@ -246,16 +248,15 @@ class reportModel extends model
      */
     public function getWorkload($dept = 0, $assign = 'assign')
     {
-        $depts = array();
-        if($dept) $depts = $this->loadModel('dept')->getAllChildId($dept);
+        $deptUsers = array();
+        if($dept) $deptUsers = $this->loadModel('dept')->getDeptUserPairs($dept);
 
         if($assign == 'noassign')
         {
             $members = $this->dao->select('t1.account,t2.name,t1.root')->from(TABLE_TEAM)->alias('t1')
                 ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t2.id = t1.root')
-                ->leftJoin(TABLE_USER)->alias('t3')->on('t3.account = t1.account')
                 ->where('t2.status')->notin('cancel, closed, done, suspended')
-                ->beginIF($dept)->andWhere('t3.dept')->in($depts)->fi()
+                ->beginIF($dept)->andWhere('t1.account')->in(array_keys($deptUsers))->fi()
                 ->andWhere('t1.type')->eq('project')
                 ->andWhere("t1.account NOT IN(SELECT `assignedTo` FROM " . TABLE_TASK . " WHERE `project` = t1.`root` AND `status` NOT IN('cancel, closed, done, pause') AND assignedTo != '' GROUP BY assignedTo)")
                 ->fetchGroup('account', 'name');
@@ -281,18 +282,18 @@ class reportModel extends model
             return $workload;
         }
 
-        $tasks = $this->dao->select('t1.*, t2.name as projectName')->from(TABLE_TASK)->alias('t1')
+        $stmt = $this->dao->select('t1.*, t2.name as projectName')->from(TABLE_TASK)->alias('t1')
             ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
-            ->leftJoin(TABLE_USER)->alias('t3')->on('t1.assignedTo = t3.account')
             ->where('t1.deleted')->eq(0)
             ->andWhere('t1.status')->notin('cancel, closed, done, pause')
             ->andWhere('t2.deleted')->eq(0)
             ->andWhere('t2.status')->notin('cancel, closed, done, suspended')
-            ->andWhere('assignedTo')->ne('')
-            ->beginIF($dept)->andWhere('t3.dept')->in($depts)->fi()
-            ->fetchAll('id');
+            ->andWhere('assignedTo')->ne('');
 
-        if(empty($tasks)) return array();
+        $allTasks = $stmt->fetchAll('id');
+        $tasks    = $stmt->beginIF($dept)->andWhere('t1.assignedTo')->in(array_keys($deptUsers))->fi()->fetchAll('id');
+
+        if(empty($allTasks)) return array();
 
         /* Fix bug for children. */
         $parents       = array();
@@ -300,18 +301,19 @@ class reportModel extends model
         $taskGroups    = array();
         foreach($tasks as $task)
         {
-            if(!empty($task->parent)) $parents[$task->parent] = $task->parent;
+            if($task->parent > 0) $parents[$task->parent] = $task->parent;
             $taskGroups[$task->assignedTo][$task->id] = $task;
         }
 
         $multiTaskTeams = $this->dao->select('*')->from(TABLE_TEAM)->where('type')->eq('task')
-            ->andWhere('root')->in(array_keys($tasks))
+            ->andWhere('root')->in(array_keys($allTasks))
+            ->beginIF($dept)->andWhere('account')->in(array_keys($deptUsers))->fi()
             ->fetchGroup('account', 'root');
         foreach($multiTaskTeams as $assignedTo => $multiTasks)
         {
             foreach($multiTasks as $task)
             {
-                $userTask = $tasks[$task->root];
+                $userTask = $allTasks[$task->root];
                 $userTask->estimate = $task->estimate;
                 $userTask->consumed = $task->consumed;
                 $userTask->left     = $task->left;

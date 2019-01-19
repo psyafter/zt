@@ -10,14 +10,14 @@
  * @link        https://www.zentao.pm
  */
 ?>
-<?php include '../../common/view/header.html.php';?>
+<?php include 'header.html.php';?>
 <div id="mainMenu" class='clearfix'>
   <div class="btn-toolbar pull-left">
     <?php common::printLink('entry', 'browse', '', "<span class='text'>{$lang->entry->common}</span>", '', "class='btn btn-link btn-active-text'");?>
   </div>
   <div class="btn-toolbar pull-right">
     <?php common::printLink('admin', 'log', '', "<i class='icon icon-cog'></i> " . $lang->entry->setting, '', "class='btn btn-primary'");?>
-    <?php echo html::backButton();?>
+    <?php echo html::backButton('', '' , 'btn');?>
   </div>
 </div>
 <div id='mainContent' class='main-content'>

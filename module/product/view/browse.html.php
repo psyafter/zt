@@ -32,7 +32,7 @@
     <?php
     foreach(customModel::getFeatureMenu($this->moduleName, $this->methodName) as $menuItem)
     {
-        if(isset($menuItem->hidden) and $menuItem->name != 'QUERY') continue;
+        if(isset($menuItem->hidden)) continue;
         $menuBrowseType = strpos($menuItem->name, 'QUERY') === 0 ? 'bySearch' : $menuItem->name;
         if($menuItem->name == 'more')
         {
@@ -96,9 +96,10 @@
       <button class="btn btn-link" data-toggle="dropdown"><i class="icon icon-export muted"></i> <span class="text"><?php echo $lang->export ?></span> <span class="caret"></span></button>
       <ul class="dropdown-menu" id='exportActionMenu'>
         <?php
-        $misc = common::hasPriv('story', 'export') ? "class='export'" : "class=disabled";
-        $link = common::hasPriv('story', 'export') ?  $this->createLink('story', 'export', "productID=$productID&orderBy=$orderBy") : '#';
-        echo "<li>" . html::a($link, $lang->story->export, '', $misc) . "</li>";
+        $class = common::hasPriv('story', 'export') ? '' : "class=disabled";
+        $misc  = common::hasPriv('story', 'export') ? "class='export'" : "class=disabled";
+        $link  = common::hasPriv('story', 'export') ?  $this->createLink('story', 'export', "productID=$productID&orderBy=$orderBy&projectID=0&browseType=$browseType") : '#';
+        echo "<li $class>" . html::a($link, $lang->story->export, '', $misc) . "</li>";
         ?>
       </ul>
     </div>
@@ -159,7 +160,6 @@
       $vars         = "productID=$productID&branch=$branch&browseType=$browseType&param=$param&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}";
 
       if($useDatatable) include '../../common/view/datatable.html.php';
-
       $setting = $this->datatable->getSetting('product');
       $widths  = $this->datatable->setFixedFieldWidth($setting);
       $columns = 0;
@@ -270,10 +270,9 @@
                   echo "<li class='dropdown-submenu'>";
                   echo html::a('javascript:;', $lang->story->stageAB, '', "id='stageItem'");
                   echo "<ul class='dropdown-menu'>";
-                  $stageList['verified'] = $lang->story->stageList['verified'];
-                  $stageList['closed']   = $lang->story->stageList['closed'];
-                  foreach($stageList as $key => $stage)
+                  foreach($lang->story->stageList as $key => $stage)
                   {
+                      if(empty($key)) continue;
                       $actionLink = $this->createLink('story', 'batchChangeStage', "stage=$key");
                       echo "<li>" . html::a('#', $stage, '', "onclick=\"setFormAction('$actionLink','hiddenwin')\"") . "</li>";
                   }
@@ -290,21 +289,24 @@
           <?php if(common::hasPriv('story', 'batchChangeModule')):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->story->moduleAB;?> <span class="caret"></span></button>
-            <div class="dropdown-menu search-list" data-ride="searchList">
-              <?php $withSearch = count($modules) > 8;?>
+            <?php $withSearch = count($modules) > 8;?>
+            <div class="dropdown-menu search-list<?php if($withSearch) echo ' search-box-sink';?>" data-ride="searchList">
               <?php if($withSearch):?>
               <div class="input-control search-box has-icon-left has-icon-right search-example">
-                <input id="userSearchBox" type="search" autocomplete="off" class="form-control search-input">
-                <label for="userSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
+                <input id="moduleSearchBox" type="search" autocomplete="off" class="form-control search-input">
+                <label for="moduleSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
                 <a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a>
               </div>
+              <?php $modulesPinYin = common::convert2Pinyin($modules);
+              ?>
               <?php endif;?>
               <div class="list-group">
                 <?php
                 foreach($modules as $moduleId => $module)
                 {
+                    $searchKey = $withSearch ? ('data-key="' . zget($modulesPinYin, $module, '') . '"') : '';
                     $actionLink = $this->createLink('story', 'batchChangeModule', "moduleID=$moduleId");
-                    echo html::a('#', empty($module) ? '/' : $module, '', "onclick=\"setFormAction('$actionLink', 'hiddenwin')\"");
+                    echo html::a('#', empty($module) ? '/' : $module, '', "$searchKey onclick=\"setFormAction('$actionLink', 'hiddenwin')\"");
                 }
                 ?>
               </div>
@@ -314,25 +316,27 @@
           <?php if(common::hasPriv('story', 'batchChangePlan')):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->story->planAB;?> <span class="caret"></span></button>
-            <div class="dropdown-menu search-list" data-ride="searchList">
-              <?php
-              unset($plans['']);
-              $plans      = array(0 => $lang->null) + $plans;
-              $withSearch = count($plans) > 8;
-              ?>
+            <?php
+            unset($plans['']);
+            $plans      = array(0 => $lang->null) + $plans;
+            $withSearch = count($plans) > 8;
+            ?>
+            <div class="dropdown-menu search-list<?php if($withSearch) echo ' search-box-sink';?>" data-ride="searchList">
               <?php if($withSearch):?>
               <div class="input-control search-box has-icon-left has-icon-right search-example">
-                <input id="userSearchBox" type="search" autocomplete="off" class="form-control search-input">
-                <label for="userSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
+                <input id="planSearchBox" type="search" autocomplete="off" class="form-control search-input">
+                <label for="planSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
                 <a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a>
               </div>
+              <?php $plansPinYin = common::convert2Pinyin($plans);?>
               <?php endif;?>
               <div class="list-group">
                 <?php
                 foreach($plans as $planID => $plan)
                 {
+                    $searchKey = $withSearch ? ('data-key="' . zget($plansPinYin, $plan, '') . '"') : '';
                     $actionLink = $this->createLink('story', 'batchChangePlan', "planID=$planID");
-                    echo html::a('#', $plan, '', "onclick=\"setFormAction('$actionLink', 'hiddenwin')\"");
+                    echo html::a('#', $plan, '', "$searchKey onclick=\"setFormAction('$actionLink', 'hiddenwin')\"");
                 }
                 ?>
               </div>
@@ -343,13 +347,14 @@
           <?php if(common::hasPriv('story', 'batchAssignTo')):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->story->assignedTo;?> <span class="caret"></span></button>
-            <div class="dropdown-menu search-list" data-ride="searchList">
-              <?php
-              $withSearch = count($users) > 10;
-              $actionLink = $this->createLink('story', 'batchAssignTo', "productID=$productID");
-              echo html::select('assignedTo', $users, '', 'class="hidden"');
-              if($withSearch):
-              ?>
+            <?php
+            $withSearch = count($users) > 10;
+            $actionLink = $this->createLink('story', 'batchAssignTo', "productID=$productID");
+            echo html::select('assignedTo', $users, '', 'class="hidden"');
+            ?>
+            <div class="dropdown-menu search-list<?php if($withSearch) echo ' search-box-sink';?>" data-ride="searchList">
+              <?php if($withSearch):?>
+              <?php $usersPinYin = common::convert2Pinyin($users);?>
               <div class="input-control search-box has-icon-left has-icon-right search-example">
                 <input id="userSearchBox" type="search" autocomplete="off" class="form-control search-input">
                 <label for="userSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
@@ -360,7 +365,8 @@
               <?php foreach ($users as $key => $value):?>
               <?php
               if(empty($key) or $key == 'closed') continue;
-              echo html::a("javascript:$(\"#assignedTo\").val(\"$key\");setFormAction(\"$actionLink\", \"hiddenwin\")", $value);
+              $searchKey = $withSearch ? ('data-key="' . zget($usersPinYin, $value, '') . " @$key\"") : "data-key='@$key'";
+              echo html::a("javascript:$(\"#assignedTo\").val(\"$key\");setFormAction(\"$actionLink\", \"hiddenwin\")", $value, '', $searchKey);
               ?>
               <?php endforeach;?>
               </div>
@@ -403,11 +409,11 @@ $(function()
                 }
                 var data = $row.data();
                 checkedEstimate += data.estimate;
-                checkedCase += data.cases;
+                if(data.cases > 0) checkedCase += 1;
             });
             var rate = Math.round(checkedCase / checkedTotal * 10000) / 100 + '' + '%';
             return checkedSummary.replace('%total%', checkedTotal)
-                  .replace('%estimate%', checkedEstimate)
+                  .replace('%estimate%', checkedEstimate.toFixed(1))
                   .replace('%rate%', rate);
         }
     });
