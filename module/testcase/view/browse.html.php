@@ -41,7 +41,7 @@ js::set('suiteID',        $suiteID);
     </div>
   </div>
   <div class='main-col'>
-    <div id='queryBox' class='cell<?php if($browseType == 'bysearch') echo ' show';?>'></div>
+    <div id='queryBox' data-module='testcase' class='cell<?php if($browseType == 'bysearch') echo ' show';?>'></div>
     <?php if(empty($cases)):?>
     <?php $useDatatable = '';?>
     <div class="table-empty-tip">
@@ -68,7 +68,7 @@ js::set('suiteID',        $suiteID);
       if($useDatatable)  include '../../common/view/datatable.html.php';
       else               include '../../common/view/tablesorter.html.php';
 
-      if($config->testcase->needReview or !empty($config->testcase->forceReview)) $config->testcase->datatable->fieldList['actions']['width'] = '170';
+      if($config->testcase->needReview or !empty($config->testcase->forceReview)) $config->testcase->datatable->fieldList['actions']['width'] = '180';
       $setting = $this->datatable->getSetting('testcase');
       $widths  = $this->datatable->setFixedFieldWidth($setting);
       $columns = 0;
@@ -214,7 +214,7 @@ js::set('suiteID',        $suiteID);
           </div>
           <?php endif;?>
         </div>
-        <div class="text"><?php echo $summary;?></div>
+        <div class="table-statistic"><?php echo $summary;?></div>
         <?php $pager->show('right', 'pagerjs');?>
       </div>
     </form>

@@ -102,14 +102,23 @@
     <?php else:?>
     <div class='btn-group dropdown-hover'>
       <?php
-      $link = common::hasPriv('story', 'create') ? $this->createLink('story', 'create', "product=$productID&branch=$branch&moduleID=$moduleID") : '###';
       if(commonModel::isTutorialMode())
       {
           $wizardParams = helper::safe64Encode("productID=$productID&branch=$branch&moduleID=$moduleID");
           $link = $this->createLink('tutorial', 'wizard', "module=story&method=create&params=$wizardParams");
+          echo html::a($link, "<i class='icon icon-plus'></i> {$lang->story->create} </span><span class='caret'>", '', "class='btn btn-primary create-story-btn'");
       }
-      $disabled = common::hasPriv('story', 'create') ? '' : "disabled";
-      echo html::a($link, "<i class='icon icon-plus'></i> {$lang->story->create} </span><span class='caret'>", '', "class='btn btn-primary $disabled'");
+      else
+      {
+          $link     = $this->createLink('story', 'create', "product=$productID&branch=$branch&moduleID=$moduleID");
+          $disabled = '';
+          if(!common::hasPriv('story', 'create'))
+          {
+              $link     = '###';
+              $disabled = 'disabled';
+          }
+          echo html::a($link, "<i class='icon icon-plus'></i> {$lang->story->create} </span><span class='caret'>", '', "class='btn btn-primary $disabled'");
+      }
       ?>
       <ul class='dropdown-menu'>
         <?php $disabled = common::hasPriv('story', 'batchCreate') ? '' : "class='disabled'";?>
@@ -143,7 +152,7 @@
     </div>
   </div>
   <div class="main-col">
-    <div class="cell<?php if($browseType == 'bysearch') echo ' show';?>" id="queryBox"></div>
+    <div class="cell<?php if($browseType == 'bysearch') echo ' show';?>" id="queryBox" data-module='story'></div>
     <?php if(empty($stories)):?>
     <div class="table-empty-tip">
       <p>

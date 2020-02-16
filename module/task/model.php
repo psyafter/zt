@@ -32,7 +32,7 @@ class taskModel extends model
         $this->loadModel('file');
         $task = fixer::input('post')
             ->setDefault('project', (int)$projectID)
-            ->setDefault('estimate, left, story', 0)
+            ->setDefault('estimate,left,story', 0)
             ->setDefault('status', 'wait')
             ->setIF($this->post->estimate != false, 'left', $this->post->estimate)
             ->setIF($this->post->story != false, 'storyVersion', $this->loadModel('story')->getVersion($this->post->story))
@@ -40,6 +40,9 @@ class taskModel extends model
             ->setDefault('deadline', '0000-00-00')
             ->setIF(strpos($this->config->task->create->requiredFields, 'estStarted') !== false, 'estStarted', $this->post->estStarted)
             ->setIF(strpos($this->config->task->create->requiredFields, 'deadline') !== false, 'deadline', $this->post->deadline)
+            ->setIF(strpos($this->config->task->create->requiredFields, 'estimate') !== false, 'estimate', $this->post->estimate)
+            ->setIF(strpos($this->config->task->create->requiredFields, 'left') !== false, 'left', $this->post->left)
+            ->setIF(strpos($this->config->task->create->requiredFields, 'story') !== false, 'story', $this->post->story)
             ->setIF(is_numeric($this->post->estimate), 'estimate', (float)$this->post->estimate)
             ->setIF(is_numeric($this->post->consumed), 'consumed', (float)$this->post->consumed)
             ->setIF(is_numeric($this->post->left),     'left',     (float)$this->post->left)
@@ -62,7 +65,7 @@ class taskModel extends model
             /* Check duplicate task. */
             if($task->type != 'affair')
             {
-                $result = $this->loadModel('common')->removeDuplicate('task', $task, "project=$projectID and story=$task->story");
+                $result = $this->loadModel('common')->removeDuplicate('task', $task, "project=$projectID and story=" . (int)$task->story);
                 if($result['stop'])
                 {
                     $taskIdList[$assignedTo] = array('status' => 'exists', 'id' => $result['duplicate']);
@@ -525,12 +528,12 @@ class taskModel extends model
                 $newParentTask = $this->dao->select('*')->from(TABLE_TASK)->where('id')->eq($parentID)->fetch();
                 $changes = common::createChanges($oldParentTask, $newParentTask);
                 $action  = '';
-                if($status == 'done') $action = 'Finished';
-                if($status == 'closed') $action = 'Closed';
-                if($status == 'pause') $action = 'Paused';
-                if($status == 'cancel') $action = 'Canceled';
-                if($status == 'doing' and $parentTask->status == 'wait') $action = 'Started';
-                if($status == 'doing' and $parentTask->status == 'pause') $action = 'Restarted';
+                if($status == 'done' and $parentTask->status != 'done')     $action = 'Finished';
+                if($status == 'closed' and $parentTask->status != 'closed') $action = 'Closed';
+                if($status == 'pause' and $parentTask->status != 'paused')  $action = 'Paused';
+                if($status == 'cancel' and $parentTask->status != 'cancel') $action = 'Canceled';
+                if($status == 'doing' and $parentTask->status == 'wait')    $action = 'Started';
+                if($status == 'doing' and $parentTask->status == 'pause')   $action = 'Restarted';
                 if($status == 'doing' and $parentTask->status != 'wait' and $parentTask->status != 'pause') $action = 'Activated';
                 if($action)
                 {
@@ -697,6 +700,10 @@ class taskModel extends model
             ->setIF($oldTask->parent == 0 && $this->post->parent == '', 'parent', 0)
             ->setIF(strpos($this->config->task->edit->requiredFields, 'estStarted') !== false, 'estStarted', $this->post->estStarted)
             ->setIF(strpos($this->config->task->edit->requiredFields, 'deadline') !== false, 'deadline', $this->post->deadline)
+            ->setIF(strpos($this->config->task->edit->requiredFields, 'estimate') !== false, 'estimate', $this->post->estimate)
+            ->setIF(strpos($this->config->task->edit->requiredFields, 'left') !== false,     'left',     $this->post->left)
+            ->setIF(strpos($this->config->task->edit->requiredFields, 'consumed') !== false, 'consumed', $this->post->consumed)
+            ->setIF(strpos($this->config->task->edit->requiredFields, 'story') !== false,    'story',    $this->post->story)
             ->setIF($this->post->story != false and $this->post->story != $oldTask->story, 'storyVersion', $this->loadModel('story')->getVersion($this->post->story))
 
             ->setIF($this->post->status == 'done', 'left', 0)
@@ -2829,7 +2836,7 @@ class taskModel extends model
         $btnClass     = $task->assignedTo == 'closed' ? ' disabled' : '';
         $btnClass     = "iframe btn btn-icon-left btn-sm {$btnClass}";
         $assignToLink = helper::createLink('task', 'assignTo', "projectID=$task->project&taskID=$task->id", '', true);
-        $assignToHtml = html::a($assignToLink, "<i class='icon icon-hand-right'></i> <span class='{$btnTextClass}'>{$assignedToText}</span>", '', "class='$btnClass'");
+        $assignToHtml = html::a($assignToLink, "<i class='icon icon-hand-right'></i> <span title='" . zget($users, $task->assignedTo) . "' class='{$btnTextClass}'>{$assignedToText}</span>", '', "class='$btnClass'");
 
         echo !common::hasPriv('task', 'assignTo', $task) ? "<span style='padding-left: 21px' class='{$btnTextClass}'>{$assignedToText}</span>" : $assignToHtml;
     }

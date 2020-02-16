@@ -46,6 +46,7 @@ class fileModel extends model
             ->where('objectType')->eq($objectType)
             ->andWhere('objectID')->eq((int)$objectID)
             ->andWhere('extra')->ne('editor')
+            ->andWhere('deleted')->eq('0')
             ->beginIF($extra)->andWhere('extra')->eq($extra)
             ->orderBy('id')
             ->fetchAll('id');
@@ -422,10 +423,16 @@ class fileModel extends model
     {
         if(empty($content)) return $content;
 
+        $isonlybody = isonlybody();
+        unset($_GET['onlybody']);
+
         $readLinkReg = str_replace(array('%fileID%', '/', '.', '?'), array('[0-9]+', '\/', '\.', '\?'), helper::createLink('file', 'read', 'fileID=(%fileID%)', '\w+'));
 
         $content = preg_replace('/ src="(' . $readLinkReg . ')" /', ' onload="setImageSize(this,' . $maxSize . ')" src="$1" ', $content);
         $content = preg_replace('/ src="{([0-9]+)(\.(\w+))?}" /', ' onload="setImageSize(this,' . $maxSize . ')" src="' . helper::createLink('file', 'read', "fileID=$1", "$3") . '" ', $content);
+
+        if($isonlybody) $_GET['onlybody'] = 'yes';
+
         return str_replace(' src="data/upload', ' onload="setImageSize(this,' . $maxSize . ')" src="data/upload', $content);
     }
 
@@ -774,9 +781,9 @@ class fileModel extends model
         $data->objectID   = $objectID;
         $data->objectType = $objectType;
         $data->extra      = 'editor';
-        if(isset($_SESSION['album'][$uid]) and $_SESSION['album'][$uid])
+        if(isset($_SESSION['album']['used'][$uid]) and $_SESSION['album']['used'][$uid])
         {
-            $this->dao->update(TABLE_FILE)->data($data)->where('id')->in($_SESSION['album'][$uid])->exec();
+            $this->dao->update(TABLE_FILE)->data($data)->where('id')->in($_SESSION['album']['used'][$uid])->exec();
             return !dao::isError();
         }
     }
@@ -792,6 +799,10 @@ class fileModel extends model
     public function replaceImgURL($data, $fields)
     {
         if(is_string($fields)) $fields = explode(',', str_replace(' ', '', $fields));
+
+        $isonlybody = isonlybody();
+        unset($_GET['onlybody']);
+
         foreach($fields as $field)
         {
             if(empty($field) or empty($data->$field)) continue;
@@ -820,6 +831,8 @@ class fileModel extends model
                 $data->$field = $fieldData;
             }
         }
+
+        if($isonlybody) $_GET['onlybody'] = 'yes';
         return $data;
     }
 

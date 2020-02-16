@@ -66,9 +66,9 @@
     <?php if($type == 'all') echo "<a class='btn btn-link querybox-toggle' id='bysearchTab'><i class='icon icon-search muted'></i>{$lang->testcase->bySearch}</a>";?>
   </div>
 </div>
-<div class="cell show" id="queryBox"></div>
+<div class="cell show" id="queryBox" data-module='testcase'></div>
 <div id='mainContent'>
-  <form class='main-table table-case' data-ride='table' method='post'>
+  <form class='main-table table-case' data-ride='table' method='post' id='linkCaseForm'>
     <table class='table tablesorter'>
       <div class="table-header">
         <i class="icon-unlink"></i> &nbsp;<strong><?php echo $lang->testtask->unlinkedCases;?></strong> (<?php echo $pager->recTotal;?>)
@@ -126,7 +126,7 @@
     <div class='table-footer'>
       <div class="checkbox-primary check-all"><label><?php echo $lang->selectAll?></label></div>
       <div class="table-actions btn-toolbar show-always"><?php echo html::submitButton('', '', 'btn btn-secondary');?></div>
-      <div class="text"></div>
+      <div class="table-statistic"></div>
       <?php $pager->show('right', 'pagerjs');?>
     </div>
     <?php endif;?>

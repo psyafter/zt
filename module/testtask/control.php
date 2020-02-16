@@ -313,7 +313,7 @@ class testtask extends control
         $this->view->task          = $task;
         $this->view->runs          = $runs;
         $this->view->users         = $this->loadModel('user')->getPairs('noclosed|qafirst');
-        $this->view->assignedTos   = $this->loadModel('user')->getPairs('noclosed|nodeleted|qafirst');
+        $this->view->assignedTos   = $this->loadModel('user')->getPairs('noclosed|noletter|nodeleted|qafirst');
         $this->view->moduleTree    = $this->loadModel('tree')->getTreeMenu($productID, $viewType = 'case', $startModuleID = 0, array('treeModel', 'createTestTaskLink'), $extra = $taskID);
         $this->view->browseType    = $browseType;
         $this->view->param         = $param;
@@ -348,7 +348,7 @@ class testtask extends control
         {
             $this->app->loadLang('testcase');
             $task    = $this->testtask->getById($taskID);
-            $bugInfo = $this->loadModel('testreport')->getBugInfo(array($taskID => $taskID), array($productID => $productID), $task->begin, $task->end, array($task->build => $task->build));
+            $bugInfo = $this->testtask->getBugInfo($taskID, $productID);
             foreach($this->post->charts as $chart)
             {
                 $chartFunc   = 'getDataOf' . $chart;

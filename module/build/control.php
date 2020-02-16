@@ -149,21 +149,28 @@ class build extends control
                 $project->name = '';
             }
 
+            $projects = $this->loadModel('product')->getProjectPairs($build->product, $build->branch, 'nodeleted');
+            if(!isset($projects[$build->project])) $projects[$build->project] = $project->name;
+
             $productGroups = $this->project->getProducts($build->project);
 
-            $products      = array();
-            foreach($productGroups as $product) $products[$product->id] = $product->name;
-            if(empty($productGroups) and $build->product)
+            $this->loadModel('product');
+            if(!isset($productGroups[$build->product]))
             {
-                $product = $this->loadModel('product')->getById($build->product);
-                $products[$product->id] = $product->name;
+                $product = $this->product->getById($build->product);
+                $product->branch = $build->branch;
+                $productGroups[$build->product] = $product;
             }
+
+            $products = array();
+            foreach($productGroups as $product) $products[$product->id] = $product->name;
 
             $this->view->title      = $project->name . $this->lang->colon . $this->lang->build->edit;
             $this->view->position[] = html::a($this->createLink('project', 'task', "projectID=$build->project"), $project->name);
             $this->view->position[] = $this->lang->build->edit;
             $this->view->product    = isset($productGroups[$build->product]) ? $productGroups[$build->product] : '';
             $this->view->branches   = (isset($productGroups[$build->product]) and $productGroups[$build->product]->type == 'normal') ? array() : $this->loadModel('branch')->getPairs($build->product);
+            $this->view->projects   = $projects;
             $this->view->orderBy    = $orderBy;
         }
 
@@ -173,7 +180,7 @@ class build extends control
         $this->view->build         = $build;
         $this->display();
     }
-                                                          
+
     /**
      * View a build.
      * 

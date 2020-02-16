@@ -99,7 +99,7 @@ $lang->selectAll     = '全选';
 $lang->selectReverse = '反选';
 $lang->loading       = '稍候...';
 $lang->notFound      = '抱歉，您访问的对象并不存在！';
-$lang->notPage      =  '抱歉，您访问的功能正在开发中！';
+$lang->notPage       =  '抱歉，您访问的功能正在开发中！';
 $lang->showAll       = '[[全部显示]]';
 
 $lang->future      = '未来';
@@ -122,6 +122,7 @@ $lang->menu->my      = '<span> 我的地盘</span>|my|index';
 $lang->menu->product = $lang->productCommon . '|product|index|locate=no';
 $lang->menu->project = $lang->projectCommon . '|project|index|locate=no';
 $lang->menu->qa      = '测试|qa|index';
+$lang->menu->repo    = '代码|repo|log';
 $lang->menu->doc     = '文档|doc|index';
 $lang->menu->report  = '统计|report|index';
 $lang->menu->company = '组织|company|index';
@@ -328,7 +329,13 @@ $lang->caselib->menu->testcase  = array('link' => '用例|testcase|browse|');
 $lang->caselib->menu->testtask  = array('link' => '测试单|testtask|browse|');
 $lang->caselib->menu->testsuite = array('link' => '套件|testsuite|browse|');
 $lang->caselib->menu->report    = array('link' => '报告|testreport|browse|');
-$lang->caselib->menu->caselib   = array('link' => '用例库|caselib|browse', 'alias' => 'create,createcase,view,edit,batchcreatecase,showimport', 'subModule' => 'tree,testcase');
+$lang->caselib->menu->caselib   = array('link' => '用例库|caselib|browse|libID=%s', 'alias' => 'create,createcase,view,edit,batchcreatecase,showimport', 'subModule' => 'tree,testcase');
+
+$lang->repo = new stdclass();
+$lang->repo->menu = new stdclass();
+$lang->repo->menu->browse   = array('link' =>'浏览|repo|log|repoID=%s&entry=', 'alias' => 'diff,view,revision,showsynccomment');
+$lang->repo->menu->settings = '设置|repo|settings|repoID=%s';
+$lang->repo->menu->delete   = array('link' => '删除|repo|delete|repoID=%s', 'target' => 'hiddenwin');
 
 /* 文档视图菜单设置。*/
 $lang->doc = new stdclass();
@@ -342,6 +349,7 @@ $lang->git = new stdclass();
 $lang->report = new stdclass();
 $lang->report->menu = new stdclass();
 
+$lang->report->menu->annual  = array('link' => '年度总结|report|annualData', 'target' => '_blank');
 $lang->report->menu->product = array('link' => $lang->productCommon . '|report|productsummary');
 $lang->report->menu->prj     = array('link' => $lang->projectCommon . '|report|projectdeviation');
 $lang->report->menu->test    = array('link' => '测试|report|bugcreate', 'alias' => 'bugassign');
@@ -553,6 +561,7 @@ if(!defined('DT_DATE1'))      define('DT_DATE1',     'Y-m-d');
 if(!defined('DT_DATE2'))      define('DT_DATE2',     'Ymd');
 if(!defined('DT_DATE3'))      define('DT_DATE3',     'Y年m月d日');
 if(!defined('DT_DATE4'))      define('DT_DATE4',     'n月j日');
+if(!defined('DT_DATE5'))      define('DT_DATE5',     'j/n');
 if(!defined('DT_TIME1'))      define('DT_TIME1',     'H:i:s');
 if(!defined('DT_TIME2'))      define('DT_TIME2',     'H:i');
 

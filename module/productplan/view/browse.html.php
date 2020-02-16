@@ -103,7 +103,7 @@
           ?>
         </td>
         <?php if($this->session->currentProductType != 'normal'):?>
-        <td><?php echo $branches[$plan->branch];?></td>
+        <td class='c-branch' title='<?php echo $branches[$plan->branch];?>'><?php echo $branches[$plan->branch];?></td>
         <?php endif;?>
         <td><?php echo $plan->begin == '2030-01-01' ? $lang->productplan->future : $plan->begin;?></td>
         <td><?php echo $plan->end == '2030-01-01' ? $lang->productplan->future : $plan->end;?></td>
@@ -111,7 +111,10 @@
         <td class='text-center'><?php echo $plan->bugs;?></td>
         <td class='text-center'><?php echo $plan->hour;?></td>
         <td class='text-center'><?php if(!empty($plan->projectID)) echo html::a(helper::createLink('project', 'task', 'projectID=' . $plan->projectID), '<i class="icon-search"></i>');?></td>
-        <td title='<?php echo strip_tags(str_replace("</p>", "\n", str_replace(array("\n", "\r"), '', $plan->desc)));?>' class='text-left content'><?php echo nl2br(strip_tags(str_replace("</p>", "\n", str_replace(array("\n", "\r"), '', $plan->desc))));?></td>
+        <td class='text-left content'>
+          <?php $desc = trim(strip_tags(str_replace(array('</p>', '<br />', '<br>', '<br/>'), "\n", str_replace(array("\n", "\r"), '', $plan->desc)), '<img>'));?>
+          <div title='<?php echo $desc;?>'><?php echo nl2br($desc);?></div>
+        </td>
         <td class='c-actions'>
           <?php
           if(common::hasPriv('project', 'create')) echo html::a(helper::createLink('project', 'create', "projectID=&copyProjectID=&planID=$plan->id"), '<i class="icon-plus"></i>', '', "class='btn' title='{$lang->project->create}'");

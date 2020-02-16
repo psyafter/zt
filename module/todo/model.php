@@ -59,6 +59,7 @@ class todoModel extends model
                 $todo->config['month'] = join(',', $todo->config['month']);
             }
             $todo->config = json_encode($todo->config);
+            $todo->type   = 'cycle';
         }
 
         $todo = $this->loadModel('file')->processImgURL($todo, $this->config->todo->editor->create['id'], $this->post->uid);
@@ -466,8 +467,11 @@ class todoModel extends model
         $today = helper::today();
         $now   = helper::now();
         $lastCycleList = $this->dao->select('*')->from(TABLE_TODO)->where('type')->eq('cycle')->andWhere('idvalue')->in(array_keys($todoList))->orderBy('date_asc')->fetchAll('idvalue');
+        $activedUsers  = $this->dao->select('account')->from(TABLE_USER)->where('deleted')->eq(0)->fetchPairs('account', 'account');
         foreach($todoList as $todoID => $todo)
         {
+            if(!isset($activedUsers[$todo->account])) continue;
+
             $todo->config = json_decode($todo->config);
             $begin      = $todo->config->begin;
             $end        = $todo->config->end;

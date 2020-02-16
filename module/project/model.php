@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     project
  * @version     $Id: model.php 5118 2013-07-12 07:41:41Z chencongzhi520@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
 ?>
 <?php
@@ -30,6 +30,24 @@ class projectModel extends model
         /* If is admin, return true. */
         if($this->app->user->admin) return true;
         return (strpos(",{$this->app->user->view->projects},", ",{$projectID},") !== false);
+    }
+
+    /**
+     * Show accessDenied response.
+     *
+     * @access private
+     * @return void
+     */
+    public function accessDenied()
+    {
+        echo(js::alert($this->lang->project->accessDenied));
+
+        if(!$this->server->http_referer) die(js::locate(helper::createLink('project', 'index')));
+
+        $loginLink = $this->config->requestType == 'GET' ? "?{$this->config->moduleVar}=user&{$this->config->methodVar}=login" : "user{$this->config->requestFix}login";
+        if(strpos($this->server->http_referer, $loginLink) !== false) die(js::locate(helper::createLink('project', 'index')));
+
+        die(js::locate('back'));
     }
 
     /**
@@ -57,13 +75,7 @@ class projectModel extends model
             unset($this->lang->project->subMenu->qa->testtask);
         }
 
-        if($projects and !isset($projects[$projectID]) and !$this->checkPriv($projectID))
-        {
-            echo(js::alert($this->lang->project->accessDenied));
-            $loginLink = $this->config->requestType == 'GET' ? "?{$this->config->moduleVar}=user&{$this->config->methodVar}=login" : "user{$this->config->requestFix}login";
-            if(strpos($this->server->http_referer, $loginLink) !== false) die(js::locate(inlink('index')));
-            die(js::locate('back'));
-        }
+        if($projects and !isset($projects[$projectID]) and !$this->checkPriv($projectID)) $this->accessDenied();
 
         $moduleName = $this->app->getModuleName();
         $methodName = $this->app->getMethodName();
@@ -246,13 +258,7 @@ class projectModel extends model
         if(!isset($projects[$this->session->project]))
         {
             $this->session->set('project', key($projects));
-            if($projectID > 0)
-            {
-                echo(js::alert($this->lang->project->accessDenied));
-                $loginLink = $this->config->requestType == 'GET' ? "?{$this->config->moduleVar}=user&{$this->config->methodVar}=login" : "user{$this->config->requestFix}login";
-                if(strpos($this->server->http_referer, $loginLink) !== false) die(js::locate(inlink('index')));
-                die(js::locate('back'));
-            }
+            if($projectID) $this->accessDenied();
         }
         return $this->session->project;
     }
@@ -844,6 +850,7 @@ class projectModel extends model
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll('id');
+        if(empty($projects)) return array();
 
         $projectKeys = array_keys($projects);
         $stats       = array();
@@ -1044,13 +1051,11 @@ class projectModel extends model
             SUM(`left`) AS totalLeft')
             ->from(TABLE_TASK)
             ->where('project')->eq((int)$projectID)
-            ->andWhere('status')->ne('cancel')
             ->andWhere('deleted')->eq(0)
             ->andWhere('parent')->lt(1)
             ->fetch();
         $closedTotalLeft= (int)$this->dao->select('SUM(`left`) AS totalLeft')->from(TABLE_TASK)
             ->where('project')->eq((int)$projectID)
-            ->andWhere('status')->eq('closed')
             ->andWhere('deleted')->eq(0)
             ->andWhere('parent')->lt(1)
             ->fetch('totalLeft');
@@ -1112,6 +1117,42 @@ class projectModel extends model
             ->andWhere('t2.deleted')->eq(0);
         if(!$withBranch) return $query->fetchPairs('id', 'name');
         return $query->fetchAll('id');
+    }
+
+    /**
+     * Get ordered projects.
+     * 
+     * @param  string $status 
+     * @param  int    $num 
+     * @access public
+     * @return array
+     */
+    public function getOrderedProjects($status, $num = 0)
+    {
+        $projectList = $this->getList($status);
+        if(empty($projectList)) return $projectList;
+
+        $projects = $mineProjects = $otherProjects = $closedProjects = array();
+        foreach($projectList as $project)
+        {
+            if(!$this->app->user->admin and !$this->checkPriv($project->id)) continue;
+            if($project->status != 'done' and $project->status != 'closed' and $project->PM == $this->app->user->account)
+            {
+                $mineProjects[$project->id] = $project;
+            }
+            elseif($project->status != 'done' and $project->status != 'closed' and !($project->PM == $this->app->user->account))
+            {
+                $otherProjects[$project->id] = $project;
+            }
+            elseif($project->status == 'done' or $project->status == 'closed')
+            {
+                $closedProjects[$project->id] = $project;
+            }
+        }
+        $projects = $mineProjects + $otherProjects + $closedProjects;
+
+        if(empty($num)) return $projects;
+        return array_slice($projects, 0, $num, true);
     }
 
     /**
@@ -1388,7 +1429,7 @@ class projectModel extends model
     {
         $storyCount = $this->dao->select('count(t2.story) as storyCount')->from(TABLE_STORY)->alias('t1')
             ->leftJoin(TABLE_PROJECTSTORY)->alias('t2')->on('t1.id = t2.story')
-            ->where('project')->eq($projectID)
+            ->where('t2.project')->eq($projectID)
             ->andWhere('t1.deleted')->eq(0)
             ->fetch('storyCount');
 
@@ -1779,13 +1820,20 @@ class projectModel extends model
 
             $this->dao->insert(TABLE_TEAM)->data($member)->exec();
         }
-        $this->loadModel('user')->updateUserView($projectID, 'project', $accounts);
+
+        /* Only changed account update userview. */
+        $oldAccounts     = array_keys($oldJoin);
+        $changedAccounts = array_diff($accounts, $oldAccounts);
+        $changedAccounts = array_merge($changedAccounts, array_diff($oldAccounts, $accounts));
+        $changedAccounts = array_unique($changedAccounts);
+
+        $this->loadModel('user')->updateUserView($projectID, 'project', $changedAccounts);
 
         $products = $this->getProducts($projectID, false);
         foreach($products as $productID => $productName)
         {
             if(empty($productID)) continue;
-            $this->user->updateUserView($productID, 'product', $accounts);
+            $this->user->updateUserView($productID, 'product', $changedAccounts);
         }
     }
 
@@ -2555,35 +2603,48 @@ class projectModel extends model
     public function getKanbanStatusMap($kanbanSetting)
     {
         $statusMap = array();
-        $statusMap['task']['wait']['doing']  = 'start';
-        $statusMap['task']['wait']['done']   = 'finish';
-        $statusMap['task']['wait']['cancel'] = 'cancel';
+        if(common::hasPriv('task', 'start')) $statusMap['task']['wait']['doing']  = 'start';
+        if(common::hasPriv('task', 'pause')) $statusMap['task']['doing']['pause'] = 'pause';
+        if(common::hasPriv('task', 'finish'))
+        {
+            $statusMap['task']['wait']['done']  = 'finish';
+            $statusMap['task']['doing']['done'] = 'finish';
+            $statusMap['task']['pause']['done'] = 'finish';
+        }
+        if(common::hasPriv('task', 'cancel'))
+        {
+            $statusMap['task']['wait']['cancel']  = 'cancel';
+            $statusMap['task']['pause']['cancel'] = 'cancel';
+        }
+        if(common::hasPriv('task', 'activate'))
+        {
+            $statusMap['task']['pause']['doing']  = 'activate';
+            $statusMap['task']['done']['doing']   = 'activate';
+            $statusMap['task']['cancel']['doing'] = 'activate';
+            $statusMap['task']['closed']['doing'] = 'activate';
+        }
+        if(common::hasPriv('task', 'close'))
+        {
+            $statusMap['task']['done']['closed']   = 'close';
+            $statusMap['task']['cancel']['closed'] = 'close';
+        }
 
-        $statusMap['task']['doing']['done']  = 'finish';
-        $statusMap['task']['doing']['pause'] = 'pause';
-
-        $statusMap['task']['pause']['doing']  = 'activate';
-        $statusMap['task']['pause']['done']   = 'finish';
-        $statusMap['task']['pause']['cancel'] = 'cancel';
-
-        $statusMap['task']['done']['doing']  = 'activate';
-        $statusMap['task']['done']['closed'] = 'close';
-
-        $statusMap['task']['cancel']['doing']  = 'activate';
-        $statusMap['task']['cancel']['closed'] = 'close';
-
-        $statusMap['task']['closed']['doing'] = 'activate';
-
-        $statusMap['bug']['wait']['done']   = 'resolve';
-        $statusMap['bug']['wait']['cancel'] = 'resolve';
-
-        $statusMap['bug']['done']['wait']   = 'activate';
-        $statusMap['bug']['done']['closed'] = 'close';
-
-        $statusMap['bug']['cancel']['wait']   = 'activate';
-        $statusMap['bug']['cancel']['closed'] = 'close';
-
-        $statusMap['bug']['closed']['wait'] = 'activate';
+        if(common::hasPriv('bug', 'resolve'))
+        {
+            $statusMap['bug']['wait']['done']   = 'resolve';
+            $statusMap['bug']['wait']['cancel'] = 'resolve';
+        }
+        if(common::hasPriv('bug', 'close'))
+        {
+            $statusMap['bug']['done']['closed'] = 'close';
+            $statusMap['bug']['cancel']['closed'] = 'close';
+        }
+        if(common::hasPriv('bug', 'activate'))
+        {
+            $statusMap['bug']['done']['wait']   = 'activate';
+            $statusMap['bug']['cancel']['wait']   = 'activate';
+            $statusMap['bug']['closed']['wait'] = 'activate';
+        }
 
         return $statusMap;
     }
@@ -2637,7 +2698,7 @@ class projectModel extends model
         foreach($dateList as $i => $date) $baselineJSON .= round(($days - $i) * $rate, 1) . ',';
         $baselineJSON = rtrim($baselineJSON, ',') . ']';
 
-        $chartData['labels']   = $this->report->convertFormat($dateList, 'j/n');
+        $chartData['labels']   = $this->report->convertFormat($dateList, DT_DATE5);
         $chartData['burnLine'] = $this->report->createSingleJSON($sets, $dateList);
         $chartData['baseLine'] = $baselineJSON;
 
@@ -2711,6 +2772,9 @@ class projectModel extends model
         if(!isset($node->id))$node->id = 0;
         if($node->type == 'story')
         {
+            static $users;
+            if(empty($users)) $users = $this->loadModel('user')->getPairs('noletter');
+
             $node->type = 'module';
             $stories = isset($storyGroups[$node->root][$node->id]) ? $storyGroups[$node->root][$node->id] : array();
             foreach($stories as $story)
@@ -2722,8 +2786,8 @@ class projectModel extends model
                 $storyItem->color         = $story->color;
                 $storyItem->pri           = $story->pri;
                 $storyItem->storyId       = $story->id;
-                $storyItem->openedBy      = $story->openedBy;
-                $storyItem->assignedTo    = $story->assignedTo;
+                $storyItem->openedBy      = $users[$story->openedBy];
+                $storyItem->assignedTo    = zget($users, $story->assignedTo);
                 $storyItem->url           = helper::createLink('story', 'view', "storyID=$story->id&version=$story->version&from=project&param=$projectID");
                 $storyItem->taskCreateUrl = helper::createLink('task', 'batchCreate', "projectID={$projectID}&story={$story->id}");
 
@@ -2932,5 +2996,22 @@ class projectModel extends model
             $html .= '</li>';
         }
         return $html;
+    }
+
+    /**
+     * Update user view of project and it's product.
+     * 
+     * @param  int    $projectID 
+     * @access public
+     * @return void
+     */
+    public function updateUserView($projectID)
+    {
+        $this->loadModel('user')->updateUserView($projectID, 'project');
+        $products = $this->getProducts($projectID, $withBranch = false);
+        if(!empty($products))
+        {
+            foreach($products as $productID => $productName) $this->loadModel('user')->updateUserView($productID, 'product');
+        }
     }
 }

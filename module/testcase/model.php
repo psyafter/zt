@@ -639,10 +639,13 @@ class testcaseModel extends model
         $this->dao->update(TABLE_CASE)->data($case)->autoCheck()->batchCheck($this->config->testcase->edit->requiredFields, 'notempty')->where('id')->eq((int)$caseID)->exec();
         if(!$this->dao->isError())
         {
+            $isLibCase    = ($oldCase->lib and empty($oldCase->product));
+            $titleChanged = ($case->title != $oldCase->title);
+            if($isLibCase and $titleChanged) $this->dao->update(TABLE_CASE)->set('`title`')->eq($case->title)->where('`fromCaseID`')->eq($caseID)->exec();
+
             if($stepChanged)
             {
                 $parentStepID = 0;
-                $isLibCase = ($oldCase->lib and empty($oldCase->product));
                 if($isLibCase) 
                 {
                     $fromcaseVersion  = $this->dao->select('fromCaseVersion')->from(TABLE_CASE)->where('fromCaseID')->eq($caseID)->fetch('fromCaseVersion');
@@ -1069,6 +1072,7 @@ class testcaseModel extends model
                 foreach($requiredFields as $requiredField)
                 {
                     $requiredField = trim($requiredField);
+                    if(!isset($caseData->$requiredField)) continue;
                     if(empty($caseData->$requiredField)) dao::$errors[] = sprintf($this->lang->testcase->noRequire, $line, $this->lang->testcase->$requiredField);
                 }
             }
@@ -1603,10 +1607,11 @@ class testcaseModel extends model
             /* Remove the empty setps in post. */
             if($this->post->steps)
             {
-                foreach($this->post->steps as $key => $desc)
+                $data = fixer::input('post')->get();
+                foreach($data->steps as $key => $desc)
                 {
                     $desc = trim($desc);
-                    if(!empty($desc)) $steps[] = array('desc' => $desc, 'type' => $this->post->stepType[$key], 'expect' => trim($this->post->expects[$key]));
+                    if(!empty($desc)) $steps[] = array('desc' => $desc, 'type' => $data->stepType[$key], 'expect' => trim($data->expects[$key]));
                 }
 
                 /* If step count changed, case changed. */

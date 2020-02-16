@@ -182,8 +182,11 @@ class my extends control
         if($this->app->getViewType() == 'mhtml') $recPerPage = 10;
         $pager = pager::init($recTotal, $recPerPage, $pageID);
 
-        /* Append id for secend sort. */
+        /* append id for secend sort. */
         $sort = $this->loadModel('common')->appendOrder($orderBy);
+
+        /* Get the story language configuration. */
+        $this->app->loadLang('story');
 
         /* Assign. */
         $this->view->title      = $this->lang->my->common . $this->lang->colon . $this->lang->my->task;

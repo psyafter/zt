@@ -69,14 +69,14 @@ $config->storyCommonList['zh-cn'][1] = '故事';
 $config->storyCommonList['zh-tw'][0] = '需求';
 $config->storyCommonList['zh-tw'][1] = '故事';
 
-$config->storyCommonList['en'][0] = 'story';
-$config->storyCommonList['en'][1] = 'story';
+$config->storyCommonList['en'][0] = 'Story';
+$config->storyCommonList['en'][1] = 'Story';
 
-$config->storyCommonList['de'][0] = 'story';
-$config->storyCommonList['de'][1] = 'story';
+$config->storyCommonList['de'][0] = 'Story';
+$config->storyCommonList['de'][1] = 'Story';
 
-$config->storyCommonList['fr'][0] = 'story';
-$config->storyCommonList['fr'][1] = 'story';
+$config->storyCommonList['fr'][0] = 'Story';
+$config->storyCommonList['fr'][1] = 'Story';
 
 /* Story common list. */
 $config->hourPointCommonList['zh-cn'][0] = '工时';
@@ -163,12 +163,17 @@ define('TABLE_TESTSUITE',     '`' . $config->db->prefix . 'testsuite`');
 define('TABLE_SUITECASE',     '`' . $config->db->prefix . 'suitecase`');
 define('TABLE_TESTREPORT',    '`' . $config->db->prefix . 'testreport`');
 
-define('TABLE_ENTRY',         '`' . $config->db->prefix . 'entry`');
-define('TABLE_WEBHOOK',       '`' . $config->db->prefix . 'webhook`');
-define('TABLE_LOG',           '`' . $config->db->prefix . 'log`');
-define('TABLE_SCORE',         '`' . $config->db->prefix . 'score`');
-define('TABLE_NOTIFY',        '`' . $config->db->prefix . 'notify`');
-define('TABLE_OAUTH',         '`' . $config->db->prefix . 'oauth`');
+define('TABLE_ENTRY',   '`' . $config->db->prefix . 'entry`');
+define('TABLE_WEBHOOK', '`' . $config->db->prefix . 'webhook`');
+define('TABLE_LOG',     '`' . $config->db->prefix . 'log`');
+define('TABLE_SCORE',   '`' . $config->db->prefix . 'score`');
+define('TABLE_NOTIFY',  '`' . $config->db->prefix . 'notify`');
+define('TABLE_OAUTH',   '`' . $config->db->prefix . 'oauth`');
+
+define('TABLE_REPO',        '`' . $config->db->prefix . 'repo`');
+define('TABLE_REPOHISTORY', '`' . $config->db->prefix . 'repohistory`');
+define('TABLE_REPOFILES',   '`' . $config->db->prefix . 'repofiles`');
+define('TABLE_REPOBRANCH',  '`' . $config->db->prefix . 'repobranch`');
 if(!defined('TABLE_LANG')) define('TABLE_LANG', '`' . $config->db->prefix . 'lang`');
 
 $config->objectTables['product']     = TABLE_PRODUCT;

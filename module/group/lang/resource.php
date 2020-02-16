@@ -681,6 +681,18 @@ $lang->caselib->methodOrder[40] = 'exportTemplet';
 $lang->caselib->methodOrder[45] = 'import';
 $lang->caselib->methodOrder[50] = 'showImport';
 
+$lang->resource->repo                  = new stdclass();
+$lang->resource->repo->browse          = 'browse';
+$lang->resource->repo->view            = 'view';
+$lang->resource->repo->log             = 'log';
+$lang->resource->repo->revision        = 'revisionAction';
+$lang->resource->repo->settings        = 'settings';
+$lang->resource->repo->create          = 'create';
+$lang->resource->repo->delete          = 'delete';
+$lang->resource->repo->showSyncComment = 'showSyncComment';
+$lang->resource->repo->diff            = 'diffAction';
+$lang->resource->repo->download        = 'download';
+
 /* Doc. */
 $lang->resource->doc = new stdclass();
 $lang->resource->doc->index      = 'index';
@@ -692,6 +704,7 @@ $lang->resource->doc->create     = 'create';
 $lang->resource->doc->view       = 'view';
 $lang->resource->doc->edit       = 'edit';
 $lang->resource->doc->delete     = 'delete';
+$lang->resource->doc->deleteFile = 'deleteFile';
 $lang->resource->doc->allLibs    = 'allLibs';
 $lang->resource->doc->objectLibs = 'objectLibs';
 $lang->resource->doc->showFiles  = 'showFiles';
@@ -708,11 +721,12 @@ $lang->doc->methodOrder[25] = 'create';
 $lang->doc->methodOrder[30] = 'view';
 $lang->doc->methodOrder[35] = 'edit';
 $lang->doc->methodOrder[40] = 'delete';
-$lang->doc->methodOrder[45] = 'allLibs';
-$lang->doc->methodOrder[50] = 'showFiles';
-$lang->doc->methodOrder[55] = 'objectLibs';
-$lang->doc->methodOrder[60] = 'sort';
-$lang->doc->methodOrder[65] = 'collect';
+$lang->doc->methodOrder[45] = 'deleteFile';
+$lang->doc->methodOrder[50] = 'allLibs';
+$lang->doc->methodOrder[55] = 'showFiles';
+$lang->doc->methodOrder[60] = 'objectLibs';
+$lang->doc->methodOrder[65] = 'sort';
+$lang->doc->methodOrder[70] = 'collect';
 //$lang->doc->methodOrder[55] = 'diff';
 
 /* mail. */

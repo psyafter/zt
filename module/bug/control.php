@@ -261,6 +261,7 @@ class bug extends control
             $response['message'] = $this->lang->saveSuccess;
 
             /* Set from param if there is a object to transfer bug. */
+            setcookie('lastBugModule', (int)$this->post->module, $this->config->cookieLife, $this->config->webRoot, '', false, false);
             $bugResult = $this->bug->create($from = isset($fromObjectIDKey) ? $fromObjectIDKey : '');
             if(!$bugResult or dao::isError())
             {
@@ -299,8 +300,15 @@ class bug extends control
 
             if(defined('RUN_MODE') && RUN_MODE == 'api') $this->send(array('status' => 'success', 'data' => $bugID));
 
-            setcookie('bugModule', (int)$this->post->module, 0, $this->config->webRoot, '', false, false);
-            $location = $this->createLink('bug', 'browse', "productID={$this->post->product}&branch=$branch&browseType=unclosed&param=0&orderBy=id_desc");
+            if(isset($output['projectID']))
+            {
+                $location = $this->createLink('project', 'bug', "projectID={$output['projectID']}");
+            }
+            else
+            {
+                setcookie('bugModule', 0, 0, $this->config->webRoot, '', false, false);
+                $location = $this->createLink('bug', 'browse', "productID={$this->post->product}&branch=$branch&browseType=unclosed&param=0&orderBy=id_desc");
+            }
             if($this->app->getViewType() == 'xhtml') $location = $this->createLink('bug', 'view', "bugID=$bugID");
             $response['locate'] = $location;
             $this->send($response);
@@ -392,11 +400,16 @@ class bug extends control
         $projectMembers = array();
         if(!empty($latestProject)) $projectMembers = $this->loadModel('project')->getTeamMemberPairs($latestProject->id, 'nodeleted');
         if(empty($projectMembers)) $projectMembers = $this->view->users;
+        if($assignedTo and !isset($projectMembers[$assignedTo]))
+        {
+            $user = $this->loadModel('user')->getById($assignedTo);
+            if($user) $projectMembers[$assignedTo] = $user->realname;
+        }
 
         $moduleOptionMenu = $this->tree->getOptionMenu($productID, $viewType = 'bug', $startModuleID = 0, $branch);
         if(empty($moduleOptionMenu)) die(js::locate(helper::createLink('tree', 'browse', "productID=$productID&view=story")));
 
-        $productList = $this->loadModel('block')->getProducts('noclosed', ''); 
+        $productList = $this->product->getOrderedProducts('all'); 
         foreach($productList as $product) $products[$product->id] = $product->name;
 
         /* Set custom. */
@@ -415,7 +428,7 @@ class bug extends control
         $this->view->stories          = $stories;
         $this->view->projects         = $this->product->getProjectPairs($productID, $branch ? "0,$branch" : 0, $params = 'nodeleted');
         $this->view->builds           = $builds;
-        $this->view->moduleID         = $moduleID;
+        $this->view->moduleID         = $moduleID ? $moduleID : (int)$this->cookie->lastBugModule;
         $this->view->projectID        = $projectID;
         $this->view->taskID           = $taskID;
         $this->view->storyID          = $storyID;
@@ -457,7 +470,9 @@ class bug extends control
         if(!empty($_POST))
         {
             $actions = $this->bug->batchCreate($productID, $branch);
-            die(js::locate($this->session->bugList, 'parent'));
+
+            setcookie('bugModule', 0, 0, $this->config->webRoot, '', false, false);
+            die(js::locate($this->createLink('bug', 'browse', "productID={$productID}&branch=$branch&browseType=unclosed&param=0&orderBy=id_desc"), 'parent'));
         }
 
         /* Get product, then set menu. */
@@ -534,14 +549,7 @@ class bug extends control
         /* Judge bug exits or not. */
         $bug = $this->bug->getById($bugID, true);
         if(!$bug) die(js::error($this->lang->notFound) . js::locate('back'));
-
-        if($bug->project and !$this->loadModel('project')->checkPriv($bug->project))
-        {
-            echo(js::alert($this->lang->project->accessDenied));
-            $loginLink = $this->config->requestType == 'GET' ? "?{$this->config->moduleVar}=user&{$this->config->methodVar}=login" : "user{$this->config->requestFix}login";
-            if(strpos($this->server->http_referer, $loginLink) !== false) die(js::locate(inlink('index')));
-            die(js::locate('back'));
-        }
+        $this->bug->checkBugProjectPriv($bug);
 
         /* Update action. */
         if($bug->assignedTo == $this->app->user->account) $this->loadModel('action')->read('bug', $bugID);
@@ -639,6 +647,7 @@ class bug extends control
         $productID       = $bug->product;
         $projectID       = $bug->project;
         $currentModuleID = $bug->module;
+        $this->bug->checkBugProjectPriv($bug);
 
         /* Set the menu. */
         $this->bug->setMenu($this->products, $productID, $bug->branch);
@@ -822,6 +831,7 @@ class bug extends control
     public function assignTo($bugID)
     {
         $bug = $this->bug->getById($bugID);
+        $this->bug->checkBugProjectPriv($bug);
 
         /* Set menu. */
         $this->bug->setMenu($this->products, $bug->product, $bug->branch);
@@ -955,8 +965,9 @@ class bug extends control
             die(js::locate($this->createLink('bug', 'view', "bugID=$bugID"), 'parent'));
         }
 
-        $bug             = $this->bug->getById($bugID);
-        $productID       = $bug->product;
+        $bug       = $this->bug->getById($bugID);
+        $productID = $bug->product;
+        $this->bug->checkBugProjectPriv($bug);
         $this->bug->setMenu($this->products, $productID, $bug->branch);
 
         $this->view->title      = $this->products[$productID] . $this->lang->colon . $this->lang->bug->confirmBug;
@@ -1039,6 +1050,7 @@ class bug extends control
         if(!isset($users[$assignedTo])) $assignedTo = $this->bug->getModuleOwner($bug->module, $productID);
         unset($this->lang->bug->resolutionList['tostory']);
 
+        $this->bug->checkBugProjectPriv($bug);
         $this->bug->setMenu($this->products, $productID, $bug->branch);
 
         $this->view->title      = $this->products[$productID] . $this->lang->colon . $this->lang->bug->resolve;
@@ -1105,8 +1117,9 @@ class bug extends control
             die(js::locate($this->createLink('bug', 'view', "bugID=$bugID"), 'parent'));
         }
 
-        $bug        = $this->bug->getById($bugID);
-        $productID  = $bug->product;
+        $bug       = $this->bug->getById($bugID);
+        $productID = $bug->product;
+        $this->bug->checkBugProjectPriv($bug);
         $this->bug->setMenu($this->products, $productID, $bug->branch);
 
         $this->view->title      = $this->products[$productID] . $this->lang->colon . $this->lang->bug->activate;
@@ -1151,8 +1164,9 @@ class bug extends control
             }
         }
 
-        $bug        = $this->bug->getById($bugID);
-        $productID  = $bug->product;
+        $bug       = $this->bug->getById($bugID);
+        $productID = $bug->product;
+        $this->bug->checkBugProjectPriv($bug);
         $this->bug->setMenu($this->products, $productID, $bug->branch);
 
         $this->view->title      = $this->products[$productID] . $this->lang->colon . $this->lang->bug->close;
@@ -1179,6 +1193,7 @@ class bug extends control
         /* Get bug and queryID. */
         $bug     = $this->bug->getById($bugID);
         $queryID = ($browseType == 'bySearch') ? (int)$param : 0;
+        $this->bug->checkBugProjectPriv($bug);
 
         /* Set the menu. */
         $this->bug->setMenu($this->products, $bug->product, $bug->branch);
@@ -1281,6 +1296,7 @@ class bug extends control
     public function confirmStoryChange($bugID)
     {
         $bug = $this->bug->getById($bugID);
+        $this->bug->checkBugProjectPriv($bug);
         $this->dao->update(TABLE_BUG)->set('storyVersion')->eq($bug->latestStoryVersion)->where('id')->eq($bugID)->exec();
         $this->loadModel('action')->create('bug', $bugID, 'confirmed', '', $bug->latestStoryVersion);
         die(js::reload('parent'));
@@ -1304,7 +1320,17 @@ class bug extends control
         else
         {
             $this->bug->delete(TABLE_BUG, $bugID);
-            if($bug->toTask != 0) echo js::alert($this->lang->bug->remindTask . $bug->toTask);
+            if($bug->toTask != 0)
+            {
+                $task = $this->task->getById($bug->toTask);
+                if(!$task->deleted)
+                {
+                    $confirmURL = $this->createLink('task', 'view', "taskID=$bug->toTask");
+                    unset($_GET['onlybody']);
+                    $cancelURL  = $this->createLink('bug', 'view', "bugID=$bugID");
+                    die(js::confirm(sprintf($this->lang->bug->remindTask, $bug->toTask), $confirmURL, $cancelURL, 'parent', 'parent.parent'));
+                }
+            }
 
             $this->executeHooks($bugID);
 

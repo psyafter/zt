@@ -1104,9 +1104,12 @@ class project extends control
             $this->executeHooks($projectID);
 
             $planID = '';
-            foreach($_POST['plans'] as $planID)
+            if(isset($_POST['plans']))
             {
-                if(!empty($planID)) break;
+                foreach($_POST['plans'] as $planID)
+                {
+                    if(!empty($planID)) break;
+                }
             }
             if(!empty($planID))
             {
@@ -1118,6 +1121,7 @@ class project extends control
             }
         }
 
+        $this->view->isSprint = false;
         if(strpos($this->config->custom->productProject, '_2')) 
         {
             $this->view->isSprint = true;
@@ -1219,6 +1223,7 @@ class project extends control
             $productPlans[$product->id] = $this->productplan->getPairs($product->id);
         }
 
+        $this->view->isSprint = false;
         if(strpos($this->config->custom->productProject, '_2')) 
         {
             $this->view->isSprint = true;
@@ -1786,6 +1791,7 @@ class project extends control
         {
             $this->project->delete(TABLE_PROJECT, $projectID);
             $this->dao->update(TABLE_DOCLIB)->set('deleted')->eq(1)->where('project')->eq($projectID)->exec();
+            $this->project->updateUserView($projectID);
             $this->session->set('project', '');
             $this->executeHooks($projectID);
             die(js::locate(inlink('index'), 'parent'));
@@ -1812,7 +1818,7 @@ class project extends control
             $this->project->updateProducts($projectID);
             if(dao::isError()) die(js::error(dao::getError()));
 
-            $this->loadModel('action')->create('project', $projectID, 'Managed', '', join(',', $_POST['products']));
+            $this->loadModel('action')->create('project', $projectID, 'Managed', '', $_POST['products'] ? join(',', $_POST['products']) : '');
             die(js::locate($browseProjectLink));
         }
 

@@ -177,6 +177,7 @@ $lang->bug->confirmChangeProduct  = "修改{$lang->productCommon}会导致相应
 $lang->bug->confirmDelete         = '您确认要删除该Bug吗？';
 $lang->bug->remindTask            = '该Bug已经转化为任务，是否更新任务(编号:%s)状态 ?';
 $lang->bug->skipClose             = 'Bug %s 不是已解决状态，不能关闭。';
+$lang->bug->projectAccessDenied   = "您无权访问该Bug所属的{$lang->projectCommon}！";
 
 /* 模板。*/
 $lang->bug->tplStep   = "<p>[步骤]</p><br/>";
@@ -369,7 +370,7 @@ $lang->bug->report->bugHistories->graph->xAxisName          = '处理步骤';
 /* 操作记录。*/
 $lang->bug->action = new stdclass();
 $lang->bug->action->resolved            = array('main' => '$date, 由 <strong>$actor</strong> 解决，方案为 <strong>$extra</strong> $appendLink。', 'extra' => 'resolutionList');
-$lang->bug->action->tostory             = array('main' => '$date, 由 <strong>$actor</strong> 转为<strong>{$lang->storyCommon}</strong>，编号为 <strong>$extra</strong>。');
+$lang->bug->action->tostory             = array('main' => '$date, 由 <strong>$actor</strong> 转为<strong> ' .$lang->storyCommon. '</strong>，编号为 <strong>$extra</strong>。');
 $lang->bug->action->totask              = array('main' => '$date, 由 <strong>$actor</strong> 导入为<strong>任务</strong>，编号为 <strong>$extra</strong>。');
 $lang->bug->action->linked2plan         = array('main' => '$date, 由 <strong>$actor</strong> 关联到计划 <strong>$extra</strong>。');
 $lang->bug->action->unlinkedfromplan    = array('main' => '$date, 由 <strong>$actor</strong> 从计划 <strong>$extra</strong> 移除。');

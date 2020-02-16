@@ -4,10 +4,11 @@ $lang->menuOrder[5]  = 'my';
 $lang->menuOrder[10] = 'product';
 $lang->menuOrder[15] = 'project';
 $lang->menuOrder[20] = 'qa';
-$lang->menuOrder[25] = 'doc';
-$lang->menuOrder[30] = 'report';
-$lang->menuOrder[35] = 'company';
-$lang->menuOrder[40] = 'admin';
+$lang->menuOrder[25] = 'repo';
+$lang->menuOrder[30] = 'doc';
+$lang->menuOrder[35] = 'report';
+$lang->menuOrder[40] = 'company';
+$lang->menuOrder[45] = 'admin';
 
 /* index menu order. */
 $lang->index->menuOrder[5]  = 'product';
@@ -76,6 +77,10 @@ $lang->testsuite->menuOrder  = $lang->testcase->menuOrder;
 $lang->caselib->menuOrder    = $lang->testcase->menuOrder;
 $lang->testreport->menuOrder = $lang->testcase->menuOrder;
 
+$lang->repo->menuOrder[5]  = 'browse';
+$lang->repo->menuOrder[15] = 'settings';
+$lang->repo->menuOrder[20] = 'delete';
+
 /* doc menu order. */
 $lang->doc->menuOrder[5]  = 'list';
 $lang->doc->menuOrder[10] = 'product';
@@ -85,10 +90,11 @@ $lang->doc->menuOrder[25] = 'index';
 $lang->doc->menuOrder[30] = 'create';
 
 /* report menu order. */
-$lang->report->menuOrder[5]  = 'product';
-$lang->report->menuOrder[10] = 'prj';
-$lang->report->menuOrder[15] = 'test';
-$lang->report->menuOrder[20] = 'staff';
+$lang->report->menuOrder[5]  = 'annual';
+$lang->report->menuOrder[10] = 'product';
+$lang->report->menuOrder[15] = 'prj';
+$lang->report->menuOrder[20] = 'test';
+$lang->report->menuOrder[25] = 'staff';
 
 /* company menu order. */
 $lang->company->menuOrder[5]  = 'browseUser';

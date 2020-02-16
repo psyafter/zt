@@ -69,8 +69,14 @@ class docModel extends model
 
                 if($currentLib)
                 {
-                    $allLibGroups   = $this->getAllLibGroups($currentLib);
-                    $currentGroups  = $allLibGroups[$type];
+                    $allLibGroups  = $this->getAllLibGroups($libID);
+                    $currentGroups = $allLibGroups[$type];
+                    /* Append closed project. */
+                    if(!isset($currentGroups[$currentLib]) and $type == 'project')
+                    {
+                        $project = $this->dao->select('id,name,status')->from(TABLE_PROJECT)->where('id')->eq($currentLib)->fetch();
+                        $currentGroups[$currentLib] = (array)$project;
+                    }
                     $currentLibName = is_array($currentGroups[$currentLib]) ? $currentGroups[$currentLib]['name'] : $currentGroups[$currentLib];
 
                     $selectHtml .= "<div class='btn-group angle-btn'>";
@@ -367,7 +373,7 @@ class docModel extends model
             if($moduleID)
             {
                 $modules = array($moduleID => $moduleID);
-                if(strpos($this->config->doc->custom->showLibs, 'children') === false) $modules = $this->loadModel('tree')->getAllChildId($moduleID);
+                if(strpos($this->config->doc->custom->showLibs, 'children') !== false) $modules = $this->loadModel('tree')->getAllChildId($moduleID);
             }
             $docs = $this->getDocs($libID, $modules, $sort, $pager);
         }
@@ -441,13 +447,20 @@ class docModel extends model
         $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'doc', false);
         if(!$docs) return array();
 
+        $docContents = $this->dao->select('*')->from(TABLE_DOCCONTENT)->where('doc')->in(array_keys($docs))->orderBy('version,doc')->fetchAll('doc');
         foreach($docs as $index => $doc)
         {
             $docs[$index]->fileSize = 0;
             if(isset($files[$index]))
             {
-                $fileSize = 0;
-                foreach($files[$index] as $file) $fileSize += $file->size;
+                $docContent = $docContents[$index];
+                $fileSize   = 0;
+                foreach($files[$index] as $file)
+                {
+                    if(strpos(",{$docContent->files},", ",{$file->id},") === false) continue;
+                    $fileSize += $file->size;
+                }
+
                 if($fileSize < 1024)
                 {
                     $fileSize .= 'B';
@@ -509,7 +522,8 @@ class docModel extends model
             ->where('deleted')->eq(0)
             ->beginIF($this->config->doc->notArticleType)->andWhere('type')->notIN($this->config->doc->notArticleType)->fi()
             ->beginIF($libID)->andWhere('lib')->in($libID)->fi()
-            ->beginIF(!empty($module) or strpos($this->config->doc->custom->showLibs, 'children') === false)->andWhere('module')->in($module)->fi()
+            ->beginIF(strpos($this->config->doc->custom->showLibs, 'children') === false)->andWhere('module')->in($module)->fi()
+            ->beginIF(!empty($module) and strpos($this->config->doc->custom->showLibs, 'children') !== false)->andWhere('module')->in($module)->fi()
             ->query();
 
         $docIdList = array();
@@ -569,7 +583,7 @@ class docModel extends model
         $doc->content     = isset($docContent->content) ? $docContent->content : '';
         $doc->contentType = isset($docContent->type)    ? $docContent->type : '';
 
-        if($doc->type != 'url') $doc  = $this->loadModel('file')->replaceImgURL($doc, 'content');
+        if($doc->type != 'url' and $doc->contentType != 'markdown') $doc  = $this->loadModel('file')->replaceImgURL($doc, 'content');
         if($setImgSize) $doc->content = $this->file->setImgSize($doc->content);
         $doc->files = $docFiles;
 
@@ -604,7 +618,9 @@ class docModel extends model
             ->join('users', ',')
             ->remove('files,labels,uid')
             ->get();
-        $doc->contentMarkdown = strip_tags($this->post->contentMarkdown, $this->config->allowedTags);
+
+        /* Fix bug #2929. strip_tags($this->post->contentMarkdown, $this->config->allowedTags)*/
+        $doc->contentMarkdown = $this->post->contentMarkdown;
         if($doc->acl == 'private') $doc->users = $this->app->user->account;
         $condition = "lib = '$doc->lib' AND module = $doc->module";
 
@@ -677,7 +693,7 @@ class docModel extends model
             ->join('users', ',')
             ->remove('comment,files,labels,uid')
             ->get();
-        if($doc->contentType == 'markdown') $doc->content = strip_tags($this->post->content, $this->config->allowedTags);
+        if($doc->contentType == 'markdown') $doc->content = $this->post->content;
         if($doc->acl == 'private') $doc->users = $oldDoc->addedBy;
 
         $oldDocContent = $this->dao->select('*')->from(TABLE_DOCCONTENT)->where('doc')->eq($docID)->andWhere('version')->eq($oldDoc->version)->fetch();
@@ -1030,7 +1046,7 @@ class docModel extends model
         }
         else
         {
-            $hasProject = $this->dao->select('DISTINCT product')->from(TABLE_PROJECTPRODUCT)->alias('t1')
+            $hasProject = $this->dao->select('DISTINCT t1.product')->from(TABLE_PROJECTPRODUCT)->alias('t1')
                 ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project=t2.id')
                 ->where('t1.product')->in($productIdList)
                 ->andWhere('t2.deleted')->eq(0)
@@ -1129,66 +1145,6 @@ class docModel extends model
 
         if($type == 'product' or $type == 'project') $libs = $this->dao->select('*')->from($table)->where('id')->in(array_keys($libs))->orderBy('`order` desc')->fetchAll('id');
 
-        /* Order the same as drop menu.*/
-        if($type == 'product')
-        {
-            $this->loadModel('product');
-            $products = $mineProducts = $otherProducts = $closedProducts = array();
-            foreach($libs as $lib)
-            {   
-                if(!$this->app->user->admin and !$this->product->checkPriv($lib->id)) continue;
-                if($lib->status == 'normal' and $lib->PO == $this->app->user->account) 
-                {   
-                    $mineProducts[$lib->id] = $lib;
-                }   
-                elseif($lib->status == 'normal' and $lib->PO != $this->app->user->account) 
-                {   
-                    $otherProducts[$lib->id] = $lib;
-                }   
-                elseif($lib->status == 'closed')
-                {   
-                    $closedProducts[$lib->id] = $lib;
-                }   
-            }
-            $products = $mineProducts + $otherProducts + $closedProducts;
-            $libs = array();
-            foreach($products as $product)
-            {
-                $libs[$product->id] = new stdclass();
-                $libs[$product->id]->id   = $product->id;
-                $libs[$product->id]->name = $product->name;
-            }
-        }
-        elseif($type == 'project')
-        {
-            $this->loadModel('project');
-            $projects = $mineProjects = $otherProjects = $closedProjects = array();
-            foreach($libs as $lib)
-            {   
-                if(!$this->app->user->admin and !$this->project->checkPriv($lib->id)) continue;
-                if($lib->status != 'done' and $lib->status != 'closed' and $lib->PM == $this->app->user->account)
-                {   
-                    $mineProjects[$lib->id] = $lib;
-                }   
-                elseif($lib->status != 'done' and $lib->status != 'closed' and !($lib->PM == $this->app->user->account))
-                {   
-                    $otherProjects[$lib->id] = $lib;
-                }   
-                elseif($lib->status == 'done' or $lib->status == 'closed')
-                {   
-                    $closedProjects[$lib->id] = $lib;
-                }   
-            }   
-            $projects = $mineProjects + $otherProjects + $closedProjects;
-            $libs = array();
-            foreach($projects as $project)
-            {
-                $libs[$project->id] = new stdclass();
-                $libs[$project->id]->id   = $project->id;
-                $libs[$project->id]->name = $project->name;
-            }
-        }
-
         return $libs;
     }
 
@@ -1213,7 +1169,7 @@ class docModel extends model
             }
             else
             {
-                $hasProject = $this->dao->select('DISTINCT product')->from(TABLE_PROJECTPRODUCT)->alias('t1')
+                $hasProject = $this->dao->select('DISTINCT t1.product')->from(TABLE_PROJECTPRODUCT)->alias('t1')
                     ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project=t2.id')
                     ->where('t1.product')->in($idList)
                     ->beginIF(strpos($this->config->doc->custom->showLibs, 'unclosed') !== false)->andWhere('t2.status')->notin('done,closed')->fi()
@@ -1256,7 +1212,7 @@ class docModel extends model
             }
             else
             {
-                $hasProject  = $this->dao->select('DISTINCT product, count(project) as projectCount')->from(TABLE_PROJECTPRODUCT)->alias('t1')
+                $hasProject  = $this->dao->select('DISTINCT t1.product, count(project) as projectCount')->from(TABLE_PROJECTPRODUCT)->alias('t1')
                     ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project=t2.id')
                     ->where('t1.product')->eq($objectID)
                     ->beginIF(strpos($this->config->doc->custom->showLibs, 'unclosed') !== false)->andWhere('t2.status')->notin('done,closed')->fi()

@@ -121,7 +121,8 @@ $lang->menu = new stdclass();
 $lang->menu->my      = '<span>Dashboard</span>|my|index';
 $lang->menu->product = $lang->productCommon . '|product|index|locate=no';
 $lang->menu->project = $lang->projectCommon . '|project|index|locate=no';
-$lang->menu->qa      = 'QS|qa|index';
+$lang->menu->qa      = 'Test|qa|index';
+$lang->menu->repo    = 'Code|repo|log';
 $lang->menu->doc     = 'Dokumente|doc|index';
 $lang->menu->report  = 'Berichte|report|index';
 $lang->menu->company = 'Unternehmen|company|index';
@@ -328,7 +329,13 @@ $lang->caselib->menu->testcase  = array('link' => 'Fälle|testcase|browse|');
 $lang->caselib->menu->testtask  = array('link' => 'Build|testtask|browse|');
 $lang->caselib->menu->testsuite = array('link' => 'Suite|testsuite|browse|');
 $lang->caselib->menu->report    = array('link' => 'Berichte|testreport|browse|');
-$lang->caselib->menu->caselib   = array('link' => 'Bibliothek|caselib|browse', 'alias' => 'create,createcase,view,edit,batchcreatecase,showimport', 'subModule' => 'tree,testcase');
+$lang->caselib->menu->caselib   = array('link' => 'Bibliothek|caselib|browse|libID=%s', 'alias' => 'create,createcase,view,edit,batchcreatecase,showimport', 'subModule' => 'tree,testcase');
+
+$lang->repo = new stdclass();
+$lang->repo->menu = new stdclass();
+$lang->repo->menu->browse   = array('link' =>'Browse|repo|log|repoID=%s&entry=', 'alias' => 'diff,view,revision,showsynccomment');
+$lang->repo->menu->settings = 'Settings|repo|settings|repoID=%s';
+$lang->repo->menu->delete   = array('link' => 'Delete|repo|delete|repoID=%s', 'target' => 'hiddenwin');
 
 /* 文档视图菜单设置。*/
 $lang->doc = new stdclass();
@@ -342,6 +349,7 @@ $lang->git = new stdclass();
 $lang->report = new stdclass();
 $lang->report->menu = new stdclass();
 
+$lang->report->menu->annual  = array('link' => 'Annual Summary|report|annualData', 'target' => '_blank');
 $lang->report->menu->product = array('link' => $lang->productCommon . '|report|productsummary');
 $lang->report->menu->prj     = array('link' => $lang->projectCommon . '|report|projectdeviation');
 $lang->report->menu->test    = array('link' => 'Test|report|bugcreate', 'alias' => 'bugassign');
@@ -553,6 +561,7 @@ if(!defined('DT_DATE1'))     define('DT_DATE1',     'Y-m-d');
 if(!defined('DT_DATE2'))     define('DT_DATE2',     'Ymd');
 if(!defined('DT_DATE3'))     define('DT_DATE3',     'Y/m/d');
 if(!defined('DT_DATE4'))     define('DT_DATE4',     'M d');
+if(!defined('DT_DATE5'))     define('DT_DATE5',     'j/n');
 if(!defined('DT_TIME1'))     define('DT_TIME1',     'H:i:s');
 if(!defined('DT_TIME2'))     define('DT_TIME2',     'H:i');
 
