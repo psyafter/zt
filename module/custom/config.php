@@ -22,7 +22,8 @@ $config->custom->requiredModules[50] = 'bug';
 $config->custom->requiredModules[55] = 'testcase';
 $config->custom->requiredModules[60] = 'testsuite';
 $config->custom->requiredModules[65] = 'testreport';
-$config->custom->requiredModules[70] = 'testtask';
+$config->custom->requiredModules[70] = 'caselib';
+$config->custom->requiredModules[75] = 'testtask';
 
 $config->custom->requiredModules[75] = 'doc';
 
@@ -50,9 +51,10 @@ $config->custom->fieldList['bug']['resolve']         = 'resolvedBuild,resolvedDa
 $config->custom->fieldList['testcase']['create']     = 'stage,story,pri,precondition,keywords';
 $config->custom->fieldList['testcase']['edit']       = 'stage,story,pri,precondition,keywords,status';
 $config->custom->fieldList['testsuite']              = 'desc';
+$config->custom->fieldList['caselib']                = 'desc';
 $config->custom->fieldList['testcase']['createcase'] = 'lib,stage,pri,precondition,keywords';
 $config->custom->fieldList['testreport']             = 'begin,end,members,report';
 $config->custom->fieldList['testtask']               = 'owner,pri,status,desc,comment';
 $config->custom->fieldList['doc']                    = 'keywords,content';
 $config->custom->fieldList['user']['create']         = 'dept,role,email,commiter';
-$config->custom->fieldList['user']['edit']           = 'dept,role,email,commiter,skype,qq,mobile,phone,address,zipcode,wangwang,gtalk';
+$config->custom->fieldList['user']['edit']           = 'dept,role,email,commiter,skype,qq,mobile,phone,address,zipcode,dingding,slack,whatsapp,weixin';

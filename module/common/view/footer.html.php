@@ -1,5 +1,7 @@
 </div><?php /* end '.outer' in 'header.html.php'. */ ?>
-<script>$.initSidebar()</script>
+<script>
+$.initSidebar();
+</script>
 <?php if($extView = $this->getExtViewFile(__FILE__)){include $extView; return helper::cd();}?>
 
 <iframe frameborder='0' name='hiddenwin' id='hiddenwin' scrolling='no' class='debugwin hidden'></iframe>
@@ -13,7 +15,7 @@
       <small class='muted'><?php echo $lang->designedByAIUX;?></small> &nbsp;
       <a href='<?php echo $lang->website;?>' target='_blank'><i class='icon-zentao'></i> <?php echo $lang->zentaoPMS . $config->version;?></a> &nbsp;
       <?php echo $lang->proVersion;?>
-      <?php commonModel::printNotifyLink();?>
+      <?php if(isset($config->xxserver->installed) and $config->xuanxuan->turnon) commonModel::printClientLink();?>
     </div>
   </div>
 </footer>
@@ -25,7 +27,10 @@ function ajaxIgnoreBrowser(){$.get(createLink('misc', 'ajaxIgnoreBrowser'));}
 $(function(){showBrowserNotice()});
 <?php endif;?>
 
-/* Alert get message. */
+<?php $this->app->loadConfig('message');?>
+<?php if($config->message->browser->turnon):?>
+/* Alert got messages. */
+needPing = false;
 $(function()
 {
     var windowBlur = false;
@@ -48,12 +53,13 @@ $(function()
                 if(data)
                 {
                     if(typeof data == 'string') data = $.parseJSON(data);
-                    if(typeof data.message == 'string') notifyMessage(data.message);
+                    if(typeof data.message == 'string') notifyMessage(data);
                 }
             }
         });
-    }, 5 * 60 * 1000);
+    }, <?php echo $config->message->browser->pollTime * 1000;?>);
 })
+<?php endif;?>
 
 <?php if(!empty($config->sso->redirect)):?>
 <?php

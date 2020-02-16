@@ -31,8 +31,9 @@ class custom extends control
      * @access public
      * @return void
      */
-    public function set($module = 'story', $field = 'priList', $lang = 'zh_cn')
+    public function set($module = 'story', $field = 'priList', $lang = '')
     {
+        if(empty($lang)) $lang = $this->app->getClientLang();
         if($module == 'user' and $field == 'priList') $field = 'roleList';
         if($module == 'block' and $field == 'priList')$field = 'closed';
         $currentLang = $this->app->getClientLang();
@@ -40,12 +41,6 @@ class custom extends control
         $this->app->loadLang($module);
         $fieldList = zget($this->lang->$module, $field, '');
 
-        if($module == 'bug' and $field == 'typeList')
-        {
-            unset($fieldList['designchange']);
-            unset($fieldList['newfeature']);
-            unset($fieldList['trackthings']);
-        }
         if(($module == 'story' or $module == 'testcase') and $field == 'review')
         {
             $this->app->loadConfig($module);
@@ -75,7 +70,7 @@ class custom extends control
         }
         if($module == 'user' and $field == 'deleted')
         {
-            $this->loadModel('user');
+            $this->app->loadConfig('user');
             $this->view->showDeleted = isset($this->config->user->showDeleted) ? $this->config->user->showDeleted : '0';
         }
 
@@ -106,6 +101,12 @@ class custom extends control
                 $data = fixer::input('post')->join('closed', ',')->get();
                 $this->loadModel('setting')->setItem('system.block.closed', zget($data, 'closed', ''));
             }
+            elseif($module == 'user' and $field == 'contactField')
+            {
+                $data = fixer::input('post')->join('contactField', ',')->get();
+                if(!isset($data->contactField)) $data->contactField = '';
+                $this->loadModel('setting')->setItem('system.user.contactField', $data->contactField);
+            }
             elseif($module == 'user' and $field == 'deleted')
             {
                 $data = fixer::input('post')->get();
@@ -123,7 +124,7 @@ class custom extends control
                     {
                         if(!is_numeric($key) or $key > 255) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidNumberKey));
                     }
-                    if(!empty($key) and !isset($oldCustoms[$key]) and $key != 'n/a' and !validater::checkREG($key, '/^[a-z_0-9]+$/')) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStringKey));
+                    if(!empty($key) and !empty($oldCustoms) and !isset($oldCustoms[$key]) and $key != 'n/a' and !validater::checkREG($key, '/^[a-z_0-9]+$/')) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStringKey));
 
                     /* The length of roleList in user module and typeList in todo module is less than 10. check it when saved. */
                     if($field == 'roleList' or $module == 'todo' and $field == 'typeList')
@@ -148,17 +149,18 @@ class custom extends control
                 }
 
                 $this->custom->deleteItems("lang=$lang&module=$module&section=$field");
-                foreach($_POST['keys'] as $index => $key)
+                $data = fixer::input('post')->get();
+                foreach($data->keys as $index => $key)
                 {
                     //if(!$system and (!$value or !$key)) continue; //Fix bug #951.
                     
-                    $value  = $_POST['values'][$index];
-                    $system = $_POST['systems'][$index];
+                    $value  = $data->values[$index];
+                    $system = $data->systems[$index];
                     $this->custom->setItem("{$lang}.{$module}.{$field}.{$key}.{$system}", $value);
                 }
             }
             if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('custom', 'set', "module=$module&field=$field&lang=" . str_replace('-', '_', $lang))));
         }
 
         /* Check whether the current language has been customized. */
@@ -205,7 +207,14 @@ class custom extends control
     {
         if($confirm == 'no') die(js::confirm($this->lang->custom->confirmRestore, inlink('restore', "module=$module&field=$field&confirm=yes")));
 
-        $this->custom->deleteItems("module=$module&section=$field");
+        if($module == 'user' and $field == 'contactField')
+        {
+            $this->loadModel('setting')->deleteItems("module=$module&key=$field");
+        }
+        else
+        {
+            $this->custom->deleteItems("module=$module&section=$field");
+        }
         die(js::reload('parent'));
     }
 
@@ -219,26 +228,18 @@ class custom extends control
     {
         if($_POST)
         {
-            $this->loadModel('setting')->setItem('system.custom.productProject', $this->post->productProject);
+            $this->custom->setFlow();
+            $this->custom->setStoryRequirement();
 
-            /* Change block title. */
-            $oldConfig = isset($this->config->custom->productProject) ? $this->config->custom->productProject : '0_0';
-            $newConfig = $this->post->productProject;
+            $this->loadModel('setting')->setItem('system.custom.hourPoint', $this->post->hourPoint);
+            $this->loadModel('setting')->setItem('system.common.conceptSetted', 1);
 
-            list($oldProductIndex, $oldProjectIndex) = explode('_', $oldConfig);
-            list($newProductIndex, $newProjectIndex) = explode('_', $newConfig);
-
-            foreach($this->config->productCommonList as $clientLang => $productCommonList)
-            {
-                $this->dao->update(TABLE_BLOCK)->set("`title` = REPLACE(`title`, '{$productCommonList[$oldProductIndex]}', '{$productCommonList[$newProductIndex]}')")->where('source')->eq('product')->exec();
-            }
-
-            foreach($this->config->projectCommonList as $clientLang => $projectCommonList)
-            {
-                $this->dao->update(TABLE_BLOCK)->set("`title` = REPLACE(`title`, '{$projectCommonList[$oldProjectIndex]}', '{$projectCommonList[$newProjectIndex]}')")->where('source')->eq('project')->exec();
-            }
-
-            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
+            $this->app->loadLang('common');
+            $locate = inlink('flow');
+            if(!isset($this->config->conceptSetted)) $this->lang->custom->notice->conceptResult .= $this->lang->custom->notice->conceptPath;
+            if(!isset($this->config->conceptSetted)) $locate = helper::createLink('my', 'index');
+            $message = sprintf($this->lang->custom->notice->conceptResult, $this->lang->productCommon, $this->lang->projectCommon, $this->lang->storyCommon, $this->lang->hourCommon);
+            $this->send(array('result' => 'success', 'notice' => $message, 'locate' => $locate));
         }
 
         $this->view->title      = $this->lang->custom->flow;
@@ -246,6 +247,12 @@ class custom extends control
         $this->display();
     }
 
+    /**
+     * Set working mode function.
+     * 
+     * @access public
+     * @return void
+     */
     public function working()
     {
         if($_POST)
@@ -313,6 +320,29 @@ class custom extends control
         $this->view->title      = $this->lang->custom->score;
         $this->view->position[] = $this->lang->custom->common;
         $this->view->position[] = $this->view->title;
+        $this->display();
+    }
+
+    /**
+     * Timezone.
+     * 
+     * @access public
+     * @return void
+     */
+    public function timezone()
+    {
+        if(strtolower($_SERVER['REQUEST_METHOD']) == "post")
+        {
+            $this->loadModel('setting')->setItems('system.common', fixer::input('post')->get());
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
+        }
+
+        unset($this->lang->admin->menu->custom['subModule']);
+        $this->lang->admin->menu->system['subModule'] = 'custom';
+        $this->lang->custom->menu = $this->lang->admin->menu;
+
+        $this->view->title = $this->lang->custom->timezone;
+        $this->view->position[] = $this->lang->custom->timezone;
         $this->display();
     }
 

@@ -83,13 +83,6 @@
                   $branches = array('ditto' => $this->lang->story->ditto) + $branches;
               }
           }
-          /**
-           * Remove designchange, newfeature, trackings from the typeList, because should be tracked in story or task.
-           * These thress types if upgrade from bugfree2.x.
-           */
-          if($bug->type != 'designchange') unset($typeList['designchange']);
-          if($bug->type != 'newfeature')   unset($typeList['newfeature']);
-          if($bug->type != 'trackthings')  unset($typeList['trackthings']);
           ?>
           <tr>
             <td><?php echo $bugID . html::hidden("bugIDList[$bugID]", $bugID);?></td>
@@ -99,7 +92,7 @@
             <td style='overflow:visible' title='<?php echo $bug->title?>'>
               <div class='input-group'>
                 <div class="input-control has-icon-right">
-                  <?php echo html::input("titles[$bugID]", $bug->title, "class='form-control' autocomplete='off' style='color:{$bug->color}'");?>
+                  <?php echo html::input("titles[$bugID]", $bug->title, "class='form-control' style='color:{$bug->color}'");?>
                   <div class="colorpicker">
                     <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown"><span class="cp-title"></span><span class="color-bar" style="background:<?php echo $bug->color;?>"></span><i class="ic"></i></button>
                     <ul class="dropdown-menu clearfix">

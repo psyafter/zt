@@ -123,7 +123,7 @@ class productModel extends model
         }
         $isMobile = $this->app->viewType == 'mhtml';
 
-        setCookie("lastProduct", $productID, $this->config->cookieLife, $this->config->webRoot);
+        setCookie("lastProduct", $productID, $this->config->cookieLife, $this->config->webRoot, '', false, true);
         $currentProduct = $this->getById($productID);
         $this->session->set('currentProductType', $currentProduct->type);
 
@@ -201,7 +201,7 @@ class productModel extends model
         if($this->cookie->preProductID != $productID)
         {
             $this->cookie->set('preBranch', 0);
-            setcookie('preBranch', 0, $this->config->cookieLife, $this->config->webRoot);
+            setcookie('preBranch', 0, $this->config->cookieLife, $this->config->webRoot, '', false, true);
         }
 
         return $this->session->product;
@@ -351,6 +351,7 @@ class productModel extends model
             ->stripTags($this->config->product->editor->create['id'], $this->config->allowedTags)
             ->remove('uid')
             ->get();
+
         $product = $this->loadModel('file')->processImgURL($product, $this->config->product->editor->create['id'], $this->post->uid);
         $this->dao->insert(TABLE_PRODUCT)->data($product)->autoCheck()
             ->batchCheck($this->config->product->create->requiredFields, 'notempty')
@@ -370,9 +371,9 @@ class productModel extends model
         $lib->name    = $this->lang->doclib->main['product'];
         $lib->type    = 'product';
         $lib->main    = '1';
-        $lib->acl     = $product->acl == 'open' ? 'open' : 'private';
+        $lib->acl     = 'default';
         $this->dao->insert(TABLE_DOCLIB)->data($lib)->exec();
-        $this->loadModel('user')->updateUserView($productID, 'product');
+        if($product->acl != 'open') $this->loadModel('user')->updateUserView($productID, 'product');
 
         return $productID;
     }
@@ -404,10 +405,8 @@ class productModel extends model
             ->exec();
         if(!dao::isError())
         {
-            if($product->acl != $oldProduct->acl) $this->dao->update(TABLE_DOCLIB)->set('acl')->eq($product->acl == 'open' ? 'open' : 'private')->where('product')->eq($productID)->exec();
-
             $this->file->updateObjectID($this->post->uid, $productID, 'product');
-            if($product->acl != $oldProduct->acl or $product->whitelist != $oldProduct->whitelist) $this->loadModel('user')->updateUserView($productID, 'product');
+            if($product->acl != 'open' and ($product->acl != $oldProduct->acl or $product->whitelist != $oldProduct->whitelist)) $this->loadModel('user')->updateUserView($productID, 'product');
             return common::createChanges($oldProduct, $product);
         }
     }
@@ -622,11 +621,23 @@ class productModel extends model
         $roadmap  = array();
         $total    = 0;
 
+        $parents = array();
+        foreach($plans as $planID => $plan)
+        {
+            if($plan->parent == '-1')
+            {
+                $parents[$planID] = $plan->title;
+                unset($plans[$planID]);
+            }
+
+            if($plan->parent > 0 and isset($parents[$plan->parent])) $plan->title = $parents[$plan->parent] . ' / ' . $plan->title;
+        }
+
         foreach($plans as $plan)
         {
             if(($plan->end != '0000-00-00' and strtotime($plan->end) - time() <= 0) or $plan->end == '2030-01-01') continue;
             $year = substr($plan->end, 0, 4);
-            $roadmap[$year][$plan->branch][] = $plan;
+            $roadmap[$year][$plan->branch][$plan->end] = $plan;
 
             $total++;
         }
@@ -640,7 +651,7 @@ class productModel extends model
         foreach($releases as $release)
         {
             $year = substr($release->date, 0, 4);
-            $roadmap[$year][$release->branch][] = $release;
+            $roadmap[$year][$release->branch][$release->date] = $release;
 
             $total++;
             if($count > 0 and $total >= $count) break;
@@ -654,6 +665,7 @@ class productModel extends model
         {
             foreach($branchRoadmaps as $branch => $roadmaps)
             {
+                krsort($roadmaps);
                 $totalData = count($roadmaps);
                 $rows      = ceil($totalData / 8);
                 $maxPerRow = ceil($totalData / $rows);
@@ -707,6 +719,7 @@ class productModel extends model
                     $i++;
                     if($i >= $count) break;
                 }
+                krsort($newRoadmap[$year][$branch]);
             }
         }
         return $newRoadmap;

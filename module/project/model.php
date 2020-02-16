@@ -7,7 +7,7 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     project
  * @version     $Id: model.php 5118 2013-07-12 07:41:41Z chencongzhi520@gmail.com $
- * @link        https://www.zentao.pm
+ * @link        http://www.zentao.net
  */
 ?>
 <?php
@@ -70,7 +70,7 @@ class projectModel extends model
 
         if($this->cookie->projectMode == 'noclosed' and ($project->status == 'done' or $project->status == 'closed'))
         {
-            setcookie('projectMode', 'all');
+            setcookie('projectMode', 'all', 0, $this->config->webRoot, '', false, false);
             $this->cookie->projectMode = 'all';
         }
 
@@ -119,13 +119,18 @@ class projectModel extends model
             /* Replace for dropdown submenu. */
             if(isset($this->lang->project->subMenu->$key))
             {
+                $projectSubMenu = $this->lang->project->subMenu->$key;
                 $subMenu = common::createSubMenu($this->lang->project->subMenu->$key, $projectID);
 
                 if(!empty($subMenu))
                 {
-                    foreach($subMenu as $menu)
+                    foreach($subMenu as $menuKey => $menu)
                     {
-                        if($moduleName == strtolower($menu->link['module']) and $methodName == strtolower($menu->link['method']))
+                        $itemMenu = zget($projectSubMenu, $menuKey, '');
+                        $isActive['method']    = ($moduleName == strtolower($menu->link['module']) and $methodName == strtolower($menu->link['method']));
+                        $isActive['alias']     = ($moduleName == strtolower($menu->link['module']) and (is_array($itemMenu) and isset($itemMenu['alias']) and strpos($itemMenu['alias'], $methodName) !== false));
+                        $isActive['subModule'] = (is_array($itemMenu) and isset($itemMenu['subModule']) and strpos($itemMenu['subModule'], $moduleName) !== false);
+                        if($isActive['method'] or $isActive['alias'] or $isActive['subModule'])
                         {
                             $this->lang->project->menu->{$key}['link'] = $menu->text . "|" . join('|', $menu->link);
                             break;
@@ -155,7 +160,7 @@ class projectModel extends model
 
         $isMobile = $this->app->viewType == 'mhtml';
 
-        setCookie("lastProject", $projectID, $this->config->cookieLife, $this->config->webRoot);
+        setCookie("lastProject", $projectID, $this->config->cookieLife, $this->config->webRoot, '', false, true);
         $currentProject = $this->getById($projectID);
 
         $dropMenuLink = helper::createLink('project', 'ajaxGetDropMenu', "objectID=$projectID&module=$currentModule&method=$currentMethod&extra=$extra");
@@ -163,20 +168,6 @@ class projectModel extends model
         $output .= '<div class="input-control search-box has-icon-left has-icon-right search-example"><input type="search" class="form-control search-input" /><label class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label><a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a></div>';
         $output .= "</div></div></div>";
         if($isMobile) $output  = "<a id='currentItem' href=\"javascript:showSearchMenu('project', '$projectID', '$currentModule', '$currentMethod', '$extra')\">{$currentProject->name} <span class='icon-caret-down'></span></a><div id='currentItemDropMenu' class='hidden affix enter-from-bottom layer'></div>";
-
-        if($buildID and !$isMobile)
-        {
-            setCookie('lastBuild', $buildID, $this->config->cookieLife, $this->config->webRoot);
-            $currentBuild = $this->loadModel('build')->getById($buildID);
-
-            if($currentBuild)
-            {
-                $dropMenuLink = helper::createLink('build', 'ajaxGetProjectBuilds', "projectID=$projectID&productID=&varName=dropdownList");
-                $output .= "<div class='btn-group angle-btn'><div class='btn-group'><button data-toggle='dropdown' type='button' class='btn btn-limit' id='currentItem'>{$currentBuild->name} <span class='caret'></span></button><div id='dropMenu' class='dropdown-menu search-list' data-ride='searchList' data-url='$dropMenuLink'>";
-                $output .= '<div class="input-control search-box has-icon-left has-icon-right search-example"><input type="search" class="form-control search-input" /><label class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label><a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a></div>';
-                $output .= "</div></div></div>";
-            }
-        }
 
         return $output;
     }
@@ -329,6 +320,7 @@ class projectModel extends model
             /* Add the creator to team. */
             if($copyProjectID == '' or !$creatorExists)
             {
+                $this->app->loadLang('user');
                 $member = new stdclass();
                 $member->root    = $projectID;
                 $member->account = $this->app->user->account;
@@ -347,16 +339,16 @@ class projectModel extends model
             $lib->name    = $this->lang->doclib->main['project'];
             $lib->type    = 'project';
             $lib->main    = '1';
-            $lib->acl     = $project->acl == 'open' ? 'open' : 'private';
+            $lib->acl     = 'default';
             $this->dao->insert(TABLE_DOCLIB)->data($lib)->exec();
 
-            $this->loadModel('user')->updateUserView($projectID, 'project');
+            if($project->acl != 'open') $this->loadModel('user')->updateUserView($projectID, 'project');
             if(isset($_POST['products']))
             {
                 foreach($this->post->products as $productID)
                 {
                     if(empty($productID)) continue;
-                    $this->user->updateUserView($productID, 'product');
+                    $this->loadModel('user')->updateUserView($productID, 'product');
                 }
             }
 
@@ -420,10 +412,8 @@ class projectModel extends model
         }
         if(!dao::isError())
         {
-            if($project->acl != $oldProject->acl) $this->dao->update(TABLE_DOCLIB)->set('acl')->eq($project->acl == 'open' ? 'open' : 'private')->where('project')->eq($projectID)->exec();
-
             $this->file->updateObjectID($this->post->uid, $projectID, 'project');
-            if($project->acl != $oldProject->acl or $project->whitelist != $oldProject->whitelist) $this->loadModel('user')->updateUserView($projectID, 'project');
+            if($project->acl != 'open' and ($project->acl != $oldProject->acl or $project->whitelist != $oldProject->whitelist)) $this->loadModel('user')->updateUserView($projectID, 'project');
             return common::createChanges($oldProject, $project);
         }
     }
@@ -604,7 +594,7 @@ class projectModel extends model
             $tasks = $this->dao->select('id,estStarted,deadline,status')->from(TABLE_TASK)
                 ->where('deadline')->ne('0000-00-00')
                 ->andWhere('status')->in('wait,doing')
-                ->andWhere('project')->eq($project->id)
+                ->andWhere('project')->eq($projectID)
                 ->fetchAll();
             foreach($tasks as $task)
             {
@@ -734,7 +724,7 @@ class projectModel extends model
                 ->where('t1.product')->eq($productID)
                 ->andWhere('t2.deleted')->eq(0)
                 ->andWhere('t2.iscat')->eq(0)
-                ->beginIF($status == 'undone')->andWhere('t2.status')->ne('done')->andWhere('t2.status')->ne('closed')->fi()
+                ->beginIF($status == 'undone')->andWhere('t2.status')->notIN('done,closed')->fi()
                 ->beginIF($branch)->andWhere('t1.branch')->eq($branch)->fi()
                 ->beginIF($status != 'all' and $status != 'undone')->andWhere('status')->in($status)->fi()
                 ->beginIF(!$this->app->user->admin)->andWhere('t2.id')->in($this->app->user->view->projects)->fi()
@@ -745,7 +735,7 @@ class projectModel extends model
         else
         {
             return $this->dao->select('*, IF(INSTR(" done,closed", status) < 2, 0, 1) AS isDone')->from(TABLE_PROJECT)->where('iscat')->eq(0)
-                ->beginIF($status == 'undone')->andWhere('status')->ne('done')->andWhere('status')->ne('closed')->fi()
+                ->beginIF($status == 'undone')->andWhere('status')->notIN('done,closed')->fi()
                 ->beginIF($status != 'all' and $status != 'undone')->andWhere('status')->in($status)->fi()
                 ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->projects)->fi()
                 ->andWhere('deleted')->eq(0)
@@ -898,6 +888,7 @@ class projectModel extends model
         $burns = $this->dao->select('project, date AS name, `left` AS value')
             ->from(TABLE_BURN)
             ->where('project')->in($projectKeys)
+            ->andWhere('task')->eq(0)
             ->orderBy('date desc')
             ->fetchGroup('project', 'name');
 
@@ -906,6 +897,7 @@ class projectModel extends model
             /* If projectBurns > $itemCounts, split it, else call processBurnData() to pad burns. */
             $begin = $projects[$projectID]->begin;
             $end   = $projects[$projectID]->end;
+            if($begin == '0000-00-00') $begin = $projects[$projectID]->openedDate;
             $projectBurns = $this->processBurnData($projectBurns, $itemCounts, $begin, $end);
 
             /* Shorter names.  */
@@ -972,7 +964,7 @@ class projectModel extends model
             if(($this->session->taskBrowseType) and ($this->session->taskBrowseType != 'bysearch')) $browseType = $this->session->taskBrowseType;
         }
 
-        $this->session->set('taskWithChildren', in_array($browseType, array('unclosed', 'byproject', 'all')) ? false : true);
+        $this->session->set('taskWithChildren', in_array($browseType, array('unclosed', 'byproject', 'all', 'bysearch')) ? false : true);
 
         /* Get tasks. */
         $tasks = array();
@@ -1180,8 +1172,6 @@ class projectModel extends model
         {
             $this->config->product->search['fields']['branch'] = sprintf($this->lang->product->branch, $this->lang->product->branchName[$productType]);
             $this->config->product->search['params']['branch']['values'] = array('' => '') + $branchPairs;
-            unset($this->config->product->search['fields']['stage']);
-            unset($this->config->product->search['params']['stage']);
         }
         $this->config->product->search['params']['status'] = array('operator' => '=', 'control' => 'select', 'values' => $this->lang->story->statusList);
 
@@ -1344,8 +1334,11 @@ class projectModel extends model
             }
 
             $data->status = $task->consumed > 0 ? 'doing' : 'wait';
-            $this->dao->update(TABLE_TASK)->data($data)->where('id')->in($this->post->tasks)->orWhere('parent')->in($this->post->tasks)->exec();
+            $this->dao->update(TABLE_TASK)->data($data)->where('id')->in($this->post->tasks)->exec();
             $this->loadModel('action')->create('task', $task->id, 'moved', '', $task->project);
+
+            unset($data->status);
+            $this->dao->update(TABLE_TASK)->data($data)->where('parent')->in($this->post->tasks)->exec();
         }
 
         /* Remove empty story. */
@@ -1423,8 +1416,10 @@ class projectModel extends model
         $this->loadModel('task');
         $this->loadModel('story');
 
-        $now     = helper::now();
-        $modules = $this->loadModel('tree')->getTaskOptionMenu($projectID);
+        $now = helper::now();
+
+        $showAllModule = isset($this->config->project->task->allModule) ? $this->config->project->task->allModule : '';
+        $modules       = $this->loadModel('tree')->getTaskOptionMenu($projectID, 0, 0, $showAllModule ? 'allModule' : '');
 
         $bugToTasks = fixer::input('post')->get();
         $bugs       = $this->bug->getByList(array_keys($bugToTasks->import));
@@ -1569,8 +1564,10 @@ class projectModel extends model
         $versions      = $this->loadModel('story')->getVersions($stories);
         $linkedStories = $this->dao->select('*')->from(TABLE_PROJECTSTORY)->where('project')->eq($projectID)->orderBy('order_desc')->fetchPairs('story', 'order');
         $lastOrder     = reset($linkedStories);
+        $statusPairs   = $this->dao->select('id, status')->from(TABLE_STORY)->where('id')->in(array_values($stories))->fetchPairs();
         foreach($stories as $key => $storyID)
         {
+            if($statusPairs[$storyID] == 'draft') continue;
             if(isset($linkedStories[$storyID])) continue;
 
             $productID = (int)$products[$storyID];
@@ -1599,14 +1596,15 @@ class projectModel extends model
 
         $planStories  = array();
         $planProducts = array();
+        $count        = 0;
         if(!empty($plans))
         {
             foreach($plans as $planID => $productID)
             {
+                if(empty($planID)) continue;
                 $planStory = $this->loadModel('story')->getPlanStories($planID);
                 if(!empty($planStory))
                 {
-                    $count = 0;
                     foreach($planStory as $id => $story)
                     {
                         if($story->status == 'draft')
@@ -1649,9 +1647,9 @@ class projectModel extends model
         $this->loadModel('action')->create('story', $storyID, 'unlinkedfromproject', '', $projectID);
 
         $tasks = $this->dao->select('id')->from(TABLE_TASK)->where('story')->eq($storyID)->andWhere('project')->eq($projectID)->andWhere('status')->in('wait,doing')->fetchPairs('id');
-        $this->dao->update(TABLE_TASK)->set('status')->eq('cancel')->where('id')->in($tasks)->exec();
         foreach($tasks as $taskID)
         {
+            if(empty($taskID)) continue;
             $changes  = $this->loadModel('task')->cancel($taskID);
             $actionID = $this->action->create('task', $taskID, 'Canceled');
             $this->action->logHistory($actionID, $changes);
@@ -1672,6 +1670,7 @@ class projectModel extends model
             ->leftJoin(TABLE_USER)->alias('t2')->on('t1.account = t2.account')
             ->where('t1.root')->eq((int)$projectID)
             ->andWhere('t1.type')->eq('project')
+            ->andWhere('t2.deleted')->eq('0')
             ->fetchAll('account');
     }
 
@@ -1686,6 +1685,7 @@ class projectModel extends model
     public function getTeamMemberPairs($projectID, $params = '')
     {
         if(defined('TUTORIAL')) return $this->loadModel('tutorial')->getTeamMembersPairs();
+        $this->app->loadConfig('user');
         $users = $this->dao->select('t1.account, t2.realname')->from(TABLE_TEAM)->alias('t1')
             ->leftJoin(TABLE_USER)->alias('t2')->on('t1.account = t2.account')
             ->where('t1.root')->eq((int)$projectID)
@@ -1698,6 +1698,7 @@ class projectModel extends model
         foreach($users as $account => $realName)
         {
             $firstLetter = ucfirst(substr($account, 0, 1)) . ':';
+            if(isset($this->config->isINT) and $this->config->isINT) $firstLetter = '';
             $users[$account] =  $firstLetter . ($realName ? $realName : $account);
         }
         return array('' => '') + $users;
@@ -1719,6 +1720,7 @@ class projectModel extends model
             ->where('t1.account')->eq($account)
             ->andWhere('t1.root')->ne($currentProject)
             ->andWhere('t1.type')->eq('project')
+            ->andWhere('t2.deleted')->eq('0')
             ->groupBy('t1.root')
             ->orderBy('t1.root DESC')
             ->fetchPairs();
@@ -1757,6 +1759,9 @@ class projectModel extends model
         extract($data);
 
         $accounts = array_unique($accounts);
+        $limited  = array_values($limited);
+        $oldJoin  = $this->dao->select('`account`, `join`')->from(TABLE_TEAM)->where('root')->eq((int)$projectID)->andWhere('type')->eq('project')->fetchPairs();
+        $this->dao->delete()->from(TABLE_TEAM)->where('root')->eq((int)$projectID)->andWhere('type')->eq('project')->exec();
         foreach($accounts as $key => $account)
         {
             if(empty($account)) continue;
@@ -1767,24 +1772,12 @@ class projectModel extends model
             $member->hours   = $hours[$key];
             $member->limited = $limited[$key];
 
-            $mode = $modes[$key];
-            if($mode == 'update')
-            {
-                $this->dao->update(TABLE_TEAM)
-                    ->data($member)
-                    ->where('root')->eq((int)$projectID)
-                    ->andWhere('type')->eq('project')
-                    ->andWhere('account')->eq($account)
-                    ->exec();
-            }
-            else
-            {
-                $member->root    = (int)$projectID;
-                $member->account = $account;
-                $member->join    = helper::today();
-                $member->type    = 'project';
-                $this->dao->insert(TABLE_TEAM)->data($member)->exec();
-            }
+            $member->root    = (int)$projectID;
+            $member->account = $account;
+            $member->join    = isset($oldJoin[$account]) ? $oldJoin[$account] : helper::today();
+            $member->type    = 'project';
+
+            $this->dao->insert(TABLE_TEAM)->data($member)->exec();
         }
         $this->loadModel('user')->updateUserView($projectID, 'project', $accounts);
 
@@ -1839,14 +1832,14 @@ class projectModel extends model
             ->from(TABLE_TASK)
             ->where('project')->in(array_keys($projects))
             ->andWhere('deleted')->eq('0')
-            ->andWhere('parent')->eq('0')
+            ->andWhere('parent')->ge('0')
             ->andWhere('status')->ne('cancel')
             ->groupBy('project')
             ->fetchAll('project');
         $closedLefts = $this->dao->select("project, sum(`left`) AS `left`")->from(TABLE_TASK)
             ->where('project')->in(array_keys($projects))
             ->andWhere('deleted')->eq('0')
-            ->andWhere('parent')->eq('0')
+            ->andWhere('parent')->ge('0')
             ->andWhere('status')->eq('closed')
             ->groupBy('project')
             ->fetchAll('project');
@@ -1875,7 +1868,7 @@ class projectModel extends model
     public function fixFirst($projectID)
     {
         $project  = $this->getById($projectID);
-        $burn     = $this->dao->select('*')->from(TABLE_BURN)->where('project')->eq($projectID)->andWhere('date')->eq($project->begin)->fetch();
+        $burn     = $this->dao->select('*')->from(TABLE_BURN)->where('project')->eq($projectID)->andWhere('task')->eq(0)->andWhere('date')->eq($project->begin)->fetch();
         $withLeft = $this->post->withLeft ? $this->post->withLeft : 0;
 
         $data = fixer::input('post')
@@ -1903,7 +1896,7 @@ class projectModel extends model
         $project    = $this->getById($projectID);
 
         /* If the burnCounts > $itemCounts, get the latest $itemCounts records. */
-        $sets = $this->dao->select('date AS name, `left` AS value, estimate')->from(TABLE_BURN)->where('project')->eq((int)$projectID)->orderBy('date DESC')->fetchAll('name');
+        $sets = $this->dao->select('date AS name, `left` AS value, estimate')->from(TABLE_BURN)->where('project')->eq((int)$projectID)->andWhere('task')->eq(0)->orderBy('date DESC')->fetchAll('name');
 
         $count    = 0;
         $burnData = array();
@@ -2018,6 +2011,13 @@ class projectModel extends model
         {
             foreach($taskTeam as $taskID => $team) $tasks[$taskID]->team = $team;
         }
+
+        $parents = array();
+        foreach($tasks as $task)
+        {
+            if($task->parent > 0) $parents[$task->parent] = $task->parent;
+        }
+        $parents = $this->dao->select('*')->from(TABLE_TASK)->where('id')->in($parents)->fetchAll('id');
         
         foreach($tasks as $task)
         {
@@ -2027,6 +2027,11 @@ class projectModel extends model
                 {
                     $tasks[$task->parent]->children[$task->id] = $task;
                     unset($tasks[$task->id]);
+                }
+                else
+                {
+                    $parent = $parents[$task->parent];
+                    $task->parentName = $parent->name;
                 }
             }
         }
@@ -2080,6 +2085,15 @@ class projectModel extends model
 
             $statusVar = 'status' . ucfirst($task->status);
             $$statusVar ++;
+            if(isset($task->children))
+            {
+                foreach($task->children as $children)
+                {
+                    $statusVar = 'status' . ucfirst($children->status);
+                    $$statusVar ++;
+                    $taskSum ++;
+                }
+            }
             $taskSum ++;
         }
 
@@ -2311,7 +2325,7 @@ class projectModel extends model
             if($product->type != 'normal')
             {
                 $productType = $product->type;
-                if($product->branch)
+                if($product->branch and isset($branchGroups[$product->id][$product->branch]))
                 {
                     $branchPairs[$product->branch] = (count($products) > 1 ? $product->name . '/' : '') . $branchGroups[$product->id][$product->branch];
                 }
@@ -2366,7 +2380,7 @@ class projectModel extends model
         $this->config->project->search['actionURL'] = $actionURL;
         $this->config->project->search['queryID']   = $queryID;
         $this->config->project->search['params']['project']['values'] = array(''=>'', $projectID => $projects[$projectID], 'all' => $this->lang->project->allProject);
-        $this->config->project->search['params']['module']['values']  = $this->loadModel('tree')->getTaskOptionMenu($projectID, $startModuleID = 0);
+        $this->config->project->search['params']['module']['values']  = $this->loadModel('tree')->getTaskOptionMenu($projectID, 0, 0, 'allModule');
 
         $this->loadModel('search')->setSearchParams($this->config->project->search);
     }
@@ -2484,11 +2498,10 @@ class projectModel extends model
     /**
      * Get kanban setting.
      *
-     * @param  int    $projectID
      * @access public
      * @return object
      */
-    public function getKanbanSetting($projectID)
+    public function getKanbanSetting()
     {
         $allCols    = '1';
         $showOption = '0';
@@ -2503,6 +2516,100 @@ class projectModel extends model
         $kanbanSetting->colorList  = $colorList;
 
         return $kanbanSetting;
+    }
+
+    /**
+     * Get kanban columns.
+     *
+     * @param  object $kanbanSetting
+     * @access public
+     * @return array
+     */
+    public function getKanbanColumns($kanbanSetting)
+    {
+        if($kanbanSetting->allCols) return array('wait', 'doing', 'pause', 'done', 'cancel', 'closed');
+        return array('wait', 'doing', 'pause', 'done');
+    }
+
+    /**
+     * 获取状态和方法的映射关系，此关系决定了看板内容能否从一个泳道拖动到另一个泳道，以及拖动后执行什么方法。
+     * Get the mapping between state and method. This relationship determines whether kanban content can be dragged from one lane
+     * to another, and what method is executed after dragging.
+     *
+     * 映射关系的基本格式为 map[$mode][$fromStatus][$toStatus] = $methodName。
+     * The basic format of the mapping relationship is map[$mode][$fromStatus][$toStatus] = $methodName.
+     *
+     * @param string $mode          看板内容类型，可选值 task|bug   The content mode of kanban, should be task or bug.
+     * @param string $fromStatus    拖动内容的来源泳道              The origin lane the content draged from.
+     * @param string $toStatus      拖动内容的目标泳道              The destination lane the content draged to.
+     * @param string $methodName    拖动到目标泳道后执行的方法名    The method to execute after draged the content.
+     *
+     * 例如 map['task']['doing']['done'] = 'close' 表示：任务(task)看板从进行中(doing)泳道拖动到已完成(done)泳道时，执行关闭(close)方法。
+     * For example, map['task']['doing']['done'] = 'close' means: when the task kanban is dragged from the doing lane to the done lane,
+     * execute the close method.
+     *
+     * @param  object $kanbanSetting    This param is used in the biz version, don't remove it.
+     * @access public
+     * @return string
+     */
+    public function getKanbanStatusMap($kanbanSetting)
+    {
+        $statusMap = array();
+        $statusMap['task']['wait']['doing']  = 'start';
+        $statusMap['task']['wait']['done']   = 'finish';
+        $statusMap['task']['wait']['cancel'] = 'cancel';
+
+        $statusMap['task']['doing']['done']  = 'finish';
+        $statusMap['task']['doing']['pause'] = 'pause';
+
+        $statusMap['task']['pause']['doing']  = 'activate';
+        $statusMap['task']['pause']['done']   = 'finish';
+        $statusMap['task']['pause']['cancel'] = 'cancel';
+
+        $statusMap['task']['done']['doing']  = 'activate';
+        $statusMap['task']['done']['closed'] = 'close';
+
+        $statusMap['task']['cancel']['doing']  = 'activate';
+        $statusMap['task']['cancel']['closed'] = 'close';
+
+        $statusMap['task']['closed']['doing'] = 'activate';
+
+        $statusMap['bug']['wait']['done']   = 'resolve';
+        $statusMap['bug']['wait']['cancel'] = 'resolve';
+
+        $statusMap['bug']['done']['wait']   = 'activate';
+        $statusMap['bug']['done']['closed'] = 'close';
+
+        $statusMap['bug']['cancel']['wait']   = 'activate';
+        $statusMap['bug']['cancel']['closed'] = 'close';
+
+        $statusMap['bug']['closed']['wait'] = 'activate';
+
+        return $statusMap;
+    }
+
+    /**
+     * Get status list of kanban.
+     *
+     * @param  object $kanbanSetting    This param is used in the biz version, don't remove it.
+     * @access public
+     * @return string
+     */
+    public function getKanbanStatusList($kanbanSetting)
+    {
+        return $this->lang->task->statusList;
+    }
+
+    /**
+     * Get color list of kanban.
+     *
+     * @param  object $kanbanSetting
+     * @access public
+     * @return array
+     */
+    public function getKanbanColorList($kanbanSetting)
+    {
+        return $kanbanSetting->colorList;
     }
 
     /**

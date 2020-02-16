@@ -54,8 +54,8 @@ class tree extends control
         }
         elseif(strpos($viewType, 'caselib') !== false)
         {
-            $this->loadModel('testsuite');
-            $lib = $this->testsuite->getById($rootID);
+            $this->loadModel('caselib');
+            $lib = $this->caselib->getById($rootID);
             $this->view->root = $lib;
         }
 
@@ -90,6 +90,18 @@ class tree extends control
             $position[] = html::a($this->createLink('bug', 'browse', "product=$rootID"), $product->name);
             $position[] = $this->lang->tree->manageBug;
         }
+        elseif($viewType == 'feedback')
+        {
+            $this->lang->set('menugroup.tree', 'feedback');
+            $this->app->loadLang('feedback');
+            $this->lang->tree->menu = $this->lang->feedback->menu;
+            $root = new stdclass();
+            $root->name = $this->lang->feedback->common;
+            $this->view->root = $root;
+
+            $title      = $this->lang->tree->manageFeedback;
+            $position[] = html::a($this->createLink('feedback', 'admin'), $this->lang->tree->manageFeedback);
+        }
         elseif($viewType == 'case')
         {
             $this->loadModel('testcase')->setMenu($this->product->getPairs(), $rootID);
@@ -104,13 +116,13 @@ class tree extends control
         }
         elseif($viewType == 'caselib')
         {
-            $this->testsuite->setLibMenu($this->testsuite->getLibraries(), $rootID);
-            $this->lang->tree->menu      = $this->lang->testsuite->menu;
-            $this->lang->tree->menuOrder = $this->lang->testsuite->menuOrder;
+            $this->caselib->setLibMenu($this->caselib->getLibraries(), $rootID);
+            $this->lang->tree->menu      = $this->lang->caselib->menu;
+            $this->lang->tree->menuOrder = $this->lang->caselib->menuOrder;
             $this->lang->set('menugroup.tree', 'qa');
 
             $title      = $this->lang->tree->manageCaseLib;
-            $position[] = html::a($this->createLink('testsuite', 'library', "libID=$rootID"), $lib->name);
+            $position[] = html::a($this->createLink('caselib', 'browse', "libID=$rootID"), $lib->name);
             $position[] = $this->lang->tree->manageCaseLib;
         }
         elseif(strpos($viewType, 'doc') !== false)
@@ -142,6 +154,22 @@ class tree extends control
 
             $title      = $this->lang->tree->manageLine;
             $position[] = $this->lang->tree->manageLine;
+        }
+        elseif($viewType == 'trainskill')
+        {
+            $this->lang->set('menugroup.tree', 'train');
+            $this->lang->tree->menu = $this->lang->trainskill->menu;
+
+            $title      = $this->lang->tree->manageTrainskill;
+            $position[] = $this->lang->tree->manageTrainskill;
+        }
+        elseif($viewType == 'trainpost')
+        {   
+            $this->lang->set('menugroup.tree', 'train');
+            $this->lang->tree->menu = $this->lang->train->menu;
+
+            $title      = $this->lang->tree->manageTrainpost;
+            $position[] = $this->lang->tree->manageTrainpost;
         }
 
         $parentModules = $this->tree->getParents($currentModuleID);
@@ -198,7 +226,7 @@ class tree extends control
         $this->view->newModule       = $newModule;
         $this->view->currentProject  = $currentProject;
         $this->view->projectModules  = $this->tree->getTaskOptionMenu($currentProject, $productID);
-        $this->view->modules         = $this->tree->getTaskTreeMenu($rootID, $productID, $rooteModuleID = 0, array('treeModel', 'createTaskManageLink'));
+        $this->view->modules         = $this->tree->getTaskTreeMenu($rootID, $productID, $rooteModuleID = 0, array('treeModel', 'createTaskManageLink'), 'allModule');
         $this->view->sons            = $this->tree->getTaskSons($rootID, $productID, $currentModuleID);
         $this->view->parentModules   = $parentModules;
         $this->view->currentModuleID = $currentModuleID;
@@ -237,10 +265,10 @@ class tree extends control
         {
             $this->view->optionMenu = $this->tree->getOptionMenu($module->root, $module->type, 0, $branch);
         }
+        if($type == 'doc') $this->view->libs = $this->loadModel('doc')->getLibs('all', $extra = 'withObject');
 
         $this->view->module = $module;
         $this->view->type   = $type;
-        $this->view->libs   = $this->loadModel('doc')->getLibs($type = 'all', $extra = 'withObject');
         $this->view->branch = $branch;
         $this->view->users  = $this->loadModel('user')->getPairs('noclosed|nodeleted', $module->owner);
 
@@ -343,11 +371,11 @@ class tree extends control
      * @access public
      * @return string the html select string.
      */
-    public function ajaxGetOptionMenu($rootID, $viewType = 'story', $branch = 0, $rootModuleID = 0, $returnType = 'html', $fieldID = '', $needManage = false)
+    public function ajaxGetOptionMenu($rootID, $viewType = 'story', $branch = 0, $rootModuleID = 0, $returnType = 'html', $fieldID = '', $needManage = false, $extra = '')
     {
         if($viewType == 'task')
         {
-            $optionMenu = $this->tree->getTaskOptionMenu($rootID); 
+            $optionMenu = $this->tree->getTaskOptionMenu($rootID, 0, 0, $extra); 
         }
         else
         {
@@ -410,9 +438,9 @@ class tree extends control
         $this->view->method    = $method;
         $this->view->extra     = $extra;
 
+        $viewType = $module;
         if($module == 'bug') $viewType = 'bug';
         if($module == 'testcase')  $viewType = 'case';
-        if($module == 'testsuite') $viewType = 'caselib';
 
         $modules = $this->tree->getOptionMenu($rootID, $viewType);
         $modulesPinyin = common::convert2Pinyin($modules);

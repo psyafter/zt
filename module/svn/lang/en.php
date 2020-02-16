@@ -10,8 +10,7 @@
  * @link        https://www.zentao.pm
  */
 /* Methods. */
-$lang->svn = new stdclass();
 $lang->svn->common  = 'Subversion';
-$lang->svn->cat     = 'View Code';
-$lang->svn->diff    = 'Diff Code';
-$lang->svn->apiSync = 'API: Sync svn log';
+$lang->svn->cat     = 'View Source Code';
+$lang->svn->diff    = 'Compare Source Code';
+$lang->svn->apiSync = 'API: Syncrhonize SVN Logs';

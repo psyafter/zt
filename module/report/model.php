@@ -24,7 +24,14 @@ class reportModel extends model
     {
         $sum = 0;
         foreach($datas as $data) $sum += $data->value;
-        foreach($datas as $data) $data->percent = round($data->value / $sum, 2);
+
+        $totalPercent = 0;
+        foreach($datas as $i => $data)
+        {
+            $data->percent = round($data->value / $sum, 4);
+            $totalPercent += $data->percent;
+        }
+        if(isset($i)) $datas[$i]->percent = round(1 - $totalPercent + $datas[$i]->percent, 4);
         return $datas;
     }
 
@@ -136,8 +143,23 @@ class reportModel extends model
             ->fetchAll('id');
         $plans    = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where('deleted')->eq(0)->andWhere('product')->in(array_keys($products))
             ->beginIF(strpos($conditions, 'overduePlan') === false)->andWhere('end')->gt(date('Y-m-d'))->fi()
+            ->orderBy('product,parent_desc,begin')
             ->fetchAll('id');
-        foreach($plans as $plan) $products[$plan->product]->plans[$plan->id] = $plan;
+        foreach($plans as $plan)
+        {
+            if($plan->parent > 0)
+            {
+                $parentPlan = zget($plans, $plan->parent, null);
+                if($parentPlan)
+                {
+                    $parentPlan->title = "[" . $this->lang->productplan->parentAB . '] ' . $parentPlan->title;
+                    $products[$plan->product]->plans[$parentPlan->id] = $parentPlan;
+                    unset($plans[$parentPlan->id]);
+                }
+                $plan->title = "[" . $this->lang->productplan->childrenAB . '] ' . $plan->title;
+            }
+            $products[$plan->product]->plans[$plan->id] = $plan;
+        }
 
         $planStories      = array();
         $unplannedStories = array();
@@ -313,7 +335,7 @@ class reportModel extends model
         {
             foreach($multiTasks as $task)
             {
-                $userTask = $allTasks[$task->root];
+                $userTask = clone $allTasks[$task->root];
                 $userTask->estimate = $task->estimate;
                 $userTask->consumed = $task->consumed;
                 $userTask->left     = $task->left;
@@ -432,7 +454,7 @@ class reportModel extends model
             ->where('t1.assignedTo')->ne('')
             ->andWhere('t1.deleted')->eq(0)
             ->andWhere('t2.deleted')->eq(0)
-            ->andWhere('t1.status')->in('wait, doing')
+            ->andWhere('t1.status')->in('wait,doing')
             ->andWhere('t3.status')->ne('suspended')
             ->andWhere('t1.deadline', true)->eq('0000-00-00')
             ->orWhere('t1.deadline')->lt(date(DT_DATE1, strtotime('+4 day')))

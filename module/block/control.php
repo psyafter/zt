@@ -220,7 +220,7 @@ class block extends control
         $shortBlocks = $longBlocks = array();
         foreach($blocks as $key => $block)
         {
-            if(!empty($block->source) and !empty($acls['views']) and !isset($acls['views'][$block->source]))
+            if(!empty($block->source) and $block->source != 'todo' and !empty($acls['views']) and !isset($acls['views'][$block->source]))
             {
                 unset($blocks[$key]);
                 continue;
@@ -249,8 +249,6 @@ class block extends control
             $block->actionLink = '';
             if($block->block == 'overview')
             {
-                if($module == 'product' && common::hasPriv('product', 'create')) $block->actionLink = html::a($this->createLink('product', 'create'), "<i class='icon icon-sm icon-plus'></i> " . $this->lang->product->create, '', "class='btn btn-primary'");
-                if($module == 'project' && common::hasPriv('project', 'create')) $block->actionLink = html::a($this->createLink('project', 'create'), "<i class='icon icon-sm icon-plus'></i> " . $this->lang->project->create, '', "class='btn btn-primary'");
                 if($module == 'qa'      && common::hasPriv('testcase', 'create'))
                 {
                     $this->app->loadLang('testcase');
@@ -348,7 +346,7 @@ class block extends control
             }
             else
             {
-                $html = "<div class='panel-body'><div class='article-content'>" . htmlspecialchars_decode($block->params->html) .'</div></div>';
+                $html = "<div class='panel-body'><div class='article-content'>" . $block->params->html . '</div></div>';
             }
         }
         elseif($block->source != '')
@@ -810,22 +808,21 @@ class block extends control
             ->fetchGroup('product');
         foreach($projects as $product => $productProjects)
         {
-            $doing = 0;
+            $undone= 0;
             $done  = 0;
             $delay = 0;
 
             foreach($productProjects as $project)
             {
-                if($project->status == 'doing') $doing++;
-                if($project->status == 'done' or $project->status == 'closed') $done++;
+                ($project->status == 'done' or $project->status == 'closed') ? $done++ : $undone++;
                 if($project->status != 'done' && $project->status != 'closed' && $project->status != 'suspended' && $project->end < helper::today()) $delay++;
             }
 
             $project = array();
-            $project['doing'] = $doing;
-            $project['done']  = $done;
-            $project['delay'] = $delay;
-            $project['all']   = count($productProjects);
+            $project['undone'] = $undone;
+            $project['done']   = $done;
+            $project['delay']  = $delay;
+            $project['all']    = count($productProjects);
 
             $projects[$product] = $project;
         }
@@ -898,10 +895,9 @@ class block extends control
 
         /* Get tasks. */
         $yesterday = date('Y-m-d', strtotime('-1 day'));
-        $tasks     = $this->dao->select("project, count(id) as totalTasks, count(status in ('wait','doing','pause') or null) as undoneTasks, count(finishedDate like '{$yesterday}%' or null) as yesterdayFinished, sum(if(status != 'cancel', estimate, 0)) as totalEstimate, sum(consumed) as totalConsumed, sum(if(status != 'cancel', `left`, 0)) as totalLeft")->from(TABLE_TASK)
+        $tasks     = $this->dao->select("project, count(id) as totalTasks, count(status in ('wait','doing','pause') or null) as undoneTasks, count(finishedDate like '{$yesterday}%' or null) as yesterdayFinished, sum(if(status != 'cancel', estimate, 0)) as totalEstimate, sum(consumed) as totalConsumed, sum(if(status != 'cancel' and status != 'closed', `left`, 0)) as totalLeft")->from(TABLE_TASK)
             ->where('project')->in($projectIdList)
             ->andWhere('deleted')->eq(0)
-            ->andWhere('parent')->lt(1)
             ->groupBy('project')
             ->fetchAll('project');
         foreach($tasks as $projectID => $task)
@@ -1105,8 +1101,6 @@ class block extends control
         $total = 0;
         foreach($projects as $project)
         {
-            if(!$this->project->checkPriv($project->id)) continue;
-
             if(!isset($overview[$project->status])) $overview[$project->status] = 0;
             $overview[$project->status]++;
             $total++;

@@ -13,6 +13,7 @@
 /* Framework settings. */
 $config->framework->autoRepairTable = true;
 $config->framework->autoLang        = false;
+$config->framework->filterCSRF      = false;
 
 /* Upload settings. */
 $config->allowedTags = '<p><span><h1><h2><h3><h4><h5><em><u><strong><br><ol><ul><li><img><a><b><font><hr><pre><div><table><td><th><tr><tbody><embed><style>';
@@ -24,18 +25,74 @@ $config->wideSize      = 1400;
 $config->timeout       = 30000;
 $config->duplicateTime = 60;
 
-$config->productCommonList['en'][0]    = 'Product';
-$config->productCommonList['en'][1]    = 'Project';
-$config->projectCommonList['en'][0]    = 'Project';
-$config->projectCommonList['en'][1]    = 'Sprint';
+/* Product common list. */
 $config->productCommonList['zh-cn'][0] = '产品';
 $config->productCommonList['zh-cn'][1] = '项目';
-$config->projectCommonList['zh-cn'][0] = '项目';
-$config->projectCommonList['zh-cn'][1] = '迭代';
+
 $config->productCommonList['zh-tw'][0] = '產品';
 $config->productCommonList['zh-tw'][1] = '項目';
+
+$config->productCommonList['en'][0] = 'Product';
+$config->productCommonList['en'][1] = 'Project';
+
+$config->productCommonList['de'][0] = 'Produkt';
+$config->productCommonList['de'][1] = 'Projekt';
+
+$config->productCommonList['fr'][0] = 'Product';
+$config->productCommonList['fr'][1] = 'Projet';
+
+/* Project common list. */
+$config->projectCommonList['zh-cn'][0] = '项目';
+$config->projectCommonList['zh-cn'][1] = '迭代';
+$config->projectCommonList['zh-cn'][2] = '冲刺';
+
 $config->projectCommonList['zh-tw'][0] = '項目';
 $config->projectCommonList['zh-tw'][1] = '迭代';
+$config->projectCommonList['zh-tw'][2] = '冲刺';
+
+$config->projectCommonList['en'][0] = 'Project';
+$config->projectCommonList['en'][1] = 'Iteration';
+$config->projectCommonList['en'][2] = 'Sprint';
+
+$config->projectCommonList['de'][0] = 'Projekt';
+$config->projectCommonList['de'][1] = 'Iteration';
+$config->projectCommonList['de'][2] = 'Sprint';
+
+$config->projectCommonList['fr'][0] = 'Projet';
+$config->projectCommonList['fr'][1] = 'Iteration';
+$config->projectCommonList['fr'][2] = 'Sprint';
+
+/* Story common list. */
+$config->storyCommonList['zh-cn'][0] = '需求';
+$config->storyCommonList['zh-cn'][1] = '故事';
+
+$config->storyCommonList['zh-tw'][0] = '需求';
+$config->storyCommonList['zh-tw'][1] = '故事';
+
+$config->storyCommonList['en'][0] = 'story';
+$config->storyCommonList['en'][1] = 'story';
+
+$config->storyCommonList['de'][0] = 'story';
+$config->storyCommonList['de'][1] = 'story';
+
+$config->storyCommonList['fr'][0] = 'story';
+$config->storyCommonList['fr'][1] = 'story';
+
+/* Story common list. */
+$config->hourPointCommonList['zh-cn'][0] = '工时';
+$config->hourPointCommonList['zh-cn'][1] = '故事点';
+
+$config->hourPointCommonList['zh-tw'][0] = '工时';
+$config->hourPointCommonList['zh-tw'][1] = '故事点';
+
+$config->hourPointCommonList['en'][0] = 'hour';
+$config->hourPointCommonList['en'][1] = 'story point';
+
+$config->hourPointCommonList['de'][0] = 'hour';
+$config->hourPointCommonList['de'][1] = 'story point';
+
+$config->hourPointCommonList['fr'][0] = 'hour';
+$config->hourPointCommonList['fr'][1] = 'story point';
 
 /* Supported charsets. */
 $config->charsets['zh-cn']['utf-8'] = 'UTF-8';
@@ -44,6 +101,10 @@ $config->charsets['zh-tw']['utf-8'] = 'UTF-8';
 $config->charsets['zh-tw']['big5']  = 'BIG5';
 $config->charsets['en']['utf-8']    = 'UTF-8';
 $config->charsets['en']['GBK']      = 'GBK';
+$config->charsets['de']['utf-8']    = 'UTF-8';
+$config->charsets['de']['GBK']      = 'GBK';
+$config->charsets['fr']['utf-8']    = 'UTF-8';
+$config->charsets['fr']['GBK']      = 'GBK';
 
 /* IP white list settings.*/
 $config->ipWhiteList = '*';
@@ -107,6 +168,7 @@ define('TABLE_WEBHOOK',       '`' . $config->db->prefix . 'webhook`');
 define('TABLE_LOG',           '`' . $config->db->prefix . 'log`');
 define('TABLE_SCORE',         '`' . $config->db->prefix . 'score`');
 define('TABLE_NOTIFY',        '`' . $config->db->prefix . 'notify`');
+define('TABLE_OAUTH',         '`' . $config->db->prefix . 'oauth`');
 if(!defined('TABLE_LANG')) define('TABLE_LANG', '`' . $config->db->prefix . 'lang`');
 
 $config->objectTables['product']     = TABLE_PRODUCT;

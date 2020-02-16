@@ -27,13 +27,8 @@ class commonModel extends model
             $this->setCompany();
             $this->setUser();
             $this->loadConfigFromDB();
-            if((strpos($this->config->global->version, 'pro') !== false && version_compare($this->config->global->version, 'pro2.3.beta', '>'))
-                || (strpos($this->config->global->version, 'biz') !== false)
-                || version_compare($this->config->global->version, '4.3.beta', '>'))
-            {
-                $this->loadCustomFromDB();
-            }
-
+            $this->app->setTimezone();
+            $this->loadCustomFromDB();
             if(!$this->checkIP()) die($this->lang->ipLimited);
             $this->app->loadLang('company');
         }
@@ -132,10 +127,14 @@ class commonModel extends model
      */
     public function loadCustomFromDB()
     {
+        $this->loadModel('custom');
+
         if(defined('IN_UPGRADE')) return;
         if(!$this->config->db->name) return;
-        $records = $this->loadModel('custom')->getAllLang();
+
+        $records = $this->custom->getAllLang();
         if(!$records) return;
+
         $this->lang->db = new stdclass();
         $this->lang->db->custom = $records;
     }
@@ -167,7 +166,7 @@ class commonModel extends model
         if($this->loadModel('user')->isLogon() or ($this->app->company->guest and $this->app->user->account == 'guest'))
         {
             if(stripos($method, 'ajax') !== false) return true;
-            if(stripos($method, 'downnotify') !== false) return true;
+            if($module == 'misc' and $method == 'downloadclient') return true;
             if($module == 'block' and $method == 'main') return true;
             if($module == 'misc' and $method == 'changelog') return true;
             if($module == 'tutorial') return true;
@@ -253,12 +252,12 @@ class commonModel extends model
             if(!$isGuest)
             {
                 echo '<li class="user-profile-item">';
-                echo "<a href='". helper::createLink('my', 'profile', '', '', true) . "' class='iframe" . (!empty($app->user->role) && isset($lang->user->roleList[$app->user->role]) ? '' : ' no-role') . "' data-width='600'>";
+                echo "<a href='" . helper::createLink('my', 'profile') . "' class='" . (!empty($app->user->role) && isset($lang->user->roleList[$app->user->role]) ? '' : ' no-role') . "'>";
                 echo "<div class='avatar avatar bg-secondary avatar-circle'>" . strtoupper($app->user->account{0}) . "</div>\n";
                 echo '<div class="user-profile-name">' . (empty($app->user->realname) ? $app->user->account : $app->user->realname) . '</div>';
                 if(isset($lang->user->roleList[$app->user->role])) echo '<div class="user-profile-role">' . $lang->user->roleList[$app->user->role] . '</div>';
                 echo '</a></li><li class="divider"></li>';
-                echo '<li>' . html::a(helper::createLink('my', 'profile', '', '', true), $lang->profile, '', "class='iframe' data-width='600'") . '</li>';
+                echo '<li>' . html::a(helper::createLink('my', 'profile'), $lang->profile) . '</li>';
                 echo '<li>' . html::a(helper::createLink('my', 'changepassword', '', '', true), $lang->changePassword, '', "class='iframe' data-width='500'") . '</li>';
 
                 echo "<li class='divider'></li>";
@@ -315,11 +314,11 @@ class commonModel extends model
         echo "<li class='dropdown-submenu'>";
         echo "<a data-toggle='dropdown'>" . $lang->help . "</a>";
         echo "<ul class='dropdown-menu pull-left'>";
-        if($config->global->flow == 'full' && !commonModel::isTutorialMode() and $app->user->account != 'guest') echo '<li>' . html::a(helper::createLink('tutorial', 'start'), $lang->tutorial, '', "class='iframe' data-class-name='modal-inverse' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . "</li>";
+        if($config->global->flow == 'full' && !commonModel::isTutorialMode() and $app->user->account != 'guest') echo '<li>' . html::a(helper::createLink('tutorial', 'start'), $lang->noviceTutorial, '', "class='iframe' data-class-name='modal-inverse' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . "</li>";
         echo '<li>' . html::a($lang->manualUrl, $lang->manual, '_blank', "class='open-help-tab'") . '</li>';
         echo '<li>' . html::a(helper::createLink('misc', 'changeLog'), $lang->changeLog, '', "class='iframe' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . '</li>';
         echo "</ul></li>\n";
-        echo '<li>' . html::a(helper::createLink('misc', 'about'), $lang->aboutZenTao, '', "class='about iframe' data-width='900' data-headerless='true' data-backdrop='true' data-keyboard='true' data-class='modal-about'") . '</li>';
+        echo '<li>' . html::a(helper::createLink('misc', 'about'), $lang->aboutZenTao, '', "class='about iframe' data-width='1050' data-headerless='true' data-backdrop='true' data-keyboard='true' data-class='modal-about'") . '</li>';
     }
 
     /**
@@ -380,11 +379,14 @@ class commonModel extends model
             $link['method'] = $subMenuMethod;
             $link['vars']   = $subMenuParams;
 
-            $menu = new stdclass();
-            $menu->name   = $subMenuKey;
-            $menu->link   = $link;
-            $menu->text   = $subMenuName;
-            $menu->hidden = false;
+            $subMenuItem     = isset($items->$subMenuKey) ? $items->$subMenuKey : array();
+            $menu            = new stdclass();
+            $menu->name      = $subMenuKey;
+            $menu->link      = $link;
+            $menu->text      = $subMenuName;
+            $menu->subModule = isset($subMenuItem['subModule']) ? $subMenuItem['subModule'] : '';
+            $menu->alias     = isset($subMenuItem['alias'])     ? $subMenuItem['alias'] : '';
+            $menu->hidden    = false;
             $subMenu[$subMenuKey] = $menu;
         }
 
@@ -465,10 +467,9 @@ class commonModel extends model
                 $active = $menuItem->name == $mainMenu ? "class='$activeName'" : '';
                 $link   = commonModel::createMenuLink($menuItem);
                 echo "<li $active data-id='$menuItem->name'><a href='$link' $active>$menuItem->text</a></li>\n";
+
+                if(($lastMenu->name != $menuItem->name) && strpos($lang->dividerMenu, ",{$menuItem->name},") !== false) echo "<li class='divider'></li>";
             }
-
-            if(($lastMenu->name != $menuItem->name) && strpos($lang->dividerMenu, ",{$menuItem->name},") !== false) echo "<li class='divider'></li>";
-
         }
         echo "</ul>\n";
     }
@@ -544,10 +545,19 @@ class commonModel extends model
 
         /* get current module and method. */
         $isTutorialMode = commonModel::isTutorialMode();
-        $currentModule  = ($isTutorialMode and defined('WIZARD_MODULE')) ? WIZARD_MODULE : $app->getModuleName();
-        $currentMethod  = ($isTutorialMode and defined('WIZARD_METHOD')) ? WIZARD_METHOD : $app->getMethodName();
+        $currentModule  = $app->getModuleName();
+        $currentMethod  = $app->getMethodName();
         $menu           = customModel::getModuleMenu($moduleName);
         $isMobile       = $app->viewType === 'mhtml';
+
+        /* If this is not workflow then use rawModule and rawMethod to judge highlight. */
+        if(!$app->isFlow)
+        {
+            $currentModule  = $app->rawModule;
+            $currentMethod  = $app->rawMethod;
+        }
+        if($isTutorialMode and defined('WIZARD_MODULE')) $currentModule  = WIZARD_MODULE;
+        if($isTutorialMode and defined('WIZARD_METHOD')) $currentMethod  = WIZARD_METHOD;
 
         /* The beginning of the menu. */
         echo $isMobile ? '' : "<ul class='nav nav-default'>\n";
@@ -556,9 +566,9 @@ class commonModel extends model
         /* Cycling to print every sub menu. */
         foreach($menu as $menuItem)
         {
-            if(isset($lang->$moduleName->dividerMenu) and strpos($lang->$moduleName->dividerMenu, ",{$menuItem->name},") !== false) echo "<li class='divider'></li>";
             if(isset($menuItem->hidden) && $menuItem->hidden) continue;
             if($isMobile and empty($menuItem->link)) continue;
+            if(isset($lang->$moduleName->dividerMenu) and strpos($lang->$moduleName->dividerMenu, ",{$menuItem->name},") !== false) echo "<li class='divider'></li>";
 
             /* Init the these vars. */
             $alias     = isset($menuItem->alias) ? $menuItem->alias : '';
@@ -584,10 +594,10 @@ class commonModel extends model
                 /* Avoid user thinking the page is shaking when the menu toggle class 'active' */
                 if($config->global->flow == 'onlyTest')
                 {
-                    if($currentModule == 'bug'       && $currentMethod == 'browse')  $active = '';
-                    if($currentModule == 'testcase'  && $currentMethod == 'browse')  $active = '';
-                    if($currentModule == 'testtask'  && $currentMethod == 'browse')  $active = '';
-                    if($currentModule == 'testsuite' && $currentMethod == 'library') $active = '';
+                    if($currentModule == 'bug'       && $currentMethod == 'browse') $active = '';
+                    if($currentModule == 'testcase'  && $currentMethod == 'browse') $active = '';
+                    if($currentModule == 'testtask'  && $currentMethod == 'browse') $active = '';
+                    if($currentModule == 'caselib'   && $currentMethod == 'browse') $active = '';
                 }
 
                 $label   = $menuItem->text;
@@ -615,11 +625,10 @@ class commonModel extends model
                         $subMenu .= "<li class='$subActive' data-id='$subMenuItem->name'>" . html::a($subLink, $subLabel) . '</li>';
                     }
 
-                    if($subMenu)
-                    {
-                        $label   .= "<span class='caret'></span>";
-                        $subMenu  = "<ul class='dropdown-menu'>{$subMenu}</ul>";
-                    }
+                    if(empty($subMenu)) continue;
+
+                    $label   .= "<span class='caret'></span>";
+                    $subMenu  = "<ul class='dropdown-menu'>{$subMenu}</ul>";
                 }
 
                 $menuItemHtml = "<li class='$class $active' data-id='$menuItem->name'>" . html::a($link, $label, $target) . $subMenu . "</li>\n";
@@ -687,6 +696,19 @@ class commonModel extends model
             global $lang;
             echo html::a(helper::createLink('misc', 'downNotify'), "<i class='icon-bell'></i>", '', "title='$lang->downNotify' class='text-primary'") . ' &nbsp; ';
         }
+    }
+
+    /**
+     * Print the link for zentao client.
+     *
+     * @static
+     * @access public
+     * @return void
+     */
+    public static function printClientLink()
+    {
+        global $lang;
+        echo html::a(helper::createLink('misc', 'downloadClient', '', '', true), $lang->downloadClient, '', "title='$lang->downloadClient' class='text-primary iframe' data-width='600'") . html::a($lang->clientHelpLink, "<i class='icon-lightbulb text-success'></i>", '', "title='$lang->clientHelp' target='_blank'") . ' &nbsp; ';
     }
 
     /**
@@ -1059,7 +1081,38 @@ EOD;
      */
     public static function createChanges($old, $new)
     {
-        global $config;
+        global $app, $config;
+
+        /**
+         * 当主状态改变并且未设置子状态的值时把子状态的值设置为默认值并记录日志。
+         * Change sub status when status is changed and sub status is not set, and record the changes.
+         */
+        if(isset($config->bizVersion))
+        {
+            $oldID        = zget($old, 'id', '');
+            $oldStatus    = zget($old, 'status', '');
+            $newStatus    = zget($new, 'status', '');
+            $newSubStatus = zget($new, 'subStatus', '');
+
+            if($oldID && $oldStatus && $newStatus && !$newSubStatus && $oldStatus != $newStatus)
+            {
+                $moduleName = $app->getModuleName();
+
+                $field = $app->dbh->query('SELECT options FROM ' . TABLE_WORKFLOWFIELD . " WHERE `module` = '$moduleName' AND `field` = 'subStatus'")->fetch();
+                if(!empty($field->options)) $field->options = json_decode($field->options, true);
+
+                if(!empty($field->options[$newStatus]['default']))
+                {
+                    $flow    = $app->dbh->query('SELECT `table` FROM ' . TABLE_WORKFLOW . " WHERE `module`='$moduleName'")->fetch();
+                    $default = $field->options[$newStatus]['default'];
+
+                    $app->dbh->exec("UPDATE `$flow->table` SET `subStatus` = '$default' WHERE `id` = '$oldID'");
+
+                    $new->subStatus = $default;
+                }
+            }
+        }
+
         $changes    = array();
         $magicQuote = get_magic_quotes_gpc();
         foreach($new as $key => $value)
@@ -1154,8 +1207,6 @@ EOD;
     {
         $preAndNextObject = new stdClass();
 
-        if(strpos('story, task, bug, testcase, doc', $type) === false) return $preAndNextObject;
-
         /* Use existObject when the preAndNextObject of this objectID has exist in session. */
         $existObject = $type . 'PreAndNext';
         if(isset($_SESSION[$existObject]) and $_SESSION[$existObject]['objectID'] == $objectID) return $_SESSION[$existObject]['preAndNextObject'];
@@ -1167,7 +1218,6 @@ EOD;
         $queryCondition = $this->session->$queryCondition;
         $orderBy = $type . 'OrderBy';
         $orderBy = $this->session->$orderBy;
-
         if(empty($queryCondition) or $this->session->$typeOnlyCondition)
         {
             $queryObjects = $this->dao->select('*')->from($table)->where('id')->eq($objectID)
@@ -1360,13 +1410,16 @@ EOD;
     {
         $module = $this->app->getModuleName();
         $method = $this->app->getMethodName();
-        if(isset($this->app->user->modifyPassword) and $this->app->user->modifyPassword and ($module != 'my' or $method != 'changepassword')) die(js::locate(helper::createLink('my', 'changepassword')));
+        if(!empty($this->app->user->modifyPassword) and (($module != 'my' or $method != 'changepassword') and ($module != 'user' or $method != 'logout'))) die(js::locate(helper::createLink('my', 'changepassword')));
         if($this->isOpenMethod($module, $method)) return true;
         if(!$this->loadModel('user')->isLogon() and $this->server->php_auth_user) $this->user->identifyByPhpAuth();
         if(!$this->loadModel('user')->isLogon() and $this->cookie->za) $this->user->identifyByCookie();
 
         if(isset($this->app->user))
         {
+            if(!defined('IN_UPGRADE')) $this->session->user->view = $this->loadModel('user')->grantUserView();
+            $this->app->user = $this->session->user;
+
             if(!commonModel::hasPriv($module, $method)) $this->deny($module, $method);
         }
         else
@@ -1480,7 +1533,7 @@ EOD;
      */
     public function checkIP($ipWhiteList = '')
     {
-        $ip = $this->server->remote_addr;
+        $ip = helper::getRemoteIp();
 
         if(!$ipWhiteList) $ipWhiteList = $this->config->ipWhiteList;
 
@@ -1634,7 +1687,6 @@ EOD;
     public function checkEntry()
     {
         $this->loadModel('entry');
-
         if($this->session->valid_entry)
         {
             if(!$this->session->entry_code) $this->response('SESSION_CODE_MISSING');
@@ -1648,22 +1700,39 @@ EOD;
         $entry = $this->entry->getByCode($this->get->code);
         if(!$entry)                              $this->response('EMPTY_ENTRY');
         if(!$entry->key)                         $this->response('EMPTY_KEY');
-        if(empty($entry->account))               $this->response('ACCOUNT_UNBOUND');
         if(!$this->checkIP($entry->ip))          $this->response('IP_DENIED');
-        if(!$this->checkEntryToken($entry->key)) $this->response('INVALID_TOKEN');
+        if(!$this->checkEntryToken($entry))      $this->response('INVALID_TOKEN');
+        if($entry->freePasswd == 0 and empty($entry->account)) $this->response('ACCOUNT_UNBOUND');
+
+        $isFreepasswd = ($_GET['m'] == 'user' and strtolower($_GET['f']) == 'apilogin' and $_GET['account'] and $entry->freePasswd);
+        if($isFreepasswd) $entry->account = $_GET['account'];
+
+        $user = $this->dao->findByAccount($entry->account)->from(TABLE_USER)->fetch();
+        if(!$user) $this->response('INVALID_ACCOUNT');
 
         $this->loadModel('user');
-        $user = $this->dao->findByAccount($entry->account)->from(TABLE_USER)->fetch();
         $user->rights = $this->user->authorize($user->account);
         $user->groups = $this->user->getGroups($user->account);
         $user->view   = $this->user->grantUserView($user->account, $user->rights['acls']);
         $user->admin  = strpos($this->app->company->admins, ",{$user->account},") !== false;
         $this->session->set('user', $user);
         $this->app->user = $user;
+        $this->loadModel('action')->create('user', $user->id, 'login');
+        $this->loadModel('score')->create('user', 'login');
+
+        if($isFreepasswd) die(js::locate($this->config->webRoot));
 
         $this->session->set('ENTRY_CODE', $this->get->code);
         $this->session->set('VALID_ENTRY', md5(md5($this->get->code) . $this->server->remote_addr));
         $this->loadModel('entry')->saveLog($entry->id, $this->server->request_uri);
+
+        /* Add for task #5384. */
+        if($_SERVER['REQUEST_METHOD'] == 'POST' and empty($_POST))
+        {
+            $post = file_get_contents("php://input");
+            if(!empty($post)) $post  = json_decode($post, true);
+            if(!empty($post)) $_POST = $post;
+        }
 
         unset($_GET['code']);
         unset($_GET['token']);
@@ -1672,16 +1741,47 @@ EOD;
     /**
      * Check token of an entry.
      *
-     * @param  string $key
+     * @param  object $entry
      * @access public
-     * @return void
+     * @return bool
      */
-    public function checkEntryToken($key)
+    public function checkEntryToken($entry)
     {
         parse_str($this->server->query_String, $queryString);
         unset($queryString['token']);
+
+        /* Change for task #5384. */
+        if(isset($queryString['time']))
+        {
+            $timestamp = $queryString['time'];
+            if(strlen($timestamp) > 10) $timestamp = substr($timestamp, 0, 10);
+            if(strlen($timestamp) != 10 or $timestamp{0} >= '4') $this->response('ERROR_TIMESTAMP');
+
+            $result = $this->get->token == md5($entry->code . $entry->key . $queryString['time']);
+            if($result)
+            {
+                if($timestamp <= $entry->calledTime) $this->response('CALLED_TIME');
+                $this->loadModel('entry')->updateTime($entry->code, $timestamp);
+                unset($_GET['time']);
+                return $result;
+            }
+        }
+
         $queryString = http_build_query($queryString);
-        return $this->get->token == md5(md5($queryString) . $key);
+        return $this->get->token == md5(md5($queryString) . $entry->key);
+    }
+
+    /**
+     * Check Not CN Lang. 
+     * 
+     * @static
+     * @access public
+     * @return bool
+     */
+    public static function checkNotCN()
+    {
+        global $app;
+        return strpos('|zh-cn|zh-tw|', '|' . $app->getClientLang() . '|') === false;
     }
 
     /**
@@ -1723,6 +1823,7 @@ EOD;
         curl_setopt($curl, CURLOPT_ENCODING, "");
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         curl_setopt($curl, CURLOPT_HEADER, FALSE);
 
         $headers[] = "API-RemoteIP: " . $_SERVER['REMOTE_ADDR'];

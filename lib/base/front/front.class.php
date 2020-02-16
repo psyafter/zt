@@ -110,7 +110,7 @@ class baseHTML
     {
         global $config;
 
-        if(empty($title)) $title = $href;
+        if(strlen(trim($title)) == 0) $title = $href;
         $newline = $newline ? "\n" : '';
 
         return "<a href='$href' $misc>$title</a>$newline";
@@ -980,7 +980,15 @@ EOT;
     static public function reload($window = 'self')
     {
         $js  = self::start();
-        $js .= "$window.location.reload(true);\n";
+        // See bug #2379 http://pms.zentao.pm/bug-view-2379.html
+        if($window !== 'self' && $window !== 'window')
+        {
+            $js .= "if($window !== window) $window.location.reload(true);\n";
+        }
+        else
+        {
+            $js .= "$window.location.reload(true);\n";
+        }
         $js .= self::end();
         return $js;
     }
@@ -1067,6 +1075,7 @@ EOT;
         $jsLang = new stdclass();
         $jsLang->submitting = isset($lang->loading) ? $lang->loading : '';
         $jsLang->save       = $jsConfig->save;
+        $jsLang->expand     = isset($lang->expand)  ? $lang->expand  : '';
         $jsLang->timeout    = isset($lang->timeout) ? $lang->timeout : '';
 
         $js  = self::start(false);

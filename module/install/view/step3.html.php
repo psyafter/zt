@@ -18,10 +18,12 @@ if(!isset($error))
 \$config->installed       = true;
 \$config->debug           = false;
 \$config->requestType     = '$requestType';
+\$config->timezone        = '$timezone';
 \$config->db->host        = '$dbHost';
 \$config->db->port        = '$dbPort';
 \$config->db->name        = '$dbName';
 \$config->db->user        = '$dbUser';
+\$config->db->encoding    = '$dbEncoding';
 \$config->db->password    = '$dbPassword';
 \$config->db->prefix      = '$dbPrefix';
 \$config->webRoot         = getWebRoot();
@@ -74,7 +76,7 @@ EOT;
         ?>
       </div>
     </div>
-    <div class='modal-footer'><?php echo html::a($this->createLink('install', 'step4'), $lang->install->next, '', "class='btn btn-primary'");?></div>
+    <div class='modal-footer'><?php echo html::a($this->createLink('install', 'step4'), $lang->install->next, '', "class='btn btn-wide btn-primary'");?></div>
   <?php endif;?>
   </div>
 </div>

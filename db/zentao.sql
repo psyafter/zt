@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS `zt_action` (
   `objectID` mediumint(8) unsigned NOT NULL default '0',
   `product` varchar(255) NOT NULL,
   `project` mediumint(9) NOT NULL,
-  `actor` varchar(30) NOT NULL default '',
+  `actor` varchar(100) NOT NULL default '',
   `action` varchar(30) NOT NULL default '',
   `date` datetime NOT NULL,
   `comment` text NOT NULL,
@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS `zt_bug` (
   `found` varchar(30) NOT NULL default '',
   `steps` text NOT NULL,
   `status` enum('active','resolved','closed') NOT NULL default 'active',
+  `subStatus` varchar(30) NOT NULL default '',
   `color` char(7) NOT NULL,
   `confirmed` tinyint(1) NOT NULL default '0',
   `activatedCount` smallint(6) NOT NULL,
@@ -125,11 +126,12 @@ CREATE TABLE IF NOT EXISTS `zt_build` (
 -- DROP TABLE IF EXISTS `zt_burn`;
 CREATE TABLE IF NOT EXISTS `zt_burn` (
   `project` mediumint(8) unsigned NOT NULL,
+  `task` mediumint(8) unsigned NOT NULL DEFAULT '0',
   `date` date NOT NULL,
   `estimate` float NOT NULL,
   `left` float NOT NULL,
   `consumed` float NOT NULL,
-  PRIMARY KEY  (`project`,`date`)
+  PRIMARY KEY  (`project`,`date`,`task`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_case`;
 CREATE TABLE IF NOT EXISTS `zt_case` (
@@ -153,6 +155,7 @@ CREATE TABLE IF NOT EXISTS `zt_case` (
   `scriptStatus` varchar(30) NOT NULL,
   `scriptLocation` varchar(255) NOT NULL,
   `status` char(30) NOT NULL default '1',
+  `subStatus` varchar(30) NOT NULL default '',
   `color` char(7) NOT NULL,
   `frequency` enum('1','2','3') NOT NULL default '1',
   `order` tinyint(30) unsigned NOT NULL default '0',
@@ -166,6 +169,7 @@ CREATE TABLE IF NOT EXISTS `zt_case` (
   `linkCase` varchar(255) NOT NULL,
   `fromBug` mediumint(8) unsigned NOT NULL,
   `fromCaseID` mediumint(8) unsigned NOT NULL,
+  `fromCaseVersion` mediumint(8) unsigned NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   `lastRunner` varchar(30) NOT NULL,
   `lastRunDate` datetime NOT NULL,
@@ -250,7 +254,7 @@ CREATE TABLE IF NOT EXISTS `zt_dept` (
   `parent` mediumint(8) unsigned NOT NULL default '0',
   `path` char(255) NOT NULL default '',
   `grade` tinyint(3) unsigned NOT NULL default '0',
-  `order` tinyint(3) unsigned NOT NULL default '0',
+  `order` smallint(4) unsigned NOT NULL default '0',
   `position` char(30) NOT NULL default '',
   `function` char(255) NOT NULL default '',
   `manager` char(30) NOT NULL default '',
@@ -434,6 +438,16 @@ CREATE TABLE IF NOT EXISTS `zt_notify` (
   `status` varchar(10) NOT NULL DEFAULT 'wait',
   `failReason` text NOT NULL
 ) ENGINE='MyISAM' COLLATE 'utf8_general_ci';
+-- DROP TABLE IF EXISTS `zt_oauth`;
+CREATE TABLE IF NOT EXISTS `zt_oauth` (
+  `account` varchar(30) NOT NULL,
+  `openID` varchar(255) NOT NULL,
+  `providerType` varchar(30) NOT NULL,
+  `providerID` mediumint(8) unsigned NOT NULL,
+  KEY `account` (`account`),
+  KEY `providerType` (`providerType`),
+  KEY `providerID` (`providerID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_product`;
 CREATE TABLE IF NOT EXISTS `zt_product` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -442,6 +456,7 @@ CREATE TABLE IF NOT EXISTS `zt_product` (
   `line` mediumint(8) NOT NULL,
   `type` varchar(30) NOT NULL default 'normal',
   `status` varchar(30) NOT NULL default '',
+  `subStatus` varchar(30) NOT NULL default '',
   `desc` text NOT NULL,
   `PO` varchar(30) NOT NULL,
   `QD` varchar(30) NOT NULL,
@@ -454,6 +469,7 @@ CREATE TABLE IF NOT EXISTS `zt_product` (
   `order` mediumint(8) unsigned NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`),
+  KEY `acl` (`acl`),
   KEY `order` (`order`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_productplan`;
@@ -461,6 +477,7 @@ CREATE TABLE IF NOT EXISTS `zt_productplan` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
   `product` mediumint(8) unsigned NOT NULL,
   `branch` mediumint(8) unsigned NOT NULL,
+  `parent` mediumint(9) NOT NULL DEFAULT '0',
   `title` varchar(90) NOT NULL,
   `desc` text NOT NULL,
   `begin` date NOT NULL,
@@ -484,6 +501,7 @@ CREATE TABLE IF NOT EXISTS `zt_project` (
   `end` date NOT NULL,
   `days` smallint(5) unsigned NOT NULL,
   `status` varchar(10) NOT NULL,
+  `subStatus` varchar(30) NOT NULL default '',
   `statge` enum('1','2','3','4','5') NOT NULL default '1',
   `pri` enum('1','2','3','4') NOT NULL default '1',
   `desc` text NOT NULL,
@@ -508,6 +526,7 @@ CREATE TABLE IF NOT EXISTS `zt_project` (
   KEY `begin` (`begin`),
   KEY `end` (`end`),
   KEY `status` (`status`),
+  KEY `acl` (`acl`),
   KEY `order` (`order`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_projectproduct`;
@@ -533,7 +552,7 @@ CREATE TABLE IF NOT EXISTS `zt_release` (
   `product` mediumint(8) unsigned NOT NULL default '0',
   `branch` mediumint(8) unsigned NOT NULL default '0',
   `build` mediumint(8) unsigned NOT NULL,
-  `name` char(30) NOT NULL default '',
+  `name` varchar(255) NOT NULL default '',
   `marker` enum('0','1') NOT NULL default '0',
   `date` date NOT NULL,
   `stories` text NOT NULL,
@@ -541,6 +560,7 @@ CREATE TABLE IF NOT EXISTS `zt_release` (
   `leftBugs` text NOT NULL,
   `desc` text NOT NULL,
   `status` varchar(20) NOT NULL default 'normal',
+  `subStatus` varchar(30) NOT NULL default '',
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`),
   KEY `product` (`product`),
@@ -562,8 +582,10 @@ CREATE TABLE IF NOT EXISTS `zt_story` (
   `pri` tinyint(3) unsigned NOT NULL default '3',
   `estimate` float unsigned NOT NULL,
   `status` enum('','changed','active','draft','closed') NOT NULL default '',
+  `subStatus` varchar(30) NOT NULL default '',
   `color` char(7) NOT NULL,
   `stage` enum('','wait','planned','projected','developing','developed','testing','tested','verified','released', 'closed') NOT NULL DEFAULT 'wait',
+  `stagedBy` char(30) NOT NULL,
   `mailto` text,
   `openedBy` varchar(30) NOT NULL default '',
   `openedDate` datetime NOT NULL,
@@ -576,7 +598,7 @@ CREATE TABLE IF NOT EXISTS `zt_story` (
   `closedBy` varchar(30) NOT NULL default '',
   `closedDate` datetime NOT NULL,
   `closedReason` varchar(30) NOT NULL,
-  `toBug` mediumint(9) NOT NULL,
+  `toBug` mediumint(8) unsigned NOT NULL,
   `childStories` varchar(255) NOT NULL,
   `linkStories` varchar(255) NOT NULL,
   `duplicateStory` mediumint(8) unsigned NOT NULL,
@@ -601,6 +623,8 @@ CREATE TABLE IF NOT EXISTS `zt_storystage` (
   `story` mediumint(8) unsigned NOT NULL,
   `branch` mediumint(8) unsigned NOT NULL,
   `stage` varchar(50) NOT NULL,
+  `stagedBy` char(30) NOT NULL,
+  UNIQUE KEY `story_branch` (`story`,`branch`),
   KEY `story` (`story`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_suitecase`;
@@ -628,6 +652,7 @@ CREATE TABLE IF NOT EXISTS `zt_task` (
   `left` float unsigned NOT NULL,
   `deadline` date NOT NULL,
   `status` enum('wait','doing','done','pause','cancel','closed') NOT NULL default 'wait',
+  `subStatus` varchar(30) NOT NULL default '',
   `color` char(7) NOT NULL,
   `mailto` text,
   `desc` text NOT NULL,
@@ -765,6 +790,7 @@ CREATE TABLE IF NOT EXISTS `zt_testtask` (
   `desc` text NOT NULL,
   `report` text NOT NULL,
   `status` enum('blocked','doing','wait','done') NOT NULL DEFAULT 'wait',
+  `subStatus` varchar(30) NOT NULL default '',
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`),
   KEY `product` (`product`),
@@ -815,11 +841,12 @@ CREATE TABLE IF NOT EXISTS `zt_user` (
   `email` char(90) NOT NULL default '',
   `skype` char(90) NOT NULL default '',
   `qq` char(20) NOT NULL default '',
-  `yahoo` char(90) NOT NULL default '',
-  `gtalk` char(90) NOT NULL default '',
-  `wangwang` char(90) NOT NULL default '',
   `mobile` char(11) NOT NULL default '',
   `phone` char(20) NOT NULL default '',
+  `weixin` varchar(90) NOT NULL default '',
+  `dingding` varchar(90) NOT NULL default '',
+  `slack` varchar(90) NOT NULL default '',
+  `whatsapp` varchar(90) NOT NULL default '',
   `address` char(120) NOT NULL default '',
   `zipcode` char(10) NOT NULL default '',
   `join` date NOT NULL default '0000-00-00',
@@ -891,10 +918,12 @@ CREATE TABLE IF NOT EXISTS `zt_entry` (
   `account` varchar(30) NOT NULL DEFAULT '',
   `code` varchar(20) NOT NULL,
   `key` varchar(32) NOT NULL,
+  `freePasswd` enum('0','1') NOT NULL DEFAULT '0',
   `ip` varchar(100) NOT NULL,
   `desc` text NOT NULL,
   `createdBy` varchar(30) NOT NULL,
   `createdDate` datetime NOT NULL,
+  `calledTime` int(10) unsigned NOT NULL DEFAULT '0',
   `editedBy` varchar(30) NOT NULL,
   `editedDate` datetime NOT NULL,
   `deleted` enum('0', '1') NOT NULL DEFAULT '0',
@@ -907,6 +936,7 @@ CREATE TABLE IF NOT EXISTS `zt_webhook` (
   `name` varchar(50) NOT NULL,
   `url` varchar(255) NOT NULL,
   `domain` varchar(255) NOT NULL,
+  `secret` varchar(255) NOT NULL,
   `contentType` varchar(30) NOT NULL DEFAULT 'application/json',
   `sendType` enum('sync','async') NOT NULL DEFAULT 'sync',
   `products` text NOT NULL,
@@ -990,8 +1020,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'admin', 'index'),
 (1, 'admin', 'safe'),
 (1, 'api', 'debug'),
-(1, 'api', 'getModel'),
-(1, 'api', 'sql'),
 (1, 'backup', 'backup'),
 (1, 'backup', 'change'),
 (1, 'backup', 'delete'),
@@ -1067,6 +1095,8 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'dept', 'updateOrder'),
 (1, 'dev', 'api'),
 (1, 'dev', 'db'),
+(1, 'dev', 'editor'),
+(1, 'dev', 'translate'),
 (1, 'doc', 'browse'),
 (1, 'doc', 'create'),
 (1, 'doc', 'createLib'),
@@ -1080,12 +1110,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'doc', 'showFiles'),
 (1, 'doc', 'view'),
 (1, 'doc', 'sort'),
-(1, 'editor', 'delete'),
-(1, 'editor', 'edit'),
-(1, 'editor', 'extend'),
-(1, 'editor', 'index'),
-(1, 'editor', 'newPage'),
-(1, 'editor', 'save'),
 (1, 'extension', 'activate'),
 (1, 'extension', 'browse'),
 (1, 'extension', 'deactivate'),
@@ -1123,6 +1147,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'mail', 'save'),
 (1, 'mail', 'test'),
 (1, 'message', 'index'),
+(1, 'message', 'browser'),
 (1, 'message', 'setting'),
 (1, 'misc', 'ping'),
 (1, 'my', 'bug'),
@@ -1249,6 +1274,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'story', 'create'),
 (1, 'story', 'delete'),
 (1, 'story', 'edit'),
+(1, 'story', 'assignTo'),
 (1, 'story', 'batchChangeModule'),
 (1, 'story', 'linkStory'),
 (1, 'story', 'unlinkStory'),
@@ -1395,7 +1421,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'user', 'view'),
 (1, 'user', 'unbind'),
 (2, 'action', 'editComment'),
-(2, 'api', 'getModel'),
 (2, 'bug', 'activate'),
 (2, 'bug', 'assignTo'),
 (2, 'bug', 'batchAssignTo'),
@@ -1582,7 +1607,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (2, 'user', 'todo'),
 (2, 'user', 'view'),
 (3, 'action', 'editComment'),
-(3, 'api', 'getModel'),
 (3, 'bug', 'activate'),
 (3, 'bug', 'assignTo'),
 (3, 'bug', 'batchClose'),
@@ -1809,7 +1833,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (4, 'action', 'trash'),
 (4, 'action', 'undelete'),
 (4, 'admin', 'index'),
-(4, 'api', 'getModel'),
 (4, 'bug', 'activate'),
 (4, 'bug', 'assignTo'),
 (4, 'bug', 'batchAssignTo'),
@@ -2048,7 +2071,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (5, 'action', 'trash'),
 (5, 'action', 'undelete'),
 (5, 'admin', 'index'),
-(5, 'api', 'getModel'),
 (5, 'bug', 'activate'),
 (5, 'bug', 'assignTo'),
 (5, 'bug', 'batchAssignTo'),
@@ -2313,7 +2335,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (6, 'action', 'trash'),
 (6, 'action', 'undelete'),
 (6, 'admin', 'index'),
-(6, 'api', 'getModel'),
 (6, 'bug', 'activate'),
 (6, 'bug', 'assignTo'),
 (6, 'bug', 'batchAssignTo'),
@@ -2550,7 +2571,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (7, 'action', 'trash'),
 (7, 'action', 'undelete'),
 (7, 'admin', 'index'),
-(7, 'api', 'getModel'),
 (7, 'bug', 'activate'),
 (7, 'bug', 'assignTo'),
 (7, 'bug', 'batchClose'),
@@ -2713,6 +2733,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (7, 'story', 'create'),
 (7, 'story', 'delete'),
 (7, 'story', 'edit'),
+(7, 'story', 'assignTo'),
 (7, 'story', 'batchChangeModule'),
 (7, 'story', 'linkStory'),
 (7, 'story', 'unlinkStory'),
@@ -2799,7 +2820,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (8, 'action', 'trash'),
 (8, 'action', 'undelete'),
 (8, 'admin', 'index'),
-(8, 'api', 'getModel'),
 (8, 'bug', 'activate'),
 (8, 'bug', 'assignTo'),
 (8, 'bug', 'batchAssignTo'),
@@ -3059,7 +3079,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (9, 'action', 'trash'),
 (9, 'action', 'undelete'),
 (9, 'admin', 'index'),
-(9, 'api', 'getModel'),
 (9, 'bug', 'browse'),
 (9, 'bug', 'export'),
 (9, 'bug', 'index'),
@@ -3227,7 +3246,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (9, 'user', 'view'),
 (9, 'user', 'unbind'),
 (10, 'action', 'editComment'),
-(10, 'api', 'getModel'),
 (10, 'bug', 'activate'),
 (10, 'bug', 'browse'),
 (10, 'bug', 'close'),
@@ -3433,78 +3451,3 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (11, 'user', 'todo'),
 (11, 'user', 'view'),
 (12, 'my', 'limited');
--- DROP TABLE IF EXISTS `zt_im_chat`;
-CREATE TABLE IF NOT EXISTS `zt_im_chat` (
-  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `gid` char(40) NOT NULL DEFAULT '',
-  `name` varchar(60) NOT NULL DEFAULT '',
-  `type` varchar(20) NOT NULL DEFAULT 'group',
-  `admins` varchar(255) NOT NULL DEFAULT '',
-  `committers` varchar(255) NOT NULL DEFAULT '',
-  `subject` mediumint(8) unsigned NOT NULL DEFAULT 0,
-  `public` enum('0', '1') NOT NULL DEFAULT '0',
-  `createdBy` varchar(30) NOT NULL DEFAULT '',
-  `createdDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `editedBy` varchar(30) NOT NULL DEFAULT '',
-  `editedDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `lastActiveTime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `dismissDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`id`),
-  KEY `gid` (`gid`),
-  KEY `name` (`name`),
-  KEY `type` (`type`),
-  KEY `public` (`public`),
-  KEY `createdBy` (`createdBy`),
-  KEY `editedBy` (`editedBy`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
--- DROP TABLE IF EXISTS `zt_im_message`;
-CREATE TABLE IF NOT EXISTS `zt_im_message` (
-  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `gid` char(40) NOT NULL DEFAULT '',
-  `cgid` char(40) NOT NULL DEFAULT '',
-  `user` varchar(30) NOT NULL DEFAULT '',
-  `date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `order` bigint(8) unsigned NOT NULL,
-  `type` enum('normal', 'broadcast', 'notify') NOT NULL DEFAULT 'normal',
-  `content` text NOT NULL DEFAULT '',
-  `contentType` enum('text', 'plain', 'emotion', 'image', 'file', 'object') NOT NULL DEFAULT 'text',
-  `data` text NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `mgid` (`gid`),
-  KEY `mcgid` (`cgid`),
-  KEY `muser` (`user`),
-  KEY `mtype` (`type`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
--- DROP TABLE IF EXISTS `zt_im_chatuser`;
-CREATE TABLE IF NOT EXISTS `zt_im_chatuser`(
-  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `cgid` char(40) NOT NULL DEFAULT '',
-  `user` mediumint(8) NOT NULL DEFAULT 0,
-  `order` smallint(5) NOT NULL DEFAULT 0,
-  `star` enum('0', '1') NOT NULL DEFAULT '0',
-  `hide` enum('0', '1') NOT NULL DEFAULT '0',
-  `mute` enum('0', '1') NOT NULL DEFAULT '0',
-  `join` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `quit` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `category` varchar(40) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `cgid` (`cgid`),
-  KEY `user` (`user`),
-  KEY `order` (`order`),
-  KEY `star` (`star`),
-  KEY `hide` (`hide`),
-  UNIQUE KEY `chatuser` (`cgid`, `user`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
--- DROP TABLE IF EXISTS `zt_im_messagestatus`;
-CREATE TABLE `zt_im_messagestatus` (
-  `user` mediumint(8) NOT NULL DEFAULT 0,
-  `gid` char(40) NOT NULL DEFAULT '',
-  `status` enum('waiting','sent','readed','deleted') NOT NULL DEFAULT 'waiting',
-  UNIQUE KEY `user` (`user`,`gid`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
-ALTER TABLE `zt_file` CHANGE `pathname` `pathname` char(100) NOT NULL;
-ALTER TABLE `zt_user` ADD `status` enum('online', 'away', 'busy', 'offline') NOT NULL DEFAULT 'offline';

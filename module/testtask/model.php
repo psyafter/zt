@@ -438,6 +438,7 @@ class testtaskModel extends model
      */
     public function getLinkableCasesBySuite($productID, $task, $query, $suite, $linkedCases, $pager)
     {
+        if(strpos($query, '`product`') !== false) $query = str_replace('`product`', 't1.`product`', $query);
         return $this->dao->select('t1.*,t2.version as version')->from(TABLE_CASE)->alias('t1')
                 ->leftJoin(TABLE_SUITECASE)->alias('t2')->on('t1.id=t2.case')
                 ->where($query)
@@ -498,9 +499,18 @@ class testtaskModel extends model
      */
     public function getDataOfTestTaskPerRunResult($taskID)
     {
-        $datas = $this->dao->select('lastRunResult AS name, COUNT(*) AS value')->from(TABLE_TESTRUN)->where('task')->eq($taskID)->groupBy('name')->orderBy('value DESC')->fetchAll('name');
+        $datas = $this->dao->select("t1.lastRunResult AS name, COUNT('t1.*') AS value")->from(TABLE_TESTRUN)->alias('t1')
+            ->leftJoin(TABLE_CASE)->alias('t2')
+            ->on('t1.case = t2.id')
+            ->where('t1.task')->eq($taskID)
+            ->andWhere('t2.deleted')->eq(0)
+            ->groupBy('name')
+            ->orderBy('value DESC')
+            ->fetchAll('name');
+
         if(!$datas) return array();
 
+        $this->app->loadLang('testcase');
         foreach($datas as $result => $data) $data->name = isset($this->lang->testcase->resultList[$result])? $this->lang->testcase->resultList[$result] : $this->lang->testtask->unexecuted;
 
         return $datas;
@@ -564,8 +574,8 @@ class testtaskModel extends model
     {
         $datas = $this->dao->select('lastRunner AS name, COUNT(*) AS value')->from(TABLE_TESTRUN)->where('task')->eq($taskID)->groupBy('name')->orderBy('value DESC')->fetchAll('name');
         if(!$datas) return array();
-
-        foreach($datas as $result => $data) $data->name = $result ? $result : $this->lang->testtask->unexecuted;
+        $users = $this->loadModel('user')->getPairs('noclosed|noletter');
+        foreach($datas as $result => $data) $data->name = $result ? zget($users, $result, $result) : $this->lang->testtask->unexecuted;
 
         return $datas;
     }
@@ -754,7 +764,7 @@ class testtaskModel extends model
     {
         $orderBy = (strpos($orderBy, 'assignedTo') !== false or strpos($orderBy, 'lastRunResult') !== false) ? ('t1.' . $orderBy) : ('t2.' . $orderBy);
 
-        return $this->dao->select('t2.*,t1.*,t2.version as caseVersion,t3.title as storyTitle')->from(TABLE_TESTRUN)->alias('t1')
+        return $this->dao->select('t2.*,t1.*,t2.version as caseVersion,t3.title as storyTitle,t2.status as caseStatus')->from(TABLE_TESTRUN)->alias('t1')
             ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
             ->leftJoin(TABLE_STORY)->alias('t3')->on('t2.story = t3.id')
             ->where('t1.task')->eq((int)$taskID)
@@ -778,8 +788,9 @@ class testtaskModel extends model
     {
         $orderBy = strpos($orderBy, 'assignedTo') !== false ? ('t1.' . $orderBy) : ('t2.' . $orderBy);
 
-        return $this->dao->select('t2.*,t1.*,t2.version as caseVersion')->from(TABLE_TESTRUN)->alias('t1')
+        return $this->dao->select('t2.*,t1.*,t2.version as caseVersion,t3.title as storyTitle,t2.status as caseStatus')->from(TABLE_TESTRUN)->alias('t1')
             ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
+            ->leftJoin(TABLE_STORY)->alias('t3')->on('t2.story = t3.id')
             ->where('t1.task')->eq((int)$taskID)
             ->andWhere('t1.assignedTo')->eq($user)
             ->andWhere('t2.deleted')->eq(0)
@@ -841,9 +852,10 @@ class testtaskModel extends model
             }
 
             $caseQuery = preg_replace('/`(\w+)`/', 't2.`$1`', $caseQuery);
-            $caseQuery = str_replace(array('t2.`assignedTo`', 't2.`lastRunner`', 't2.`lastRunDate`', 't2.`lastRunResult`'), array('t1.`assignedTo`', 't1.`lastRunner`', 't1.`lastRunDate`', 't1.`lastRunResult`'), $caseQuery);
-            $runs = $this->dao->select('t2.*,t1.*, t2.version as caseVersion')->from(TABLE_TESTRUN)->alias('t1')
+            $caseQuery = str_replace(array('t2.`assignedTo`', 't2.`lastRunner`', 't2.`lastRunDate`', 't2.`lastRunResult`', 't2.`status`'), array('t1.`assignedTo`', 't1.`lastRunner`', 't1.`lastRunDate`', 't1.`lastRunResult`', 't1.`status`'), $caseQuery);
+            $runs = $this->dao->select('t2.*,t1.*, t2.version as caseVersion,t3.title as storyTitle,t2.status as caseStatus')->from(TABLE_TESTRUN)->alias('t1')
                 ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
+                ->leftJoin(TABLE_STORY)->alias('t3')->on('t2.story = t3.id')
                 ->where($caseQuery)
                 ->andWhere('t1.task')->eq($task->id)
                 ->andWhere('t2.deleted')->eq(0)
@@ -915,8 +927,8 @@ class testtaskModel extends model
             ->add('run', $runID)
             ->add('caseResult', $caseResult)
             ->setForce('stepResults', serialize($stepResults))
-            ->add('lastRunner', $this->app->user->account)
-            ->add('date', $now)
+            ->setDefault('lastRunner', $this->app->user->account)
+            ->setDefault('date', $now)
             ->skipSpecial('stepResults')
             ->remove('steps,reals,result')
             ->get();
@@ -982,6 +994,7 @@ class testtaskModel extends model
             ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
             ->where('t1.case')->in($caseIdList)
             ->andWhere('t1.version=t2.version')
+            ->andWhere('t2.status')->ne('wait')
             ->fetchGroup('case', 'id');
 
         $now = helper::now();
@@ -1147,7 +1160,7 @@ class testtaskModel extends model
         if($action == 'block')    return ($testtask->status == 'doing'   || $testtask->status == 'wait');
         if($action == 'activate') return ($testtask->status == 'blocked' || $testtask->status == 'done');
         if($action == 'close')    return $testtask->status != 'done';
-
+        if($action == 'runcase')  return isset($testtask->caseStatus) ? $testtask->caseStatus != 'wait' : $testtask->status != 'wait';
         return true;
     }
 
@@ -1164,10 +1177,11 @@ class testtaskModel extends model
      */
     public function printCell($col, $run, $users, $task, $branches, $mode = 'datatable')
     {
-        $canView  = common::hasPriv('testcase', 'view');
-        $caseLink = helper::createLink('testcase', 'view', "caseID=$run->case&version=$run->version&from=testtask&taskID=$run->task");
-        $account  = $this->app->user->account;
-        $id = $col->id;
+        $canView     = common::hasPriv('testcase', 'view');
+        $caseLink    = helper::createLink('testcase', 'view', "caseID=$run->case&version=$run->version&from=testtask&taskID=$run->task");
+        $account     = $this->app->user->account;
+        $id          = $col->id;
+        $caseChanged = $run->version < $run->caseVersion;
         if($col->show)
         {
             $class = "c-$id ";
@@ -1203,7 +1217,7 @@ class testtaskModel extends model
                 foreach(explode(',', trim($run->stage, ',')) as $stage) echo $this->lang->testcase->stageList[$stage] . '<br />';
                 break;
             case 'status':
-                echo ($run->version < $run->caseVersion) ? "<span class='warning'>{$this->lang->testcase->changed}</span>" : $this->lang->testtask->statusList[$run->status];
+                echo $caseChanged ? "<span class='warning'>{$this->lang->testcase->changed}</span>" : $this->processStatus('testtask', $run);
                 break;
             case 'precondition':
                 echo $run->precondition;
@@ -1262,6 +1276,12 @@ class testtaskModel extends model
                 echo $run->stepNumber;
                 break;
             case 'actions':
+                if($caseChanged)
+                {
+                    common::printIcon('testcase', 'confirmChange', "id=$run->case&taskID=$run->task&from=list", $run, 'list', 'search', 'hiddenwin');
+                    break;
+                }
+
                 common::printIcon('testcase', 'createBug', "product=$run->product&branch=$run->branch&extra=projectID=$task->project,buildID=$task->build,caseID=$run->case,version=$run->version,runID=$run->id,testtask=$task->id", $run, 'list', 'bug', '', 'iframe', '', "data-width='90%'");
 
                 common::printIcon('testtask', 'results', "id=$run->id", $run, 'list', '', '', 'iframe', '', "data-width='90%'");
@@ -1270,7 +1290,7 @@ class testtaskModel extends model
                 if(common::hasPriv('testtask', 'unlinkCase', $run))
                 {
                     $unlinkURL = helper::createLink('testtask', 'unlinkCase', "caseID=$run->id&confirm=yes");
-                    echo html::a("javascript:ajaxDelete(\"$unlinkURL\",\"casesForm\",confirmUnlink)", '<i class="icon-unlink"></i>', '', "title='{$this->lang->testtask->unlinkCase}' class='btn'");
+                    echo html::a("javascript:ajaxDelete(\"$unlinkURL\", \"casesForm\", confirmUnlink)", '<i class="icon-unlink"></i>', '', "title='{$this->lang->testtask->unlinkCase}' class='btn'");
                 }
 
                 break;
