@@ -57,7 +57,7 @@ class ciModel extends model
         /* Max retry times is: 3. */
         if($compile->times >= 3)
         {
-            $this->dao->update(TABLE_COMPILE)->set('status')->eq('failure')->where('id')->eq($compile->id)->exec();
+            $this->updateBuildStatus($compile, 'failure');
             return false;
         }
 
@@ -157,6 +157,14 @@ class ciModel extends model
 
         $this->dao->update(TABLE_COMPILE)->data($data)->where('id')->eq($compile->id)->exec();
         $this->dao->update(TABLE_JOB)->set('lastExec')->eq($now)->set('lastStatus')->eq($pipeline->status)->where('id')->eq($compile->job)->exec();
+
+        /* Send mr message by compile status. */
+        $relateMR = $this->dao->select('*')->from(TABLE_MR)->where('compileID')->eq($compile->id)->fetch();
+        if($relateMR)
+        {
+            if($data->status == 'success') $this->loadModel('action')->create('mr', $relateMR->id, 'compilePass');
+            if($data->status == 'failed')  $this->loadModel('action')->create('mr', $relateMR->id, 'compileFail');
+        }
     }
 
     /**
@@ -191,6 +199,79 @@ class ciModel extends model
     {
         $this->dao->update(TABLE_COMPILE)->set('status')->eq($status)->where('id')->eq($build->id)->exec();
         $this->dao->update(TABLE_JOB)->set('lastExec')->eq(helper::now())->set('lastStatus')->eq($status)->where('id')->eq($build->job)->exec();
+
+        if($status == 'building') return;
+        $relateMR = $this->dao->select('*')->from(TABLE_MR)->where('compileID')->eq($build->id)->fetch();
+        if(isset($relateMR->synced) and $relateMR->synced == '0' and $status == 'success')
+        {
+            $newMR = new stdclass();
+            $newMR->mergeStatus   = 'can_be_merged';
+            $newMR->compileStatus = $status;
+
+            /* Create a gitlab mr. */
+            $MRObject                       = new stdclass();
+            $MRObject->target_project_id    = $relateMR->targetProject;
+            $MRObject->source_branch        = $relateMR->sourceBranch;
+            $MRObject->target_branch        = $relateMR->targetBranch;
+            $MRObject->title                = $relateMR->title;
+            $MRObject->description          = $relateMR->description;
+            $MRObject->remove_source_branch = $relateMR->removeSourceBranch == '1' ? true : false;
+            if($relateMR->assignee)
+            {
+                $gitlabAssignee = $this->gitlab->getUserIDByZentaoAccount($relateMR->gitlabID, $relateMR->assignee);
+                if($gitlabAssignee) $MRObject->assignee_ids = $gitlabAssignee;
+            }
+
+            $rawMR = $this->loadModel('mr')->apiCreateMR($relateMR->gitlabID, $relateMR->sourceProject, $MRObject);
+
+            /**
+            * Another open merge request already exists for this source branch.
+            * The type of variable `$rawMR->message` is array.
+            */
+            if(isset($rawMR->message) and !isset($rawMR->iid))
+            {
+                foreach($this->lang->mr->apiErrorMap as $key => $errorMsg)
+                {
+                    if(strpos($errorMsg, '/') === 0)
+                    {
+                        $result = preg_match($errorMsg, $rawMR->message[0], $matches);
+                        if($result) $errorMessage = sprintf(zget($this->lang->mr->errorLang, $key), $matches[1]);
+                    }
+                    else
+                    {
+                        if($rawMR->message[0] == $errorMsg) $errorMessage = zget($this->lang->mr->errorLang, $key, $rawMR->message[0]);
+                    }
+
+                    if(isset($errorMessage)) break;
+                }
+                $newMR->syncError = sprintf($this->lang->mr->apiError->createMR, isset($errorMessage) ? $errorMessage : $rawMR->message[0]);
+            }
+            elseif(!isset($rawMR->iid))
+            {
+                $newMR->syncError = $this->lang->mr->createFailedFromAPI;
+            }
+
+            if(!empty($rawMR->iid))
+            {
+                $newMR->mriid  = $rawMR->iid;
+                $newMR->status = $rawMR->state;
+                $newMR->synced = '1';
+            }
+
+            $this->dao->update(TABLE_MR)->data($newMR)
+                    ->where('id')->eq($relateMR->id)
+                    ->exec();
+        }
+        else
+        {
+            $newMR = new stdclass();
+            $newMR->mergeStatus   = 'cannot_merge_by_fail';
+            $newMR->compileStatus = $status;
+
+            $this->dao->update(TABLE_MR)->data($newMR)
+                    ->where('id')->eq($relateMR->id)
+                    ->exec();
+        }
     }
 
     /**

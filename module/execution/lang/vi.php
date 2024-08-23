@@ -16,7 +16,7 @@ $lang->execution->id              = 'ID '.$lang->executionCommon;
 $lang->execution->type            = 'Loại';
 $lang->execution->name            = "Tên {$lang->executionCommon}";
 $lang->execution->code            = 'Mã';
-$lang->execution->project         = 'Project';
+$lang->execution->projectName     = 'Project';
 $lang->execution->execName        = 'Execution Name';
 $lang->execution->execCode        = 'Execution Code';
 $lang->execution->execType        = 'Execution Type';
@@ -376,6 +376,11 @@ $lang->execution->bugList       = "Bugs";
 $lang->execution->kanbanHideCols   = 'Cột Đã đóng & đã hủy';
 $lang->execution->kanbanShowOption = 'Mở ra';
 $lang->execution->kanbanColsColor  = 'Tùy biến màu cột';
+
+$lang->execution->kanbanViewList['all']   = 'All';
+$lang->execution->kanbanViewList['story'] = "{$lang->SRCommon}";
+$lang->execution->kanbanViewList['bug']   = 'Bug';
+$lang->execution->kanbanViewList['task']  = 'Task';
 
 $lang->kanbanSetting = new stdclass();
 $lang->kanbanSetting->noticeReset     = 'Bạn có muốn thiết lập lại Kanban?';

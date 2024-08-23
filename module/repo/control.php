@@ -81,9 +81,9 @@ class repo extends control
         if(common::hasPriv('repo', 'create')) $this->lang->TRActions = html::a(helper::createLink('repo', 'create'), "<i class='icon icon-plus'></i> " . $this->lang->repo->create, '', "class='btn btn-primary'");
 
         $repoID = $this->repo->saveState(0, $objectID);
-        $this->commonAction($repoID, $objectID);
+        if($this->viewType !== 'json') $this->commonAction($repoID, $objectID);
 
-        $repoList = $this->repo->getList(0, $orderBy);
+        $repoList = $this->repo->getList(0, '', $orderBy);
 
         /* Pager. */
         $this->app->loadClass('pager', $static = true);
@@ -169,7 +169,8 @@ class repo extends control
 
         if(strtolower($repo->SCM) == 'gitlab')
         {
-            $projects = $this->loadModel('gitlab')->apiGetProjects($repo->gitlab);
+            $gitlabID = isset($repo->gitlab) ? $repo->gitlab : 0;
+            $projects = $this->loadModel('gitlab')->apiGetProjects($gitlabID);
             $options  = array();
             foreach($projects as $project) $options[$project->id] = $project->name_with_namespace;
 
@@ -184,7 +185,7 @@ class repo extends control
         $this->view->groups      = $this->loadModel('group')->getPairs();
         $this->view->users       = $this->loadModel('user')->getPairs('noletter|noempty|nodeleted');
         $this->view->products    = $objectID ? $this->loadModel('product')->getProductPairsByProject($objectID) : $this->loadModel('product')->getPairs();
-        $this->view->gitlabHosts = $this->loadModel('gitlab')->getPairs();
+        $this->view->gitlabHosts = array('' => '') + $this->loadModel('gitlab')->getPairs();
 
         $this->view->position[] = html::a(inlink('maintain'), $this->lang->repo->common);
         $this->view->position[] = $this->lang->repo->edit;
@@ -356,6 +357,7 @@ class repo extends control
 
         session_start();
         $this->session->set('revisionList', $this->app->getURI(true));
+        $this->session->set('gitlabBranchList', $this->app->getURI(true));
         session_write_close();
 
         /* Get repo and synchronous commit. */
@@ -401,6 +403,8 @@ class repo extends control
         /* Cache infos. */
         if($refresh or !$cacheFile or !file_exists($cacheFile) or (time() - filemtime($cacheFile)) / 60 > $this->config->repo->cacheTime)
         {
+            $this->repo->syncCommit($repoID, $branchID);
+
             /* Get cache infos. */
             $infos = $this->scm->ls($path, $revision);
 
@@ -1171,5 +1175,43 @@ class repo extends control
     {
         $productPairs = $this->repo->getProductsByRepo($repoID);
         echo html::select('product', array('') + $productPairs, key($productPairs), "class='form-control chosen'");
+    }
+
+    /**
+     * API: get repo by url.
+     *
+     * @param  string $type  gitlab
+     * @access public
+     * @return void
+     */
+    public function apiGetRepoByUrl()
+    {
+        $url    = urldecode($this->post->repoUrl);
+        $result = $this->repo->getRepoByUrl($url);
+        if($result['result'] == 'fail') return $this->send($result);
+
+        $repo = $result['data'];
+        $fileServer = new stdclass();
+        $fileServer->fileServerUrl      = $repo->fileServerUrl;
+        $fileServer->fileServerAccount  = $repo->fileServerAccount;
+        $fileServer->fileServerPassword = $repo->fileServerPassword;
+        return $this->send($fileServer);
+    }
+
+    /**
+     * API: get rules.
+     *
+     * @access public
+     * @return void
+     */
+    public function ajaxGetRules()
+    {
+        $regRules = $this->repo->processRules();
+        $rawRules = $this->config->repo->rules;
+
+        $data = array();
+        $data['reg'] = $regRules;
+        $data['raw'] = $rawRules;
+        return $this->send(array('status' => 'success', 'rules' => json_encode($data)));
     }
 }

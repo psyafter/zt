@@ -118,15 +118,17 @@ class repoModel extends model
      * Get repo list.
      *
      * @param  int    $projectID
+     * @param  string $SCM  Subversion|Git|Gitlab
      * @param  string $orderBy
      * @param  object $pager
      * @access public
      * @return array
      */
-    public function getList($projectID = 0, $orderBy = 'id_desc', $pager = null)
+    public function getList($projectID = 0, $SCM = '', $orderBy = 'id_desc', $pager = null)
     {
         $repos = $this->dao->select('*')->from(TABLE_REPO)
             ->where('deleted')->eq('0')
+            ->beginIF($SCM)->andWhere('SCM')->eq($SCM)->fi()
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll('id');
@@ -230,9 +232,20 @@ class repoModel extends model
             ->autoCheck()
             ->exec();
 
-        if(!dao::isError()) $this->rmClientVersionFile();
+        if(dao::isError()) return false;
 
-        return $this->dao->lastInsertID();
+        $this->rmClientVersionFile();
+
+        $repoID = $this->dao->lastInsertID();
+
+        if($this->post->SCM == 'Gitlab')
+        {
+            /* Add webhook. */
+            $repo = $this->getRepoByID($repoID);
+            $this->loadModel('gitlab')->addPushWebhook($repo);
+        }
+
+        return $repoID;
     }
 
     /**
@@ -386,6 +399,84 @@ class repoModel extends model
     }
 
     /**
+     * Get repo by url.
+     *
+     * @param  string $url
+     * @access public
+     * @return array
+     */
+    public function getRepoByUrl($url)
+    {
+        if(empty($url)) return array('result' => 'fail', 'message' => 'Url is empty.');
+
+        $parsedUrl = parse_url($url);
+
+        $isSSH   = $parsedUrl['scheme'] == 'ssh';
+        $baseURL = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . (isset($parsedUrl['port']) ? ":{$parsedUrl['port']}" : '');
+
+        /* Get gitlabs by URL. */
+        $gitlabs = $this->dao->select('*')->from(TABLE_PIPELINE)->where('type')->eq('gitlab')
+            ->beginIF($isSSH)->andWhere('url')->like("%{$parsedUrl['host']}%")->fi()
+            ->beginIF(!$isSSH)->andWhere('url')->eq($baseURL)->fi()
+            ->andWhere('deleted')->eq('0')
+            ->orderBy('id_desc')
+            ->fetchAll('id');
+
+        /* Convert to id by url. */
+        $this->loadModel('gitlab');
+        $url     = strtolower($url);
+        $matches = array();
+        foreach($gitlabs as $gitlabID => $gitlab)
+        {
+            $matched = new stdclass();
+            $matched->gitlab  = 0;
+            $matched->project = 0;
+
+            $projects = $this->gitlab->apiGetProjects($gitlabID);
+            foreach($projects as $project)
+            {
+                if((!$isSSH and strtolower($project->http_url_to_repo) == $url) or ($isSSH and strtolower($project->ssh_url_to_repo) == $url))
+                {
+                    $matched->gitlab  = $gitlabID;
+                    $matched->project = $project->id;
+
+                    $matches[] = $matched;
+                }
+            }
+        }
+        if(empty($matches)) return array('result' => 'fail', 'message' => 'No matched gitlab.');
+
+        $conditions = array();
+        foreach($matches as $matched) $conditions[] = "(`client`='$matched->gitlab' and `path`='$matched->project')";
+        $conditions = '(' . join(' OR ', $conditions). ')';
+
+        $matchedRepos = $this->dao->select('*')->from(TABLE_REPO)->where('SCM')->eq('Gitlab')
+            ->andWhere($conditions)
+            ->andWhere('deleted')->eq('0')
+            ->orderBy('id_desc')
+            ->fetchAll();
+        if(empty($matchedRepos)) return array('result' => 'fail', 'message' => 'No matched gitlab.');
+
+        $matchedRepo = '';
+        foreach($matchedRepos as $repo)
+        {
+            if(!empty($repo->preMerge))
+            {
+                $matchedRepo = $repo;
+                break;
+            }
+        }
+        if(empty($matchedRepo)) return array('result' => 'fail', 'message' => 'Matched gitlab is not open pre merge.');
+        if(empty($matchedRepo->job)) return array('result' => 'fail', 'message' => 'No linked job.');
+
+        $job = $this->dao->select('*')->from(TABLE_JOB)->where('id')->eq($matchedRepo->job)->andWhere('deleted')->eq(0)->fetch();
+        if(empty($job)) return array('result' => 'fail', 'message' => 'Linked job is not exists.');
+
+        $matchedRepo->job = $job;
+        return array('result' => 'success', 'data' => $matchedRepo);
+    }
+
+    /**
      * Get by id list.
      *
      * @param  array  $idList
@@ -407,15 +498,23 @@ class repoModel extends model
     /**
      * Get git branches.
      *
-     * @param  object    $repo
+     * @param  object  $repo
+     * @param  bool    $printLabel
      * @access public
      * @return array
      */
-    public function getBranches($repo)
+    public function getBranches($repo, $printLabel = false)
     {
         $this->scm = $this->app->loadClass('scm');
         $this->scm->setEngine($repo);
-        return $this->scm->branch();
+        $branches = $this->scm->branch();
+
+        if($printLabel)
+        {
+            foreach($branches as &$branch) $branch = 'Branch::' . $branch;
+        }
+
+        return $branches;
     }
 
     /**
@@ -643,7 +742,7 @@ class repoModel extends model
 
             $commit->repo    = $repoID;
             $commit->commit  = $version;
-            $commit->comment = htmlspecialchars($commit->comment);
+            $commit->comment = htmlSpecialString($commit->comment);
             $this->dao->insert(TABLE_REPOHISTORY)->data($commit)->exec();
             if(!dao::isError())
             {
@@ -695,7 +794,7 @@ class repoModel extends model
         $history->committer = $commit->committer;
         $history->time      = $commit->time;
         $history->commit    = $version;
-        $history->comment   = htmlspecialchars($commit->comment);
+        $history->comment   = htmlSpecialString($commit->comment);
         $this->dao->insert(TABLE_REPOHISTORY)->data($history)->exec();
         if(!dao::isError())
         {
@@ -770,7 +869,7 @@ class repoModel extends model
      * @access public
      * @return array
      */
-    public function getUnsyncCommits($repo)
+    public function getUnsyncedCommits($repo)
     {
         $repoID   = $repo->id;
         $lastInDB = $this->getLatestCommit($repoID);
@@ -1219,10 +1318,10 @@ class repoModel extends model
     /**
      * Add link.
      *
-     * @param  string $matches
+     * @param  array  $matches
      * @param  string $method
      * @access public
-     * @return string
+     * @return array
      */
     public function addLink($matches, $method)
     {
@@ -1434,14 +1533,17 @@ class repoModel extends model
      */
     public function saveAction2PMS($objects, $log, $repoRoot = '', $encodings = 'utf-8', $scm = 'svn')
     {
-        $account = $this->app->user->account;
-        $this->app->user->account = $log->author;
+        if(isset($this->app->user))
+        {
+            $account = $this->app->user->account;
+            $this->app->user->account = $log->author;
+        }
 
         $action  = new stdclass();
         $action->actor   = $log->author;
         $action->date    = $log->date;
 
-        $action->comment = htmlspecialchars($this->iconvComment($log->msg, $encodings));
+        $action->comment = htmlSpecialString($this->iconvComment($log->msg, $encodings));
         $action->extra   = $scm == 'svn' ? $log->revision : substr($log->revision, 0, 10);
 
         $this->loadModel('action');
@@ -1613,7 +1715,7 @@ class repoModel extends model
             }
         }
 
-        $this->app->user->account = $account;
+        if(isset($this->app->user)) $this->app->user->account = $account;
     }
 
     /**
@@ -1763,13 +1865,95 @@ class repoModel extends model
     public function processGitlab($repo)
     {
         $gitlab = $this->loadModel('gitlab')->getByID($repo->client); // The $repo->client is gitlabID.
-        if(!$gitlab) return $repo;
 
-        $repo->gitlab   = $gitlab->id;
-        $repo->project  = $repo->path; // The projectID in gitlab.
-        $repo->path     = sprintf($this->config->repo->gitlab->apiPath, $gitlab->url, $repo->path);
-        $repo->client   = $gitlab->url;
-        $repo->password = $gitlab->token;
+        $repo->gitlab   = $gitlab ? $gitlab->id : 0;
+        $repo->project  = $gitlab ? $repo->path : ''; // The projectID in gitlab.
+        $repo->path     = $gitlab ? sprintf($this->config->repo->gitlab->apiPath, $gitlab->url, $repo->path) : '';
+        $repo->client   = $gitlab ? $gitlab->url : '';
+        $repo->password = $gitlab ? $gitlab->token : '';
         return $repo;
+    }
+
+    /**
+     * Get repositories which scm is GitLab and specified gitlabID and projectID.
+     *
+     * @param  int $gitlabID
+     * @param  int $projectID
+     * @return array
+     */
+    public function getGitLabRepoList($gitlabID, $projectID)
+    {
+        return $this->dao->select('*')->from(TABLE_REPO)->where('deleted')->eq('0')
+            ->andWhere('SCM')->eq('Gitlab')
+            ->andWhere('synced')->eq(1)
+            ->andWhere('client')->eq($gitlabID)
+            ->andWhere('path')->eq($projectID)
+            ->fetchAll();
+    }
+
+    /**
+     * Handle received GitLab webhook.
+     *
+     * @param  string $event
+     * @param  string $token
+     * @param  string $data
+     * @param  object $repo
+     * @access public
+     * @return void
+     */
+    public function handleWebhook($event, $token, $data, $repo)
+    {
+        if($event == 'Push Hook' or $event == 'Merge Request Hook')
+        {
+            /* Update code commit history. */
+            $commentGroup = $this->loadModel('job')->getTriggerGroup('commit', array($repo->id));
+            $this->loadModel('git')->updateCommit($repo, $commentGroup, false);
+        }
+    }
+
+    /**
+     * Get products which scm is GitLab by projects.
+     *
+     * @param  array $projectIDs
+     * @return array
+     */
+    public function getGitlabProductsByProjects($projectIDs)
+    {
+        return $this->dao->select('path,product')->from(TABLE_REPO)->where('deleted')->eq('0')
+            ->andWhere('SCM')->eq('Gitlab')
+            ->andWhere('path')->in($projectIDs)
+            ->fetchPairs('path', 'product');
+    }
+
+    /**
+     * Sync the latest commit.
+     *
+     * @param int $repoID
+     * @param string $branchID
+     * @access public
+     * @return void
+     */
+    public function syncCommit($repoID, $branchID)
+    {
+        $repo = $this->getRepoByID($repoID);
+        $this->scm = $this->app->loadClass('scm');
+        $this->scm->setEngine($repo);
+
+        $latestInDB = $this->dao->select('DISTINCT t1.*')->from(TABLE_REPOHISTORY)->alias('t1')
+            ->leftJoin(TABLE_REPOBRANCH)->alias('t2')->on('t1.id=t2.revision')
+            ->where('t1.repo')->eq($repoID)
+            ->beginIF($repo->SCM == 'Git' and $branchID)->andWhere('t2.branch')->eq($branchID)->fi()
+            ->beginIF($repo->SCM == 'Gitlab' and $branchID)->andWhere('t2.branch')->eq($branchID)->fi()
+            ->orderBy('t1.time desc')
+            ->limit(1)
+            ->fetch();
+        $version  = empty($latestInDB) ? 1 : $latestInDB->commit + 1;
+        $revision = $version == 1 ? 'HEAD' : ($repo->SCM == 'Git' ? $latestInDB->commit : $latestInDB->revision);
+
+        $logs        = $this->scm->getCommits('since' . $revision, $this->config->repo->batchNum, $branchID);
+        $commitCount = $this->saveCommit($repoID, $logs, $version, $branchID);
+        $this->dao->update(TABLE_REPO)->set('commits=commits + ' . $commitCount)->where('id')->eq($repoID)->exec();
+
+        $this->fixCommit($repoID);
     }
 }

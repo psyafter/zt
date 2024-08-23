@@ -16,7 +16,7 @@ $lang->execution->id              = $lang->executionCommon . ' ID';
 $lang->execution->type            = 'Typ';
 $lang->execution->name            = 'Name';
 $lang->execution->code            = 'Alias';
-$lang->execution->project         = 'Project';
+$lang->execution->projectName     = 'Project';
 $lang->execution->execName        = 'Execution Name';
 $lang->execution->execCode        = 'Execution Code';
 $lang->execution->execType        = 'Execution Type';
@@ -375,6 +375,11 @@ $lang->execution->bugList       = "Bugs";
 $lang->execution->kanbanHideCols   = 'Geschlossene und abgebrochene Spalten in Kanban verstecken';
 $lang->execution->kanbanShowOption = 'Aufklappen';
 $lang->execution->kanbanColsColor  = 'Spaltenfarben';
+
+$lang->execution->kanbanViewList['all']   = 'All';
+$lang->execution->kanbanViewList['story'] = "{$lang->SRCommon}";
+$lang->execution->kanbanViewList['bug']   = 'Bug';
+$lang->execution->kanbanViewList['task']  = 'Task';
 
 $lang->kanbanSetting = new stdclass();
 $lang->kanbanSetting->noticeReset     = 'Möchten Sie die Einstellungen des Kanbans zurücksetzen?';

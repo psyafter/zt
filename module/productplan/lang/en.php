@@ -20,8 +20,10 @@ $lang->productplan->bugSummary = "Total <strong>%s</strong> Bugs on this page.";
 $lang->productplan->basicInfo  = 'Basic Info';
 $lang->productplan->batchEdit  = 'Batch Edit';
 $lang->productplan->project    = 'Project';
+$lang->productplan->plan       = 'Plan';
 
 $lang->productplan->batchUnlink      = "Batch Unlink";
+$lang->productplan->unlinkAB         = "Unlink";
 $lang->productplan->linkStory        = "Link Story";
 $lang->productplan->unlinkStory      = "Unlink Story";
 $lang->productplan->unlinkStoryAB    = "Unlink";
@@ -82,8 +84,10 @@ $lang->productplan->errorNoTitle      = 'ID %s title should not be empty.';
 $lang->productplan->errorNoBegin      = 'ID %s begin time should not be empty.';
 $lang->productplan->errorNoEnd        = 'ID %s end time should not be empty.';
 $lang->productplan->beginGeEnd        = 'ID %s begin time should not be >= end time.';
-$lang->productplan->beginLetterParent = "Parent begin date: %s, begin date should be >= parent begin date.";
-$lang->productplan->endGreaterParent  = "Parent end date: %s, end date should be <= parent end date.";
+$lang->productplan->beginLetterParent = "The start date of the parent plan: %s, the start date cannot be less than the start date of the parent plan.";
+$lang->productplan->endGreaterParent  = "The completion date of the parent plan: %s, the completion date cannot be greater than the completion date of the parent plan.";
+$lang->productplan->noLinkedProject   = "The current product has not been linked with a project. Please enter the list of the product to link or create a project.";
+$lang->productplan->enterProjectList  = "Enter the list of the product";
 
 $lang->productplan->featureBar['browse']['all']       = 'All';
 $lang->productplan->featureBar['browse']['unexpired'] = 'Unexpired';

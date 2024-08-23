@@ -1,6 +1,7 @@
 $(function()
 {
-    if(systemMode=='classic' || programID) $('#line_chosen').addClass('hidden');
+    if(programID || systemMode == 'classic') $('#line_chosen').addClass('hidden');
+    $('#lineName').css('border-left-color', '');
 })
 /**
   * Load product Lines.
@@ -65,7 +66,7 @@ function toggleLine(obj)
     }
     else
     {
-        $(' #line').removeClass('hidden');
+        $('#line').removeClass('hidden');
         $('form .line-no-exist').addClass('hidden');
         $('#line_chosen').removeClass('hidden');
         $line.removeAttr('disabled');

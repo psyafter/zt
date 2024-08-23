@@ -1,5 +1,4 @@
 <?php
-
 /**
  * ZenTaoPHP的baseControl类。
  * The baseControl class file of ZenTaoPHP framework.
@@ -841,7 +840,7 @@ class baseControl
          * Call the method and use ob function to get the output.
          */
         ob_start();
-        call_user_func_array(array($module, $methodName), $params);
+        call_user_func_array(array($module, $methodName), array_values($params));
         $output = ob_get_contents();
         ob_end_clean();
 
@@ -928,6 +927,14 @@ class baseControl
         {
             if(!empty($data['message']))
             {
+                if(is_string($data['message']))
+                {
+                    echo js::alert($data['message']);
+                    $locate = isset($data['locate']) ? $data['locate'] : (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '');
+                    if (!empty($locate)) die(js::locate($locate));
+                    die(isset($data['message']) ? $data['message'] : 'fail');
+                }
+
                 $message = json_decode(json_encode((array)$data['message']));
                 foreach((array)$message as $item => $errors) $message->$item = implode(',', $errors);
                 die(js::alert(strip_tags(implode('\n', (array)$message))));
@@ -945,10 +952,7 @@ class baseControl
      */
     public function sendError($error)
     {
-        $this->send(array(
-            'result'  => 'fail',
-            'message' => $error,
-        ));
+        $this->send(array('result' => 'fail', 'message' => $error));
     }
 
     /**

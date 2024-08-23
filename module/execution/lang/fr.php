@@ -16,7 +16,7 @@ $lang->execution->id              = $lang->executionCommon . ' ID';
 $lang->execution->type            = $lang->executionCommon . 'Type';
 $lang->execution->name            = $lang->executionCommon . 'Name';
 $lang->execution->code            = $lang->executionCommon . 'Code';
-$lang->execution->project         = 'Project';
+$lang->execution->projectName     = 'Project';
 $lang->execution->execName        = 'Execution Name';
 $lang->execution->execCode        = 'Execution Code';
 $lang->execution->execType        = 'Execution Type';
@@ -375,6 +375,11 @@ $lang->execution->bugList       = "Bugs";
 $lang->execution->kanbanHideCols   = 'Colonnes masquées';
 $lang->execution->kanbanShowOption = 'Déplier';
 $lang->execution->kanbanColsColor  = 'Personnalisation Couleurs';
+
+$lang->execution->kanbanViewList['all']   = 'All';
+$lang->execution->kanbanViewList['story'] = "{$lang->SRCommon}";
+$lang->execution->kanbanViewList['bug']   = 'Bug';
+$lang->execution->kanbanViewList['task']  = 'Task';
 
 $lang->kanbanSetting = new stdclass();
 $lang->kanbanSetting->noticeReset     = 'Voulez-vous réinitialiser le tableau Kanban ?';

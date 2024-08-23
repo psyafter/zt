@@ -517,7 +517,7 @@ class baseHelper
      *  Get now time use the DT_DATETIME1 constant defined in the lang file.
      *
      * @access  public
-     * @return  datetime  now
+     * @return  string  now
      */
     static public function now()
     {
@@ -529,7 +529,7 @@ class baseHelper
      *  Get today according to the  DT_DATE1 constant defined in the lang file.
      *
      * @access  public
-     * @return  date  today
+     * @return  string  today
      */
     static public function today()
     {
@@ -541,7 +541,7 @@ class baseHelper
      *  Get now time use the DT_TIME1 constant defined in the lang file.
      *
      * @access  public
-     * @return  date  today
+     * @return  string  today
      */
     static public function time()
     {
@@ -748,10 +748,10 @@ class baseHelper
  * @param  string        $viewType
  * @return string the link string.
  */
-function inLink($methodName = 'index', $vars = '', $viewType = '')
+function inLink($methodName = 'index', $vars = '', $viewType = '', $onlybody = false)
 {
     global $app;
-    return helper::createLink($app->getModuleName(), $methodName, $vars, $viewType);
+    return helper::createLink($app->getModuleName(), $methodName, $vars, $viewType, $onlybody);
 }
 
 /**
@@ -855,7 +855,7 @@ function getWebRoot($full = false)
  * @param  mixed           $valueWhenNone     value when the key not exits.
  * @param  mixed           $valueWhenExists   value when the key exits.
  * @access public
- * @return string
+ * @return mixed
  */
 function zget($var, $key, $valueWhenNone = false, $valueWhenExists = false)
 {
@@ -886,4 +886,19 @@ function isHttps()
     if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') return true;
     if(!empty($_SERVER['HTTP_FRONT_END_HTTPS']) && strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off') return true;
     return false;
+}
+
+/**
+ * Compatibility for htmlspecialchars.
+ *
+ * @param  string $string
+ * @param  int    $flags
+ * @param  string $encoding
+ * @access public
+ * @return string
+ */
+function htmlSpecialString($string, $flags = '', $encoding = 'UTF-8')
+{
+    if(!$flags) $flags = defined('ENT_SUBSTITUTE') ? ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 : ENT_QUOTES;
+    return htmlspecialchars($string, $flags, $encoding);
 }

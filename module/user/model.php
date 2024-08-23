@@ -58,23 +58,22 @@ class userModel extends model
     {
         if(empty($accounts)) return array();
 
-        return $this->dao->select('id,account,realname,role')->from(TABLE_USER)
+        return $this->dao->select('id,account,realname,avatar,role')->from(TABLE_USER)
             ->where('account')->in($accounts)
-            ->andWhere('deleted')->eq(0)
-            ->andWhere('type')->eq('inside')
             ->fetchAll($keyField);
     }
 
     /**
      * Get the account=>realname pairs.
      *
-     * @param  string $params   noletter|noempty|nodeleted|noclosed|withguest|pofirst|devfirst|qafirst|pmfirst|realname|outside|inside|all, can be sets of theme
-     * @param  string $usersToAppended  account1,account2
-     * @param  int    $maxCount
+     * @param  string       $params   noletter|noempty|nodeleted|noclosed|withguest|pofirst|devfirst|qafirst|pmfirst|realname|outside|inside|all, can be sets of theme
+     * @param  string       $usersToAppended  account1,account2
+     * @param  int          $maxCount
+     * @param  string|array $accounts
      * @access public
      * @return array
      */
-    public function getPairs($params = '', $usersToAppended = '', $maxCount = 0)
+    public function getPairs($params = '', $usersToAppended = '', $maxCount = 0, $accounts = '')
     {
         if(defined('TUTORIAL')) return $this->loadModel('tutorial')->getUserPairs();
         /* Set the query fields and orderBy condition.
@@ -100,8 +99,9 @@ class userModel extends model
 
         $users = $this->dao->select($fields)->from(TABLE_USER)
             ->where('1')
-            ->beginIF(strpos($params, 'all') === false)->andWhere('type')->eq($type)->fi()
             ->beginIF(strpos($params, 'nodeleted') !== false or empty($this->config->user->showDeleted))->andWhere('deleted')->eq('0')->fi()
+            ->beginIF(strpos($params, 'all') === false)->andWhere('type')->eq($type)->fi()
+            ->beginIF($accounts)->andWhere('account')->in($accounts)->fi()
             ->orderBy($orderBy)
             ->beginIF($maxCount)->limit($maxCount)->fi()
             ->fetchAll($keyField);
@@ -227,14 +227,14 @@ class userModel extends model
     /**
      * Get users by sql.
      *
-     * @param  varchar $browseType inside|outside|all
-     * @param  int     $query
+     * @param  string  $browseType inside|outside|all
+     * @param  string  $query
      * @param  object  $pager
-     * @param  varchar $orderBy
+     * @param  string  $orderBy
      * @access public
-     * @return void
+     * @return array
      */
-    public function getByQuery($browseType = 'inside', $query, $pager = null, $orderBy = 'id')
+    public function getByQuery($browseType = 'inside', $query = '', $pager = null, $orderBy = 'id')
     {
         return $this->dao->select('*')->from(TABLE_USER)
             ->where('deleted')->eq(0)
@@ -969,8 +969,12 @@ class userModel extends model
         }
 
         /* Get can manage projects by user. */
-        $projectAdminGroupID = $this->dao->select('id')->from(TABLE_GROUP)->where('role')->eq('projectAdmin')->fetch('id');
-        $canManageProjects   = $this->dao->select('project')->from(TABLE_USERGROUP)->where('`group`')->eq($projectAdminGroupID)->andWhere('account')->eq($account)->fetch('project');
+        $canManageProjects = array();
+        if(!defined('IN_UPGRADE'))
+        {
+            $projectAdminGroupID = $this->dao->select('id')->from(TABLE_GROUP)->where('role')->eq('projectAdmin')->fetch('id');
+            $canManageProjects   = $this->dao->select('project')->from(TABLE_USERGROUP)->where('`group`')->eq($projectAdminGroupID)->andWhere('account')->eq($account)->fetch('project');
+        }
         return array('rights' => $rights, 'acls' => $acls, 'projects' => $canManageProjects);
     }
 
@@ -1082,9 +1086,9 @@ class userModel extends model
 
         /* Get all tasks and compute totalConsumed, totalLeft, totalWait, progress according to them. */
         $hours       = array();
-        $emptyHour   = array('totalConsumed' => 0, 'totalLeft' => 0, 'progress' => 0, 'waitTasks' => 0, 'assignedToMeTasks' => 0);
+        $emptyHour   = array('totalConsumed' => 0, 'totalLeft' => 0, 'progress' => 0, 'waitTasks' => 0, 'assignedToMeTasks' => 0, 'doneTasks' => 0, 'taskTotal' => 0);
         $searchField = $type == 'project' ? 'project' : 'execution';
-        $tasks       = $this->dao->select('id, project, execution, consumed, `left`, status, assignedTo')
+        $tasks       = $this->dao->select('id, project, execution, consumed, `left`, status, assignedTo,finishedBy')
             ->from(TABLE_TASK)
             ->where('parent')->lt(1)
             ->andWhere($searchField)->in($objectIdList)->fi()
@@ -1095,9 +1099,11 @@ class userModel extends model
         foreach($tasks as $objectID => $objectTasks)
         {
             $hour = (object)$emptyHour;
+            $hour->taskTotal = count($objectTasks);
             foreach($objectTasks as $task)
             {
                 if($task->status == 'wait') $hour->waitTasks += 1;
+                if($task->finishedBy != '') $hour->doneTasks += 1;
                 if($task->status != 'cancel') $hour->totalConsumed += $task->consumed;
                 if($task->status != 'cancel' and $task->status != 'closed') $hour->totalLeft += $task->left;
                 if($task->assignedTo == $account) $hour->assignedToMeTasks += 1;
@@ -1128,6 +1134,9 @@ class userModel extends model
             /* Process the hours. */
             $object->progress          = isset($hours[$object->id]) ? $hours[$object->id]->progress : 0;
             $object->waitTasks         = isset($hours[$object->id]) ? $hours[$object->id]->waitTasks : 0;
+            $object->doneTasks         = isset($hours[$object->id]) ? $hours[$object->id]->doneTasks : 0;
+            $object->taskTotal         = isset($hours[$object->id]) ? $hours[$object->id]->taskTotal : 0;
+            $object->totalConsumed     = isset($hours[$object->id]) ? $hours[$object->id]->totalConsumed : 0;
             $object->assignedToMeTasks = isset($hours[$object->id]) ? $hours[$object->id]->assignedToMeTasks : 0;
 
             if($object->project)
@@ -2055,12 +2064,10 @@ class userModel extends model
         /* Get all groups for whiteList. */
         $allGroups  = $this->dao->select('account, `group`')->from(TABLE_USERGROUP)->fetchAll();
         $userGroups = array();
-        $groupUsers = array();
         foreach($allGroups as $group)
         {
             if(!isset($userGroups[$group->account])) $userGroups[$group->account] = '';
             $userGroups[$group->account] .= "{$group->group},";
-            $groupUsers[$group->group][$group->account] = $group->account;
         }
 
         list($productTeams, $productStakeholders) = $this->getProductMembers($products);
@@ -2083,17 +2090,14 @@ class userModel extends model
                 $teams        = zget($productTeams, $productID, array());
                 $stakeholders = zget($productStakeholders, $productID, array());
                 $whiteList    = zget($whiteListGroup, $productID, array());
-                $viewList    += $this->getProductViewListUsers($product, $groupUsers, $teams, $stakeholders, $whiteList);
+                $viewList    += $this->getProductViewListUsers($product, $teams, $stakeholders, $whiteList);
             }
 
             $users = $viewList;
         }
 
         $stmt = $this->dao->select("account,products")->from(TABLE_USERVIEW)->where('account')->in($users);
-        if($whiteList)
-        {
-            foreach($products as $productID => $product) $stmt->orWhere("CONCAT(',', products, ',')")->like("%,{$productID},%");
-        }
+        foreach($products as $productID => $product) $stmt->orWhere("CONCAT(',', products, ',')")->like("%,{$productID},%");
         $userViews = $stmt->fetchPairs('account', 'products');
 
         /* Process user view. */
@@ -2409,14 +2413,13 @@ class userModel extends model
      * Get product view list users.
      *
      * @param  object $product
-     * @param  array  $groupUsers
      * @param  array  $linkedProjects
      * @param  array  $teams
      * @param  array  $whiteList
      * @access public
      * @return array
      */
-    public function getProductViewListUsers($product, $groupUsers, $teams, $stakeholders, $whiteList)
+    public function getProductViewListUsers($product, $teams, $stakeholders, $whiteList)
     {
         $users = array();
 
@@ -2427,6 +2430,21 @@ class userModel extends model
         $users[$product->RD]        = $product->RD;
         $users[$product->createdBy] = $product->createdBy;
         if(isset($product->feedback)) $users[$product->feedback] = $product->feedback;
+
+        if($teams === '' and $stakeholders === '')
+        {
+            list($productTeams, $productStakeholders) = $this->getProductMembers(array($product->id => $product));
+            $teams        = isset($productTeams[$product->id])        ? $productTeams[$product->id]        : array();
+            $stakeholders = isset($productStakeholders[$product->id]) ? $productStakeholders[$product->id] : array();
+        }
+
+        if($whiteList === '')
+        {
+            $whiteList = $this->dao->select('account')->from(TABLE_ACL)
+                ->where('objectType')->eq('product')
+                ->andWhere('objectID')->eq($product->id)
+                ->fetchPairs();
+        }
 
         $users += $teams ? $teams : array();
         $users += $stakeholders ? $stakeholders : array();

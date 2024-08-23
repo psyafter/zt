@@ -1,8 +1,9 @@
 <?php
-$lang->message->common  = '消息';
-$lang->message->index   = '首頁';
-$lang->message->setting = '設置';
-$lang->message->browser = '瀏覽器通知';
+$lang->message->common    = '消息';
+$lang->message->index     = '首頁';
+$lang->message->setting   = '設置';
+$lang->message->browser   = '瀏覽器通知';
+$lang->message->blockUser = '不通知人員';
 
 $lang->message->typeList['mail']     = '郵件';
 $lang->message->typeList['message']  = '瀏覽器通知';
@@ -41,3 +42,5 @@ $lang->message->label->canceled     = '取消';
 $lang->message->label->restarted    = '繼續';
 $lang->message->label->blocked      = '阻塞';
 $lang->message->label->bugconfirmed = '確認';
+$lang->message->label->compilepass  = '構建通過';
+$lang->message->label->compilefail  = '構建失敗';

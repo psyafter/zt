@@ -78,6 +78,7 @@ class docModel extends model
                 ->where('deleted')->eq(0)
                 ->beginIF($type)->andWhere('type')->eq($type)->fi()
                 ->beginIF(!$type)->andWhere('type')->ne('api')->fi()
+                ->beginIF($objectID and strpos(',product,project,execution,', ",$type,") !== false)->andWhere($type)->eq($objectID)->fi()
                 ->orderBy('`order`, id desc')->query();
         }
 
@@ -86,7 +87,7 @@ class docModel extends model
         $executions = $this->loadModel('execution')->getPairs();
 
         $libPairs = array();
-        while ($lib = $stmt->fetch())
+        while($lib = $stmt->fetch())
         {
             if($lib->product != 0 and !isset($products[$lib->product])) continue;
             if($lib->execution != 0 and !isset($executions[$lib->execution])) continue;
@@ -108,7 +109,7 @@ class docModel extends model
         if(!empty($appendLibs))
         {
             $stmt = $this->dao->select('*')->from(TABLE_DOCLIB)->where('id')->in($appendLibs)->orderBy('`order`, id desc')->query();
-            while ($lib = $stmt->fetch())
+            while($lib = $stmt->fetch())
             {
                 if(!isset($libPairs[$lib->id]) and $this->checkPrivLib($lib, $extra)) $libPairs[$lib->id] = $lib->name;
             }
@@ -736,7 +737,7 @@ class docModel extends model
         }
         unset($doc->contentType);
 
-        $doc->draft = $doc->content;
+        $doc->draft = isset($doc->content) ? $doc->content : '';
         $this->dao->update(TABLE_DOC)->data($doc, 'content')
             ->autoCheck()
             ->batchCheck($requiredFields, 'notempty')
@@ -904,6 +905,15 @@ class docModel extends model
         $account = ',' . $this->app->user->account . ',';
         if(isset($object->addedBy) and $object->addedBy == $this->app->user->account) return true;
         if(isset($object->users) and strpos(",{$object->users},", $account) !== false) return true;
+
+        if($object->project and $object->main)
+        {
+            $project         = $this->loadModel('project')->getById($object->project);
+            $projectTeams    = $this->loadModel('user')->getTeamMemberPairs($object->project);
+            $authorizedUsers = $this->user->getProjectAuthedUsers($project, '', $projectTeams, array_flip(explode(",", $project->whitelist)));
+            if(array_key_exists($this->app->user->account, array_filter($authorizedUsers))) return true;
+        }
+
         if($object->acl == 'custom')
         {
             $userGroups = $this->app->user->groups;
@@ -911,6 +921,7 @@ class docModel extends model
             {
                 if(strpos(",$object->groups,", ",$groupID,") !== false) return true;
             }
+            if(strpos(",{$object->users},", $account) !== false) return true;
         }
 
         if(strpos($extra, 'notdoc') === false)
@@ -1621,10 +1632,7 @@ class docModel extends model
         static $docGroups;
         if(empty($docGroups))
         {
-            $docs      = $this->dao->select('*')->from(TABLE_DOC)
-                ->where('lib')->eq((int)$libID)
-                ->andWhere('deleted')->eq(0)
-                ->fetchAll();
+            $docs      = $this->dao->select('*')->from(TABLE_DOC)->where('lib')->eq((int)$libID)->andWhere('deleted')->eq(0)->fetchAll();
             $docGroups = array();
             foreach($docs as $doc)
             {
@@ -1647,6 +1655,7 @@ class docModel extends model
                 $docItem->type  = 'doc';
                 $docItem->id    = $doc->id;
                 $docItem->title = $doc->title;
+                $docItem->acl   = $doc->acl;
                 $docItem->url   = helper::createLink('doc', 'view', "doc=$doc->id");
 
                 $buttons = '';
@@ -2275,7 +2284,7 @@ EOT;
             if($startModule) $startModulePath = $startModule->path . '%';
         }
 
-        $docs       = $this->dao->select('*')->from(TABLE_DOC)
+        $docs = $this->dao->select('*')->from(TABLE_DOC)
             ->where('lib')->eq($rootID)
             ->andWhere('deleted')->eq(0)
             ->fetchAll();
@@ -2309,14 +2318,26 @@ EOT;
             {
                 if(!$docID and $currentMethod != 'tablecontents') $docID = $doc->id;
 
-                $treeMenu[0] .= '<li' . ($doc->id == $docID ? ' class="active"' : ' class="independent"') . '>';
+                $treeMenu[0] .= '<li' . ($doc->id == $docID ? ' class="active"' : ' class="independent"') . " data-id=$doc->id>";
 
                 if($currentMethod == 'tablecontents')
                 {
                     $treeMenu[0] .= '<span class="tail-info">' . zget($users, $doc->editedBy) . ' &nbsp;' . $doc->editedDate . '</span>';
                 }
-
-                $treeMenu[0] .= html::a(inlink('objectLibs', "type=$type&objectID=$objectID&libID=$rootID&docID={$doc->id}"), "<i class='icon icon-file-text text-muted'></i> &nbsp;" . $doc->title, '', "data-app='{$this->app->tab}' class='doc-title' title='{$doc->title}'");
+                if($currentMethod == 'objectlibs')
+                {
+                    $treeMenu[0] .= "<div class='tree-group'><span class='module-name'>" . html::a(inlink('objectLibs', "type=$type&objectID=$objectID&libID=$rootID&docID={$doc->id}"), "<i class='icon icon-file-text text-muted'></i> &nbsp;" . $doc->title, '', "data-app='{$this->app->tab}' class='doc-title' title='{$doc->title}'") . '</span>';
+                    if(common::hasPriv('doc', 'edit'))
+                    {
+                        $treeMenu[0] .= "<div class='tree-actions'>";
+                        $treeMenu[0] .= html::a(helper::createLink('doc', 'edit', "docID={$doc->id}&comment=false&objectType=$type&objectID=$objectID&libID=$rootID"), "<i class='icon icon-edit'></i>", '', "title={$this->lang->doc->edit}");
+                        $treeMenu[0] .= '</div></div>';
+                    }
+                }
+                else
+                {
+                    $treeMenu[0] .= html::a(inlink('objectLibs', "type=$type&objectID=$objectID&libID=$rootID&docID={$doc->id}"), "<i class='icon icon-file-text text-muted'></i> &nbsp;" . $doc->title, '', "data-app='{$this->app->tab}' class='doc-title' title='{$doc->title}'");
+                }
 
                 $treeMenu[0] .= '</li>';
             }
@@ -2363,13 +2384,28 @@ EOT;
                 else
                 {
                     if(!$docID and $currentMethod != 'tablecontents') $docID = $doc->id;
-                    $treeMenu[$module->id] .= '<li' . ($doc->id == $docID ? ' class="active"' : ' class="doc"') . '>';
+                    $treeMenu[$module->id] .= '<li' . ($doc->id == $docID ? ' class="active"' : ' class="doc"') . " data-id=$doc->id>";
 
                     if($currentMethod == 'tablecontents')
                     {
                         $treeMenu[$module->id] .= '<span class="tail-info">' . zget($users, $doc->editedBy) . ' &nbsp;' . $doc->editedDate . '</span>';
                     }
-                    $treeMenu[$module->id] .= html::a(inlink('objectLibs', "type=$type&objectID=$objectID&libID=$libID&docID={$doc->id}"), "<i class='icon icon-file-text text-muted'></i> &nbsp;" . $doc->title, '', "data-app='{$this->app->tab}' class='doc-title' title='{$doc->title}'");
+
+                    if($currentMethod == 'objectlibs')
+                    {
+                        $treeMenu[$module->id] .= "<div class='tree-group'><span class='module-name'>" . html::a(inlink('objectLibs', "type=$type&objectID=$objectID&libID=$libID&docID={$doc->id}"), "<i class='icon icon-file-text text-muted'></i> &nbsp;" . $doc->title, '', "data-app='{$this->app->tab}' class='doc-title' title='{$doc->title}'") . '</span>';
+                        if(common::hasPriv('doc', 'edit'))
+                        {
+                            $treeMenu[$module->id] .= "<div class='tree-actions'>";
+                            $treeMenu[$module->id] .= html::a(helper::createLink('doc', 'edit', "docID=$docID&comment=false&objectType=$type&objectID=$objectID&libID=$libID"), "<i class='icon icon-edit'></i>", '', "title={$this->lang->doc->edit}");
+                            $treeMenu[$module->id] .= '</div>';
+                        }
+                        $treeMenu[$module->id] .= '</div>';
+                    }
+                    elseif($currentMethod == 'tablecontents')
+                    {
+                        $treeMenu[$module->id] .= html::a(inlink('objectLibs', "type=$type&objectID=$objectID&libID=$libID&docID={$doc->id}"), "<i class='icon icon-file-text text-muted'></i> &nbsp;" . $doc->title, '', "data-app='{$this->app->tab}' class='doc-title' title='{$doc->title}'");
+                    }
 
                     $treeMenu[$module->id] .= '</li>';
                 }
@@ -2382,7 +2418,22 @@ EOT;
         }
         else
         {
-            $li = "<a title='{$module->name}'>" . $module->name . '</a>';
+            if($currentMethod == 'tablecontents')
+            {
+                $li = "<a title='{$module->name}'>" . $module->name . '</a>';
+            }
+            else
+            {
+                $li = "<div class='tree-group'><span class='module-name'><a class='sort-module' title='{$module->name}'>" . $module->name . '</a></span>';
+                if(common::hasPriv('tree', 'edit') or common::hasPriv('tree', 'browse'))
+                {
+                    $li .= "<div class='tree-actions'>";
+                    if(common::hasPriv('tree', 'edit'))   $li .= html::a(helper::createLink('tree', 'edit', "module=$module->id&type=doc"), "<i class='icon icon-edit'></i>", '', "data-toggle='modal' title={$this->lang->doc->editType}");
+                    if(common::hasPriv('tree', 'browse')) $li .= html::a(helper::createLink('tree', 'browse', "rootID=$libID&type=doc&module=$module->id", '', 1), "<i class='icon icon-split'></i>", '', "class='iframe' title={$this->lang->doc->editType}");
+                    $li .= '</div>';
+                }
+                $li .= '</div>';
+            }
         }
         if($treeMenu[$module->id])
         {
@@ -2411,7 +2462,7 @@ EOT;
             }
         }
 
-        $treeMenu[$module->parent] .= '<li class="' . implode(' ', $class) . '">' . $li . '</li>';
+        $treeMenu[$module->parent] .= '<li class=" can-sort ' . implode(' ', $class) . '" data-id=' . $module->id . '>' . $li . '</li>';
     }
 
     /**
@@ -2521,6 +2572,7 @@ EOT;
             if($this->app->tab == 'doc') $this->app->rawMethod = $type;
 
             $object = $this->dao->select('id,name,status')->from($table)->where('id')->eq($objectID)->fetch();
+
             if(empty($object)) die(js::locate(helper::createLink($type, 'create')));
         }
 

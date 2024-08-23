@@ -53,10 +53,11 @@ class api extends control
                 $libID     = $api->lib;
                 $api->desc = htmlspecialchars_decode($api->desc);
 
-                $this->view->api     = $api;
-                $this->view->apiID   = $apiID;
-                $this->view->version = $version;
-                $this->view->actions = $apiID ? $this->action->getList('api', $apiID) : array();
+                $this->view->api      = $api;
+                $this->view->apiID    = $apiID;
+                $this->view->version  = $version;
+                $this->view->typeList = $this->api->getTypeList($api->lib);
+                $this->view->actions  = $apiID ? $this->action->getList('api', $apiID) : array();
             }
         }
         else
@@ -64,7 +65,8 @@ class api extends control
             /* Get module api list. */
             $apiList = $this->api->getListByModuleId($libID, $moduleID, $release);
 
-            $this->view->apiList = $apiList;
+            $this->view->apiList  = $apiList;
+            $this->view->typeList = $this->api->getTypeList($libID);
         }
 
         $this->setMenu($libID, $moduleID);
@@ -118,14 +120,13 @@ class api extends control
     {
         if($confirm == 'no')
         {
-            echo js::confirm($this->lang->custom->notice->confirmDelete, $this->createLink('api', 'deleteRelease', "libID=$libID&id=$id&confirm=yes"), '');
-            die;
+            return print(js::confirm($this->lang->custom->notice->confirmDelete, $this->createLink('api', 'deleteRelease', "libID=$libID&id=$id&confirm=yes"), ''));
         }
         else
         {
             $this->api->deleteRelease($id);
             if(dao::isError()) return $this->sendError(dao::getError());
-            die(js::locate(inlink('releases', "libID=$libID"), 'parent'));
+            return print(js::locate(inlink('releases', "libID=$libID"), 'parent'));
         }
     }
 
@@ -296,28 +297,34 @@ class api extends control
     {
         if($confirm == 'no')
         {
-            echo js::confirm($this->lang->custom->notice->confirmDelete, $this->createLink('api', 'deleteStruct', "libID=$libID&structID=$structID&confirm=yes"), '');
-            die;
+            return print(js::confirm($this->lang->custom->notice->confirmDelete, $this->createLink('api', 'deleteStruct', "libID=$libID&structID=$structID&confirm=yes"), ''));
         }
         else
         {
             $this->api->deleteStruct($structID);
             if(dao::isError()) return $this->sendError(dao::getError());
             $this->action->create('apistruct', $structID, 'Deleted');
-            die(js::locate(inlink('struct', "libID=$libID"), 'parent'));
+            return print(js::locate(inlink('struct', "libID=$libID"), 'parent'));
         }
     }
 
     /**
      * Create a api doc library.
      *
+     * @param  string normal|demo
      * @access public
      * @return void
      */
-    public function createLib()
+    public function createLib($type = 'normal')
     {
         if(!empty($_POST))
         {
+            if($type == 'demo')
+            {
+                $libID = $this->api->createDemoData($this->post->name, $this->post->baseUrl);
+                return $this->sendSuccess(array('locate' => $this->createLink('api', 'index', "libID=$libID")));
+            }
+
             $lib = fixer::input('post')
                 ->join('groups', ',')
                 ->join('users', ',')
@@ -337,6 +344,8 @@ class api extends control
             /* save doc library success */
             return $this->sendSuccess(array('locate' => $this->createLink('api', 'index', "libID=$libID")));
         }
+
+        $this->view->type   = $type;
         $this->view->groups = $this->loadModel('group')->getPairs();
         $this->view->users  = $this->user->getPairs('nocode');
 
@@ -388,7 +397,7 @@ class api extends control
     {
         if($confirm == 'no')
         {
-            die(js::confirm($this->lang->api->confirmDeleteLib, $this->createLink('api', 'deleteLib', "libID=$libID&confirm=yes")));
+            return print(js::confirm($this->lang->api->confirmDeleteLib, $this->createLink('api', 'deleteLib', "libID=$libID&confirm=yes")));
         }
         else
         {
@@ -396,10 +405,10 @@ class api extends control
             if(isonlybody())
             {
                 unset($_GET['onlybody']);
-                die(js::locate($this->createLink('api', 'index'), 'parent.parent'));
+                return print(js::locate($this->createLink('api', 'index'), 'parent.parent'));
             }
 
-            die(js::locate($this->createLink('api', 'index'), 'parent'));
+            return print(js::locate($this->createLink('api', 'index'), 'parent'));
         }
     }
 
@@ -435,21 +444,12 @@ class api extends control
 
         $this->setMenu($api->lib);
 
-        $example = array('example' => 'type,description');
-        $example = json_encode($example, JSON_PRETTY_PRINT);
-
-        $options = array();
-        foreach($this->lang->api->paramsTypeOptions as $key => $item)
-        {
-            $options[] = array('label' => $item, 'value' => $key);
-        }
-        $this->view->typeOptions = $options;
-        $this->view->gobackLink  = $this->createLink('api', 'index', "libID={$api->lib}&moduleID={$api->module}");
-        $this->view->user        = $this->app->user->account;
-        $this->view->allUsers    = $this->loadModel('user')->getPairs('devfirst|noclosed');;
+        $this->getTypeOptions($api->lib);
+        $this->view->gobackLink       = $this->createLink('api', 'index', "libID={$api->lib}&moduleID={$api->module}");
+        $this->view->user             = $this->app->user->account;
+        $this->view->allUsers         = $this->loadModel('user')->getPairs('devfirst|noclosed');;
         $this->view->moduleOptionMenu = $this->loadModel('tree')->getOptionMenu($api->lib, 'api', $startModuleID = 0);
         $this->view->moduleID         = $api->module ? (int)$api->module : (int)$this->cookie->lastDocModule;
-        $this->view->example          = $example;
         $this->view->title            = $api->title . $this->lang->api->edit;
 
         $this->display();
@@ -469,7 +469,7 @@ class api extends control
         {
             $now    = helper::now();
             $params = fixer::input('post')
-				->trim('title,path')
+                ->trim('title,path')
                 ->remove('type')
                 ->skipSpecial('params,response')
                 ->add('addedBy', $this->app->user->account)
@@ -495,9 +495,6 @@ class api extends control
         $lib     = $this->doc->getLibByID($libID);
         $libName = isset($lib->name) ? $lib->name . $this->lang->colon : '';
 
-        $example = array('example' => 'type,description');
-        $example = json_encode($example, JSON_PRETTY_PRINT);
-
         $this->getTypeOptions($libID);
         $this->view->gobackLink       = $this->createLink('api', 'index', "libID=$libID&moduleID=$moduleID");
         $this->view->user             = $this->app->user->account;
@@ -507,7 +504,6 @@ class api extends control
         $this->view->moduleOptionMenu = $this->loadModel('tree')->getOptionMenu($libID, 'api', $startModuleID = 0);
         $this->view->moduleID         = $moduleID ? (int)$moduleID : (int)$this->cookie->lastDocModule;
         $this->view->libs             = $libs;
-        $this->view->example          = $example;
         $this->view->title            = $libName . $this->lang->api->create;
         $this->view->users            = $this->user->getPairs('nocode');
 
@@ -525,7 +521,7 @@ class api extends control
         if($confirm == 'no')
         {
             $tips = $this->lang->api->confirmDelete;
-            die(js::confirm($tips, inlink('delete', "apiID=$apiID&confirm=yes")));
+            return print(js::confirm($tips, inlink('delete', "apiID=$apiID&confirm=yes")));
         }
         else
         {
@@ -605,15 +601,14 @@ class api extends control
         $this->loadModel('tree');
         $childModules = $this->tree->getOptionMenu($libID, 'api');
         $select       = ($type == 'module') ? html::select('module', $childModules, '0', "class='form-control chosen'") : html::select('parent', $childModules, '0', "class='form-control chosen'");
-        die($select);
+        echo $select;
     }
-
 
     /**
      * Set doc menu by method name.
      *
      * @param  int $libID
-	 * @param  int $moduleID
+     * @param  int $moduleID
      * @access public
      * @return void
      */
@@ -630,39 +625,30 @@ class api extends control
         }
 
         /* page of index menu. */
-        if(intval($libID) > 0)
+        if(common::hasPriv('api', 'create') or common::hasPriv('api', 'createLib'))
         {
-            if(common::hasPriv('api', 'create') or common::hasPriv('api', 'createLib'))
+            $menu .= "<div class='dropdown' id='createDropdown'>";
+            $menu .= "<button class='btn btn-primary' type='button' data-toggle='dropdown'><i class='icon icon-plus'></i> " . $this->lang->api->createAB . " <span class='caret'></span></button>";
+            $menu .= "<ul class='dropdown-menu pull-right'>";
+
+            /* check has permission create api doc */
+            if(intval($libID) > 0 and common::hasPriv('api', 'create'))
             {
-                $menu .= "<div class='dropdown' id='createDropdown'>";
-                $menu .= "<button class='btn btn-primary' type='button' data-toggle='dropdown'><i class='icon icon-plus'></i> " . $this->lang->api->createAB . " <span class='caret'></span></button>";
-                $menu .= "<ul class='dropdown-menu pull-right'>";
-
-                /* check has permission create api doc */
-                if(common::hasPriv('api', 'create'))
-                {
-                    $menu .= "<li>";
-                    $menu .= html::a(helper::createLink('api', 'create', "libID=$libID&moduleID=$moduleID"), "<i class='icon-rich-text icon'></i> " . $this->lang->api->apiDoc, '', "data-app='{$this->app->tab}'");
-                    $menu .= "</li>";
-                }
-
-                /* check has permission create api doc lib */
-                if(common::hasPriv('api', 'createLib'))
-                {
-                    $menu .= '<li class="divider"></li>';
-                    $menu .= '<li>' . html::a(helper::createLink('api', 'createLib'), "<i class='icon-doc-lib icon'></i> " . $this->lang->api->createLib, '', "class='iframe' data-width='70%'") . '</li>';
-                }
-
-                $menu .= "</ul></div>";
+                $menu .= "<li>";
+                $menu .= html::a(helper::createLink('api', 'create', "libID=$libID&moduleID=$moduleID"), "<i class='icon-rich-text icon'></i> " . $this->lang->api->apiDoc, '', "data-app='{$this->app->tab}'");
+                $menu .= "</li>";
             }
-        }
-        else
-        {
-            /* generate create api doc lib button */
+
+            /* check has permission create api doc lib */
             if(common::hasPriv('api', 'createLib'))
             {
-                $menu .= html::a(helper::createLink('api', 'createLib'), '<i class="icon icon-plus"></i> ' . $this->lang->api->createLib, '', 'class="btn btn-secondary iframe"');
+                $menu .= '<li>' . html::a(helper::createLink('api', 'createLib'), "<i class='icon-doc-lib icon'></i> " . $this->lang->api->createLib, '', "class='iframe' data-width='70%'") . '</li>';
+
+                $menu .= '<li class="divider"></li>';
+                $menu .= '<li>' . html::a(helper::createLink('api', 'createLib', 'type=demo'), "<i class='icon-zentao icon'></i> " . $this->lang->api->createDemo, '', "class='iframe' data-width='70%'") . '</li>';
             }
+
+            $menu .= "</ul></div>";
         }
 
         $this->lang->TRActions = $menu;
@@ -762,7 +748,7 @@ EOT;
      */
     public function getModel($moduleName, $methodName, $params = '')
     {
-        if(!$this->config->features->apiGetModel) die(sprintf($this->lang->api->error->disabled, '$config->features->apiGetModel'));
+        if(!$this->config->features->apiGetModel) return printf($this->lang->api->error->disabled, '$config->features->apiGetModel');
 
         $params    = explode(',', $params);
         $newParams = array_shift($params);
@@ -775,12 +761,12 @@ EOT;
         parse_str($newParams, $params);
         $module = $this->loadModel($moduleName);
         $result = call_user_func_array(array(&$module, $methodName), $params);
-        if(dao::isError()) die(json_encode(dao::getError()));
+        if(dao::isError()) return print(json_encode(dao::getError()));
         $output['status'] = $result ? 'success' : 'fail';
         $output['data']   = json_encode($result);
         $output['md5']    = md5($output['data']);
         $this->output     = json_encode($output);
-        die($this->output);
+        print($this->output);
     }
 
     /**
@@ -832,20 +818,20 @@ EOT;
      */
     public function sql($keyField = '')
     {
-        if(!$this->config->features->apiSQL) die(sprintf($this->lang->api->error->disabled, '$config->features->apiSQL'));
+        if(!$this->config->features->apiSQL) return printf($this->lang->api->error->disabled, '$config->features->apiSQL');
 
         $sql    = isset($_POST['sql']) ? $this->post->sql : '';
         $output = $this->api->sql($sql, $keyField);
 
         $output['sql'] = $sql;
         $this->output  = json_encode($output);
-        die($this->output);
+        print($this->output);
     }
 
     /**
      * Get options of type.
      *
-     * @param  string $keyField
+     * @param  int   $libID
      * @access public
      * @return void
      */
@@ -865,5 +851,4 @@ EOT;
         }
         $this->view->typeOptions = $options;
     }
-
 }

@@ -15,6 +15,7 @@
 <?php js::set('weekend', $config->execution->weekend);?>
 <?php js::import($jsRoot . 'misc/date.js');?>
 <?php js::set('today', helper::today());?>
+<?php js::set('oldBranch', $oldBranch);?>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
     <div class='main-header'>
@@ -27,10 +28,10 @@
             <th><?php echo $lang->productplan->product;?></th>
             <td class='muted'><?php echo $product->name;?></td><td></td><td></td>
           </tr>
-          <?php if($product->type != 'normal'):?>
+          <?php if($product->type != 'normal' and $plan->parent != '-1'):?>
           <tr>
             <th><?php echo $lang->product->branch;?></th>
-            <td><?php echo html::select('branch', $branches, $plan->branch, 'class="form-control"');?></td><td></td><td></td>
+            <td><?php echo html::select('branch', $branchTagOption, $plan->branch, "onchange='getConflictStories($plan->id, this.value); 'class='form-control'");?></td><td></td><td></td>
           </tr>
           <?php endif;?>
           <tr>
@@ -51,12 +52,13 @@
           <tr>
             <th><?php echo $lang->productplan->end;?></th>
             <td><?php echo html::input('end', $plan->end != '2030-01-01' ? formatTime($plan->end) : '', 'class="form-control form-date"');?></td>
-            <td colspan='2'><?php echo html::radio('delta', $lang->productplan->endList , '', "onclick='computeEndDate(this.value)'");?></td>
+            <?php $deltaValue = $plan->end == '2030-01-01' ? 0 : (strtotime($plan->end) - strtotime($plan->begin)) / 3600 / 24 + 1;?>
+            <td colspan='2'><?php echo html::radio('delta', $lang->productplan->endList , $deltaValue, "onclick='computeEndDate(this.value)'");?></td>
           </tr>
           <?php $this->printExtendFields($plan, 'table', 'columns=3');?>
           <tr>
             <th><?php echo $lang->productplan->desc;?></th>
-            <td colspan='3'><?php echo html::textarea('desc', htmlspecialchars($plan->desc), "rows='10' class='form-control kindeditor' hidefocus='true'");?></td>
+            <td colspan='3'><?php echo html::textarea('desc', htmlSpecialString($plan->desc), "rows='10' class='form-control kindeditor' hidefocus='true'");?></td>
           </tr>
           <tr>
             <td colspan='4' class='text-center form-actions'>

@@ -50,7 +50,41 @@ class jobModel extends model
             ->fetchAll('id');
     }
 
-    /**
+     /**
+     * Get job list by RepoID.
+     *
+     * @param  int    $repoID
+     * @access public
+     * @return array
+     */
+    public function getListByRepoID($repoID)
+    {
+        return $this->dao->select('id, name, lastStatus')->from(TABLE_JOB)
+            ->where('deleted')->eq('0')
+            ->andWhere('repo')->eq($repoID)
+            ->orderBy('id_desc')
+            ->fetchAll('id');
+    }
+
+     /**
+     * Get job pairs by RepoID.
+     *
+     * @param  int    $repoID
+     * @param  string $engine gitlab|jenkins
+     * @access public
+     * @return array
+     */
+    public function getPairs($repoID, $engine = '')
+    {
+        return $this->dao->select('id, name')->from(TABLE_JOB)
+            ->where('deleted')->eq('0')
+            ->andWhere('repo')->eq($repoID)
+            ->beginIF($engine)->andWhere('engine')->eq($engine)->fi()
+            ->orderBy('id_desc')
+            ->fetchPairs();
+    }
+
+   /**
      * Get list by triggerType field.
      *
      * @param  string  $triggerType
@@ -136,10 +170,9 @@ class jobModel extends model
 
         if(strtolower($job->engine) == 'gitlab')
         {
-            $repo    = $this->loadModel('repo')->getRepoByID($job->gitlabRepo);
+            $repo    = $this->loadModel('repo')->getRepoByID($job->repo);
             $project = zget($repo, 'project');
 
-            $job->repo     = $job->gitlabRepo;
             $job->server   = (int)zget($repo, 'gitlab', 0);
             $job->pipeline = json_encode(array('project' => $project, 'reference' => $this->post->reference));
         }
@@ -183,7 +216,6 @@ class jobModel extends model
 
         $this->dao->insert(TABLE_JOB)->data($job)
             ->batchCheck($this->config->job->create->requiredFields, 'notempty')
-
             ->batchCheckIF($job->triggerType === 'schedule', "atDay,atTime", 'notempty')
             ->batchCheckIF($job->triggerType === 'commit', "comment", 'notempty')
             ->batchCheckIF(($this->post->repoType == 'Subversion' and $job->triggerType == 'tag'), "svnDir", 'notempty')
@@ -334,12 +366,12 @@ class jobModel extends model
     /**
      * Exec job.
      *
-     * @param  int    $id
-     * @param  object $reference
+     * @param  int   $id
+     * @param  array $extraParam
      * @access public
      * @return string|bool
      */
-    public function exec($id)
+    public function exec($id, $extraParam = array())
     {
         $job = $this->dao->select('t1.id,t1.name,t1.product,t1.repo,t1.server,t1.pipeline,t1.triggerType,t1.atTime,t1.customParam,t1.engine,t2.name as jenkinsName,t2.url,t2.account,t2.token,t2.password')
             ->from(TABLE_JOB)->alias('t1')
@@ -376,7 +408,7 @@ class jobModel extends model
         $this->dao->insert(TABLE_COMPILE)->data($build)->exec();
         $compileID = $this->dao->lastInsertId();
 
-        if($job->engine == 'jenkins') $compile = $this->execJenkinsPipeline($job, $repo, $compileID);
+        if($job->engine == 'jenkins') $compile = $this->execJenkinsPipeline($job, $repo, $compileID, $extraParam);
         if($job->engine == 'gitlab')  $compile = $this->execGitlabPipeline($job);
 
         $this->dao->update(TABLE_COMPILE)->data($compile)->where('id')->eq($compileID)->exec();
@@ -396,10 +428,11 @@ class jobModel extends model
      * @param  object    $job
      * @param  object    $repo
      * @param  int       $compileID
+     * @param  array     $extraParam
      * @access public
      * @return object
      */
-    public function execJenkinsPipeline($job, $repo, $compileID)
+    public function execJenkinsPipeline($job, $repo, $compileID, $extraParam = array())
     {
         $pipeline = new stdclass();
         $pipeline->PARAM_TAG   = '';
@@ -417,6 +450,11 @@ class jobModel extends model
             $pipeline->$paramName = $paramValue;
         }
 
+        foreach($extraParam as $paramName => $paramValue)
+        {
+            if(!isset($pipeline->$paramName)) $pipeline->$paramName = $paramValue;
+        }
+
         $url = $this->loadModel('compile')->getBuildUrl($job);
 
         $compile = new stdclass();
@@ -430,7 +468,7 @@ class jobModel extends model
     /**
      * Exec gitlab pipeline.
      *
-     * @param  object    $job
+     * @param  object $job
      * @access public
      * @return void
      */
@@ -472,8 +510,8 @@ class jobModel extends model
     /**
      * Get last tag of one repo.
      *
-     * @param  object    $repo
-     * @param  object    $job
+     * @param  object $repo
+     * @param  object $job
      * @access public
      * @return void
      */

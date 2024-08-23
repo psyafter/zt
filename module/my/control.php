@@ -147,8 +147,17 @@ class my extends control
         /* Append id for secend sort. */
         $sort = $this->loadModel('common')->appendOrder($orderBy);
 
+        $todos = $this->loadModel('todo')->getList($type, $account, $status, 0, $pager, $sort);
+        $tasks = $this->loadModel('task')->getUserSuspendedTasks($account);
+        foreach($todos as $key => $todo)
+        {
+            if($todo->type == 'task' and isset($tasks[$todo->idvalue])) unset($todos[$key]);
+        }
+
+        $pager->recTotal = count($todos);
+
         /* Assign. */
-        $this->view->todos        = $this->loadModel('todo')->getList($type, $account, $status, 0, $pager, $sort);
+        $this->view->todos        = $todos;
         $this->view->date         = (int)$type == 0 ? date(DT_DATE1) : date(DT_DATE1, strtotime($type));
         $this->view->type         = $type;
         $this->view->recTotal     = $recTotal;
@@ -181,7 +190,7 @@ class my extends control
     public function story($type = 'assignedTo', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Save session. */
-        if($this->app->viewType != 'json') $this->session->set('storyList', $this->app->getURI(true), 'product');
+        if($this->app->viewType != 'json') $this->session->set('storyList', $this->app->getURI(true), 'my');
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
@@ -191,7 +200,7 @@ class my extends control
         /* Append id for secend sort. */
         $sort = $this->loadModel('common')->appendOrder($orderBy);
 
-        $stories = $this->loadModel('story')->getUserStories($this->app->user->account, $type, $sort, $pager, 'story');
+        $stories = $this->loadModel('story')->getUserStories($this->app->user->account, $type, $sort, $pager, 'story', false);
         if(!empty($stories)) $stories = $this->story->mergeReviewer($stories);
 
         /* Assign. */
@@ -225,7 +234,7 @@ class my extends control
     public function requirement($type = 'assignedTo', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Save session. */
-        if($this->app->viewType != 'json') $this->session->set('storyList', $this->app->getURI(true), 'product');
+        if($this->app->viewType != 'json') $this->session->set('storyList', $this->app->getURI(true), 'my');
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
@@ -355,7 +364,7 @@ class my extends control
         $sort = $this->loadModel('common')->appendOrder($orderBy);
         $bugs = $this->loadModel('bug')->getUserBugs($this->app->user->account, $type, $sort, 0, $pager);
         $bugs = $this->bug->checkDelayedBugs($bugs);
-        $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'myBug');
+        $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'bug', false);
 
         /* assign. */
         $this->view->title       = $this->lang->my->common . $this->lang->colon . $this->lang->my->bug;
@@ -616,6 +625,9 @@ class my extends control
         $this->view->pager      = $pager;
         $this->view->type       = $type;
         $this->view->issues     = $this->loadModel('issue')->getUserIssues($type, $this->app->user->account, $orderBy, $pager);
+
+        $this->view->projectList = $this->loadModel('project')->getPairsByProgram(0);
+
         $this->display();
     }
 
@@ -646,6 +658,9 @@ class my extends control
         $this->view->pager      = $pager;
         $this->view->type       = $type;
         $this->view->mode       = 'risk';
+
+        $this->view->projectList = $this->loadModel('project')->getPairsByProgram(0);
+
         $this->display();
     }
 
@@ -703,15 +718,21 @@ class my extends control
 
         /* Set the pager. */
         $this->app->loadClass('pager', $static = true);
-        $pager = new pager($recTotal, $recPerPage = 50, $pageID = 1);
+        if($this->app->getViewType() == 'mhtml') $recPerPage = 10;
+        $pager  = pager::init($recTotal, $recPerPage, $pageID);
+        $ncList = $this->my->getNcList($browseType, $orderBy, $pager);
+
+        foreach($ncList as $nc) $ncIdList[] = $nc->id;
+        $this->session->set('ncIdList', isset($ncIdList) ? $ncIdList : '');
 
         $this->view->title      = $this->lang->my->common . $this->lang->colon . $this->lang->my->nc;
         $this->view->position[] = $this->lang->my->nc;
         $this->view->browseType = $browseType;
-        $this->view->pager      = $pager;
-        $this->view->ncs        = $this->my->getNcList($browseType, $orderBy, $pager);
+        $this->view->ncs        = $ncList;
         $this->view->users      = $this->loadModel('user')->getPairs('noclosed|noletter');
         $this->view->projects   = $this->loadModel('project')->getPairsByProgram(0);
+        $this->view->pager      = $pager;
+        $this->view->orderBy    = $orderBy;
         $this->view->mode       = 'nc';
         $this->display();
     }
@@ -795,14 +816,19 @@ class my extends control
      */
     public function editProfile()
     {
-        if($this->app->user->account == 'guest') die(js::alert('guest') . js::locate('back'));
+        if($this->app->user->account == 'guest')
+        {
+            echo js::alert('guest'), js::locate('back');
+            return;
+        }
         if(!empty($_POST))
         {
             $_POST['account'] = $this->app->user->account;
             $_POST['groups']  = $this->dao->select('`group`')->from(TABLE_USERGROUP)->where('account')->eq($this->post->account)->fetchPairs('group', 'group');
             $this->user->update($this->app->user->id);
-            if(dao::isError()) die(js::error(dao::getError()));
-            die(js::locate($this->createLink('my', 'profile'), 'parent'));
+            if(dao::isError()) helper::end(js::error(dao::getError()));
+            echo js::locate($this->createLink('my', 'profile'), 'parent');
+            return;
         }
 
         $this->app->loadConfig('user');

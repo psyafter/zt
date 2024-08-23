@@ -42,7 +42,7 @@ js::set('suiteID',        $suiteID);
       <?php endif;?>
       <?php echo $moduleTree;?>
       <div class='text-center'>
-        <?php if(!empty($productID)) common::printLink('tree', 'browse', "productID=$productID&view=case&currentModuleID=0&branch=0&from={$this->lang->navGroup->testcase}", $lang->tree->manage, '', "class='btn btn-info btn-wide'");?>
+        <?php if(!empty($productID)) common::printLink('tree', 'browse', "productID=$productID&view=case&currentModuleID=0&branch=0&from={$this->app->tab}", $lang->tree->manage, '', "class='btn btn-info btn-wide' data-app='{$this->app->tab}'");?>
         <hr class="space-sm" />
       </div>
     </div>
@@ -111,7 +111,7 @@ js::set('suiteID',        $suiteID);
         <tbody>
           <?php foreach($cases as $case):?>
           <tr data-id='<?php echo $case->id?>'>
-            <?php foreach($setting as $key => $value) $this->testcase->printCell($value, $case, $users, $branches, $modulePairs, $browseType, $useDatatable ? 'datatable' : 'table');?>
+            <?php foreach($setting as $key => $value) $this->testcase->printCell($value, $case, $users, $branchOption, $modulePairs, $browseType, $useDatatable ? 'datatable' : 'table');?>
           </tr>
           <?php endforeach;?>
         </tbody>
@@ -182,7 +182,7 @@ js::set('suiteID',        $suiteID);
           <?php if(common::hasPriv('testcase', 'batchChangeBranch') and $this->session->currentProductType != 'normal'):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->product->branchName[$this->session->currentProductType];?> <span class="caret"></span></button>
-            <?php $withSearch = count($branches) > 10;?>
+            <?php $withSearch = count($branchTagOption) > 6;?>
             <?php if($withSearch):?>
             <div class="dropdown-menu search-list search-box-sink" data-ride="searchList">
               <div class="input-control search-box has-icon-left has-icon-right search-example">
@@ -190,13 +190,13 @@ js::set('suiteID',        $suiteID);
                 <label for="userSearchBox" class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label>
                 <a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a>
               </div>
-            <?php $branchsPinYin = common::convert2Pinyin($branches);?>
+            <?php $branchsPinYin = common::convert2Pinyin($branchTagOption);?>
             <?php else:?>
             <div class="dropdown-menu search-list">
             <?php endif;?>
               <div class="list-group">
                 <?php
-                foreach($branches as $branchID => $branchName)
+                foreach($branchTagOption as $branchID => $branchName)
                 {
                     $searchKey = $withSearch ? ('data-key="' . zget($branchsPinYin, $branchName, '') . '"') : '';
                     $actionLink = $this->createLink('testcase', 'batchChangeBranch', "branchID=$branchID");
@@ -207,10 +207,10 @@ js::set('suiteID',        $suiteID);
             </div>
           </div>
           <?php endif;?>
-          <?php if($canBatchChangeModule and !empty($productID)):?>
+          <?php if($canBatchChangeModule and !empty($productID) and $branch !== 'all'):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->story->moduleAB;?> <span class="caret"></span></button>
-            <?php $withSearch = count($modules) > 10;?>
+            <?php $withSearch = count($modules) > 6;?>
             <?php if($withSearch):?>
             <div class="dropdown-menu search-list search-box-sink" data-ride="searchList">
               <div class="input-control search-box has-icon-left has-icon-right search-example">

@@ -23,6 +23,7 @@ $lang->api->createRelease    = '發佈介面';
 $lang->api->createLib        = '創建介面庫';
 $lang->api->createApi        = '創建介面';
 $lang->api->createAB         = '創建';
+$lang->api->createDemo       = '導入禪道API';
 $lang->api->edit             = '編輯介面';
 $lang->api->delete           = '刪除介面';
 $lang->api->position         = '位置';
@@ -58,6 +59,7 @@ $lang->api->confirmDelete    = "您確定刪除該介面嗎？";
 $lang->api->confirmDeleteLib = "您確定刪除該介面庫嗎？";
 $lang->api->filterStruct     = "使用資料結構填充";
 $lang->api->defaultVersion   = "當前版本";
+$lang->api->zentaoAPI        = "禪道API文檔v1";
 
 /* Common access control lang. */
 $lang->api->whiteList          = '白名單';
@@ -148,15 +150,18 @@ $lang->api->methodOptions      = array(
     'OPTIONS' => 'OPTIONS',
     'HEAD'    => 'HEAD'
 );
-$lang->api->protocalOptions    = array(
-    'HTTP'  => 'HTTP',
-    'HTTPS' => 'HTTPS',
-);
-$lang->api->requestTypeOptions = array(
-    'application/json'                  => 'application/json',
-    'application/x-www-form-urlencoded' => 'application/x-www-form-urlencoded',
-    'multipart/form-data'               => 'multipart/form-data'
-);
+
+$lang->api->protocalOptions = array();
+$lang->api->protocalOptions['HTTP']  = 'HTTP';
+$lang->api->protocalOptions['HTTPS'] = 'HTTPS';
+$lang->api->protocalOptions['WS']    = 'WS';
+$lang->api->protocalOptions['WSS']   = 'WSS';
+
+$lang->api->requestTypeOptions = array();
+$lang->api->requestTypeOptions['application/json']                  = 'application/json';
+$lang->api->requestTypeOptions['application/x-www-form-urlencoded'] = 'application/x-www-form-urlencoded';
+$lang->api->requestTypeOptions['multipart/form-data']               = 'multipart/form-data';
+
 $lang->api->statusOptions      = array(
     'done'   => '開發完成',
     'doing'  => '開發中',
@@ -173,6 +178,7 @@ $lang->api->paramsScopeOptions = array(
 /* Api global common params */
 $lang->api->paramsTypeOptions = array(
     'object'   => 'object',
+    'array'    => 'array',
     'string'   => 'string',
     'date'     => 'date',
     'datetime' => 'datetime',
@@ -184,11 +190,10 @@ $lang->api->paramsTypeOptions = array(
     'decimal'  => 'decimal'
 );
 
+$lang->api->boolList = array(false => '否', true => '是', '' => '否');
+
 /* Api params */
-$lang->api->paramsTypeCustomOptions = array(
-    'file' => 'file',
-    'ref'  => 'ref',
-);
+$lang->api->paramsTypeCustomOptions = array('file' => 'file', 'ref' => 'ref');
 
 $lang->api->structParamsOptons   = array_merge($lang->api->paramsTypeOptions, array('file' => 'file', 'ref' => 'ref'));
 $lang->api->allParamsTypeOptions = array_merge($lang->api->paramsTypeOptions, $lang->api->paramsTypeCustomOptions);

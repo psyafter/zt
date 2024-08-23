@@ -24,6 +24,7 @@ $lang->release->batchUnlinkStory = "批量移除{$lang->SRCommon}";
 $lang->release->batchUnlinkBug   = "批量移除Bug";
 
 $lang->release->confirmDelete      = "您確認刪除該發佈嗎？";
+$lang->release->confirmLink        = "是否將版本中完成的{$lang->SRCommon}和已解決的bug關聯到發佈下？";
 $lang->release->confirmUnlinkStory = "您確認移除該{$lang->SRCommon}嗎？";
 $lang->release->confirmUnlinkBug   = "您確認移除該Bug嗎？";
 $lang->release->existBuild         = '『版本』已經有『%s』這條記錄了。您可以更改『發佈名稱』或者選擇一個『版本』。';
@@ -56,8 +57,12 @@ $lang->release->createdBugs   = '本次共遺留 %s 個Bug';
 $lang->release->export        = '導出HTML';
 $lang->release->yesterday     = '昨日發佈';
 $lang->release->all           = '所有';
-$lang->release->notify        = '通知人員';
+$lang->release->notify        = '發送通知';
+$lang->release->notifyUsers   = '通知人員';
 $lang->release->mailto        = '抄送給';
+$lang->release->mailContent   = '<p>尊敬的用戶，您好！</p><p style="margin-left: 30px;">您反饋的如下需求和Bug已經在 %s版本中發佈，請聯繫客戶經理查看最新版本。</p>';
+$lang->release->storyList     = '<p style="margin-left: 30px;">需求列表：%s。</p>';
+$lang->release->bugList       = '<p style="margin-left: 30px;">Bug列表：%s。</p>';
 
 $lang->release->filePath = '下載地址：';
 $lang->release->scmPath  = '版本庫地址：';
@@ -76,7 +81,9 @@ $lang->release->changeStatusList['terminate'] = '停止維護';
 
 $lang->release->action = new stdclass();
 $lang->release->action->changestatus = array('main' => '$date, 由 <strong>$actor</strong> $extra。', 'extra' => 'changeStatusList');
+$lang->release->action->notified     = array('main' => '$date, 由 <strong>$actor</strong> 發送通知。');
 
+$lang->release->notifyList['FB'] = "反饋者";
 $lang->release->notifyList['PO'] = "{$lang->productCommon}負責人";
 $lang->release->notifyList['QD'] = '測試負責人';
 $lang->release->notifyList['SC'] = '需求提交人';

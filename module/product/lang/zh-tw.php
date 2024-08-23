@@ -33,10 +33,11 @@ $lang->product->changeProgram   = "{$lang->productCommon}調整所屬項目集�
 $lang->product->addWhitelist    = '添加白名單';
 $lang->product->unbindWhitelist = '移除白名單';
 
-$lang->product->indexAction   = "所有{$lang->productCommon}儀表盤";
-$lang->product->closeAction   = "關閉{$lang->productCommon}";
-$lang->product->orderAction   = "{$lang->productCommon}排序";
-$lang->product->exportAction  = "導出{$lang->productCommon}";
+$lang->product->indexAction  = "所有{$lang->productCommon}儀表盤";
+$lang->product->closeAction  = "關閉{$lang->productCommon}";
+$lang->product->orderAction  = "{$lang->productCommon}排序";
+$lang->product->exportAction = "導出{$lang->productCommon}";
+$lang->product->link2Project = "關聯項目";
 
 $lang->product->basicInfo = '基本信息';
 $lang->product->otherInfo = '其他信息';
@@ -55,6 +56,7 @@ $lang->product->project     = $lang->executionCommon . '列表';
 $lang->product->build       = '版本列表';
 $lang->product->moreProduct = "更多產品";
 $lang->product->projectInfo = "所有與此產品關聯的項目";
+$lang->product->progress    = "產品完成度";
 
 $lang->product->currentExecution      = "當前執行";
 $lang->product->activeStories         = "激活{$lang->SRCommon}";
@@ -77,6 +79,7 @@ $lang->product->assignToNullBugs      = '未指派Bug';
 $lang->product->assignToNullBugsTitle = '未指派Bug';
 $lang->product->closedBugs            = '關閉Bug';
 $lang->product->bugFixedRate          = 'Bug修復率';
+$lang->product->unfoldClosed          = '展開已關閉';
 
 $lang->product->confirmDelete        = " 您確定刪除該{$lang->productCommon}嗎？";
 $lang->product->errorNoProduct       = "還沒有創建{$lang->productCommon}！";
@@ -106,6 +109,7 @@ $lang->product->QD             = '測試負責人';
 $lang->product->RD             = '發佈負責人';
 $lang->product->feedback       = '反饋負責人';
 $lang->product->acl            = '訪問控制';
+$lang->product->reviewer       = '評審人';
 $lang->product->whitelist      = '白名單';
 $lang->product->branch         = '所屬%s';
 $lang->product->qa             = '測試';
@@ -126,6 +130,7 @@ $lang->product->searchStory  = '搜索';
 $lang->product->assignedToMe = '指給我';
 $lang->product->openedByMe   = '我創建';
 $lang->product->reviewedByMe = '我評審';
+$lang->product->reviewByMe   = '待我評審';
 $lang->product->closedByMe   = '我關閉';
 $lang->product->draftStory   = '草稿';
 $lang->product->activeStory  = '激活';
@@ -198,6 +203,7 @@ $lang->product->featureBar['browse']['unclosed']     = $lang->product->unclosed;
 $lang->product->featureBar['browse']['assignedtome'] = $lang->product->assignedToMe;
 $lang->product->featureBar['browse']['openedbyme']   = $lang->product->openedByMe;
 $lang->product->featureBar['browse']['reviewedbyme'] = $lang->product->reviewedByMe;
+$lang->product->featureBar['browse']['reviewbyme']   = $lang->product->reviewByMe;
 $lang->product->featureBar['browse']['draftstory']   = $lang->product->draftStory;
 $lang->product->featureBar['browse']['more']         = $lang->more;
 

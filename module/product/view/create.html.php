@@ -71,6 +71,10 @@
             <td><?php echo html::select('RD', $rdUsers, '', "class='form-control chosen'");?></td>
           </tr>
           <tr>
+            <th><?php echo $lang->product->reviewer;?></th>
+            <td><?php echo html::select('reviewer[]', $users, '', "class='form-control chosen' multiple");?></td>
+          </tr>
+          <tr>
             <th><?php echo $lang->product->type;?></th>
             <td>
               <?php

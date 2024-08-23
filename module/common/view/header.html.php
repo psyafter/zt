@@ -15,6 +15,7 @@ include 'chosen.html.php';
         <?php echo isset($lang->switcherMenu) ? $lang->switcherMenu : '';?>
       </div>
       <nav id='navbar'><?php $activeMenu = commonModel::printMainMenu();?></nav>
+      <div id='headerActions'><?php if(isset($lang->headerActions)) echo $lang->headerActions;?></div>
       <div id='toolbar'>
         <div id='userMenu'>
           <ul id="userNav" class="nav nav-default">
@@ -25,7 +26,7 @@ include 'chosen.html.php';
       </div>
     </div>
   </div>
-  <?php if(isset($lang->{$app->tab}->menu->$activeMenu) and isset($lang->{$app->tab}->menu->{$activeMenu}['subMenu'])):?>
+  <?php if(isset($lang->{$app->tab}->menu->$activeMenu) and is_array($lang->{$app->tab}->menu->$activeMenu) and isset($lang->{$app->tab}->menu->{$activeMenu}['subMenu'])):?>
   <div id='subHeader'>
     <div class='container'>
       <div id="pageNav" class='btn-toolbar'><?php if(isset($lang->modulePageNav)) echo $lang->modulePageNav;?></div>

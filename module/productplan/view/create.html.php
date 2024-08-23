@@ -13,6 +13,8 @@
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/kindeditor.html.php';?>
 <?php js::set('weekend', $config->execution->weekend);?>
+<?php js::set('productID', $productID);?>
+<?php js::set('lastLang', $lang->productplan->last);?>
 <?php js::import($jsRoot . 'misc/date.js');?>
 <div id='mainContent'class='main-content'>
   <div class='center-block'>
@@ -20,7 +22,7 @@
       <h2> <?php echo $parent ? $lang->productplan->createChildren : $lang->productplan->create;?></h2>
     </div>
     <form class='load-indicator main-form form-ajax' method='post' target='hiddenwin' id='dataform'>
-      <table class='table table-form'>
+      <table class='table table-form'> 
         <tbody>
           <?php if($parent):?>
           <tr>
