@@ -17,7 +17,11 @@
     <div class='main-header'>
       <h2><?php echo $lang->doc->create;?></h2>
     </div>
+    <?php if(isset($this->config->bizVersion)):?>
+    <div class='alert alert-warning strong'><?php printf($lang->doc->notSetOffice, zget($lang->doc->typeList, $docType), common::hasPriv('custom', 'libreoffice') ? $this->createLink('custom', 'libreoffice') : '###');?></div>
+    <?php else:?>
     <div class='alert alert-warning strong'><?php printf($lang->doc->cannotCreateOffice, zget($lang->doc->typeList, $docType));?></div>
+    <?php endif;?>
   </div>
 </div>
 </body>
@@ -77,6 +81,17 @@
           <tr id='fileBox'>
             <th><?php echo $lang->doc->files;?></th>
             <td colspan='2'><?php echo $this->fetch('file', 'buildform');?></td>
+          </tr>
+          <tr>
+            <th><?php echo $lang->doc->mailto;?></th>
+            <td colspan="2">
+              <div class="input-group">
+                <?php
+                echo html::select('mailto[]', $users, '', "multiple class='form-control chosen'");
+                echo $this->fetch('my', 'buildContactLists');
+                ?>
+              </div>
+            </td>
           </tr>
           <tr>
             <th><?php echo $lang->doclib->control;?></th>

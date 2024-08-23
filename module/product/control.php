@@ -57,7 +57,7 @@ class product extends control
         $branch    = (int)$this->cookie->preBranch;
         $this->product->setMenu($this->products, $productID, $branch);
 
-        if(common::hasPriv('product', 'create')) $this->lang->modulePageActions = html::a($this->createLink('product', 'create'), "<i class='icon icon-sm icon-plus'></i> " . $this->lang->product->create, '', "class='btn btn-primary'");
+        if(common::hasPriv('product', 'create')) $this->lang->TRActions = html::a($this->createLink('product', 'create'), "<i class='icon icon-sm icon-plus'></i> " . $this->lang->product->create, '', "class='btn btn-primary'");
 
         $this->view->title         = $this->lang->product->index;
         $this->view->position[]    = $this->lang->product->index;
@@ -93,6 +93,7 @@ class product extends control
      * @param  int    $productID
      * @param  string $browseType
      * @param  int    $param
+     * @param  string $storyType requirement|story
      * @param  string $orderBy
      * @param  int    $recTotal
      * @param  int    $recPerPage
@@ -100,7 +101,7 @@ class product extends control
      * @access public
      * @return void
      */
-    public function browse($productID = 0, $branch = '', $browseType = 'unclosed', $param = 0, $orderBy = '', $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    public function browse($productID = 0, $branch = '', $browseType = '', $param = 0, $storyType = 'story', $orderBy = '', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Lower browse type. */
         $browseType = strtolower($browseType);
@@ -118,19 +119,42 @@ class product extends control
         setcookie('preProductID', $productID, $this->config->cookieLife, $this->config->webRoot, '', false, true);
         setcookie('preBranch', (int)$branch, $this->config->cookieLife, $this->config->webRoot, '', false, true);
 
-        if($this->cookie->preProductID != $productID or $this->cookie->preBranch != $branch)
+        if($this->cookie->preProductID != $productID or $this->cookie->preBranch != $branch or $browseType == 'bybranch')
         {
             $_COOKIE['storyModule'] = 0;
             setcookie('storyModule', 0, 0, $this->config->webRoot, '', false, false);
         }
-        if($browseType == 'bymodule') setcookie('storyModule', (int)$param, 0, $this->config->webRoot, '', false, false);
-        if($browseType != 'bymodule') $this->session->set('storyBrowseType', $browseType);
 
-        $moduleID = ($browseType == 'bymodule') ? (int)$param : ($browseType == 'bysearch' ? 0 : ($this->cookie->storyModule ? $this->cookie->storyModule : 0));
+        if($browseType == 'bymodule' or $browseType == '')
+        {
+            setcookie('storyModule', (int)$param, 0, $this->config->webRoot, '', false, false);
+            $_COOKIE['storyBranch'] = 0;
+            setcookie('storyBranch', 0, 0, $this->config->webRoot, '', false, false);
+            if($browseType == '') setcookie('treeBranch', (int)$branch, 0, $this->config->webRoot, '', false, false);
+        }
+        if($browseType == 'bybranch') setcookie('storyBranch', (int)$branch, 0, $this->config->webRoot, '', false, false);
+
+        $moduleID = ($browseType == 'bymodule') ? (int)$param : (($browseType == 'bysearch' or $browseType == 'bybranch') ? 0 : ($this->cookie->storyModule ? $this->cookie->storyModule : 0));
         $queryID  = ($browseType == 'bysearch') ? (int)$param : 0;
 
         /* Set menu. */
         $this->product->setMenu($this->products, $productID, $branch);
+
+        /* Set moduleTree. */
+        $createModuleLink = $storyType == 'story' ? 'createStoryLink' : 'createRequirementLink';
+        if($browseType == '')
+        {
+            setcookie('treeBranch', (int)$branch, 0, $this->config->webRoot, '', false, false);
+            $browseType = 'unclosed';
+            $moduleTree = $this->tree->getTreeMenu($productID, $viewType = 'story', $startModuleID = 0, array('treeModel', $createModuleLink), '', $branch);
+        }
+        else
+        {
+            $moduleTree = $this->tree->getTreeMenu($productID, $viewType = 'story', $startModuleID = 0, array('treeModel', $createModuleLink), '', (int)$this->cookie->treeBranch);
+        }
+
+        if($browseType != 'bymodule' and $browseType != 'bybranch') $this->session->set('storyBrowseType', $browseType);
+        if(($browseType == 'bymodule' or $browseType == 'bybranch') and $this->session->storyBrowseType == 'bysearch') $this->session->set('storyBrowseType', 'unclosed');
 
         /* Process the order by field. */
         if(!$orderBy) $orderBy = $this->cookie->productStoryOrder ? $this->cookie->productStoryOrder : 'id_desc';
@@ -141,24 +165,37 @@ class product extends control
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
-        if($this->app->getViewType() == 'mhtml') $recPerPage = 10;
         $pager = new pager($recTotal, $recPerPage, $pageID);
 
         /* Get stories. */
-        $stories = $this->product->getStories($productID, $branch, $browseType, $queryID, $moduleID, $sort, $pager);
+        $stories = $this->product->getStories($productID, $branch, $browseType, $queryID, $moduleID, $storyType, $sort, $pager);
 
         /* Process the sql, get the conditon partion, save it to session. */
         $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'story', $browseType != 'bysearch');
 
         /* Get related tasks, bugs, cases count of each story. */
         $storyIdList = array();
-        foreach($stories as $story) $storyIdList[$story->id] = $story->id;
+        foreach($stories as $story)
+        {
+            $storyIdList[$story->id] = $story->id;
+            if(!empty($story->children))
+            {
+                foreach($story->children as $child) $storyIdList[$child->id] = $child->id;
+            }
+        }
         $storyTasks = $this->loadModel('task')->getStoryTaskCounts($storyIdList);
         $storyBugs  = $this->loadModel('bug')->getStoryBugCounts($storyIdList);
         $storyCases = $this->loadModel('testcase')->getStoryCaseCounts($storyIdList);
 
+        /* Change for requirement story title. */
+        if($storyType == 'requirement' and !empty($this->config->URAndSR))
+        {
+            $this->lang->story->title = str_replace($this->lang->SRCommon, $this->lang->URCommon, $this->lang->story->title);
+            $this->config->product->search['fields']['title'] = $this->lang->story->title;
+        }
+
         /* Build search form. */
-        $actionURL = $this->createLink('product', 'browse', "productID=$productID&branch=$branch&browseType=bySearch&queryID=myQueryID");
+        $actionURL = $this->createLink('product', 'browse', "productID=$productID&branch=$branch&browseType=bySearch&queryID=myQueryID&storyType=$storyType");
         $this->config->product->search['onMenuBar'] = 'yes';
         $this->product->buildSearchForm($productID, $this->products, $queryID, $actionURL);
 
@@ -174,9 +211,9 @@ class product extends control
         $this->view->productName   = $this->products[$productID];
         $this->view->moduleID      = $moduleID;
         $this->view->stories       = $stories;
-        $this->view->plans         = $this->loadModel('productplan')->getPairs($productID, $branch);
-        $this->view->summary       = $this->product->summary($stories);
-        $this->view->moduleTree    = $this->tree->getTreeMenu($productID, $viewType = 'story', $startModuleID = 0, array('treeModel', 'createStoryLink'), '', $branch);
+        $this->view->plans         = $this->loadModel('productplan')->getPairs($productID, $branch, '', true);
+        $this->view->summary       = $this->product->summary($stories, $storyType);
+        $this->view->moduleTree    = $moduleTree;
         $this->view->parentModules = $this->tree->getParents($moduleID);
         $this->view->pager         = $pager;
         $this->view->users         = $this->user->getPairs('noletter|pofirst|nodeleted');
@@ -194,6 +231,7 @@ class product extends control
         $this->view->storyCases    = $storyCases;
         $this->view->param         = $param;
         $this->view->products      = $this->products;
+        $this->view->storyType     = $storyType;
         $this->display();
     }
 
@@ -222,12 +260,22 @@ class product extends control
         if($this->session->product) $rootID = $this->session->product;
         $this->product->setMenu($this->products, $rootID);
 
+        $this->loadModel('user');
+        $poUsers = $this->user->getPairs('nodeleted|pofirst|noclosed',  '', $this->config->maxCount);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["PO"] = $this->config->user->moreLink;
+
+        $qdUsers = $this->user->getPairs('nodeleted|qdfirst|noclosed',  '', $this->config->maxCount);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["QD"] = $this->config->user->moreLink;
+
+        $rdUsers = $this->user->getPairs('nodeleted|devfirst|noclosed', '', $this->config->maxCount);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["RD"] = $this->config->user->moreLink;
+
         $this->view->title      = $this->lang->product->create;
         $this->view->position[] = $this->view->title;
         $this->view->groups     = $this->loadModel('group')->getPairs();
-        $this->view->poUsers    = $this->loadModel('user')->getPairs('nodeleted|pofirst|noclosed');
-        $this->view->qdUsers    = $this->loadModel('user')->getPairs('nodeleted|qdfirst|noclosed');
-        $this->view->rdUsers    = $this->loadModel('user')->getPairs('nodeleted|devfirst|noclosed');
+        $this->view->poUsers    = $poUsers;
+        $this->view->qdUsers    = $qdUsers;
+        $this->view->rdUsers    = $rdUsers;
         $this->view->lines      = array('') + $this->loadModel('tree')->getLinePairs();
         $this->view->rootID     = $rootID;
 
@@ -268,14 +316,25 @@ class product extends control
         $this->product->setMenu($this->products, $productID);
 
         $product = $this->product->getById($productID);
+
+        $this->loadModel('user');
+        $poUsers = $this->user->getPairs('nodeleted|pofirst',  $product->PO, $this->config->maxCount);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["PO"] = $this->config->user->moreLink;
+
+        $qdUsers = $this->user->getPairs('nodeleted|qdfirst',  $product->QD, $this->config->maxCount);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["QD"] = $this->config->user->moreLink;
+
+        $rdUsers = $this->user->getPairs('nodeleted|devfirst', $product->RD, $this->config->maxCount);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["RD"] = $this->config->user->moreLink;
+
         $this->view->title      = $this->lang->product->edit . $this->lang->colon . $product->name;
         $this->view->position[] = html::a($this->createLink($this->moduleName, 'browse'), $product->name);
         $this->view->position[] = $this->lang->product->edit;
         $this->view->product    = $product;
         $this->view->groups     = $this->loadModel('group')->getPairs();
-        $this->view->poUsers    = $this->loadModel('user')->getPairs('nodeleted|pofirst',  $product->PO);
-        $this->view->qdUsers    = $this->loadModel('user')->getPairs('nodeleted|qdfirst',  $product->QD);
-        $this->view->rdUsers    = $this->loadModel('user')->getPairs('nodeleted|devfirst', $product->RD);
+        $this->view->poUsers    = $poUsers;
+        $this->view->qdUsers    = $qdUsers;
+        $this->view->rdUsers    = $rdUsers;
         $this->view->lines      = array('') + $this->loadModel('tree')->getLinePairs();
 
         unset($this->lang->product->typeList['']);
@@ -325,14 +384,24 @@ class product extends control
             $appendRdUsers[$product->RD] = $product->RD;
         }
 
+        $this->loadModel('user');
+        $poUsers = $this->user->getPairs('nodeleted|pofirst', $appendPoUsers);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["PO"] = $this->config->user->moreLink;
+
+        $qdUsers = $this->user->getPairs('nodeleted|qdfirst', $appendQdUsers);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["QD"] = $this->config->user->moreLink;
+
+        $rdUsers = $this->user->getPairs('nodeleted|devfirst', $appendRdUsers);
+        if(!empty($this->config->user->moreLink)) $this->config->moreLinks["RD"] = $this->config->user->moreLink;
+
         $this->view->title         = $this->lang->product->batchEdit;
         $this->view->position[]    = $this->lang->product->batchEdit;
         $this->view->lines         = array('') + $this->tree->getLinePairs();
         $this->view->productIDList = $productIDList;
         $this->view->products      = $products;
-        $this->view->poUsers       = $this->loadModel('user')->getPairs('nodeleted|pofirst', $appendPoUsers);
-        $this->view->qdUsers       = $this->loadModel('user')->getPairs('nodeleted|qdfirst', $appendQdUsers);
-        $this->view->rdUsers       = $this->loadModel('user')->getPairs('nodeleted|devfirst', $appendRdUsers);
+        $this->view->poUsers       = $poUsers;
+        $this->view->qdUsers       = $qdUsers;
+        $this->view->rdUsers       = $rdUsers;
 
         unset($this->lang->product->typeList['']);
         $this->display();
@@ -466,11 +535,12 @@ class product extends control
     /**
      * Product dynamic.
      *
+     * @param  int    $productID
      * @param  string $type
-     * @param  string $orderBy
+     * @param  string $param
      * @param  int    $recTotal
-     * @param  int    $recPerPage
-     * @param  int    $pageID
+     * @param  string $date
+     * @param  string $direction    next|pre
      * @access public
      * @return void
      */
@@ -500,7 +570,12 @@ class product extends control
         $pager = new pager($recTotal, $recPerPage = 50, $pageID = 1);
 
         /* Set the user and type. */
-        $account = $type == 'account' ? $param : 'all';
+        $account = 'all';
+        if($type == 'account')
+        {
+            $user = $this->loadModel('user')->getById((int)$param, 'id');
+            if($user) $account = $user->account;
+        }
         $period  = $type == 'account' ? 'all'  : $type;
         $date    = empty($date) ? '' : date('Y-m-d', $date);
         $actions = $this->loadModel('action')->getDynamic($account, $period, $sort, $pager, $productID, 'all', $date, $direction);
@@ -510,15 +585,18 @@ class product extends control
         $this->view->position[] = html::a($this->createLink($this->moduleName, 'browse'), $this->products[$productID]);
         $this->view->position[] = $this->lang->product->dynamic;
 
+        $this->view->userIdPairs  = $this->loadModel('user')->getPairs('noletter|nodeleted|noclosed|useid');
+        $this->view->accountPairs = $this->user->getPairs('noletter|nodeleted|noclosed');
+
         /* Assign. */
         $this->view->productID  = $productID;
         $this->view->type       = $type;
-        $this->view->users      = $this->loadModel('user')->getPairs('noletter|nodeleted|noclosed');
-        $this->view->account    = $account;
         $this->view->orderBy    = $orderBy;
+        $this->view->account    = $account;
+        $this->view->user       = isset($user) ? $user : '';
         $this->view->param      = $param;
         $this->view->pager      = $pager;
-        $this->view->dateGroups = $this->action->buildDateGroup($actions, $direction);
+        $this->view->dateGroups = $this->action->buildDateGroup($actions, $direction, $type);
         $this->view->direction  = $direction;
         $this->display();
     }
@@ -546,7 +624,7 @@ class product extends control
 
         if($number === '')
         {
-            die(html::select('project', $projects, $projectID, 'class=form-control onchange=loadProjectRelated(this.value)'));
+            die(html::select('project', $projects, $projectID, "class='form-control' onchange='loadProjectRelated(this.value)'"));
         }
         else
         {
@@ -685,6 +763,10 @@ class product extends control
         /* Load pager and get tasks. */
         $this->app->loadClass('pager', $static = true);
         $pager = new pager($recTotal, $recPerPage, $pageID);
+
+        /* Save this url to session. */
+        $uri = $this->app->getURI(true);
+        $this->app->session->set('lineList', $uri);
 
         $this->app->loadLang('my');
         $this->view->title        = $this->lang->product->allProduct;

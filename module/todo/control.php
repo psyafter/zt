@@ -30,14 +30,18 @@ class todo extends control
      * Create a todo.
      *
      * @param  string|date $date
-     * @param  string      $account
+     * @param  int         $userID
      * @access public
      * @return void
      */
-    public function create($date = 'today', $account = '', $from = 'todo')
+    public function create($date = 'today', $userID = '', $from = 'todo')
     {
         if($date == 'today') $date = date::today();
-        if($account == '')   $account = $this->app->user->account;
+        if($userID == '')   $userID = $this->app->user->id;
+
+        $user    = $this->loadModel('user')->getById($userID, 'id');
+        $account = $user->account;
+
         if(!empty($_POST))
         {
             $todoID = $this->todo->create($date, $account);
@@ -65,7 +69,7 @@ class todo extends control
 
             if($this->app->getViewType() == 'xhtml') die(js::locate($this->createLink('todo', 'view', "todoID=$todoID"), 'parent'));
             if(isonlybody()) die(js::locate($this->createLink('my', 'todo', "type=$date"), 'parent.parent'));
-            die(js::locate($this->createLink('my', 'todo', "type=all&account=&status=all&orderBy=id_desc"), 'parent'));
+            die(js::locate($this->createLink('my', 'todo', "type=all&userID=&status=all&orderBy=id_desc"), 'parent'));
         }
 
         unset($this->lang->todo->typeList['cycle']);
@@ -82,11 +86,10 @@ class todo extends control
      * Batch create todo
      *
      * @param  string $date
-     * @param  string $account
      * @access public
      * @return void
      */
-    public function batchCreate($date = 'today', $account = '')
+    public function batchCreate($date = 'today')
     {
         if($date == 'today') $date = date(DT_DATE1, time());
         if(!empty($_POST))
@@ -142,13 +145,14 @@ class todo extends control
                 $actionID = $this->loadModel('action')->create('todo', $todoID, 'edited');
                 $this->action->logHistory($actionID, $changes);
             }
-            die(js::locate($this->session->todoList, 'parent'));
+            die(js::locate($this->session->todoList, 'parent.parent'));
         }
 
         /* Judge a private todo or not, If private, die. */
         $todo = $this->todo->getById($todoID);
         if($todo->private and $this->app->user->account != $todo->account) die('private');
 
+        unset($this->lang->todo->typeList['cycle']);
         $todo->date = date("Y-m-d", strtotime($todo->date));
         $this->view->title      = $this->lang->todo->common . $this->lang->colon . $this->lang->todo->edit;
         $this->view->position[] = $this->lang->todo->common;
@@ -163,12 +167,12 @@ class todo extends control
      *
      * @param  string $from example:myTodo, todoBatchEdit.
      * @param  string $type
-     * @param  string $account
+     * @param  int    $userID
      * @param  string $status
      * @access public
      * @return void
      */
-    public function batchEdit($from = '', $type = 'today', $account = '', $status = 'all')
+    public function batchEdit($from = '', $type = 'today', $userID = '', $status = 'all')
     {
         /* Get form data for my-todo. */
         if($from == 'myTodo')
@@ -178,7 +182,10 @@ class todo extends control
             $todoIDList  = array();
             $columns     = 7;
 
-            if($account == '') $account = $this->app->user->account;
+            if($userID == '') $userID = $this->app->user->id;
+            $user    = $this->loadModel('user')->getById($userID, 'id');
+            $account = $user->account;
+
             $bugs     = $this->bug->getUserBugPairs($account);
             $tasks    = $this->task->getUserTaskPairs($account, $status);
             $storys   = $this->loadModel('story')->getUserStoryPairs($account);
@@ -206,6 +213,8 @@ class todo extends control
             $countInputVars  = count($editedTodos) * $columns;
             $showSuhosinInfo = common::judgeSuhosinSetting($countInputVars);
 
+
+            unset($this->lang->todo->typeList['cycle']);
             /* Set Custom*/
             foreach(explode(',', $this->config->todo->list->customBatchEditFields) as $field) $customFields[$field] = $this->lang->todo->$field;
             $this->view->customFields = $customFields;
@@ -243,6 +252,28 @@ class todo extends control
 
             die(js::locate($this->session->todoList, 'parent'));
         }
+    }
+
+    /**
+     * Start a todo.
+     *
+     * @param  int    $todoID
+     * @access public
+     * @return void
+     */
+    public function start($todoID)
+    {
+        $todo = $this->todo->getById($todoID);
+        if($todo->status == 'wait') $this->todo->start($todoID);
+        if(in_array($todo->type, array('bug', 'task', 'story')))
+        {
+            $confirmNote = 'confirm' . ucfirst($todo->type);
+            $confirmURL  = $this->createLink($todo->type, 'view', "id=$todo->idvalue");
+            $cancelURL   = $this->server->HTTP_REFERER;
+            die(js::confirm(sprintf($this->lang->todo->$confirmNote, $todo->idvalue), $confirmURL, $cancelURL, 'parent', 'parent'));
+        }
+        if(isonlybody())die(js::reload('parent.parent'));
+        die(js::reload('parent'));
     }
 
     /**
@@ -331,7 +362,6 @@ class todo extends control
         {
             $this->lang->todo->menu      = $this->lang->user->menu;
             $this->lang->todo->menuOrder = $this->lang->user->menuOrder;
-            $this->user->setMenu($this->user->getPairs(), $todo->account);
             $this->lang->company->menu->browseUser['subModule'] = 'todo';
             $this->lang->set('menugroup.todo', $from);
         }
@@ -349,6 +379,7 @@ class todo extends control
         $this->view->todo       = $todo;
         $this->view->times      = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
         $this->view->users      = $this->user->getPairs('noletter');
+        $this->view->user       = $this->user->getById($todo->account);
         $this->view->actions    = $this->loadModel('action')->getList('todo', $todoID);
         $this->view->from       = $from;
         $this->view->projects   = $this->loadModel('project')->getPairs();
@@ -477,15 +508,18 @@ class todo extends control
     /**
      * Get data to export
      *
-     * @param  string $productID
+     * @param  int    $userID
      * @param  string $orderBy
      * @access public
      * @return void
      */
-    public function export($account, $orderBy)
+    public function export($userID, $orderBy)
     {
         if($_POST)
         {
+            $user    = $this->loadModel('user')->getById($userID, 'id');
+            $account = $user->account;
+
             $todoLang   = $this->lang->todo;
             $todoConfig = $this->config->todo;
 
@@ -533,10 +567,11 @@ class todo extends control
 
             $this->post->set('fields', $fields);
             $this->post->set('rows', $todos);
-            $this->post->set('kind', 'todo');
+            $this->post->set('kind', $this->lang->todo->common);
             $this->fetch('file', 'export2' . $this->post->fileType, $_POST);
         }
 
+        $this->view->fileName = $this->app->user->account . ' - ' . $this->lang->todo->common;
         $this->display();
     }
 

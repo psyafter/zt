@@ -195,7 +195,7 @@
               <?php if(!$isLibCase and $config->global->flow != 'onlyTest'):?>
               <tr>
                 <th><?php echo $lang->testcase->story;?></th>
-                <td class='text-left'><div id='storyIdBox'><?php echo html::select('story', $stories, $case->story, 'class=form-control chosen');?></div>
+                <td class='text-left'><div id='storyIdBox'><?php echo html::select('story', $stories, $case->story, 'class="form-control chosen"');?></div>
                 </td>
               </tr>
               <?php endif;?>
@@ -213,7 +213,11 @@
               </tr>
               <tr>
                 <th><?php echo $lang->testcase->status;?></th>
+                <?php if(!$forceNotReview and $case->status == 'wait'):?>
+                <td><?php echo $lang->testcase->statusList[$case->status];?>
+                <?php else: ?>
                 <td><?php echo html::select('status', (array)$lang->testcase->statusList, $case->status, "class='form-control chosen'");?></td>
+                <?php endif; ?>
               </tr>
               <tr>
                 <th><?php echo $lang->testcase->keywords;?></th>

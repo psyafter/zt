@@ -1,6 +1,6 @@
 function setCopyProject(projectID)
 {
-    location.href = createLink('project', 'create', 'projectID=0&copyProjectID=' + projectID);
+    location.href = createLink('project', 'create', 'productID=&projectID=0&copyProjectID=' + projectID);
 }
 
 $(function()
@@ -29,6 +29,12 @@ $(function()
             loadPlans($(this), branchID);
         });
     }
+
+    /* Assign value to the manage products by the different request type.*/
+    var product = $('#products0');
+    $(product).val(productID);
+    $(product).trigger("chosen:updated");
+    loadBranches($(product));
 
     var adjustMainCol = function()
     {

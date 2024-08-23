@@ -46,9 +46,9 @@ class doc extends control
         $this->app->loadClass('pager', $static = true);
         $pager = new pager(0, 5, 1);
 
-        $this->lang->modulePageActions  = $this->doc->setFastMenu($this->lang->doc->fast);
-        $this->lang->modulePageActions .= common::hasPriv('doc', 'createLib') ? html::a(helper::createLink('doc', 'createLib'), "<i class='icon icon-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe' data-width='70%'") : '';
-        $this->lang->modulePageActions .= common::hasPriv('doc', 'create') ? $this->doc->buildCreateButton4Doc() : '';
+        $this->lang->TRActions  = $this->doc->setFastMenu($this->lang->doc->fast);
+        $this->lang->TRActions .= common::hasPriv('doc', 'createLib') ? html::a(helper::createLink('doc', 'createLib'), "<i class='icon icon-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe' data-width='70%'") : '';
+        $this->lang->TRActions .= common::hasPriv('doc', 'create') ? $this->doc->buildCreateButton4Doc() : '';
 
         $actionURL = $this->createLink('doc', 'browse', "lib=0&browseType=bySearch&queryID=myQueryID");
         $this->doc->buildSearchForm(0, array(), 0, $actionURL, 'index');
@@ -324,7 +324,7 @@ class doc extends control
             if(!empty($files)) $fileAction = $this->lang->addFiles . join(',', $files) . "\n" ;
             $this->action->create('doc', $docID, 'Created', $fileAction);
 
-            $vars = "libID={$this->post->lib}&browseType=byModule&moduleID={$this->post->module}&orderBy=id_desc&from=$this->from";
+            $vars = "libID=" . (int)$this->post->lib . "&browseType=byModule&moduleID=" . (int)$this->post->module . "&orderBy=id_desc&from=$this->from";
             $link = $this->createLink('doc', 'browse', $vars);
             if($this->app->getViewType() == 'xhtml') $link = $this->createLink('doc', 'view', "docID=$docID");
             $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $link));
@@ -341,7 +341,7 @@ class doc extends control
             $this->product->setMenu($this->product->getPairs(), $lib->product);
             $this->lang->set('menugroup.doc', 'product');
 
-            $this->lang->modulePageActions = common::hasPriv('doc', 'createLib') ? html::a(helper::createLink('doc', 'createLib'), "<i class='icon icon-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe' data-width='70%'") : '';
+            $this->lang->TRActions = common::hasPriv('doc', 'createLib') ? html::a(helper::createLink('doc', 'createLib'), "<i class='icon icon-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe' data-width='70%'") : '';
         }
         elseif($this->from == 'project')
         {
@@ -350,7 +350,7 @@ class doc extends control
             $this->project->setMenu($this->project->getPairs('nocode'), $lib->project);
             $this->lang->set('menugroup.doc', 'project');
 
-            $this->lang->modulePageActions = common::hasPriv('doc', 'createLib') ? html::a(helper::createLink('doc', 'createLib'), "<i class='icon icon-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe' data-width='70%'") : '';
+            $this->lang->TRActions = common::hasPriv('doc', 'createLib') ? html::a(helper::createLink('doc', 'createLib'), "<i class='icon icon-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe' data-width='70%'") : '';
         }
         else
         {
@@ -371,7 +371,7 @@ class doc extends control
         $this->view->type             = $type;
         $this->view->docType          = $docType;
         $this->view->groups           = $this->loadModel('group')->getPairs();
-        $this->view->users            = $this->user->getPairs('nocode');
+        $this->view->users            = $this->user->getPairs('nocode|noclosed|nodeleted');
 
         $this->display();
     }
@@ -422,9 +422,9 @@ class doc extends control
         $this->view->doc              = $doc;
         $this->view->moduleOptionMenu = $this->tree->getOptionMenu($libID, 'doc', $startModuleID = 0);
         $this->view->type             = $type;
-        $this->view->libs             = $this->doc->getLibs($type = 'all', $extra = 'withObject');
+        $this->view->libs             = $this->doc->getLibs('all', $extra = 'withObject|noBook');
         $this->view->groups           = $this->loadModel('group')->getPairs();
-        $this->view->users            = $this->user->getPairs('noletter', $doc->users);
+        $this->view->users            = $this->user->getPairs('noletter|noclosed|nodeleted', $doc->users);
         $this->display();
     }
 
@@ -432,6 +432,7 @@ class doc extends control
      * View a doc.
      *
      * @param  int    $docID
+     * @param  int    $version
      * @access public
      * @return void
      */
@@ -445,6 +446,7 @@ class doc extends control
         {
             $hyperdown    = $this->app->loadClass('hyperdown');
             $doc->content = $hyperdown->makeHtml($doc->content);
+
             $doc->digest  = $hyperdown->makeHtml($doc->digest);
         }
 
@@ -750,7 +752,7 @@ class doc extends control
         setcookie('docFilesViewType', $viewType, $this->config->cookieLife, $this->config->webRoot, '', false, true);
 
         $table  = $type == 'product' ? TABLE_PRODUCT : TABLE_PROJECT;
-        $object = $this->dao->select('id,name')->from($table)->where('id')->eq($objectID)->fetch();
+        $object = $this->dao->select('id,name,status')->from($table)->where('id')->eq($objectID)->fetch();
 
         /* According the from, set menus. */
         if($this->from == 'product')
@@ -795,17 +797,18 @@ class doc extends control
         $this->app->loadClass('pager', $static = true);
         $pager = new pager($recTotal, $recPerPage, $pageID);
 
-        $this->view->title      = $object->name;
-        $this->view->position[] = $object->name;
+        $this->view->title        = $object->name;
+        $this->view->position[]   = $object->name;
 
-        $this->view->type       = $type;
-        $this->view->object     = $object;
-        $this->view->files      = $this->doc->getLibFiles($type, $objectID, $orderBy, $pager);
-        $this->view->users      = $this->loadModel('user')->getPairs('noletter');
-        $this->view->pager      = $pager;
-        $this->view->viewType   = $viewType;
-        $this->view->orderBy    = $orderBy;
-        $this->view->objectID   = $objectID;
+        $this->view->type         = $type;
+        $this->view->object       = $object;
+        $this->view->files        = $this->doc->getLibFiles($type, $objectID, $orderBy, $pager);
+        $this->view->users        = $this->loadModel('user')->getPairs('noletter');
+        $this->view->pager        = $pager;
+        $this->view->viewType     = $viewType;
+        $this->view->orderBy      = $orderBy;
+        $this->view->objectID     = $objectID;
+        $this->view->canBeChanged = common::canModify($type, $object); // Determines whether an object is editable.
 
         $this->display();
     }
@@ -843,8 +846,9 @@ class doc extends control
         setcookie('from', $from, $this->config->cookieLife, $this->config->webRoot, '', false, true);
 
         $table  = $type == 'product' ? TABLE_PRODUCT : TABLE_PROJECT;
-        $object = $this->dao->select('id,name')->from($table)->where('id')->eq($objectID)->fetch();
+        $object = $this->dao->select('id,name,status')->from($table)->where('id')->eq($objectID)->fetch();
         if(empty($object)) $this->locate($this->createLink($type, 'create'));
+
         if($from == 'product')
         {
             $this->lang->doc->menu      = $this->lang->product->menu;
@@ -881,10 +885,11 @@ class doc extends control
         $this->view->title      = $object->name;
         $this->view->position[] = $object->name;
 
-        $this->view->type   = $type;
-        $this->view->object = $object;
-        $this->view->from   = $from;
-        $this->view->libs   = $this->doc->getLibsByObject($type, $objectID);
+        $this->view->type         = $type;
+        $this->view->object       = $object;
+        $this->view->from         = $from;
+        $this->view->libs         = $this->doc->getLibsByObject($type, $objectID);
+        $this->view->canBeChanged = common::canModify($type, $object); // Determines whether an object is editable.
         $this->display();
     }
 }

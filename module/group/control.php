@@ -27,18 +27,15 @@ class group extends control
     /**
      * Browse groups.
      * 
-     * @param  int    $companyID 
      * @access public
      * @return void
      */
-    public function browse($companyID = 0)
+    public function browse()
     {
-        if($companyID == 0) $companyID = $this->app->company->id;
-
         $title      = $this->lang->company->orgView . $this->lang->colon . $this->lang->group->browse;
         $position[] = $this->lang->group->browse;
 
-        $groups = $this->group->getList($companyID);
+        $groups = $this->group->getList();
         $groupUsers = array();
         foreach($groups as $group) $groupUsers[$group->id] = $this->group->getUserPairs($group->id);
 
@@ -120,9 +117,9 @@ class group extends control
     }
 
     /**
-     * manageView 
-     * 
-     * @param  int    $groupID 
+     * Manage view.
+     *
+     * @param  int    $groupID
      * @access public
      * @return void
      */
@@ -136,13 +133,13 @@ class group extends control
             $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
         }
 
-        $group = $this->group->getById($groupID);
-        if($group->acl) $group->acl = json_decode($group->acl, true);
+        /* Get the group data by id. */
+        $group = $this->group->getByID($groupID);
 
         $this->view->title      = $this->lang->company->common . $this->lang->colon . $group->name . $this->lang->colon . $this->lang->group->manageView;
         $this->view->position[] = $group->name;
         $this->view->position[] = $this->lang->group->manageView;
-        
+
         $this->view->group      = $group;
         $this->view->products   = $this->dao->select('*')->from(TABLE_PRODUCT)->where('deleted')->eq('0')->orderBy('order_desc')->fetchPairs('id', 'name');
         $this->view->projects   = $this->dao->select('*')->from(TABLE_PROJECT)->where('deleted')->eq('0')->orderBy('order_desc')->fetchPairs('id', 'name');

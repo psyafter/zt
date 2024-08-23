@@ -19,16 +19,16 @@
       <?php
       $that   = zget($lang->user->thirdPerson, $user->gender);
       $active = $type == 'assignedTo' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('story', "account=$account&type=assignedTo"),  sprintf($lang->user->assignedTo, $that)) . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('story', "userID={$user->id}&type=assignedTo"),  sprintf($lang->user->assignedTo, $that)) . "</li>";
 
       $active = $type == 'openedBy' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('story', "account=$account&type=openedBy"),   sprintf($lang->user->openedBy, $that))   . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('story', "userID={$user->id}&type=openedBy"),   sprintf($lang->user->openedBy, $that))   . "</li>";
 
       $active = $type == 'reviewedBy' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('story', "account=$account&type=reviewedBy"),  sprintf($lang->user->reviewedBy ,$that)) . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('story', "userID={$user->id}&type=reviewedBy"),  sprintf($lang->user->reviewedBy ,$that)) . "</li>";
 
       $active = $type == 'closedBy' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('story', "account=$account&type=closedBy"),    sprintf($lang->user->closedBy ,$that))   . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('story', "userID={$user->id}&type=closedBy"),    sprintf($lang->user->closedBy ,$that))   . "</li>";
       ?>
     </ul>
   </nav>
@@ -51,7 +51,7 @@
       <tbody>
         <?php foreach($stories as $key => $story):?>
           <?php $storyLink = $this->createLink('story', 'view', "id=$story->id");?>
-          <tr class='text-center'>
+        <tr class='text-left'>
           <td><?php echo html::a($storyLink, sprintf('%03d', $story->id));?></td>
           <td><span class='<?php echo 'pri' . zget($lang->story->priList, $story->pri, $story->pri);?>'><?php echo zget($lang->story->priList, $story->pri, $story->pri);?></span></td>
           <td><?php echo $story->productTitle;?></td>

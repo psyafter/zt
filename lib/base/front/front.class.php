@@ -342,6 +342,7 @@ class baseHTML
      */
     static public function password($name, $value = "", $attrib = "")
     {
+        if(stripos($attrib, 'autocomplete') === false) $attrib .= " autocomplete='off'";
         return "<input type='password' name='$name' id='$name' value='$value' $attrib />\n";
     }
 
@@ -800,6 +801,18 @@ class baseJS
      */
     static public function alert($message = '', $full = true)
     {
+        global $app;
+
+        if($app->viewType == 'json')
+        {
+            $output = array();
+            $output['status'] = 'success';
+            $output['data']   = json_encode(array('message' => $message));
+            $output['md5']    = md5($output['data']);
+
+            return json_encode($output);
+        }
+
         return self::start($full) . "alert('" . $message . "')" . self::end() . self::resetForm();
     }
 
@@ -828,6 +841,18 @@ class baseJS
      */
     static public function error($message, $full = true)
     {
+        global $app;
+
+        if($app->viewType == 'json')
+        {
+            $output = array();
+            $output['status'] = 'success';
+            $output['data']   = json_encode(array('result' => 'fail', 'message' => $message));
+            $output['md5']    = md5($output['data']);
+
+            return json_encode($output);
+        }
+
         $alertMessage = '';
         if(is_array($message))
         {
@@ -871,6 +896,24 @@ class baseJS
      */
     static public function confirm($message = '', $okURL = '', $cancleURL = '', $okTarget = "self", $cancleTarget = "self")
     {
+        global $app;
+        if($app->viewType == 'json')
+        {
+            $data = array();
+            $data['message']      = $message;
+            $data['okURL']        = common::getSysURL() . $okURL;
+            $data['cancleURL']    = common::getSysURL() . $cancleURL;
+            $data['okTarget']     = $okTarget;
+            $data['cancleTarget'] = $cancleTarget;
+
+            $output = array();
+            $output['status'] = 'success';
+            $output['data']   = json_encode($data);
+            $output['md5']    = md5($output['data']);
+
+            return json_encode($output);
+        }
+
         $js = self::start();
 
         $confirmAction = '';
@@ -919,11 +962,25 @@ EOT;
      */
     static public function locate($url, $target = "self")
     {
+        global $app;
+
         /* If the url if empty, goto the home page. */
         if(!$url)
         {
             global $config;
             $url = $config->webRoot;
+        }
+
+        if($app->viewType == 'json')
+        {
+            $data = strtolower($url) == 'back' ? array('locate' => 'back') : array('locate' => common::getSysURL() . $url);
+
+            $output = array();
+            $output['status'] = 'success';
+            $output['data']   = json_encode($data);
+            $output['md5']    = md5($output['data']);
+
+            return json_encode($output);
         }
 
         $js  = self::start();

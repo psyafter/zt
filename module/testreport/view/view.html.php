@@ -30,10 +30,10 @@
 <?php endif;?>
 <div id='mainContent' class='main-content'>
   <ul class='nav nav-tabs'>
-    <li class='active'><?php echo html::a('###', $lang->testreport->legendBasic, '', "data-toggle='tab' data-target='#basic'")?></li>
+    <li <?php if($tab == 'basic') echo "class='active'";?>><?php echo html::a('###', $lang->testreport->legendBasic, '', "data-toggle='tab' data-target='#basic'")?></li>
     <li><?php echo html::a('###', $lang->testreport->legendStoryAndBug, '', "data-toggle='tab' data-target='#storyAndBug'")?></li>
     <li><?php echo html::a('###', $lang->testreport->legendBuild, '', "data-toggle='tab' data-target='#tabBuild'")?></li>
-    <li><?php echo html::a('###', $lang->testreport->legendCase, '', "data-toggle='tab' data-target='#tabCase'")?></li>
+    <li <?php if($tab == 'cases') echo "class='active'";?>><?php echo html::a('###', $lang->testreport->legendCase, '', "data-toggle='tab' data-target='#tabCase'")?></li>
     <li><?php echo html::a('###', $lang->testreport->legendLegacyBugs, '', "data-toggle='tab' data-target='#tabLegacyBugs'")?></li>
     <li><?php echo html::a('###', $lang->testreport->legendReport, '', "data-toggle='tab' data-target='#tabReport'")?></li>
     <li><?php echo html::a('###', $lang->testreport->legendComment, '', "data-toggle='tab' data-target='#tabComment'")?></li>
@@ -44,6 +44,7 @@
     <?php endif;?>
     <?php endif;?>
   </ul>
+  <?php $this->app->rawParams['tab'] = 'cases';?>
   <div class='tab-content'>
     <div class='tab-pane' id='basic'>
       <table class='table table-form'>
@@ -102,6 +103,7 @@
     <?php endif;?>
   </div>
 </div>
+<?php echo js::set('activeTab', $tab);?>
 <?php if(!$this->session->notHead):?>
 <div id='mainActions' class='main-actions'>
   <nav class='container'></nav>
@@ -110,9 +112,12 @@
     <?php if(!$report->deleted):?>
     <div class='divider'></div>
     <?php
-    if(common::hasPriv('testreport', 'create')) echo html::a(inLink('create', "objectID=$report->objectID&objectType=$report->objectType"),  "<i class='icon-refresh'></i>", '', "class='btn' title='{$lang->testreport->recreate}'");
-    common::printIcon('testreport', 'edit', "reportID=$report->id", '', 'button');
-    common::printIcon('testreport', 'delete', "reportID=$report->id", '', 'button', 'trash', 'hiddenwin');
+    if(common::canBeChanged('report', $report))
+    {
+        if(common::hasPriv('testreport', 'create')) echo html::a(inLink('create', "objectID=$report->objectID&objectType=$report->objectType&extra=$report->id"),  "<i class='icon-refresh'></i>", '', "class='btn' title='{$lang->testreport->recreate}'");
+        common::printIcon('testreport', 'edit', "reportID=$report->id", '', 'button');
+        common::printIcon('testreport', 'delete', "reportID=$report->id", '', 'button', 'trash', 'hiddenwin');
+    }
     ?>
     <?php endif;?>
   </div>

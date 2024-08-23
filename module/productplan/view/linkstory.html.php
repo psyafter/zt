@@ -41,7 +41,6 @@
       <tbody class='text-center'>
         <?php $unlinkedCount = 0;?>
         <?php foreach($allStories as $story):?>
-        <?php if(isset($planStories[$story->id])) continue;?>
         <tr>
           <td class='c-id text-left'>
             <?php echo html::checkbox('stories', array($story->id => sprintf('%03d', $story->id)));?>
@@ -49,7 +48,12 @@
           <td><span class='label-pri <?php echo 'label-pri-' . $story->pri;?>' title='<?php echo zget($lang->story->priList, $story->pri, $story->pri)?>'><?php echo zget($lang->story->priList, $story->pri, $story->pri)?></span></td>
           <td><?php echo $story->planTitle;?></td>
           <td title='<?php echo $modules[$story->module]?>' class='text-left'><?php echo $modules[$story->module];?></td>
-          <td class='text-left nobr' title='<?php echo $story->title?>'><?php echo html::a($this->createLink('story', 'view', "storyID=$story->id", '', true), $story->title, '', "data-toggle='modal' data-type='iframe' data-width='90%'");?></td>
+          <td class='text-left nobr' title='<?php echo $story->title?>'>
+            <?php
+            if($story->parent > 0) echo "<span class='label'>{$lang->story->childrenAB}</span>";
+            echo html::a($this->createLink('story', 'view', "storyID=$story->id", '', true), $story->title, '', "data-toggle='modal' data-type='iframe' data-width='90%'");
+            ?>
+          </td>
           <td><?php echo zget($users, $story->openedBy);?></td>
           <td><?php echo zget($users, $story->assignedTo);?></td>
           <td><?php echo $story->estimate;?></td>
@@ -75,9 +79,14 @@
         <?php echo html::a(inlink('view', "planID=$plan->id&type=story&orderBy=$orderBy"), $lang->goback, '', "class='btn'");?>
       </div>
       <div class='table-statistic'></div>
+      <?php $pager->show('right', 'pagerjs');?>
     </div>
   </form>
 </div>
 <script>
-$(function(){$('#unlinkStoryList .tablesorter').sortTable();});
+$(function()
+{
+    $('#unlinkStoryList .tablesorter').sortTable();
+    setForm();
+});
 </script>

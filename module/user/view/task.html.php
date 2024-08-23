@@ -19,19 +19,19 @@
       <?php
       $that   = zget($lang->user->thirdPerson, $user->gender);
       $active = $type == 'assignedTo' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('task', "account=$account&type=assignedTo"), sprintf($lang->user->assignedTo, $that)) . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('task', "userID={$user->id}&type=assignedTo"), sprintf($lang->user->assignedTo, $that)) . "</li>";
 
       $active = $type == 'openedBy' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('task', "account=$account&type=openedBy"), sprintf($lang->user->openedBy, $that)) . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('task', "userID={$user->id}&type=openedBy"), sprintf($lang->user->openedBy, $that)) . "</li>";
 
       $active = $type == 'finishedBy' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('task', "account=$account&type=finishedBy"), sprintf($lang->user->finishedBy, $that)) . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('task', "userID={$user->id}&type=finishedBy"), sprintf($lang->user->finishedBy, $that)) . "</li>";
 
       $active = $type == 'closedBy' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('task', "account=$account&type=closedBy"), sprintf($lang->user->closedBy, $that)) . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('task', "userID={$user->id}&type=closedBy"), sprintf($lang->user->closedBy, $that)) . "</li>";
 
       $active = $type == 'canceledBy' ? 'active' : '';
-      echo "<li class='$active'>" . html::a(inlink('task', "account=$account&type=canceledBy"), sprintf($lang->user->canceledBy, $that)) . "</li>";
+      echo "<li class='$active'>" . html::a(inlink('task', "userID={$user->id}&type=canceledBy"), sprintf($lang->user->canceledBy, $that)) . "</li>";
       ?>
     </ul>
   </nav>
@@ -53,7 +53,7 @@
       </thead>   
       <tbody>
         <?php foreach($tasks as $task):?>
-        <tr class='text-center'>
+        <tr class='text-left'>
           <td><?php echo html::a($this->createLink('task', 'view', "taskID=$task->id"), sprintf('%03d', $task->id));?></td>
           <td><span class='<?php echo 'pri' . zget($lang->task->priList, $task->pri, $task->pri);?>'><?php echo $task->pri == '0' ? '' : zget($lang->task->priList, $task->pri, $task->pri)?></span></td>
           <td class='text-left nobr'><?php echo html::a($this->createLink('project', 'browse', "projectid=$task->projectID"), $task->projectName);?></td>

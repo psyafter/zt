@@ -52,10 +52,12 @@ $("input:checkbox[name='revision[]']").click(function(){
     if (checkNum >= 2) 
     {
         $("input:checkbox[name='revision[]']").each(function(){ if(!$(this).is(':checked')) $(this).attr("disabled","disabled")});
+        $('#submit').removeAttr('disabled');
     }
     else
     {
         $("input:checkbox[name='revision[]']").each(function(){$(this).attr("disabled", false)});
+        $('#submit').attr('disabled', 'disabled');
     }
 });
 
@@ -81,6 +83,19 @@ $(function()
             {
                 $("#sidebar > .side-body").removeClass('affix');
             }
+        });
+    }
+
+    if($("main").is(".hide-sidebar"))
+    {
+        $(".sidebar-toggle").children().attr("class", "icon icon-angle-left");
+    }
+    else
+    {
+        $("#sidebar").bind("click", function ()
+        {
+            $(".sidebar-toggle").children().attr("class", "icon icon-angle-left");
+            $(this).unbind();
         });
     }
 })

@@ -33,11 +33,12 @@ class control extends baseControl
     {
         parent::__construct($moduleName, $methodName, $appName);
 
-        if(!defined('IN_INSTALL') and !defined('IN_UPGRADE')) $this->setConcept();
+        if(defined('IN_USE') or (defined('RUN_MODE') and RUN_MODE == 'api')) $this->setConcept();
 
         if(!isset($this->config->bizVersion)) return false;
+
         /* Code for task #9224. Set requiredFields for workflow. */
-        if($this->dbh and $this->moduleName != 'upgrade' and $this->moduleName != 'install')
+        if($this->dbh and (defined('IN_USE') or (defined('RUN_MODE') and RUN_MODE == 'api')))
         {
             $this->checkRequireFlowField();
 
@@ -235,9 +236,8 @@ class control extends baseControl
     {
         if(!isset($this->config->bizVersion)) return false;
 
-        $flow   = $this->loadModel('workflow')->getByModule($this->moduleName);
-        $action = $this->loadModel('workflowaction')->getByModuleAndAction($this->moduleName, $this->methodName);
-        if($flow && $action) $this->loadModel('workflowhook')->execute($flow, $action, $objectID);
+        $moduleName = $this->moduleName;
+        return $this->$moduleName->executeHooks($objectID);
     }
 
     /**
@@ -302,19 +302,68 @@ class control extends baseControl
         if(!isset($this->config->bizVersion)) return false;
         if(empty($_POST)) return false;
 
-        $fields       = $this->loadModel('workflowaction')->getFields($this->moduleName, $this->methodName);
-        $layouts      = $this->loadModel('workflowlayout')->getFields($this->moduleName, $this->methodName);
-        $notEmptyRule = $this->loadModel('workflowrule')->getByTypeAndRule('system', 'notempty');
+        $flow    = $this->dao->select('*')->from(TABLE_WORKFLOW)->where('module')->eq($this->moduleName)->fetch();
+        $fields  = $this->loadModel('workflowaction')->getFields($this->moduleName, $this->methodName);
+        $layouts = $this->loadModel('workflowlayout')->getFields($this->moduleName, $this->methodName);
+        $rules   = $this->dao->select('*')->from(TABLE_WORKFLOWRULE)->orderBy('id_desc')->fetchAll('id');
 
         $requiredFields = '';
         $mustPostFields = '';
+        $numberFields   = '';
+        $message        = array();
         foreach($fields as $field)
         {
             if($field->buildin or !$field->show or !isset($layouts[$field->field])) continue;
-            if($notEmptyRule && strpos(",$field->rules,", ",$notEmptyRule->id,") !== false)
+
+            $fieldRules = explode(',', trim($field->rules, ','));
+            $fieldRules = array_unique($fieldRules);
+            foreach($fieldRules as $ruleID)
             {
-                $requiredFields .= ",{$field->field}";
-                if($field->control == 'radio' or $field->control == 'checkbox') $mustPostFields .= ",{$field->field}";
+                if(!isset($rules[$ruleID])) continue;
+                if(!empty($_POST[$field->field]) and !is_string($_POST[$field->field])) continue;
+
+                $rule = $rules[$ruleID];
+                if($rule->type == 'system' and $rule->rule == 'notempty')
+                {
+                    $requiredFields .= ",{$field->field}";
+                    if($field->control == 'radio' or $field->control == 'checkbox') $mustPostFields .= ",{$field->field}";
+                    if(strpos($field->type, 'int') !== false and $field->control == 'select') $numberFields .= ",{$field->field}";
+                }
+                elseif($rule->type == 'system' and isset($_POST[$field->field]))
+                {
+                    $pass = true;
+                    if($rule->rule == 'unique')
+                    {
+                        if(!empty($_POST[$field->field]))
+                        {
+                            $sqlClass = new sql();
+                            $sql      = "SELECT COUNT(*) AS count FROM $flow->table WHERE `$field->field` = " . $sqlClass->quote(fixer::input('post')->get($field->field));
+                            if(isset($_POST['id'])) $sql .= ' AND `id` != ' . (int)$_POST['id'];
+
+                            $row = $this->dbh->query($sql)->fetch();
+                            if($row->count != 0) $pass = false;
+                        }
+                    }
+                    else
+                    {
+                        $checkFunc = 'check' . $rule->rule;
+                        if(validater::$checkFunc($_POST[$field->field]) === false) $pass = false;
+                    }
+
+                    if(!$pass)
+                    {
+                        $error = zget($this->lang->error, $rule->rule, '');
+                        if($rule->rule == 'unique') $error = sprintf($error, $field->name, $_POST[$field->field]);
+                        if($error) $error = sprintf($error, $field->name);
+                        if(empty($error)) $error = sprintf($this->lang->error->reg, $field->name, $rule->rule);
+
+                        $message[$field->field][] = $error;
+                    }
+                }
+                elseif($rule->type == 'regex' and isset($_POST[$field->field]))
+                {
+                    if(validater::checkREG($_POST[$field->field], $rule->rule) === false) $message[$field->field][] = sprintf($this->lang->error->reg, $field->name, $rule->rule);
+                }
             }
         }
 
@@ -322,11 +371,14 @@ class control extends baseControl
         {
             if(isset($this->config->{$this->moduleName}->{$this->methodName}->requiredFields)) $requiredFields .= ',' . $this->config->{$this->moduleName}->{$this->methodName}->requiredFields;
 
-            $message = array();
             foreach(explode(',', $requiredFields) as $requiredField)
             {
                 if(empty($requiredField)) continue;
                 if(isset($_POST[$requiredField]) and $_POST[$requiredField] === '')
+                {
+                    $message[$requiredField][] = sprintf($this->lang->error->notempty, $fields[$requiredField]->name);
+                }
+                elseif(strpos(",{$numberFields},", ",{$requiredField},") !== false and empty($_POST[$requiredField]))
                 {
                     $message[$requiredField][] = sprintf($this->lang->error->notempty, $fields[$requiredField]->name);
                 }
@@ -335,7 +387,7 @@ class control extends baseControl
                     $message[$requiredField][] = sprintf($this->lang->error->notempty, $fields[$requiredField]->name);
                 }
             }
-            if($message) $this->send(array('result' => 'fail', 'message' => $message));
         }
+        if($message) $this->send(array('result' => 'fail', 'message' => $message));
     }
 }

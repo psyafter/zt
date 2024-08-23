@@ -46,7 +46,11 @@ $status = $this->session->testTaskVersionStatus;
       <div class='datepicker-wrapper datepicker-date'><?php echo html::input('date', $endTime, "class='form-control form-date' onchange='changeDate(\"$beginTime\", this.value, \"$condition\")'");?></div>
     </div>
   </div>
-  <div class="btn-toolbar pull-right"><?php common::printLink('testtask', 'create', "product=$productID", "<i class='icon icon-plus'></i> " . $lang->testtask->create, '', "class='btn btn-primary'");?></div>
+  <?php if(common::canModify('product', $product)):?>
+  <div class="btn-toolbar pull-right">
+    <?php common::printLink('testtask', 'create', "product=$productID", "<i class='icon icon-plus'></i> " . $lang->testtask->create, '', "class='btn btn-primary'");?>
+  </div>
+  <?php endif;?>
 </div>
 <?php endif;?>
 <div id='mainContent' class='main-table'>
@@ -54,7 +58,7 @@ $status = $this->session->testTaskVersionStatus;
   <div class="table-empty-tip">
     <p>
       <span class="text-muted"><?php echo $lang->testtask->noTesttask;?></span>
-      <?php if(common::hasPriv('testtask', 'create')):?>
+      <?php if(common::canModify('product', $product) and common::hasPriv('testtask', 'create')):?>
       <?php echo html::a($this->createLink('testtask', 'create', "product=$productID"), "<i class='icon icon-plus'></i> " . $lang->testtask->create, '', "class='btn btn-info'");?>
       <?php endif;?>
     </p>
@@ -75,6 +79,10 @@ $status = $this->session->testTaskVersionStatus;
         <th class='w-100px text-left'><?php common::printOrderLink('begin',   $orderBy, $vars, $lang->testtask->begin);?></th>
         <th class='w-100px text-left'><?php common::printOrderLink('end',     $orderBy, $vars, $lang->testtask->end);?></th>
         <th class='w-80px text-left'> <?php common::printOrderLink('status',  $orderBy, $vars, $lang->statusAB);?></th>
+        <?php
+        $extendFields = $this->testtask->getFlowExtendFields();
+        foreach($extendFields as $extendField) echo "<th>{$extendField->name}</th>";
+        ?>
         <th class='c-actions-6 text-center'><?php echo $lang->actions;?></th>
       </tr>
     </thead>
@@ -88,7 +96,7 @@ $status = $this->session->testTaskVersionStatus;
       <td class='c-name' title="<?php echo $task->projectName?>"><?php echo $task->projectName?></td>
       <?php endif;?>
       <td class='c-name'><?php echo ($task->build == 'trunk' || empty($task->buildName)) ? $lang->trunk : html::a($this->createLink('build', 'view', "buildID=$task->build",'',true), $task->buildName);?></td>
-      <td><?php echo zget($users, $task->owner);?></td>
+      <td title="<?php echo zget($users, $task->owner);?>"><?php echo zget($users, $task->owner);?></td>
       <td><?php echo $task->begin?></td>
       <td><?php echo $task->end?></td>
       <?php $status = $this->processStatus('testtask', $task);?>
@@ -97,11 +105,12 @@ $status = $this->session->testTaskVersionStatus;
           <?php echo $status;?>
         </span>
       </td>
+      <?php foreach($extendFields as $extendField) echo "<td>" . $this->loadModel('flow')->getFieldValue($extendField, $task) . "</td>";?>
       <td class='c-actions'>
         <?php
         echo '<div id="action-divider">';
         common::printIcon('testtask',   'cases',    "taskID=$task->id", $task, 'list', 'sitemap');
-        common::printIcon('testtask',   'linkCase', "taskID=$task->id", $task, 'list', 'link');
+        common::printIcon('testtask',   'linkCase', "taskID=$task->id&type=all&param=myQueryID", $task, 'list', 'link');
         common::printIcon('testreport', 'browse',   "objectID=$task->product&objectType=product&extra=$task->id", $task, 'list','flag');
         echo '</div>';
         common::printIcon('testtask',   'view',     "taskID=$task->id", '', 'list', 'list-alt','','iframe',true);

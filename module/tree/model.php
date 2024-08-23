@@ -253,7 +253,13 @@ class treeModel extends model
         $treeMenu   = array();
         $lastMenu[] = '/';
         $projectModules   = $this->getTaskTreeModules($rootID, true);
-        $noProductModules = $this->dao->select('*')->from(TABLE_MODULE)->where("root = '" . (int)$rootID . "' and type = 'task' and parent = 0")->andWhere('deleted')->eq(0)->fetchPairs('id', 'name');
+        $noProductModules = $this->dao->select('*')->from(TABLE_MODULE)
+                    ->where('root')->eq((int)$rootID)
+                    ->andWhere('type')->eq('task')
+                    ->andWhere('parent')->eq(0)
+                    ->andWhere('deleted')->eq(0)
+                    ->orderBy('grade desc, branch, `order`, type')
+                    ->fetchPairs('id', 'name');
 
         /* Fix for not in product modules. */
         $productNum = count($products);
@@ -271,7 +277,10 @@ class treeModel extends model
                 }
                 else
                 {
-                    $modules = $this->dao->select('*')->from(TABLE_MODULE)->where("root = '" . (int)$rootID . "' and type = 'task' and path like '%,$id,%'")
+                    $modules = $this->dao->select('*')->from(TABLE_MODULE)
+                        ->where('root')->eq((int)$rootID)
+                        ->andWhere('type')->eq('task')
+                        ->andWhere('path')->like("%,$id,%")
                         ->beginIF($startModulePath)->andWhere('path')->like($startModulePath)->fi()
                         ->andWhere('deleted')->eq(0)
                         ->orderBy('grade desc, `order`, type')
@@ -399,7 +408,7 @@ class treeModel extends model
             {
                 $linkHtml = ($type == 'case' and !empty($extra)) ? '<a>' . $branch . '</a>' : $this->createBranchLink($type, $rootID, $branchID, $branch);
                 $linkHtml = $manage ? html::a(inlink('browse', "root=$rootID&viewType=$type&currentModuleID=0&branch=$branchID"), $branch) : $linkHtml;
-                if($type == 'story' || $type == 'bug') $linkHtml = '<a>' . $branch . '</a>';
+                if($type == 'story' or $type == 'bug') $linkHtml = html::a(inlink('browse', "productID=$rootID&branch=$branchID&browseType=bybranch"), $branch, "", "id=branch" . $branchID);
                 if($firstBranch and $product->type != 'normal')
                 {
                     $linkHtml = '<a>' . $this->lang->product->branchName[$product->type] . '</a><ul><li>' . $linkHtml;
@@ -504,7 +513,12 @@ class treeModel extends model
         {
             /* tree menu. */
             $treeMenu = array();
-            $query = $this->dao->select('*')->from(TABLE_MODULE)->where("root = '" . (int)$rootID . "' and type = 'task'")->andWhere('deleted')->eq(0)->orderBy('grade desc, `order`, type')->get();
+            $query = $this->dao->select('*')->from(TABLE_MODULE)
+                ->where('root')->eq((int)$rootID)
+                ->andWhere('type')->eq('task')
+                ->andWhere('deleted')->eq(0)
+                ->orderBy('grade desc, `order`, type')
+                ->get();
             $stmt  = $this->dbh->query($query);
             while($module = $stmt->fetch()) $this->buildTree($treeMenu, $module, 'task', $userFunc, $extra);
 
@@ -534,6 +548,7 @@ class treeModel extends model
         {
             $extra['tip'] = false;
             $stmt = $this->dbh->query($this->buildMenuQuery($rootID, 'task', $startModule = 0));
+            if(empty($products)) $this->config->project->task->allModule = 1;
             return $this->getDataStructure($stmt, 'task');
         }
 
@@ -568,7 +583,12 @@ class treeModel extends model
         }
 
         /* Get project module. */
-        $query      = $this->dao->select('*')->from(TABLE_MODULE)->where("root = '" . (int)$rootID . "' and type = 'task'")->andWhere('deleted')->eq(0)->orderBy('grade desc, `order`, type')->get();
+        $query      = $this->dao->select('*')->from(TABLE_MODULE)
+            ->where('root')->eq((int)$rootID)
+            ->andWhere('type')->eq('task')
+            ->andWhere('deleted')->eq(0)
+            ->orderBy('grade desc, `order`, type')
+            ->get();
         $stmt       = $this->dbh->query($query);
         $taskTrees  = $this->getDataStructure($stmt, 'task', $projectModules);
         foreach($taskTrees as $taskModule) $fullTrees[] = $taskModule;
@@ -632,7 +652,9 @@ class treeModel extends model
             foreach($branchGroups[$id] as $branch => $branchName)
             {
                 $treeMenu = array();
-                $query = $this->dao->select('*')->from(TABLE_MODULE)->where("(root = $id and type = 'story')")
+                $query = $this->dao->select('*')->from(TABLE_MODULE)
+                    ->where('root')->eq((int)$id)
+                    ->andWhere('type')->eq('story')
                     ->beginIF(count($branchGroups[$id]) > 1)->andWhere('branch')->eq($branch)->fi()
                     ->beginIF($startModulePath)->andWhere('path')->like($startModulePath)->fi()
                     ->andWhere('deleted')->eq(0)
@@ -872,14 +894,12 @@ class treeModel extends model
      *
      * @param  string $type
      * @param  object $module
-     * @param  array  $extra
      * @access public
      * @return string
      */
-    public function createRequirementLink($type, $module, $extra)
+    public function createRequirementLink($type, $module)
     {    
-        $projectID = $extra['projectID'];
-        return html::a(helper::createLink('project', 'requirement', "projectID={$projectID}&orderBy=&type=byModule&param={$module->id}"), $module->name, '_self', "id='module{$module->id}'");
+        return html::a(helper::createLink('product', 'browse', "root={$module->root}&branch=&type=byModule&param={$module->id}&storyType=requirement"), $module->name, '_self', "id='module{$module->id}'");
     }
 
     /**
@@ -1333,6 +1353,11 @@ class treeModel extends model
         $childs         = $data->modules;
         $parentModuleID = $data->parentModuleID;
 
+        foreach($childs as $moduleID => $moduleName)
+        {
+            if(preg_match('/(^\s+$)/', $moduleName)) die(js::alert($this->lang->tree->shouldNotBlank));
+        }
+
         $module         = new stdClass();
         $module->root   = $rootID;
         $module->type   = $type;
@@ -1425,7 +1450,7 @@ class treeModel extends model
         if(isset($module->root) and $module->root != $self->root) 
         {
             $this->dao->update(TABLE_MODULE)->set('root')->eq($module->root)->where('id')->in($childs)->exec();
-            $this->dao->update(TABLE_MODULE)->set('branch')->eq(0)->where('id')->in($childs)->exec();
+            $this->dao->update(TABLE_MODULE)->set('branch')->eq($module->branch)->where('id')->in($childs)->exec();
             if($self->type == 'doc') $this->dao->update(TABLE_DOC)->set('`lib`')->eq($module->root)->where('module')->eq($moduleID)->exec();
         }
         $this->fixModulePath(isset($module->root) ? $module->root : $self->root, $self->type);
@@ -1513,18 +1538,34 @@ class treeModel extends model
         }
 
         $this->fixModulePath($module->root, $module->type);
-
-        if($module->type == 'line')  $this->dao->update(TABLE_PRODUCT)->set('line')->eq('0')->where('line')->eq($moduleID)->exec();
-        if($module->type == 'task')  $this->dao->update(TABLE_TASK)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
-        if($module->type == 'bug')   $this->dao->update(TABLE_BUG)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
-        if($module->type == 'case')  $this->dao->update(TABLE_CASE)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
-        if($module->type == 'story')
+        $cookieName = '';
+        switch ($module->type)
         {
-            $this->dao->update(TABLE_STORY)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
-            $this->dao->update(TABLE_TASK)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
-            $this->dao->update(TABLE_BUG)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
-            $this->dao->update(TABLE_CASE)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
+            case 'line':
+                $this->dao->update(TABLE_PRODUCT)->set('line')->eq('0')->where('line')->eq($moduleID)->exec();
+                break;
+            case 'task':
+                $this->dao->update(TABLE_TASK)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
+                $cookieName = 'moduleBrowseParam';
+                break;
+            case 'bug':
+                $this->dao->update(TABLE_BUG)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
+                $cookieName = 'bugModule';
+                break;
+            case 'case':
+                $this->dao->update(TABLE_CASE)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
+                $cookieName = 'caseModule';
+                break;
+            case 'story':
+                $this->dao->update(TABLE_STORY)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
+                $this->dao->update(TABLE_TASK)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
+                $this->dao->update(TABLE_BUG)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
+                $this->dao->update(TABLE_CASE)->set('module')->eq($module->parent)->where('module')->in($childs)->exec();
+                $cookieName = 'storyModule';
+                break;
         }
+        if(strpos($this->session->{$module->type . 'List'}, 'param=' . $moduleID)) $this->session->set($module->type . 'List', str_replace('param=' . $moduleID, 'param=0', $this->session->{$module->type . 'List'}));
+        if($cookieName) setcookie($cookieName, 0, time() - 3600, $this->config->webRoot, '', false, false);
 
         return true;
     }
@@ -1654,7 +1695,7 @@ class treeModel extends model
             $createdVersion = $this->dao->select($versionField)->from($table)->where('id')->eq($rootID)->fetch($versionField);
             if($createdVersion)
             {
-                if(is_numeric($createdVersion{0}) and version_compare($createdVersion, '4.1', '<=')) return false;
+                if(is_numeric($createdVersion[0]) and version_compare($createdVersion, '4.1', '<=')) return false;
                 return true;
             }
         }

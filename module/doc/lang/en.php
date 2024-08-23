@@ -47,8 +47,7 @@ $lang->doc->users          = 'Users';
 $lang->doc->item           = ' Items';
 $lang->doc->num            = 'Documents';
 $lang->doc->searchResult   = 'Search Result';
-$lang->doc->fullscreen     = 'Fullscreen';
-$lang->doc->retrack        = 'Retrack';
+$lang->doc->mailto         = 'Mailto';
 
 $lang->doc->moduleDoc      = 'By Module';
 $lang->doc->searchDoc      = 'Search';
@@ -157,6 +156,12 @@ $lang->doc->customShowLibsList['zero']     = 'Display Empty Library';
 $lang->doc->customShowLibsList['children'] = 'Display Child-category Documents';
 $lang->doc->customShowLibsList['unclosed'] = "Display Active {$lang->projectCommon}s Only";
 
+$lang->doc->mail = new stdclass();
+$lang->doc->mail->create = new stdclass();
+$lang->doc->mail->edit   = new stdclass();
+$lang->doc->mail->create->title = "%s created document #%s:%s";
+$lang->doc->mail->edit->title   = "%s edited document #%s:%s";
+
 $lang->doc->confirmDelete      = "Do you want to delete this document?";
 $lang->doc->confirmDeleteLib   = "Do you want to delete this document library?";
 $lang->doc->errorEditSystemDoc = "You don't have to change system document library.";
@@ -167,6 +172,7 @@ $lang->doc->accessDenied       = "Access is denied!";
 $lang->doc->versionNotFount    = 'It does not exist in this build.';
 $lang->doc->noDoc              = 'No documents. ';
 $lang->doc->cannotCreateOffice = 'Sorry, %s can only be created in ZenTao Enterprise. Contact us at renee@easysoft.ltd to try ZenTao Enterprise.';
+$lang->doc->notSetOffice       = "<p>To create a %s document, you need to configure <a href='%s' target='_parent'>office convert</a>.<p>";
 $lang->doc->noSearchedDoc      = 'No documents found.';
 $lang->doc->noEditedDoc        = 'You have not edited any documents.';
 $lang->doc->noOpenedDoc        = 'You have not created any documents.';

@@ -37,6 +37,8 @@ class api extends control
      */
     public function getModel($moduleName, $methodName, $params = '')
     {
+        if(!$this->config->features->apiGetModel) die(sprintf($this->lang->api->error->disabled, '$config->features->apiGetModel'));
+
         $params    = explode(',', $params);
         $newParams = array_shift($params);
         foreach($params as $param)
@@ -105,8 +107,13 @@ class api extends control
      */
     public function sql($keyField = '')
     {
-        $sql = isset($_POST['sql']) ? $this->post->sql : '';
-        $this->view->results = $this->api->sql($sql, $keyField);
-        die($this->display());
+        if(!$this->config->features->apiSQL) die(sprintf($this->lang->api->error->disabled, '$config->features->apiSQL'));
+
+        $sql    = isset($_POST['sql']) ? $this->post->sql : '';
+        $output = $this->api->sql($sql, $keyField);
+
+        $output['sql'] = $sql;
+        $this->output  = json_encode($output);
+        die($this->output);
     }
 }

@@ -12,6 +12,10 @@
 <?php js::set('repoID', $repoID);?>
 <div id='mainMenu' class='clearfix'>
   <div class="btn-toolbar pull-left">
+    <?php
+    echo html::backButton("<i class='icon icon-back icon-sm'></i>" . $lang->goback, '', 'btn btn-link');
+    echo '<div class="divider"></div>';
+    ?>
     <div class="page-title">
       <strong>
       <?php
@@ -22,7 +26,7 @@
       foreach($paths as $pathName)
       {
           $postPath .= $pathName . '/';
-          echo '/' . ' ' . html::a($this->repo->createLink('log', "repoID=$repoID", "entry=" . $this->repo->encodePath($postPath)), trim($pathName, '/'));
+          echo '/' . ' ' . html::a($this->repo->createLink('log', "repoID=$repoID&entry=" . $this->repo->encodePath($postPath)), trim($pathName, '/'));
       }
       echo '/' . ' ' . $fileName;
       ?>
@@ -36,10 +40,14 @@
     <ul class="nav nav-default">
       <?php $encodeEntry = $this->repo->encodePath($entry);?>
       <li><a><?php echo $lang->repo->log;?></a></li>
-      <?php if($info->kind == 'file') echo '<li>' . html::a($this->repo->createLink('download', "repoID=$repoID&path=&fromRevision=$revision", "path=$encodeEntry"), $lang->repo->download, 'hiddenwin') . '</li>';?>
+      <li><?php echo html::a($this->repo->createLink('view', "repoID=$repoID&entry=$encodeEntry&revision=$revision"), $lang->repo->view);?></li>
+      <?php if($info->kind == 'file'):?>
+      <li><?php echo html::a($this->repo->createLink('blame', "repoID=$repoID&entry=$encodeEntry&revision=$revision"), $lang->repo->blame);?></li>
+      <li><?php echo html::a($this->repo->createLink('download', "repoID=$repoID&path=$encodeEntry&fromRevision=$revision"), $lang->repo->download, 'hiddenwin');?></li>
+      <?php endif;?>
     </ul>
   </nav>
-  <form id='logForm' class='main-table' data-ride='table' action='<?php echo $this->repo->createLink('diff', "repoID=$repoID", "entry=" . $this->repo->encodePath($entry))?>' method='post'>
+  <form id='logForm' class='main-table' data-ride='table' method='post'>
     <table class='table table-fixed' id='logList'>
       <thead>
         <tr>

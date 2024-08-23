@@ -34,6 +34,7 @@
 <?php js::set('weekend', $config->project->weekend);?>
 <?php js::set('holders', $lang->project->placeholder);?>
 <?php js::set('errorSameProducts', $lang->project->errorSameProducts);?>
+<?php js::set('productID', empty($productID) ? 0 : $productID);?>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
     <div class='main-header'>
@@ -90,7 +91,7 @@
           <td></td>
           <td></td>
         </tr>
-        <?php $this->printExtendFields('', 'table');?>
+        <?php $this->printExtendFields('', 'table', 'columns=3');?>
         <tr <?php if($config->global->flow == 'onlyTask') echo "class='hidden'";?>>
           <th><?php echo $lang->project->manageProducts;?></th>
           <td class='text-left' id='productsBox' colspan="3">

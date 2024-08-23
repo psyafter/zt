@@ -330,7 +330,7 @@ class baseValidater
      */
     public static function checkNotEmpty($var)
     {
-        return strlen(trim($var)) != 0;
+        return !empty($var);
     }
 
     /**
@@ -951,7 +951,7 @@ class baseFixer
     public function cleanFloat($fieldName)
     {
         $fields = $this->processFields($fieldName);
-        foreach($fields as $fieldName) $this->data->$fieldName = filter_var($this->data->$fieldName, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION|FILTER_FLAG_ALLOW_THOUSAND);
+        foreach($fields as $fieldName) $this->data->$fieldName = (float)filter_var($this->data->$fieldName, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION|FILTER_FLAG_ALLOW_THOUSAND);
         return $this;
     }
 
@@ -971,7 +971,7 @@ class baseFixer
             $filterVar = filter_var($this->data->$fieldName, FILTER_SANITIZE_NUMBER_INT);
             if(empty($filterVar)) $filterVar = 0;
 
-            $this->data->$fieldName = $filterVar;
+            $this->data->$fieldName = (int)$filterVar;
         }
         return $this;
     }
@@ -989,7 +989,11 @@ class baseFixer
         $fields = $this->processFields($fieldName);
         foreach($fields as $fieldName)
         {
-            if(empty($this->stripedFields) or !isset($this->stripedFields[$fieldName])) $this->data->$fieldName = $this->specialArray($this->data->$fieldName);
+            if(empty($this->stripedFields) or !isset($this->stripedFields[$fieldName]))
+            {
+                $this->data->$fieldName = $this->specialArray($this->data->$fieldName);
+                $this->stripedFields[$fieldName] = $fieldName;
+            }
         }
         return $this;
     }
@@ -1016,10 +1020,11 @@ class baseFixer
      * 
      * @param  string $fieldName 
      * @param  string $allowableTags 
+     * @param  array  $attributes
      * @access public
      * @return object fixer object
      */
-    public function stripTags($fieldName, $allowedTags = '')
+    public function stripTags($fieldName, $allowedTags = '', $attributes = array())
     {
         $fields = $this->processFields($fieldName);
         foreach($fields as $fieldName)
@@ -1028,7 +1033,7 @@ class baseFixer
 
             if(!isset($this->stripedFields[$fieldName]) and (!defined('RUN_MODE') or RUN_MODE != 'admin'))
             {
-                $this->data->$fieldName = self::dataStripTags($this->data->$fieldName);
+                $this->data->$fieldName = self::stripDataTags($this->data->$fieldName, $allowedTags, $attributes);
 
                 /* Code for bug #2721. */
                 $this->data->$fieldName = baseValidater::replaceSpace2Tag($this->data->$fieldName);
@@ -1043,11 +1048,12 @@ class baseFixer
      * 
      * @param  string $data 
      * @param  string $allowedTags 
+     * @param  array  $attributes
      * @static
      * @access public
      * @return string
      */
-    public static function dataStripTags($data, $allowedTags = '')
+    public static function stripDataTags($data, $allowedTags = '', $attributes = array())
     {
         if(empty($data)) return $data;
 
@@ -1066,9 +1072,21 @@ class baseFixer
                 /* Disable caching. */
                 $purifierConfig->set('Cache.DefinitionImpl', null);
 
+                /* The name attribute is allowed. */
+                $purifierConfig->set('HTML.Attr.Name.UseCDATA', true);
+
                 $purifier = new HTMLPurifier($purifierConfig);
                 $def = $purifierConfig->getHTMLDefinition(true);
                 $def->addAttribute('a', 'target', 'Enum#_blank,_self,_target,_top');
+
+                if(!empty($attributes))
+                {
+                    foreach($attributes as $attribute)
+                    {
+                        list($element, $attribute, $values) = explode('|', $attribute);
+                        $def->addAttribute($element, $attribute, $values);
+                    }
+                }
             }
         }
 
@@ -1083,6 +1101,20 @@ class baseFixer
         if($usePurifier) $data = str_replace('&amp;spnb;', '&nbsp;', $data);
 
         return $data;
+    }
+
+    /**
+     * 去除字符串左右空格
+     * Remove the left and right Spaces of the string.
+     *
+     * @param string $fieldName
+     * @access public
+     * @return object fixer object
+     */
+    public function trim($fieldName)
+    {
+        if(isset($this->data->$fieldName)) $this->data->$fieldName = trim($this->data->$fieldName);
+        return $this;
     }
 
     /**

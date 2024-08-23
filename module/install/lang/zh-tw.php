@@ -11,13 +11,13 @@
  */
 $lang->install = new stdclass();
 
-$lang->install->common  = '安裝';
-$lang->install->next    = '下一步';
-$lang->install->pre     = '返回';
-$lang->install->reload  = '刷新';
-$lang->install->error   = '錯誤 ';
+$lang->install->common = '安裝';
+$lang->install->next   = '下一步';
+$lang->install->pre    = '返回';
+$lang->install->reload = '刷新';
+$lang->install->error  = '錯誤 ';
 
-$lang->install->officeDomain     = 'https://www.zentao.pm';
+$lang->install->officeDomain = 'https://www.zentao.pm';
 
 $lang->install->start            = '開始安裝';
 $lang->install->keepInstalling   = '繼續安裝當前版本';
@@ -30,32 +30,32 @@ $lang->install->desc             = <<<EOT
 禪道項目管理軟件使用PHP + MySQL開發，基于自主的PHP開發框架──ZenTaoPHP而成。第三方開發者或者企業可以非常方便的開發插件或者進行定製。
 EOT;
 $lang->install->links = <<<EOT
-禪道項目管理軟件由<strong><a href='http://www.cnezsoft.com' target='_blank' class='text-danger'>青島易軟天創網絡科技有限公司</a>開發</strong>。
+禪道項目管理軟件由<strong><a href='https://www.cnezsoft.com' target='_blank' class='text-danger'>青島易軟天創網絡科技有限公司</a>開發</strong>。
 官方網站：<a href='https://www.zentao.pm' target='_blank'>https://www.zentao.pm</a>
 技術支持：<a href='https://www.zentao.pm/ask/' target='_blank'>https://www.zentao.pm/ask/</a>
-新浪微博：<a href='http://weibo.com/easysoft' target='_blank'>http://weibo.com/easysoft</a>
+新浪微博：<a href='https://weibo.com/easysoft' target='_blank'>https://weibo.com/easysoft</a>
 
 
 
 您現在正在安裝的版本是 <strong class='text-danger'>%s</strong>。
 EOT;
 
-$lang->install->newReleased= "<strong class='text-danger'>提示</strong>：官網網站已有最新版本<strong class='text-danger'>%s</strong>, 發佈日期于 %s。";
-$lang->install->or         = '或者';
-$lang->install->checking   = '系統檢查';
-$lang->install->ok         = '檢查通過(√)';
-$lang->install->fail       = '檢查失敗(×)';
-$lang->install->loaded     = '已加載';
-$lang->install->unloaded   = '未加載';
-$lang->install->exists     = '目錄存在 ';
-$lang->install->notExists  = '目錄不存在 ';
-$lang->install->writable   = '目錄可寫 ';
-$lang->install->notWritable= '目錄不可寫 ';
-$lang->install->phpINI     = 'PHP配置檔案';
-$lang->install->checkItem  = '檢查項';
-$lang->install->current    = '當前配置';
-$lang->install->result     = '檢查結果';
-$lang->install->action     = '如何修改';
+$lang->install->newReleased = "<strong class='text-danger'>提示</strong>：官網網站已有最新版本<strong class='text-danger'>%s</strong>, 發佈日期于 %s。";
+$lang->install->or          = '或者';
+$lang->install->checking    = '系統檢查';
+$lang->install->ok          = '檢查通過(√)';
+$lang->install->fail        = '檢查失敗(×)';
+$lang->install->loaded      = '已加載';
+$lang->install->unloaded    = '未加載';
+$lang->install->exists      = '目錄存在 ';
+$lang->install->notExists   = '目錄不存在 ';
+$lang->install->writable    = '目錄可寫 ';
+$lang->install->notWritable = '目錄不可寫 ';
+$lang->install->phpINI      = 'PHP配置檔案';
+$lang->install->checkItem   = '檢查項';
+$lang->install->current     = '當前配置';
+$lang->install->result      = '檢查結果';
+$lang->install->action      = '如何修改';
 
 $lang->install->phpVersion = 'PHP版本';
 $lang->install->phpFail    = 'PHP版本必須大於5.2.0';
@@ -118,12 +118,12 @@ $lang->install->errorTableExists    = '數據表已經存在，您之前應該�
 $lang->install->errorCreateTable    = '創建表失敗';
 $lang->install->errorImportDemoData = '導入demo數據失敗';
 
-$lang->install->setConfig  = '生成配置檔案';
-$lang->install->key        = '配置項';
-$lang->install->value      = '值';
-$lang->install->saveConfig = '保存配置檔案';
-$lang->install->save2File  = '<div class="alert alert-warning">拷貝上面文本框中的內容，將其保存到 "<strong> %s </strong>"中。您以後還可繼續修改此配置檔案。</div>';
-$lang->install->saved2File = '配置信息已經成功保存到" <strong>%s</strong> "中。您後面還可繼續修改此檔案。';
+$lang->install->setConfig          = '生成配置檔案';
+$lang->install->key                = '配置項';
+$lang->install->value              = '值';
+$lang->install->saveConfig         = '保存配置檔案';
+$lang->install->save2File          = '<div class="alert alert-warning">拷貝上面文本框中的內容，將其保存到 "<strong> %s </strong>"中。您以後還可繼續修改此配置檔案。</div>';
+$lang->install->saved2File         = '配置信息已經成功保存到" <strong>%s</strong> "中。您後面還可繼續修改此檔案。';
 $lang->install->errorNotSaveConfig = '還沒有保存配置檔案';
 
 $lang->install->getPriv  = '設置帳號';
@@ -156,15 +156,18 @@ $lang->install->groupList['LIMITED']['name'] = '受限用戶';
 $lang->install->groupList['LIMITED']['desc'] = '受限用戶分組(只能編輯與自己相關的內容)';
 
 $lang->install->cronList[''] = '監控定時任務';
-$lang->install->cronList['moduleName=project&methodName=computeburn'] = '更新燃盡圖';
-$lang->install->cronList['moduleName=report&methodName=remind']       = '每日任務提醒';
-$lang->install->cronList['moduleName=svn&methodName=run']             = '同步SVN';
-$lang->install->cronList['moduleName=git&methodName=run']             = '同步GIT';
-$lang->install->cronList['moduleName=backup&methodName=backup']       = '備份數據和附件';
-$lang->install->cronList['moduleName=mail&methodName=asyncSend']      = '非同步發信';
-$lang->install->cronList['moduleName=webhook&methodName=asyncSend']   = '非同步發送Webhook';
-$lang->install->cronList['moduleName=admin&methodName=deleteLog']     = '刪除過期日誌';
-$lang->install->cronList['moduleName=todo&methodName=createCycle']    = '生成周期性待辦';
+$lang->install->cronList['moduleName=project&methodName=computeburn']   = '更新燃盡圖';
+$lang->install->cronList['moduleName=report&methodName=remind']         = '每日任務提醒';
+$lang->install->cronList['moduleName=svn&methodName=run']               = '同步SVN';
+$lang->install->cronList['moduleName=git&methodName=run']               = '同步GIT';
+$lang->install->cronList['moduleName=backup&methodName=backup']         = '備份數據和附件';
+$lang->install->cronList['moduleName=mail&methodName=asyncSend']        = '非同步發信';
+$lang->install->cronList['moduleName=webhook&methodName=asyncSend']     = '非同步發送Webhook';
+$lang->install->cronList['moduleName=admin&methodName=deleteLog']       = '刪除過期日誌';
+$lang->install->cronList['moduleName=todo&methodName=createCycle']      = '生成周期性待辦';
+$lang->install->cronList['moduleName=ci&methodName=initQueue']          = '創建周期性任務';
+$lang->install->cronList['moduleName=ci&methodName=checkCompileStatus'] = '同步Jenkins任務狀態';
+$lang->install->cronList['moduleName=ci&methodName=exec']               = '執行Jenkins任務';
 
 $lang->install->success  = "安裝成功";
 $lang->install->login    = '登錄禪道管理系統';
@@ -174,14 +177,15 @@ $lang->install->joinZentao = <<<EOT
 <p>您已經成功安裝禪道管理系統%s，<strong class='text-danger'>請及時刪除install.php</strong>。</p><p>友情提示：為了您及時獲得禪道的最新動態，請在禪道社區(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>)進行登記。</p>
 EOT;
 
-$lang->install->product = array('chanzhi', 'ranzhi', 'xuanxuan', 'ydisk', 'meshiot');
+$lang->install->product = array('chanzhi', 'zdoo', 'xuanxuan', 'ydisk', 'meshiot');
 
-$lang->install->promotion      = "為您推薦易軟天創旗下其他產品：";
-$lang->install->chanzhi        = new stdclass();
-$lang->install->chanzhi->name  = '蟬知門戶';
-$lang->install->chanzhi->logo  = 'images/main/chanzhi.ico';
-$lang->install->chanzhi->url   = 'http://www.chanzhi.org';
-$lang->install->chanzhi->desc  = <<<EOD
+$lang->install->promotion = "為您推薦易軟天創旗下其他產品：";
+
+$lang->install->chanzhi       = new stdclass();
+$lang->install->chanzhi->name = '蟬知門戶';
+$lang->install->chanzhi->logo = 'images/main/chanzhi.ico';
+$lang->install->chanzhi->url  = 'https://www.zsite.com';
+$lang->install->chanzhi->desc = <<<EOD
 <ul>
   <li>專業的企業營銷門戶系統</li>
   <li>功能豐富，操作簡潔方便</li>
@@ -190,11 +194,11 @@ $lang->install->chanzhi->desc  = <<<EOD
 </ul>
 EOD;
 
-$lang->install->ranzhi = new stdclass();
-$lang->install->ranzhi->name  = '然之協同';
-$lang->install->ranzhi->logo  = 'images/main/ranzhi.ico';
-$lang->install->ranzhi->url   = 'http://www.ranzhi.org';
-$lang->install->ranzhi->desc  = <<<EOD
+$lang->install->zdoo = new stdclass();
+$lang->install->zdoo->name = 'ZDOO協同';
+$lang->install->zdoo->logo = 'images/main/zdoo.ico';
+$lang->install->zdoo->url  = 'https://www.zdoo.com';
+$lang->install->zdoo->desc = <<<EOD
 <ul>
   <li>客戶管理，訂單跟蹤</li>
   <li>項目任務，公告文檔</li>
@@ -204,10 +208,10 @@ $lang->install->ranzhi->desc  = <<<EOD
 EOD;
 
 $lang->install->xuanxuan = new stdclass();
-$lang->install->xuanxuan->name  = '喧喧聊天';
-$lang->install->xuanxuan->logo  = 'images/main/xuanxuan.ico';
-$lang->install->xuanxuan->url   = 'http://www.xuan.im';
-$lang->install->xuanxuan->desc  = <<<EOD
+$lang->install->xuanxuan->name = '喧喧聊天';
+$lang->install->xuanxuan->logo = 'images/main/xuanxuan.ico';
+$lang->install->xuanxuan->url  = 'https://www.xuanim.com';
+$lang->install->xuanxuan->desc = <<<EOD
 <ul>
   <li>輕：輕量級架構，容易部署</li>
   <li>跨：真正完整跨平台解決方案</li>
@@ -217,10 +221,10 @@ $lang->install->xuanxuan->desc  = <<<EOD
 EOD;
 
 $lang->install->ydisk = new stdclass();
-$lang->install->ydisk->name  = '悅庫網盤';
-$lang->install->ydisk->logo  = 'images/main/ydisk.ico';
-$lang->install->ydisk->url   = 'http://www.ydisk.cn';
-$lang->install->ydisk->desc  = <<<EOD
+$lang->install->ydisk->name = '悅庫網盤';
+$lang->install->ydisk->logo = 'images/main/ydisk.ico';
+$lang->install->ydisk->url  = 'http://www.ydisk.cn';
+$lang->install->ydisk->desc = <<<EOD
 <ul>
   <li>絶對私有：只部署在自己的機器上</li>
   <li>海量存儲：只取決於您的硬碟大小</li>
@@ -230,10 +234,10 @@ $lang->install->ydisk->desc  = <<<EOD
 EOD;
 
 $lang->install->meshiot = new stdclass();
-$lang->install->meshiot->name  = '易天物聯';
-$lang->install->meshiot->logo  = 'images/main/meshiot.ico';
-$lang->install->meshiot->url   = 'https://www.meshiot.com';
-$lang->install->meshiot->desc  = <<<EOD
+$lang->install->meshiot->name = '易天物聯';
+$lang->install->meshiot->logo = 'images/main/meshiot.ico';
+$lang->install->meshiot->url  = 'https://www.meshiot.com';
+$lang->install->meshiot->desc = <<<EOD
 <ul>
   <li>超性能網關，一個可管6萬個設備</li>
   <li>自研通訊協議，2.5公里穿牆無障礙</li>

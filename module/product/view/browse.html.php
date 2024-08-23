@@ -15,6 +15,15 @@
 <?php js::set('browseType', $browseType);?>
 <?php js::set('productID', $productID);?>
 <?php js::set('branch', $branch);?>
+<?php
+/* Set unfold parent taskID. */
+$this->app->loadLang('project');
+$unfoldStories = isset($config->product->browse->unfoldStories) ? json_decode($config->product->browse->unfoldStories, true) : array();
+$unfoldStories = zget($unfoldStories, $productID, array());
+js::set('unfoldStories', $unfoldStories);
+js::set('unfoldAll',     $lang->project->treeLevel['all']);
+js::set('foldAll',       $lang->project->treeLevel['root']);
+?>
 <div id="mainMenu" class="clearfix">
   <div id="sidebarHeader">
     <div class="title">
@@ -22,7 +31,7 @@
       echo $moduleName;
       if($moduleID)
       {
-          $removeLink = $browseType == 'bymodule' ? inlink('browse', "productID=$productID&branch=$branch&browseType=$browseType&param=0&orderBy=$orderBy&recTotal=0&recPerPage={$pager->recPerPage}") : 'javascript:removeCookieByKey("storyModule")';
+          $removeLink = $browseType == 'bymodule' ? inlink('browse', "productID=$productID&branch=$branch&browseType=$browseType&param=0&storyType=$storyType&orderBy=$orderBy&recTotal=0&recPerPage={$pager->recPerPage}") : 'javascript:removeCookieByKey("storyModule")';
           echo html::a($removeLink, "<i class='icon icon-sm icon-close'></i>", '', "class='text-muted'");
       }
       ?>
@@ -33,6 +42,7 @@
     foreach(customModel::getFeatureMenu($this->moduleName, $this->methodName) as $menuItem)
     {
         if(isset($menuItem->hidden)) continue;
+        if($menuItem->name == 'emptysr' && $storyType == 'story') continue;
         $menuBrowseType = strpos($menuItem->name, 'QUERY') === 0 ? 'bySearch' : $menuItem->name;
         if($menuItem->name == 'more')
         {
@@ -52,27 +62,27 @@
                 foreach($lang->product->moreSelects as $key => $value)
                 {
                     $active = $key == $storyBrowseType ? 'btn-active-text' : '';
-                    echo '<li>' . html::a($this->inlink('browse', "productID=$productID&branch=$branch&browseType=$key"), "<span class='text'>{$value}</span>", '', "class='btn btn-link $active'") . '</li>';
+                    echo '<li>' . html::a($this->inlink('browse', "productID=$productID&branch=$branch&browseType=$key&param=0&storyType=$storyType"), "<span class='text'>{$value}</span>", '', "class='btn btn-link $active'") . '</li>';
                 }
                 echo '</ul></div>';
             }
         }
         elseif($menuItem->name == 'QUERY')
         {
-            $searchBrowseLink = inlink('browse', "productID=$productID&branch=$branch&browseType=$menuBrowseType&param=%s");
+            $searchBrowseLink = inlink('browse', "productID=$productID&branch=$branch&browseType=$menuBrowseType&param=%s&storyType=$storyType");
             $isBySearch       = $this->session->storyBrowseType == 'bysearch';
             include '../../common/view/querymenu.html.php';
         }
         else
         {
-            echo html::a($this->inlink('browse', "productID=$productID&branch=$branch&browseType=$menuBrowseType"), "<span class='text'>$menuItem->text</span>" . ($menuItem->name == $this->session->storyBrowseType ? ' <span class="label label-light label-badge">' . $pager->recTotal . '</span>' : ''), '', "id='{$menuItem->name}Tab' class='btn btn-link" . ($this->session->storyBrowseType == $menuItem->name ? ' btn-active-text' : '') . "'");
+            echo html::a($this->inlink('browse', "productID=$productID&branch=$branch&browseType=$menuBrowseType&param=0&storyType=$storyType"), "<span class='text'>$menuItem->text</span>" . ($menuItem->name == $this->session->storyBrowseType ? ' <span class="label label-light label-badge">' . $pager->recTotal . '</span>' : ''), '', "id='{$menuItem->name}Tab' class='btn btn-link" . ($this->session->storyBrowseType == $menuItem->name ? ' btn-active-text' : '') . "'");
         }
     }
     ?>
     <a class="btn btn-link querybox-toggle" id='bysearchTab'><i class="icon icon-search muted"></i> <?php echo $lang->product->searchStory;?></a>
   </div>
   <div class="btn-toolbar pull-right">
-    <?php common::printIcon('story', 'report', "productID=$productID&browseType=$browseType&branchID=$branch&moduleID=$moduleID", '', 'button', 'bar-chart muted'); ?>
+    <?php common::printIcon('story', 'report', "productID=$productID&browseType=$browseType&branchID=$branch&moduleID=$moduleID&chartType=pie&storyType=$storyType", '', 'button', 'bar-chart muted'); ?>
     <div class="btn-group">
       <button class="btn btn-link" data-toggle="dropdown"><i class="icon icon-export muted"></i> <span class="text"><?php echo $lang->export ?></span> <span class="caret"></span></button>
       <ul class="dropdown-menu" id='exportActionMenu'>
@@ -84,6 +94,7 @@
         ?>
       </ul>
     </div>
+    <?php if(common::canModify('product', $product)):?>
     <?php if(!common::checkNotCN()):?>
     <?php if(common::hasPriv('story', 'batchCreate')) echo html::a($this->createLink('story', 'batchCreate', "productID=$productID&branch=$branch&moduleID=$moduleID"), "<i class='icon icon-plus'></i> {$lang->story->batchCreate}", '', "class='btn btn btn-secondary'");?>
     <?php
@@ -131,6 +142,7 @@
       </ul>
     </div>
     <?php endif;?>
+    <?php endif;?>
   </div>
 </div>
 <div id="mainContent" class="main-row fade">
@@ -157,7 +169,7 @@
     <div class="table-empty-tip">
       <p>
         <span class="text-muted"><?php echo $lang->story->noStory;?></span>
-        <?php if(common::hasPriv('story', 'create')):?>
+        <?php if(common::canModify('product', $product) and common::hasPriv('story', 'create')):?>
         <?php echo html::a($this->createLink('story', 'create', "productID={$productID}&branch={$branch}&moduleID={$moduleID}"), "<i class='icon icon-plus'></i> " . $lang->story->create, '', "class='btn btn-info'");?>
         <?php endif;?>
       </p>
@@ -170,12 +182,24 @@
       <?php
       $datatableId  = $this->moduleName . ucfirst($this->methodName);
       $useDatatable = (isset($config->datatable->$datatableId->mode) and $config->datatable->$datatableId->mode == 'datatable');
-      $vars         = "productID=$productID&branch=$branch&browseType=$browseType&param=$param&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}";
+      $vars         = "productID=$productID&branch=$branch&browseType=$browseType&param=$param&storyType=$storyType&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}";
 
       if($useDatatable) include '../../common/view/datatable.html.php';
       $setting = $this->datatable->getSetting('product');
       $widths  = $this->datatable->setFixedFieldWidth($setting);
       $columns = 0;
+
+      $canBeChanged         = common::canModify('product', $product);
+      $canBatchEdit         = ($canBeChanged and common::hasPriv('story', 'batchEdit'));
+      $canBatchClose        = (common::hasPriv('story', 'batchClose') and strtolower($browseType) != 'closedbyme' and strtolower($browseType) != 'closedstory');
+      $canBatchReview       = ($canBeChanged and common::hasPriv('story', 'batchReview'));
+      $canBatchChangeStage  = ($canBeChanged and common::hasPriv('story', 'batchChangeStage'));
+      $canBatchChangeBranch = ($canBeChanged and common::hasPriv('story', 'batchChangeBranch'));
+      $canBatchChangeModule = ($canBeChanged and common::hasPriv('story', 'batchChangeModule'));
+      $canBatchChangePlan   = ($canBeChanged and common::hasPriv('story', 'batchChangePlan'));
+      $canBatchAssignTo     = ($canBeChanged and common::hasPriv('story', 'batchAssignTo'));
+
+      $canBatchAction       = ($canBatchEdit or $canBatchClose or $canBatchReview or $canBatchChangeStage or $canBatchChangeModule or $canBatchChangePlan or $canBatchAssignTo);
       ?>
       <?php if(!$useDatatable) echo '<div class="table-responsive">';?>
       <table class='table has-sort-head<?php if($useDatatable) echo ' datatable';?>' id='storyList' data-fixed-left-width='<?php echo $widths['leftWidth']?>' data-fixed-right-width='<?php echo $widths['rightWidth']?>'>
@@ -186,7 +210,7 @@
           {
               if($value->show)
               {
-                  $this->datatable->printHead($value, $orderBy, $vars);
+                  $this->datatable->printHead($value, $orderBy, $vars, $canBatchAction);
                   $columns ++;
               }
           }
@@ -198,16 +222,28 @@
           <tr data-id='<?php echo $story->id?>' data-estimate='<?php echo $story->estimate?>' data-cases='<?php echo zget($storyCases, $story->id, 0);?>'>
             <?php foreach($setting as $key => $value) $this->story->printCell($value, $story, $users, $branches, $storyStages, $modulePairs, $storyTasks, $storyBugs, $storyCases, $useDatatable ? 'datatable' : 'table');?>
           </tr>
+          <?php if(!empty($story->children)):?>
+          <?php $i = 0;?> 
+          <?php foreach($story->children as $key => $child):?>
+          <?php $class  = $i == 0 ? ' table-child-top' : '';?>
+          <?php $class .= ($i + 1 == count($story->children)) ? ' table-child-bottom' : '';?>
+          <tr class='table-children<?php echo $class;?> parent-<?php echo $story->id;?>' data-id='<?php echo $child->id?>' data-status='<?php echo $child->status?>' data-estimate='<?php echo $child->estimate?>'>
+            <?php foreach($setting as $key => $value) $this->story->printCell($value, $child, $users, $branches, $storyStages, $modulePairs, $storyTasks, $storyBugs, $storyCases, $useDatatable ? 'datatable' : 'table', $storyType);?>
+          </tr>
+          <?php $i ++;?>
+          <?php endforeach;?>
+          <?php endif;?>
           <?php endforeach;?>
         </tbody>
       </table>
       <?php if(!$useDatatable) echo '</div>';?>
       <div class="table-footer">
+        <?php if($canBatchAction):?>
         <div class="checkbox-primary check-all"><label><?php echo $lang->selectAll?></label></div>
+        <?php endif;?>
         <div class="table-actions btn-toolbar">
           <div class='btn-group dropup'>
             <?php
-            $canBatchEdit  = common::hasPriv('story', 'batchEdit');
             $disabled   = $canBatchEdit ? '' : "disabled='disabled'";
             $actionLink = $this->createLink('story', 'batchEdit', "productID=$productID&projectID=0&branch=$branch");
             ?>
@@ -215,13 +251,12 @@
             <button type='button' class='btn dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>
             <ul class='dropdown-menu'>
               <?php
-              $class = "class='disabled'";
-              $canBatchClose = common::hasPriv('story', 'batchClose') && strtolower($browseType) != 'closedbyme' && strtolower($browseType) != 'closedstory';
-              $actionLink    = $this->createLink('story', 'batchClose', "productID=$productID&projectID=0");
-              $misc = $canBatchClose ? "onclick=\"setFormAction('$actionLink')\"" : $class;
-              echo "<li>" . html::a('#', $lang->close, '', $misc) . "</li>";
+              $class      = $canBatchClose ? '' : "class='disabled'";
+              $actionLink = $this->createLink('story', 'batchClose', "productID=$productID&projectID=0");
+              $misc = $canBatchClose ? "onclick=\"setFormAction('$actionLink')\"" : '';
+              echo "<li $class>" . html::a('#', $lang->close, '', $misc) . "</li>";
 
-              if(common::hasPriv('story', 'batchReview'))
+              if($canBatchReview)
               {
                   echo "<li class='dropdown-submenu'>";
                   echo html::a('javascript:;', $lang->story->review, '', "id='reviewItem'");
@@ -258,10 +293,11 @@
               }
               else
               {
-                  echo '<li>' . html::a('javascript:;', $lang->story->review,  '', $class) . '</li>';
+                  $class= "class='disabled'";
+                  echo "<li $class>" . html::a('javascript:;', $lang->story->review,  '', $class) . '</li>';
               }
 
-              if(common::hasPriv('story', 'batchChangeBranch') and $this->session->currentProductType != 'normal')
+              if($canBatchChangeBranch and $this->session->currentProductType != 'normal')
               {
                   $withSearch = count($branches) > 8;
                   echo "<li class='dropdown-submenu'>";
@@ -278,7 +314,7 @@
                   echo '</div></li>';
               }
 
-              if(common::hasPriv('story', 'batchChangeStage'))
+              if($canBatchChangeStage)
               {
                   echo "<li class='dropdown-submenu'>";
                   echo html::a('javascript:;', $lang->story->stageAB, '', "id='stageItem'");
@@ -294,13 +330,14 @@
               }
               else
               {
-                  echo '<li>' . html::a('javascript:;', $lang->story->stageAB, '', $class) . '</li>';
+                  $class= "class='disabled'";
+                  echo "<li $class>" . html::a('javascript:;', $lang->story->stageAB, '', $class) . '</li>';
               }
               ?>
             </ul>
           </div>
 
-          <?php if(common::hasPriv('story', 'batchChangeModule')):?>
+          <?php if($canBatchChangeModule):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->story->moduleAB;?> <span class="caret"></span></button>
             <?php $withSearch = count($modules) > 8;?>
@@ -327,7 +364,7 @@
             </div>
           </div>
           <?php endif;?>
-          <?php if(common::hasPriv('story', 'batchChangePlan')):?>
+          <?php if($canBatchChangePlan):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->story->planAB;?> <span class="caret"></span></button>
             <?php
@@ -358,7 +395,7 @@
           </div>
           <?php endif;?>
 
-          <?php if(common::hasPriv('story', 'batchAssignTo')):?>
+          <?php if($canBatchAssignTo):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->story->assignedTo;?> <span class="caret"></span></button>
             <?php
@@ -397,12 +434,22 @@
 </div>
 <script>
 var moduleID = <?php echo $moduleID?>;
+var branchID = $.cookie('storyBranch');
 $('#module<?php echo $moduleID;?>').closest('li').addClass('active');
+$('#branch' + branchID).closest('li').addClass('active');
 
 $(function()
 {
     // Update table summary text
-    var checkedSummary = '<?php echo $lang->product->checkedSummary?>';
+    <?php
+    $storyCommon = $lang->storyCommon;
+    if(!empty($config->URAndSR))
+    {
+        if($storyType == 'requirement') $storyCommon = $lang->URCommon;
+        if($storyType == 'story') $storyCommon = $lang->SRCommon;
+    }
+    ?>
+    var checkedSummary = '<?php echo str_replace('%storyCommon%', $storyCommon, $lang->product->checkedSummary)?>';
     $('#productStoryForm').table(
     {
         statisticCreator: function(table)

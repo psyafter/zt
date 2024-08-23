@@ -249,7 +249,7 @@ class block extends control
             $block->actionLink = '';
             if($block->block == 'overview')
             {
-                if($module == 'qa'      && common::hasPriv('testcase', 'create'))
+                if($module == 'qa' && common::hasPriv('testcase', 'create'))
                 {
                     $this->app->loadLang('testcase');
                     $block->actionLink = html::a($this->createLink('testcase', 'create', 'productID='), "<i class='icon icon-sm icon-plus'></i> " . $this->lang->testcase->create, '', "class='btn btn-primary'");
@@ -519,7 +519,7 @@ class block extends control
     {
         $limit = $this->viewType == 'json' ? 0 : (int)$this->params->num;
         $todos = $this->loadModel('todo')->getList('all', $this->app->user->account, 'wait, doing', $limit, $pager = null, $orderBy = 'date, begin');
-        $uri   = $this->server->http_referer;
+        $uri   = $this->app->getURI(true);
         $this->session->set('todoList', $uri);
         $this->session->set('bugList',  $uri);
         $this->session->set('taskList', $uri);
@@ -540,8 +540,9 @@ class block extends control
      */
     public function printTaskBlock()
     {
-        $this->session->set('taskList',  $this->server->http_referer);
-        $this->session->set('storyList', $this->server->http_referer);
+        $uri = $this->app->getURI(true);
+        $this->session->set('taskList',  $uri);
+        $this->session->set('storyList', $uri);
         if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
         $this->view->tasks = $this->loadModel('task')->getUserTasks($this->app->user->account, $this->params->type, $this->viewType == 'json' ? 0 : (int)$this->params->num, null, $this->params->orderBy);
     }
@@ -554,7 +555,7 @@ class block extends control
      */
     public function printBugBlock()
     {
-        $this->session->set('bugList', $this->server->http_referer);
+        $this->session->set('bugList', $this->app->getURI(true));
         if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
         $this->view->bugs = $this->loadModel('bug')->getUserBugs($this->app->user->account, $this->params->type, $this->params->orderBy, $this->viewType == 'json' ? 0 : (int)$this->params->num);
     }
@@ -567,7 +568,7 @@ class block extends control
      */
     public function printCaseBlock()
     {
-        $this->session->set('caseList', $this->server->http_referer);
+        $this->session->set('caseList', $this->app->getURI(true));
         $this->app->loadLang('testcase');
         $this->app->loadLang('testtask');
 
@@ -605,7 +606,7 @@ class block extends control
      */
     public function printTesttaskBlock()
     {
-        $this->session->set('testtaskList', $this->server->http_referer);
+        $this->session->set('testtaskList', $this->app->getURI(true));
         if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
         $this->app->loadLang('testtask');
         $this->view->testtasks = $this->dao->select('t1.*,t2.name as productName,t3.name as buildName,t4.name as projectName')->from(TABLE_TESTTASK)->alias('t1')
@@ -630,7 +631,7 @@ class block extends control
      */
     public function printStoryBlock()
     {
-        $this->session->set('storyList', $this->server->http_referer);
+        $this->session->set('storyList', $this->app->getURI(true));
         if(preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
         $this->app->loadClass('pager', $static = true);
         $num     = isset($this->params->num) ? (int)$this->params->num : 0;
@@ -648,7 +649,7 @@ class block extends control
      */
     public function printPlanBlock()
     {
-        $this->session->set('productPlanList', $this->server->http_referer);
+        $this->session->set('productPlanList', $this->app->getURI(true));
         $this->app->loadLang('productplan');
         $this->view->plans = $this->dao->select('t1.*,t2.name as productName')->from(TABLE_PRODUCTPLAN)->alias('t1')
             ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product=t2.id')
@@ -667,7 +668,7 @@ class block extends control
      */
     public function printReleaseBlock()
     {
-        $this->session->set('releaseList', $this->server->http_referer);
+        $this->session->set('releaseList', $this->app->getURI(true));
         $this->app->loadLang('release');
         $this->view->releases = $this->dao->select('t1.*,t2.name as productName,t3.name as buildName')->from(TABLE_RELEASE)->alias('t1')
             ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product=t2.id')
@@ -687,7 +688,7 @@ class block extends control
      */
     public function printBuildBlock()
     {
-        $this->session->set('buildList', $this->server->http_referer);
+        $this->session->set('buildList', $this->app->getURI(true));
         $this->app->loadLang('build');
         $this->view->builds = $this->dao->select('t1.*, t2.name as productName')->from(TABLE_BUILD)->alias('t1')
             ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product=t2.id')
@@ -743,9 +744,10 @@ class block extends control
      * Print product statistic block.
      *
      * @access public
+     * @param  string $storyType requirement|story
      * @return void
      */
-    public function printProductStatisticBlock()
+    public function printProductStatisticBlock($storyType = 'story')
     {
         if(!empty($this->params->type) and preg_match('/[^a-zA-Z0-9_]/', $this->params->type)) die();
 
@@ -765,6 +767,7 @@ class block extends control
         $stories = $this->dao->select('product, stage, COUNT(status) AS count')->from(TABLE_STORY)
             ->where('deleted')->eq(0)
             ->andWhere('product')->in($productIdList)
+            ->beginIF($storyType)->andWhere('type')->eq($storyType)->fi()
             ->groupBy('product, stage')
             ->fetchGroup('product', 'stage');
         /* Padding the stories to sure all status have records. */
@@ -805,6 +808,7 @@ class block extends control
             ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project=t2.id')
             ->where('t1.product')->in($productIdList)
             ->andWhere('t2.deleted')->eq(0)
+            ->beginIF(!$this->app->user->admin)->andWhere('t2.id')->in($this->app->user->view->projects)->fi()
             ->fetchGroup('product');
         foreach($projects as $product => $productProjects)
         {
@@ -892,25 +896,40 @@ class block extends control
 
         $projectIdList = array_keys($projects);
 
-
         /* Get tasks. Fix bug #2918.*/
-        $yesterday = date('Y-m-d', strtotime('-1 day'));
-        $tasks     = $this->dao->select("project, count(id) as totalTasks, count(status in ('wait','doing','pause') or null) as undoneTasks, count(finishedDate like '{$yesterday}%' or null) as yesterdayFinished, sum(if(status != 'cancel', estimate, 0)) as totalEstimate, sum(consumed) as totalConsumed, sum(if(status != 'cancel' and status != 'closed', `left`, 0)) as totalLeft")->from(TABLE_TASK)
+        $yesterday  = date('Y-m-d', strtotime('-1 day'));
+        $taskGroups = $this->dao->select("id,parent,project,status,finishedDate,estimate,consumed,`left`")->from(TABLE_TASK)
             ->where('project')->in($projectIdList)
             ->andWhere('deleted')->eq(0)
-            ->andWhere('parent')->lt(1)
-            ->groupBy('project')
-            ->fetchAll('project');
-        foreach($tasks as $projectID => $task)
+            ->fetchGroup('project', 'id');
+
+        $tasks = array();
+        foreach($taskGroups as $projectID => $taskGroup)
         {
-            $task->totalEstimate = round($task->totalEstimate, 2);
-            $task->totalConsumed = round($task->totalConsumed, 2);
-            $task->totalLeft     = round($task->totalLeft, 2);
-            foreach($task as $key => $value)
+            $undoneTasks       = 0;
+            $yesterdayFinished = 0;
+            $totalEstimate     = 0;
+            $totalConsumed     = 0;
+            $totalLeft         = 0;
+
+            foreach($taskGroup as $taskID => $task)
             {
-                if($key == 'project') continue;
-                $projects[$projectID]->$key = $value;
+                if(strpos('wait|doing|pause', $task->status) !== false) $undoneTasks ++;
+                if(strpos($task->finishedDate, $yesterday) !== false) $yesterdayFinished ++;
+
+                if($task->parent == '-1') continue;
+
+                $totalConsumed += $task->consumed;
+                $totalEstimate += $task->estimate;
+                if($task->status != 'cancel' and $task->status != 'closed') $totalLeft += $task->left;
             }
+
+            $projects[$projectID]->totalTasks        = count($taskGroup);
+            $projects[$projectID]->undoneTasks       = $undoneTasks;
+            $projects[$projectID]->yesterdayFinished = $yesterdayFinished;
+            $projects[$projectID]->totalEstimate     = round($totalEstimate, 1);
+            $projects[$projectID]->totalConsumed     = round($totalConsumed, 1);
+            $projects[$projectID]->totalLeft         = round($totalLeft, 1);
         }
 
         /* Get stories. */

@@ -52,11 +52,13 @@ class buildModel extends model
     /**
      * Get builds of a project.
      *
-     * @param  int    $projectID
+     * @param  int        $projectID
+     * @param  string     $type      all|product|bysearch
+     * @param  int|string $param     productID|buildQuery
      * @access public
      * @return array
      */
-    public function getProjectBuilds($projectID)
+    public function getProjectBuilds($projectID, $type = '', $param = '')
     {
         return $this->dao->select('t1.*, t2.name as projectName, t3.name as productName, t4.name as branchName')
             ->from(TABLE_BUILD)->alias('t1')
@@ -65,8 +67,47 @@ class buildModel extends model
             ->leftJoin(TABLE_BRANCH)->alias('t4')->on('t1.branch = t4.id')
             ->where('t1.project')->eq((int)$projectID)
             ->andWhere('t1.deleted')->eq(0)
+            ->beginIF($type == 'product' and $param)->andWhere('t1.product')->eq($param)->fi()
+            ->beginIF($type == 'bysearch')->andWhere($param)->fi()
             ->orderBy('t1.date DESC, t1.id desc')
             ->fetchAll('id');
+    }
+
+    /**
+     * Get builds of a project by search.
+     *
+     * @param  int    $projectID
+     * @param  int    $queryID
+     * @access public
+     * @return array
+     */
+    public function getProjectBuildsBySearch($projectID, $queryID)
+    {
+        /* If there are saved query conditions, reset the session. */
+        if((int)$queryID)
+        {
+            $query = $this->loadModel('search')->getQuery($queryID);
+            if($query)
+            {
+                $this->session->set('projectBuildQuery', $query->sql);
+                $this->session->set('projectBuildForm', $query->form);
+            }
+        }
+        if($this->session->projectBuildQuery == false) $this->session->set('projectBuildQuery', ' 1 = 1');
+
+        $buildQuery = $this->session->projectBuildQuery;
+
+        /* Distinguish between repeated fields. */
+        $fields = array('id' => '`id`', 'name' => '`name`', 'product' => '`product`', 'desc' => '`desc`');
+        foreach($fields as $field)
+        {
+            if(strpos($this->session->projectBuildQuery, $field) !== false)
+            {
+                $buildQuery = str_replace($field, "t1." . $field, $buildQuery);
+            }
+        }
+
+        return $this->getProjectBuilds($projectID, 'bysearch', $buildQuery);
     }
 
     /**
@@ -206,6 +247,7 @@ class buildModel extends model
             ->stripTags($this->config->build->editor->create['id'], $this->config->allowedTags)
             ->remove('resolvedBy,allchecker,files,labels,uid')
             ->get();
+
         if($this->config->global->flow == 'onlyTest') $build->project = 0;
 
         $build = $this->loadModel('file')->processImgURL($build, $this->config->build->editor->create['id'], $this->post->uid);
@@ -238,7 +280,7 @@ class buildModel extends model
         $build    = fixer::input('post')->stripTags($this->config->build->editor->edit['id'], $this->config->allowedTags)
             ->setDefault('product', $oldBuild->product)
             ->setDefault('branch', $oldBuild->branch)
-            ->cleanInt('product,branch')
+            ->cleanInt('product,branch,project')
             ->remove('allchecker,resolvedBy,files,labels,uid')
             ->get();
 
@@ -312,12 +354,16 @@ class buildModel extends model
     {
         $build = $this->getByID($buildID);
 
+        foreach($this->post->stories as $i => $storyID)
+        {
+            if(strpos(",{$build->stories},", ",{$storyID},") !== false) unset($_POST['stories'][$i]);
+        }
+
         $build->stories .= ',' . join(',', $this->post->stories);
         $this->dao->update(TABLE_BUILD)->set('stories')->eq($build->stories)->where('id')->eq((int)$buildID)->exec();
-        foreach($this->post->stories as $storyID)
-        {
-            $this->loadModel('action')->create('story', $storyID, 'linked2build', '', $buildID);
-        }
+
+        $this->loadModel('action');
+        foreach($this->post->stories as $storyID) $this->action->create('story', $storyID, 'linked2build', '', $buildID);
     }
 
     /**
@@ -332,6 +378,7 @@ class buildModel extends model
     {
         $build = $this->getByID($buildID);
         $build->stories = trim(str_replace(",$storyID,", ',', ",$build->stories,"), ',');
+        if($build->stories) $build->stories = ',' . $build->stories;
         $this->dao->update(TABLE_BUILD)->set('stories')->eq($build->stories)->where('id')->eq((int)$buildID)->exec();
         $this->loadModel('action')->create('story', $storyID, 'unlinkedfrombuild', '', $buildID);
     }
@@ -353,10 +400,9 @@ class buildModel extends model
         foreach($storyList as $storyID) $build->stories = str_replace(",$storyID,", ',', $build->stories);
         $build->stories = trim($build->stories, ',');
         $this->dao->update(TABLE_BUILD)->set('stories')->eq($build->stories)->where('id')->eq((int)$buildID)->exec();
-        foreach($this->post->unlinkStories as $unlinkStoryID)
-        {
-            $this->loadModel('action')->create('story', $unlinkStoryID, 'unlinkedfrombuild', '', $buildID);
-        }
+
+        $this->loadModel('action');
+        foreach($this->post->unlinkStories as $unlinkStoryID) $this->action->create('story', $unlinkStoryID, 'unlinkedfrombuild', '', $buildID);
     }
 
     /**
@@ -370,13 +416,17 @@ class buildModel extends model
     {
         $build = $this->getByID($buildID);
 
+        foreach($this->post->bugs as $i => $bugID)
+        {
+            if(strpos(",{$build->bugs},", ",{$bugID},") !== false) unset($_POST['bugs'][$i]);
+        }
+
         $build->bugs .= ',' . join(',', $this->post->bugs);
         $this->updateLinkedBug($build);
         $this->dao->update(TABLE_BUILD)->set('bugs')->eq($build->bugs)->where('id')->eq((int)$buildID)->exec();
-        foreach($this->post->bugs as $bugID)
-        {
-            $this->loadModel('action')->create('bug', $bugID, 'linked2bug', '', $buildID);
-        }
+
+        $this->loadModel('action');
+        foreach($this->post->bugs as $bugID) $this->action->create('bug', $bugID, 'linked2bug', '', $buildID);
     }
 
     /**
@@ -391,8 +441,9 @@ class buildModel extends model
     {
         $build = $this->getByID($buildID);
         $build->bugs = trim(str_replace(",$bugID,", ',', ",$build->bugs,"), ',');
+        if($build->bugs) $build->bugs = ',' . $build->bugs;
         $this->dao->update(TABLE_BUILD)->set('bugs')->eq($build->bugs)->where('id')->eq((int)$buildID)->exec();
-        $this->loadModel('action')->create('bug', $bugID, 'unlinkedfrombuild', '', $buildID);
+        $this->loadModel('action')->create('bug', $bugID, 'unlinkedfrombuild', '', $buildID, '', false);
     }
 
     /**
@@ -413,9 +464,8 @@ class buildModel extends model
         foreach($bugList as $bugID) $build->bugs = str_replace(",$bugID,", ',', $build->bugs);
         $build->bugs = trim($build->bugs, ',');
         $this->dao->update(TABLE_BUILD)->set('bugs')->eq($build->bugs)->where('id')->eq((int)$buildID)->exec();
-        foreach($this->post->unlinkBugs as $unlinkBugID)
-        {
-            $this->loadModel('action')->create('bug', $unlinkBugID, 'unlinkedfrombuild', '', $buildID);
-        }
+
+        $this->loadModel('action');
+        foreach($this->post->unlinkBugs as $unlinkBugID) $this->action->create('bug', $unlinkBugID, 'unlinkedfrombuild', '', $buildID);
     }
 }

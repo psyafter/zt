@@ -45,10 +45,11 @@ class testreportModel extends model
         }
         $pageNav .= $selectHtml;
 
-        $this->lang->modulePageNav     = $pageNav;
-        $this->lang->modulePageActions = $pageActions;
+        $this->lang->modulePageNav = $pageNav;
+        $this->lang->TRActions     = $pageActions;
         foreach($this->lang->testtask->menu as $key => $value)
         {
+            if($this->config->global->flow == 'full') $this->loadModel('qa')->setSubMenu('testreport', $key, $productID);
             if($this->config->global->flow != 'onlyTest')
             {
                 $replace = $productID;
@@ -134,6 +135,7 @@ class testreportModel extends model
             ->remove('files,labels,uid')
             ->get();
         $data->members = trim($data->members, ',');
+        if(empty($data->bugs)) $data->bugs = '';
 
         $data = $this->loadModel('file')->processImgURL($data, $this->config->testreport->editor->edit['id'], $this->post->uid);
         $this->dao->update(TABLE_TESTREPORT)->data($data)->autocheck()
@@ -201,16 +203,16 @@ class testreportModel extends model
      */
     public function getBugInfo($tasks, $productIdList, $begin, $end, $builds)
     {
-        $allNewBugs  = $this->dao->select('*')->from(TABLE_BUG)->where('product')->in($productIdList)->andWhere('openedDate')->ge($begin)->andWhere('openedDate')->le("$end 23:59:59")->andWhere('deleted')->eq(0)->fetchAll();
-        $foundBugs   = array();
-        $legacyBugs  = array();
-        $byCaseNum   = 0;
-        $buildIdList = array_keys($builds);
-        $taskIdList  = array_keys($tasks);
+        $generatedBugs = $this->dao->select('*')->from(TABLE_BUG)->where('product')->in($productIdList)->andWhere('openedDate')->ge($begin)->andWhere('openedDate')->le("$end 23:59:59")->andWhere('deleted')->eq(0)->fetchAll();
+        $foundBugs     = array();
+        $legacyBugs    = array();
+        $byCaseNum     = 0;
+        $buildIdList   = array_keys($builds);
+        $taskIdList    = array_keys($tasks);
 
-        foreach($allNewBugs as $bug)
+        foreach($generatedBugs as $bug)
         {
-            if(!array_diff(explode(',', $bug->openedBuild), $buildIdList))
+            if(array_intersect(explode(',', $bug->openedBuild), $buildIdList))
             {
                 $foundBugs[$bug->id] = $bug;
                 if($bug->status == 'active' or $bug->resolvedDate > "$end 23:59:59") $legacyBugs[$bug->id] = $bug;
@@ -315,17 +317,21 @@ class testreportModel extends model
      * Get task cases.
      * 
      * @param  array  $tasks 
+     * @param  string $begin 
+     * @param  string $end 
      * @param  string $idList 
+     * @param  object $pager 
      * @access public
      * @return array
      */
-    public function getTaskCases($tasks, $begin, $end, $idList = '')
+    public function getTaskCases($tasks, $begin, $end, $idList = '', $pager = null)
     {
         $cases = $this->dao->select('t2.*,t1.task,t1.assignedTo,t1.status')->from(TABLE_TESTRUN)->alias('t1')
             ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case=t2.id')
             ->where('t1.task')->in(array_keys($tasks))
             ->beginIF($idList)->andWhere('t2.id')->in($idList)->fi()
             ->andWhere('t2.deleted')->eq(0)
+            ->page($pager)
             ->fetchAll('id');
 
         $results = $this->dao->select('t1.*')->from(TABLE_TESTRESULT)->alias('t1')
@@ -354,6 +360,26 @@ class testreportModel extends model
         }
 
         return $cases;
+    }
+
+    /**
+     * Get caseID list.
+     *
+     * @param  int    $reportID
+     * @access public
+     * @return array
+     */
+    public function getCaseIdList($reportID)
+    {
+        $caseIdList = $this->dao->select('`case`')->from(TABLE_TESTREPORT)->alias('t1')
+            ->leftJoin(TABLE_TESTRUN)->alias('t2')->on('t1.tasks=t2.task')
+            ->leftJoin(TABLE_CASE)->alias('t3')->on('t2.case=t3.id')
+            ->where('t1.id')->eq($reportID)
+            ->andWhere('t1.deleted')->eq(0)
+            ->andWhere('t3.deleted')->eq(0)
+            ->fetchPairs('case');
+
+        return $caseIdList;
     }
 
     /**
@@ -403,6 +429,7 @@ class testreportModel extends model
             ->leftJoin(TABLE_TESTRUN)->alias('t2')
             ->on('t1.run= t2.id')
             ->where('t2.task')->in(array_keys($tasks))
+            ->andwhere('t1.date = t2.lastRunDate')
             ->andWhere('t1.`case`')->in(array_keys($cases))
             ->andWhere('t1.date')->ge($begin)
             ->andWhere('t1.date')->le($end . " 23:59:59")
@@ -434,6 +461,7 @@ class testreportModel extends model
             ->leftJoin(TABLE_TESTRUN)->alias('t2')
             ->on('t1.run= t2.id')
             ->where('t2.task')->in(array_keys($tasks))
+            ->andwhere('t1.date = t2.lastRunDate')
             ->andWhere('t1.`case`')->in(array_keys($cases))
             ->andWhere('t1.date')->ge($begin)
             ->andWhere('t1.date')->le($end . " 23:59:59")

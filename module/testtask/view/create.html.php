@@ -44,7 +44,7 @@
             <div class='input-group' id='buildBox'>
             <?php echo html::select('build', empty($builds) ? '' : $builds, $build, "class='form-control chosen'");?>
             <?php if(isset($projectID) and $projectID and empty($builds)):?>
-            <span class='input-group-addon'><?php echo html::a(helper::createLink('build', 'create', "projectID=$projectID", '', true), $lang->build->create, '', "data-toggle='modal' data-type='iframe' data-width='95%'")?> </span>
+            <span class='input-group-addon'><?php echo html::a(helper::createLink('build', 'create', "projectID=$projectID&productID=$productID", '', true), $lang->build->create, '', "data-toggle='modal' data-type='iframe' data-width='95%'")?> </span>
             </div>
             <div class='hidden'><?php echo '&nbsp; ' .  html::a("javascript:void(0)", $lang->refresh, '', "class='refresh' onclick='loadProjectBuilds($projectID)'");?></div>
             <?php endif;?>
@@ -87,10 +87,10 @@
           <th><?php echo $lang->testtask->mailto;?></th>
           <td colspan='2'>
             <div id='mailtoGroup' class='input-group'>
-            <?php
-            echo html::select('mailto[]', $users, '', "multiple class='form-control'");
-            echo $this->fetch('my', 'buildContactLists');
-            ?>
+              <?php
+              echo html::select('mailto[]', $users, '', "multiple class='form-control chosen'");
+              echo $this->fetch('my', 'buildContactLists');
+              ?>
             </div>
           </td>
         </tr>

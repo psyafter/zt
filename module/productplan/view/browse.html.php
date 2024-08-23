@@ -24,7 +24,9 @@
     <?php endforeach;?>
   </div>
   <div class="btn-toolbar pull-right">
+    <?php if(common::canModify('product', $product)):?>
     <?php common::printLink('productplan', 'create', "productID=$product->id&branch=$branch", "<i class='icon icon-plus'></i> {$lang->productplan->create}", '', "class='btn btn-primary'");?>
+    <?php endif;?>
   </div>
 </div>
 <div id="mainContent">
@@ -32,7 +34,7 @@
   <div class="table-empty-tip">
     <p>
       <span class="text-muted"><?php echo $lang->productplan->noPlan;?></span>
-      <?php if(common::hasPriv('productplan', 'create')):?>
+      <?php if(common::canModify('product', $product) and common::hasPriv('productplan', 'create')):?>
       <?php echo html::a($this->createLink('productplan', 'create', "productID=$product->id&branch=$branch"), "<i class='icon icon-plus'></i> " . $lang->productplan->create, '', "class='btn btn-info'");?>
       <?php endif;?>
     </p>
@@ -62,6 +64,10 @@
         <th class='w-60px'> <?php echo $lang->productplan->hour;?></th>
         <th class='w-60px'> <?php echo $lang->productplan->project;?></th>
         <th>                <?php echo $lang->productplan->desc;?></th>
+        <?php
+        $extendFields = $this->productplan->getFlowExtendFields();
+        foreach($extendFields as $extendField) echo "<th>{$extendField->name}</th>";
+        ?>
         <th class='c-actions-6 text-center'><?php echo $lang->actions;?></th>
       </tr>
       </thead>
@@ -69,6 +75,9 @@
       <?php $this->loadModel('file');?>
       <?php foreach($plans as $plan):?>
       <?php
+      $canBeChanged = common::canBeChanged('plan', $plan);
+      $attribute    = $canBeChanged ? '' : 'disabled';
+
       $plan = $this->file->replaceImgURL($plan, 'desc');
       if($plan->parent == '-1')
       {
@@ -91,7 +100,7 @@
       <tr class='<?php echo $class;?>'>
         <td class='cell-id'>
           <?php if(common::hasPriv('productplan', 'batchEdit')):?>
-          <?php echo html::checkbox('planIDList', array($plan->id => '')) . html::a(helper::createLink('productplan', 'view', "planID=$plan->id"), sprintf('%03d', $plan->id));?>
+          <?php echo html::checkbox('planIDList', array($plan->id => ''), '', $attribute) . html::a(helper::createLink('productplan', 'view', "planID=$plan->id"), sprintf('%03d', $plan->id));?>
           <?php else:?>
           <?php echo sprintf('%03d', $plan->id);?>
           <?php endif;?>
@@ -115,13 +124,14 @@
           <?php $desc = trim(strip_tags(str_replace(array('</p>', '<br />', '<br>', '<br/>'), "\n", str_replace(array("\n", "\r"), '', $plan->desc)), '<img>'));?>
           <div title='<?php echo $desc;?>'><?php echo nl2br($desc);?></div>
         </td>
+        <?php foreach($extendFields as $extendField) echo "<td>" . $this->loadModel('flow')->getFieldValue($extendField, $plan) . "</td>";?>
         <td class='c-actions'>
           <?php
-          if(common::hasPriv('project', 'create')) echo html::a(helper::createLink('project', 'create', "projectID=&copyProjectID=&planID=$plan->id"), '<i class="icon-plus"></i>', '', "class='btn' title='{$lang->project->create}'");
-          if(common::hasPriv('productplan', 'linkStory')) echo html::a(inlink('view', "planID=$plan->id&type=story&orderBy=id_desc&link=true"), '<i class="icon-link"></i>', '', "class='btn' title='{$lang->productplan->linkStory}'");
-          if(common::hasPriv('productplan', 'linkBug') and $config->global->flow != 'onlyStory') echo html::a(inlink('view', "planID=$plan->id&type=bug&orderBy=id_desc&link=true"), '<i class="icon-bug"></i>', '', "class='btn' title='{$lang->productplan->linkBug}'");
+          if(common::hasPriv('project', 'create', $plan)) echo html::a(helper::createLink('project', 'create', "productID=&projectID=&copyProjectID=&planID=$plan->id"), '<i class="icon-plus"></i>', '', "class='btn' title='{$lang->project->create}'");
+          if(common::hasPriv('productplan', 'linkStory', $plan) and $plan->parent >= 0) echo html::a(inlink('view', "planID=$plan->id&type=story&orderBy=id_desc&link=true"), '<i class="icon-link"></i>', '', "class='btn' title='{$lang->productplan->linkStory}'");
+          if(common::hasPriv('productplan', 'linkBug', $plan) and $config->global->flow != 'onlyStory') echo html::a(inlink('view', "planID=$plan->id&type=bug&orderBy=id_desc&link=true"), '<i class="icon-bug"></i>', '', "class='btn' title='{$lang->productplan->linkBug}'");
           common::printIcon('productplan', 'edit', "planID=$plan->id", $plan, 'list');
-          if(common::hasPriv('productplan', 'create'))
+          if(common::hasPriv('productplan', 'create', $plan))
           {
               if($plan->parent > '0') echo "<button type='button' class='disabled btn'><i class='disabled icon-treemap-alt' title='{$this->lang->productplan->children}'></i></button> ";
               if($plan->parent <= '0') echo html::a($this->createLink('productplan', 'create', "product=$productID&branch=$branch&parent={$plan->id}"), "<i class='icon-treemap-alt'></i>", '', "class='btn' title='{$this->lang->productplan->children}'");

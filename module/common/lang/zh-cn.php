@@ -58,6 +58,8 @@ $lang->trunk        = '主干';
 $lang->sort         = '排序';
 $lang->required     = '必填';
 $lang->noData       = '暂无';
+$lang->fullscreen   = '全屏';
+$lang->retrack      = '收起';
 
 $lang->actions         = '操作';
 $lang->restore         = '恢复默认';
@@ -84,7 +86,6 @@ $lang->homepage        = '设为模块首页';
 $lang->noviceTutorial  = '新手教程';
 $lang->changeLog       = '修改日志';
 $lang->manual          = '手册';
-$lang->manualUrl       = 'https://www.zentao.pm/book/zentaopmshelp.html?fullScreen=zentao';
 $lang->customMenu      = '自定义导航';
 $lang->customField     = '自定义表单项';
 $lang->lineNumber      = '行号';
@@ -101,6 +102,7 @@ $lang->loading       = '稍候...';
 $lang->notFound      = '抱歉，您访问的对象并不存在！';
 $lang->notPage       =  '抱歉，您访问的功能正在开发中！';
 $lang->showAll       = '[[全部显示]]';
+$lang->selectedItems = '已选择 <strong>{0}</strong> 项';
 
 $lang->future      = '未来';
 $lang->year        = '年';
@@ -122,7 +124,7 @@ $lang->menu->my      = '<span> 我的地盘</span>|my|index';
 $lang->menu->product = $lang->productCommon . '|product|index|locate=no';
 $lang->menu->project = $lang->projectCommon . '|project|index|locate=no';
 $lang->menu->qa      = '测试|qa|index';
-$lang->menu->repo    = '代码|repo|log';
+$lang->menu->ci      = '集成|repo|browse';
 $lang->menu->doc     = '文档|doc|index';
 $lang->menu->report  = '统计|report|index';
 $lang->menu->company = '组织|company|index';
@@ -269,18 +271,24 @@ $lang->build->menu = $lang->project->menu;
 $lang->qa = new stdclass();
 $lang->qa->menu = new stdclass();
 
-$lang->qa->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->qa->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s');
-$lang->qa->menu->testtask  = array('link' => '测试单|testtask|browse|productID=%s');
-$lang->qa->menu->testsuite = array('link' => '套件|testsuite|browse|productID=%s');
-$lang->qa->menu->report    = array('link' => '报告|testreport|browse|productID=%s');
-$lang->qa->menu->caselib   = array('link' => '用例库|caselib|browse');
+$lang->qa->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,resolve,close,activate,report,batchedit,batchactivate,confirmbug,assignto');
+$lang->qa->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'class' => 'dropdown dropdown-hover');
+$lang->qa->menu->testtask  = array('link' => '测试单|testtask|browse|productID=%s', 'alias' => 'view,create,edit,linkcase,cases,start,close,batchrun,groupcase,report');
+$lang->qa->menu->testsuite = array('link' => '套件|testsuite|browse|productID=%s', 'alias' => 'view,create,edit,linkcase');
+$lang->qa->menu->report    = array('link' => '报告|testreport|browse|productID=%s', 'alias' => 'view,create,edit');
+$lang->qa->menu->caselib   = array('link' => '用例库|caselib|browse', 'alias' => 'create,createcase,view,edit,batchcreatecase,showimport');
+
+$lang->qa->subMenu = new stdclass();
+$lang->qa->subMenu->testcase = new stdclass();
+$lang->qa->subMenu->testcase->feature = array('link' => '功能测试|testcase|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'subModule' => 'tree,story');
+$lang->qa->subMenu->testcase->unit    = array('link' => '单元测试|testtask|browseUnits|productID=%s');
 
 $lang->bug = new stdclass();
 $lang->bug->menu = new stdclass();
+$lang->bug->subMenu = $lang->qa->subMenu;
 
 $lang->bug->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,resolve,close,activate,report,batchedit,batchactivate,confirmbug,assignto', 'subModule' => 'tree');
-$lang->bug->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s');
+$lang->bug->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover');
 $lang->bug->menu->testtask  = array('link' => '测试单|testtask|browse|productID=%s');
 $lang->bug->menu->testsuite = array('link' => '套件|testsuite|browse|productID=%s');
 $lang->bug->menu->report    = array('link' => '报告|testreport|browse|productID=%s');
@@ -288,8 +296,9 @@ $lang->bug->menu->caselib   = array('link' => '用例库|caselib|browse');
 
 $lang->testcase = new stdclass();
 $lang->testcase->menu = new stdclass();
+$lang->testcase->subMenu = $lang->qa->subMenu;
 $lang->testcase->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->testcase->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'subModule' => 'tree');
+$lang->testcase->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'subModule' => 'tree,story', 'class' => 'dropdown dropdown-hover');
 $lang->testcase->menu->testtask  = array('link' => '测试单|testtask|browse|productID=%s');
 $lang->testcase->menu->testsuite = array('link' => '套件|testsuite|browse|productID=%s');
 $lang->testcase->menu->report    = array('link' => '报告|testreport|browse|productID=%s');
@@ -297,17 +306,19 @@ $lang->testcase->menu->caselib   = array('link' => '用例库|caselib|browse');
 
 $lang->testtask = new stdclass();
 $lang->testtask->menu = new stdclass();
+$lang->testtask->subMenu = $lang->qa->subMenu;
 $lang->testtask->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->testtask->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s');
-$lang->testtask->menu->testtask  = array('link' => '测试单|testtask|browse|productID=%s', 'alias' => 'view,create,edit,linkcase,cases,start,close,batchrun,groupcase,report');
+$lang->testtask->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover');
+$lang->testtask->menu->testtask  = array('link' => '测试单|testtask|browse|productID=%s', 'subModule' => 'testtask', 'alias' => 'view,create,edit,linkcase,cases,start,close,batchrun,groupcase,report');
 $lang->testtask->menu->testsuite = array('link' => '套件|testsuite|browse|productID=%s');
 $lang->testtask->menu->report    = array('link' => '报告|testreport|browse|productID=%s');
 $lang->testtask->menu->caselib   = array('link' => '用例库|caselib|browse');
 
 $lang->testsuite = new stdclass();
 $lang->testsuite->menu = new stdclass();
+$lang->testsuite->subMenu = $lang->qa->subMenu;
 $lang->testsuite->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->testsuite->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s');
+$lang->testsuite->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover');
 $lang->testsuite->menu->testtask  = array('link' => '测试单|testtask|browse|productID=%s');
 $lang->testsuite->menu->testsuite = array('link' => '套件|testsuite|browse|productID=%s', 'alias' => 'view,create,edit,linkcase');
 $lang->testsuite->menu->report    = array('link' => '报告|testreport|browse|productID=%s');
@@ -315,8 +326,9 @@ $lang->testsuite->menu->caselib   = array('link' => '用例库|caselib|browse');
 
 $lang->testreport = new stdclass();
 $lang->testreport->menu = new stdclass();
+$lang->testreport->subMenu = $lang->qa->subMenu;
 $lang->testreport->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->testreport->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s');
+$lang->testreport->menu->testcase  = array('link' => '用例|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover');
 $lang->testreport->menu->testtask  = array('link' => '测试单|testtask|browse|productID=%s');
 $lang->testreport->menu->testsuite = array('link' => '套件|testsuite|browse|productID=%s');
 $lang->testreport->menu->report    = array('link' => '报告|testreport|browse|productID=%s', 'alias' => 'view,create,edit');
@@ -325,17 +337,33 @@ $lang->testreport->menu->caselib   = array('link' => '用例库|caselib|browse')
 $lang->caselib = new stdclass();
 $lang->caselib->menu = new stdclass();
 $lang->caselib->menu->bug       = array('link' => 'Bug|bug|browse|');
-$lang->caselib->menu->testcase  = array('link' => '用例|testcase|browse|');
+$lang->caselib->menu->testcase  = array('link' => '用例|testcase|browse|', 'class' => 'dropdown dropdown-hover');
 $lang->caselib->menu->testtask  = array('link' => '测试单|testtask|browse|');
 $lang->caselib->menu->testsuite = array('link' => '套件|testsuite|browse|');
 $lang->caselib->menu->report    = array('link' => '报告|testreport|browse|');
 $lang->caselib->menu->caselib   = array('link' => '用例库|caselib|browse|libID=%s', 'alias' => 'create,createcase,view,edit,batchcreatecase,showimport', 'subModule' => 'tree,testcase');
 
-$lang->repo = new stdclass();
-$lang->repo->menu = new stdclass();
-$lang->repo->menu->browse   = array('link' =>'浏览|repo|log|repoID=%s&entry=', 'alias' => 'diff,view,revision,showsynccomment');
-$lang->repo->menu->settings = '设置|repo|settings|repoID=%s';
-$lang->repo->menu->delete   = array('link' => '删除|repo|delete|repoID=%s', 'target' => 'hiddenwin');
+$lang->caselib->subMenu = new stdclass();
+$lang->caselib->subMenu->testcase = new stdclass();
+$lang->caselib->subMenu->testcase->feature = array('link' => '功能测试|testcase|browse|', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'subModule' => 'tree,story');
+$lang->caselib->subMenu->testcase->unit    = array('link' => '单元测试|testtask|browseUnits|');
+
+$lang->ci = new stdclass();
+$lang->ci->menu = new stdclass();
+$lang->ci->menu->code     = array('link' => '代码|repo|browse|repoID=%s', 'alias' => 'diff,view,revision,log,blame,showsynccomment');
+$lang->ci->menu->build    = array('link' => '构建|job|browse', 'subModule' => 'compile,job');
+$lang->ci->menu->jenkins  = array('link' => 'Jenkins|jenkins|browse', 'alias' => 'create,edit');
+$lang->ci->menu->maintain = array('link' => '版本库|repo|maintain', 'alias' => 'create,edit');
+$lang->ci->menu->rules    = array('link' => '指令|repo|setrules');
+
+$lang->repo          = new stdclass();
+$lang->jenkins       = new stdclass();
+$lang->compile       = new stdclass();
+$lang->job           = new stdclass();
+$lang->repo->menu    = $lang->ci->menu;
+$lang->jenkins->menu = $lang->ci->menu;
+$lang->compile->menu = $lang->ci->menu;
+$lang->job->menu     = $lang->ci->menu;
 
 /* 文档视图菜单设置。*/
 $lang->doc = new stdclass();
@@ -349,7 +377,7 @@ $lang->git = new stdclass();
 $lang->report = new stdclass();
 $lang->report->menu = new stdclass();
 
-$lang->report->menu->annual  = array('link' => '年度总结|report|annualData', 'target' => '_blank');
+$lang->report->menu->annual  = array('link' => '年度总结|report|annualData|year=&dept=&userID=' . (isset($_SESSION['user']) ? zget($_SESSION['user'], 'id', 0) : 0), 'target' => '_blank');
 $lang->report->menu->product = array('link' => $lang->productCommon . '|report|productsummary');
 $lang->report->menu->prj     = array('link' => $lang->projectCommon . '|report|projectdeviation');
 $lang->report->menu->test    = array('link' => '测试|report|bugcreate', 'alias' => 'bugassign');
@@ -380,8 +408,8 @@ $lang->admin = new stdclass();
 $lang->admin->menu = new stdclass();
 $lang->admin->menu->index     = array('link' => '首页|admin|index', 'alias' => 'register,certifytemail,certifyztmobile,ztcompany');
 $lang->admin->menu->message   = array('link' => '通知|message|index', 'subModule' => 'message,mail,webhook');
-$lang->admin->menu->custom    = array('link' => '自定义|custom|set', 'subModule' => 'custom');
-$lang->admin->menu->sso       = array('link' => '集成|admin|sso');
+$lang->admin->menu->custom    = array('link' => '自定义|custom|index', 'subModule' => 'custom');
+$lang->admin->menu->sso       = array('link' => '集成|admin|sso', 'subModule' => '');
 $lang->admin->menu->extension = array('link' => '插件|extension|browse', 'subModule' => 'extension');
 $lang->admin->menu->dev       = array('link' => '二次开发|dev|api', 'alias' => 'db', 'subModule' => 'dev,entry');
 $lang->admin->menu->translate = array('link' => '翻译|dev|translate');
@@ -397,7 +425,7 @@ $lang->admin->subMenu->message->browser = array('link' => '浏览器|message|bro
 $lang->admin->subMenu->message->setting = array('link' => '设置|message|setting');
 
 $lang->admin->subMenu->sso = new stdclass();
-$lang->admin->subMenu->sso->ranzhi = '然之协同|admin|sso';
+$lang->admin->subMenu->sso->ranzhi = 'ZDOO|admin|sso';
 
 $lang->admin->subMenu->dev = new stdclass();
 $lang->admin->subMenu->dev->api    = array('link' => 'API|dev|api');
@@ -475,6 +503,11 @@ $lang->menugroup->entry       = 'admin';
 $lang->menugroup->webhook     = 'admin';
 $lang->menugroup->message     = 'admin';
 
+$lang->menugroup->repo    = 'ci';
+$lang->menugroup->jenkins = 'ci';
+$lang->menugroup->compile = 'ci';
+$lang->menugroup->job     = 'ci';
+
 /* 错误提示信息。*/
 $lang->error = new stdclass();
 $lang->error->companyNotFound = "您访问的域名 %s 没有对应的公司。";
@@ -493,14 +526,15 @@ $lang->error->URL             = "『%s』应当为合法的URL。";
 $lang->error->date            = "『%s』应当为合法的日期。";
 $lang->error->datetime        = "『%s』应当为合法的日期。";
 $lang->error->code            = "『%s』应当为字母或数字的组合。";
-$lang->error->account         = "『%s』只能是字母和数字的组合三位以上。";
-$lang->error->passwordsame    = "两次密码应当相等。";
+$lang->error->account         = "『%s』只能是字母、数字或下划线的组合三位以上。";
+$lang->error->passwordsame    = "两次密码应该相同。";
 $lang->error->passwordrule    = "密码应该符合规则，长度至少为六位。";
 $lang->error->accessDenied    = '您没有访问权限';
 $lang->error->pasteImg        = '您的浏览器不支持粘贴图片！';
 $lang->error->noData          = '没有数据';
 $lang->error->editedByOther   = '该记录可能已经被改动。请刷新页面重新编辑！';
 $lang->error->tutorialData    = '新手模式下不会插入数据，请退出新手模式操作';
+$lang->error->noCurlExt       = '服务器未安装Curl模块。';
 
 /* 分页信息。*/
 $lang->pager = new stdclass();
@@ -547,7 +581,6 @@ $lang->importAndInsert = "全新插入";
 $lang->noResultsMatch    = "没有匹配结果";
 $lang->searchMore        = "搜索此关键字的更多结果：";
 $lang->chooseUsersToMail = "选择要发信通知的用户...";
-$lang->browserNotice     = '你目前使用的浏览器可能无法得到最佳浏览效果，建议使用Chrome、火狐、IE9+、Opera、Safari浏览器。';
 $lang->noticePasteImg    = "可以在编辑器直接贴图。";
 $lang->pasteImgFail      = "贴图失败，请稍后重试。";
 $lang->pasteImgUploading = "正在上传图片，请稍后...";
@@ -670,7 +703,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyStory')
 
     unset($lang->menuOrder[15]);
     unset($lang->menuOrder[20]);
-    unset($lang->menuOrder[30]);
+    unset($lang->menuOrder[35]);
 
     /* Adjust sub menu of my dashboard. */
     unset($lang->my->menu->bug);
@@ -706,7 +739,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTask')
 
     unset($lang->menuOrder[10]);
     unset($lang->menuOrder[20]);
-    unset($lang->menuOrder[30]);
+    unset($lang->menuOrder[35]);
 
     /* Adjust sub menu of my dashboard. */
     unset($lang->my->menu->bug);
@@ -743,7 +776,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTest')
 
     unset($lang->menuOrder[15]);
     unset($lang->menuOrder[20]);
-    unset($lang->menuOrder[30]);
+    unset($lang->menuOrder[35]);
 
     /* Rename product module. */
     $lang->menu->product = "{$lang->productCommon}|product|index";
@@ -761,17 +794,19 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTest')
 
     /* Add bug, testcase and testtask module. */
     $lang->menu->bug       = 'Bug|bug|index';
-    $lang->menu->testcase  = '用例|testcase|index';
+    $lang->menu->testcase  = '功能测试|testcase|browse';
+    $lang->menu->unit      = '单元测试|testtask|browseUnits';
     $lang->menu->testsuite = '套件|testsuite|index';
     $lang->menu->testtask  = '测试单|testtask|index';
     $lang->menu->caselib   = '用例库|caselib|browse';
 
     $lang->menuOrder[6]  = 'bug';
     $lang->menuOrder[7]  = 'testcase';
-    $lang->menuOrder[8]  = 'testsuite';
-    $lang->menuOrder[9]  = 'testtask';
-    $lang->menuOrder[10] = 'caselib';
-    $lang->menuOrder[11] = 'product';
+    $lang->menuOrder[8]  = 'unit';
+    $lang->menuOrder[9]  = 'testsuite';
+    $lang->menuOrder[10] = 'testtask';
+    $lang->menuOrder[11] = 'caselib';
+    $lang->menuOrder[12] = 'product';
 
     /* Adjust sub menu of bug module. */
     $lang->bug->menu = new stdclass();

@@ -24,12 +24,14 @@ function loadProjectMembers(projectID)
     $.get(createLink('project', 'ajaxGetMembers', 'projectID=' + projectID + '&assignedTo=' + $('#assignedTo').val()), function(data)
     {
         $('#assignedTo_chosen').remove();
+        $('#assignedTo').next('.picker').remove();
         $('#assignedTo').replaceWith(data);
         $('#assignedTo').attr('name', 'assignedTo[]').chosen();
 
         $('.modal-dialog #taskTeamEditor tr').each(function()
         {
             $(this).find('#team_chosen').remove();
+            $(this).find('#team').next('.picker').remove();
             $(this).find('#team').replaceWith(data);
             $(this).find('#assignedTo').attr('id', 'team').attr('name', 'team[]').chosen();
         });
@@ -48,8 +50,9 @@ function loadProjectStories(projectID)
     $.get(createLink('story', 'ajaxGetProjectStories', 'projectID=' + projectID + '&productID=0&branch=0&moduleID=0&storyID=' + $('#story').val()), function(data)
     {
         $('#story_chosen').remove();
+        $('#story').next('.picker').remove();
         $('#story').replaceWith(data);
-        $('#story').chosen();
+        $('#story').addClass('filled').chosen();
     });
 }
 
@@ -93,6 +96,7 @@ function setOwners(result)
     $("#multipleBox").removeAttr("checked");
     $('.team-group').addClass('hidden');
     $('#assignedTo, #assignedTo_chosen').removeClass('hidden');
+    $('#assignedTo').next('.picker').removeClass('hidden');
     if(result == 'affair')
     {
         $('#assignedTo').attr('multiple', 'multiple');
@@ -141,7 +145,7 @@ function setStoryModule()
 /* Set the story priview link. */
 function setPreview()
 {
-    if(!$('#story').val())
+    if(!Number($('#story').val()))
     {
         $('#preview').addClass('hidden');
         $('#copyButton').addClass('hidden');
@@ -223,10 +227,13 @@ function setStories(moduleID, projectID)
         var storyID = $('#story').val();
         if(!stories) stories = '<select id="story" name="story" class="form-control"></select>';
         $('#story').replaceWith(stories);
+        if($('#story').length == 0 && $('#storyBox').length != 0) $('#storyBox').html(stories);
+
         $('#story').val(storyID);
         setPreview();
         $('#story_chosen').remove();
-        $("#story").chosen();
+        $('#story').next('.picker').remove();
+        $("#story").addClass('filled').chosen();
     });
 }
 
@@ -240,6 +247,8 @@ function toggleSelectTestStory()
         $('#estStarted').closest('tr').addClass('hidden');
         $('#estimate').closest('.table-col').addClass('hidden');
         $('#testStoryBox').removeClass('hidden');
+        $('#copyButton').addClass('hidden');
+        $('.colorpicker').css('right', '0');
     }
     else
     {
@@ -363,12 +372,14 @@ $(document).ready(function()
         if($(this).prop('checked'))
         {
             $('#assignedTo, #assignedTo_chosen').addClass('hidden');
+            $('#assignedTo').next('.picker').addClass('hidden');
             $('.team-group').removeClass('hidden');
             $('#estimate').attr('readonly', true);
         }
         else
         {
             $('#assignedTo, #assignedTo_chosen').removeClass('hidden');
+            $('#assignedTo').next('.picker').removeClass('hidden');
             $('.team-group').addClass('hidden');
             $('#estimate').attr('readonly', false);
         }
@@ -423,6 +434,24 @@ $(document).ready(function()
         });
     });
 });
+
+$(document).on('click', '#testStory_chosen,#story_chosen', function()
+{
+    var $obj  = $(this).prev('select');
+    var value = $obj.val();
+    if($obj.hasClass('filled')) return false;
+
+    $obj.empty();
+    for(storyID in stories)
+    {
+        pinyin = (typeof(storyPinYin) == 'undefined') ? '' : storyPinYin[storyID];
+        html   = "<option value='" + storyID + "' title='" + stories[storyID] + "' data-keys='" + pinyin + "'>" + stories[storyID] + "</option>";
+        $obj.append(html);
+    }
+    $obj.val(value);
+    $obj.addClass('filled');
+    $obj.trigger("chosen:updated");
+})
 
 $('#modalTeam .btn').click(function()
 {

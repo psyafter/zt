@@ -38,7 +38,7 @@
         <tr>
           <th><?php echo $lang->doc->title;?></th>
           <td colspan='2'><?php echo html::input('title', $doc->title, "class='form-control' required");?></td>
-        </tr> 
+        </tr>
         <tr>
           <th><?php echo $lang->doc->keywords;?></th>
           <td colspan='2'><?php echo html::input('keywords', $doc->keywords, "class='form-control'");?></td>
@@ -58,6 +58,17 @@
         <tr id='fileBox'>
           <th><?php echo $lang->doc->files;?></th>
           <td colspan='2'><?php echo $this->fetch('file', 'buildform');?></td>
+        </tr>
+        <tr>
+          <th><?php echo $lang->doc->mailto;?></th>
+          <td colspan="2">
+            <div class="input-group">
+              <?php
+              echo html::select('mailto[]', $users, $doc->mailto, "multiple class='form-control chosen'");
+              echo $this->fetch('my', 'buildContactLists');
+              ?>
+            </div>
+          </td>
         </tr>
         <tr>
           <th><?php echo $lang->doclib->control;?></th>

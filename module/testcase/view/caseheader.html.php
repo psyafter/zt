@@ -44,13 +44,16 @@
 
         echo "<div id='bysuiteTab' class='btn-group'>";
         echo html::a('javascript:;', $currentLable . " <span class='caret'></span>", '', "class='btn btn-link' data-toggle='dropdown'");
-        echo "<ul class='dropdown-menu' style='max-height:240px; overflow-y:auto'>";
-
-        if(empty($suiteList))
+        if(common::canModify('product', $product))
         {
-            echo '<li>';
-            echo html::a($this->createLink('testsuite', 'create', "productID=$productID"), "<i class='icon-plus'></i>" . $lang->testsuite->create);
-            echo '</li>';
+            echo "<ul class='dropdown-menu' style='max-height:240px; overflow-y:auto'>";
+
+            if(empty($suiteList))
+            {
+                echo '<li>';
+                echo html::a($this->createLink('testsuite', 'create', "productID=$productID"), "<i class='icon-plus'></i>" . $lang->testsuite->create);
+                echo '</li>';
+            }
         }
 
         foreach($suiteList as $suiteID => $suite)
@@ -102,6 +105,7 @@
       ?>
       </ul>
     </div>
+    <?php if(common::canModify('product', $product)):?>
     <div class='btn-group'>
       <button type='button' class='btn btn-link dropdown-toggle' data-toggle='dropdown' id='importAction'><i class='icon icon-import muted'></i> <?php echo $lang->import ?><span class='caret'></span></button>
       <ul class='dropdown-menu' id='importActionMenu'>
@@ -109,7 +113,7 @@
       $class = common::hasPriv('testcase', 'import') ? '' : "class=disabled";
       $misc  = common::hasPriv('testcase', 'import') ? "class='export'" : "class=disabled";
       $link  = common::hasPriv('testcase', 'import') ?  $this->createLink('testcase', 'import', "productID=$productID&branch=$branch") : '#';
-      echo "<li $class>" . html::a($link, $lang->testcase->importFile, '', $misc) . "</li>";
+      echo "<li $class>" . html::a($link, $lang->testcase->fileImport, '', $misc) . "</li>";
 
       $class = common::hasPriv('testcase', 'importFromLib') ? '' : "class=disabled";
       $misc  = common::hasPriv('testcase', 'importFromLib') ? '' : "class=disabled";
@@ -150,6 +154,7 @@
         </li>
       </ul>
     </div>
+    <?php endif;?>
     <?php endif;?>
   </div>
 </div>

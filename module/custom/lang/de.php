@@ -1,25 +1,31 @@
 <?php
-$lang->custom->common     = 'Custom';
-$lang->custom->index      = 'Home';
-$lang->custom->set        = 'Customize';
-$lang->custom->restore    = 'Reset to Default';
-$lang->custom->key        = 'Key';
-$lang->custom->value      = 'Value';
-$lang->custom->flow       = 'Concept';
-$lang->custom->working    = 'WorkStyle';
-$lang->custom->select     = 'Select Concept';
-$lang->custom->branch     = 'Multi Branch';
-$lang->custom->owner      = 'Owner';
-$lang->custom->module     = 'Module';
-$lang->custom->section    = 'Section';
-$lang->custom->lang       = 'Language';
-$lang->custom->setPublic  = 'Set Public';
-$lang->custom->required   = 'Required';
-$lang->custom->score      = 'Score';
-$lang->custom->timezone   = 'Timezone';
-$lang->custom->scoreReset = 'Reset Score';
-$lang->custom->scoreTitle = 'Point Feature';
+$lang->custom->common        = 'Custom';
+$lang->custom->index         = 'Home';
+$lang->custom->set           = 'Customize';
+$lang->custom->restore       = 'Reset to Default';
+$lang->custom->key           = 'Key';
+$lang->custom->value         = 'Value';
+$lang->custom->flow          = 'Concept';
+$lang->custom->working       = 'WorkStyle';
+$lang->custom->select        = 'Select Concept';
+$lang->custom->branch        = 'Multi Branch';
+$lang->custom->owner         = 'Owner';
+$lang->custom->module        = 'Module';
+$lang->custom->section       = 'Section';
+$lang->custom->lang          = 'Language';
+$lang->custom->setPublic     = 'Set Public';
+$lang->custom->required      = 'Required';
+$lang->custom->score         = 'Score';
+$lang->custom->timezone      = 'Timezone';
+$lang->custom->scoreReset    = 'Reset Score';
+$lang->custom->scoreTitle    = 'Point Feature';
+$lang->custom->project       = $lang->projectCommon;
+$lang->custom->product       = $lang->productCommon;
+$lang->custom->closedProject = 'Closed ' . $lang->projectCommon;
+$lang->custom->closedProduct = 'Closed ' . $lang->productCommon;
 
+$lang->custom->object['product']  = $lang->productCommon;
+$lang->custom->object['project']  = $lang->projectCommon;
 $lang->custom->object['story']    = 'Story';
 $lang->custom->object['task']     = 'Task';
 $lang->custom->object['bug']      = 'Bug';
@@ -100,6 +106,8 @@ $lang->custom->notice->noClosedBlock     = 'You have no blocks that are closed p
 $lang->custom->notice->required          = 'The selected field is required.';
 $lang->custom->notice->conceptResult     = 'According to your preference, <b> %s-%s </b> is set for you. Use <b>%s</b> + <b> %s</b>。';
 $lang->custom->notice->conceptPath       = 'Go to Admin -> Custom -> Concept to set it.';
+$lang->custom->notice->readOnlyOfProduct = 'If Change Forbidden, any change on stories, bugs, cases, efforts, releases and plans of the closed product is also forbidden.';
+$lang->custom->notice->readOnlyOfProject = 'If Change Forbidden, any change on tasks, builds, efforts and stories of the closed project is also forbidden.';
 
 $lang->custom->notice->indexPage['product'] = "ZenTao 8.2+ has Product Homepage. Do you want to go to Product Homepage?";
 $lang->custom->notice->indexPage['project'] = "ZenTao 8.2+ has Project Homepage. Do you want to go to Project Homepage?";
@@ -145,6 +153,28 @@ $lang->custom->page     = ' Page';
 $lang->custom->scoreStatus[1] = 'On';
 $lang->custom->scoreStatus[0] = 'Off';
 
+$lang->custom->CRProduct[1] = 'Change Allowed';
+$lang->custom->CRProduct[0] = 'Change Forbidden';
+
+$lang->custom->CRProject[1] = 'Change Allowed';
+$lang->custom->CRProject[0] = 'Change Forbidden';
+
 $lang->custom->moduleName['product']     = $lang->productCommon;
 $lang->custom->moduleName['productplan'] = 'Plan';
 $lang->custom->moduleName['project']     = $lang->projectCommon;
+
+$lang->custom->conceptQuestions['overview']         = "1. Which combination of management fits your company?";
+$lang->custom->conceptQuestions['story']            = "2. Do you use the concept of requirement or user story in your company?";
+$lang->custom->conceptQuestions['requirementpoint'] = "3. Do you use hours or function points to make estimations in your company?";
+$lang->custom->conceptQuestions['storypoint']       = "3. Do you use hours or story points to make estimations in your company?";
+
+$lang->custom->conceptOptions = new stdclass;
+
+$lang->custom->conceptOptions->story = array();
+$lang->custom->conceptOptions->story['0'] = 'Requirement';
+$lang->custom->conceptOptions->story['1'] = 'Story';
+
+$lang->custom->conceptOptions->hourPoint = array();
+$lang->custom->conceptOptions->hourPoint['0'] = 'Hour';
+$lang->custom->conceptOptions->hourPoint['1'] = 'Story Point';
+$lang->custom->conceptOptions->hourPoint['2'] = 'Function Point';

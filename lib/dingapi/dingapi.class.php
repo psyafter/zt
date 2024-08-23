@@ -47,21 +47,29 @@ class dingapi
     }
 
     /**
-     * Get all users.
+     * Get users.
      * 
+     * @param  string $selectedDepts
      * @access public
      * @return array
      */
-    public function getAllUsers()
+    public function getUsers($selectedDepts = '')
     {
-        $depts = $this->getAllDepts();
-        if($this->isError()) return array('result' => 'fail', 'message' => $this->errors);
+        $depts = trim($selectedDepts);
+        if(empty($depts)) return array('result' => 'fail', 'message' => 'nodept');
 
+        set_time_limit(0);
         $users = array();
-        foreach($depts as $deptID => $deptName)
+        foreach(explode(',', $depts) as $deptID)
         {
+            if(empty($deptID)) continue;
+
             $response = $this->queryAPI($this->apiUrl . "user/simplelist?access_token={$this->token}&department_id={$deptID}");
-            if($this->isError()) return array('result' => 'fail', 'message' => $this->errors);
+            if($this->isError())
+            {
+                $this->getErrors();
+                continue;
+            }
 
             foreach($response->userlist as $user) $users[$user->name] = $user->userid;
         }
@@ -70,19 +78,39 @@ class dingapi
     }
 
     /**
-     * Get all depts.
+     * Get dept tree.
      * 
      * @access public
      * @return array
      */
-    public function getAllDepts()
+    public function getDeptTree()
     {
         $response = $this->queryAPI($this->apiUrl . "department/list?access_token={$this->token}");
-        if($this->isError()) return false;
+        if($this->isError()) return array('result' => 'fail', 'message' => $this->errors);
 
-        $deptPairs = array();
-        foreach($response->department as $dept) $deptPairs[$dept->id] = $dept->name;
-        return $deptPairs;
+        $parentDepts = array();
+        foreach($response->department as $dept)
+        {
+            $parentID = isset($dept->parentid) ? $dept->parentid : 0;
+            $parentDepts[$parentID][$dept->id] = $dept->name;
+        }
+
+        $tree = array();
+        foreach($parentDepts as $parentID => $depts)
+        {
+            foreach($depts as $deptID => $deptName)
+            {
+                $node = array();
+                $node['id']   = $deptID;
+                $node['pId']  = $parentID;
+                $node['name'] = $deptName;
+                if($parentID == 0) $node['open'] = true;
+
+                $tree[] = $node;
+            }
+        }
+
+        return array('result' => 'success', 'data' => $tree);
     }
 
     /**
@@ -95,34 +123,20 @@ class dingapi
      */
     public function send($userList, $message)
     {
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
-        curl_setopt($curl, CURLOPT_USERAGENT, 'Sae T OAuth2 v0.1');
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 30);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
-        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
-        curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-        curl_setopt($curl, CURLOPT_HEADER, FALSE);
-
-        curl_setopt($curl, CURLOPT_URL, $this->apiUrl . 'topapi/message/corpconversation/asyncsend_v2?access_token=' . $this->token);
-        curl_setopt($curl, CURLINFO_HEADER_OUT, TRUE);
-
         $postData = array();
         $postData['agent_id']    = $this->agentId;
         $postData['userid_list'] = $userList;
         $postData['msg']         = $message;
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $postData);
 
-        $response = curl_exec($curl);
-        curl_close($curl);
+        $url = $this->apiUrl . 'topapi/message/corpconversation/asyncsend_v2?access_token=' . $this->token;
+        $response = common::http($url, $postData);
+        $errors   = commonModel::$requestErrors;
 
         $response = json_decode($response);
         if(isset($response->errcode) and $response->errcode == 0) return array('result' => 'success');
 
-        $this->errors[$response->errcode] = "Errcode:{$response->errcode}, Errmsg:{$response->errmsg}";
+        if(empty($response)) $this->errors = $errors;
+        if(isset($response->errcode)) $this->errors[$response->errcode] = "Errcode:{$response->errcode}, Errmsg:{$response->errmsg}";
         return array('result' => 'fail', 'message' => $this->errors);
     }
 
@@ -135,10 +149,14 @@ class dingapi
      */
     public function queryAPI($url)
     {
-        $response = json_decode(file_get_contents($url));
+        $response = common::http($url);
+        $errors   = commonModel::$requestErrors;
+
+        $response = json_decode($response);
         if(isset($response->errcode) and $response->errcode == 0) return $response;
 
-        $this->errors[$response->errcode] = "Errcode:{$response->errcode}, Errmsg:{$response->errmsg}";
+        if(empty($response)) $this->errors = $errors;
+        if(isset($response->errcode)) $this->errors[$response->errcode] = "Errcode:{$response->errcode}, Errmsg:{$response->errmsg}";
         return false;
     }
 

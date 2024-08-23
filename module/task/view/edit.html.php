@@ -121,7 +121,23 @@
               <?php endif;?>
               <tr>
                 <th><?php echo $lang->task->assignedTo;?></th>
-                <td><span id="assignedToIdBox"><?php echo html::select('assignedTo', $members, $task->assignedTo, "class='form-control chosen'");?></span></td>
+                <?php $disableAssignedTo = (!empty($task->team) and $task->assignedTo != $this->app->user->account) ? "disabled='disabled'" :'';?>
+                <?php
+                $taskMembers = array();
+                if(!empty($task->team))
+                {
+                    $teamAccounts = array_keys($task->team);
+                    foreach($teamAccounts as $teamAccount)
+                    {
+                        $taskMembers[$teamAccount] = $members[$teamAccount];
+                    }
+                }
+                else
+                {
+                    $taskMembers = $members;
+                }
+                ?>
+                <td><span id="assignedToIdBox"><?php echo html::select('assignedTo', $taskMembers, $task->assignedTo, "class='form-control chosen' {$disableAssignedTo}");?></span></td>
               </tr>
               <tr class='<?php echo empty($task->team) ? 'hidden' : ''?>' id='teamTr'>
                 <th><?php echo $lang->task->team;?></th>
@@ -145,7 +161,7 @@
                 <th><?php echo $lang->task->mailto;?></th>
                 <td>
                   <div class='input-group'>
-                    <?php echo html::select('mailto[]', $project->acl == 'private' ? $members : $users, str_replace(' ' , '', $task->mailto), 'class="form-control" multiple');?>
+                    <?php echo html::select('mailto[]', $project->acl == 'private' ? $members : $users, str_replace(' ' , '', $task->mailto), 'class="form-control chosen" multiple');?>
                     <?php echo $this->fetch('my', 'buildContactLists');?>
                   </div>
                 </td>
@@ -166,7 +182,7 @@
               <tr>
                 <th><?php echo $lang->task->estimate;?></th>
                 <td>
-                  <?php $disabled = !empty($task->team) ? "disabled='disabled'" : '';?>
+                  <?php $disabled = (!empty($task->team) or $task->parent < 0) ? "disabled='disabled'" : '';?>
                   <?php echo html::input('estimate', $task->estimate, "class='form-control' {$disabled}");?>
                 </td>
               </tr>
@@ -177,7 +193,7 @@
               <tr>
                 <th><?php echo $lang->task->left;?></th>
                 <td>
-                  <?php $disabled = !empty($task->team) ? "disabled='disabled'" : '';?>
+                  <?php $disabled = (!empty($task->team)  or $task->parent < 0) ? "disabled='disabled'" : '';?>
                   <?php echo html::input('left', $task->left, "class='form-control' {$disabled}");?>
                 </td>
               </tr>
@@ -192,7 +208,7 @@
               </tr>
               <tr>
                 <th><?php echo $lang->task->realStarted;?></th>
-                <td><?php echo html::input('realStarted', $task->realStarted, "class='form-control form-date'");?></td>
+                <td><?php echo html::input('realStarted', $task->realStarted, "class='form-control form-datetime'");?></td>
               </tr>
               <tr>
                 <th><?php echo $lang->task->finishedBy;?></th>
@@ -200,7 +216,7 @@
               </tr>
               <tr>
                 <th><?php echo $lang->task->finishedDate;?></th>
-                <td><?php echo html::input('finishedDate', $task->finishedDate, 'class="form-control form-date"');?></td>
+                <td><?php echo html::input('finishedDate', $task->finishedDate, 'class="form-control form-datetime"');?></td>
               </tr>
               <tr>
                 <th><?php echo $lang->task->canceledBy;?></th>
@@ -208,7 +224,7 @@
               </tr>
               <tr>
                 <th><?php echo $lang->task->canceledDate;?></th>
-                <td><?php echo html::input('canceledDate', $task->canceledDate, 'class="form-control form-date"');?></td>
+                <td><?php echo html::input('canceledDate', $task->canceledDate, 'class="form-control form-datetime"');?></td>
               </tr>
               <tr>
                 <th><?php echo $lang->task->closedBy;?></th>
@@ -220,7 +236,7 @@
               </tr>
               <tr>
                 <th><?php echo $lang->task->closedDate;?></th>
-                <td><?php echo html::input('closedDate', $task->closedDate, 'class="form-control form-date"');?></td>
+                <td><?php echo html::input('closedDate', $task->closedDate, 'class="form-control form-datetime"');?></td>
               </tr>
             </table>
           </div>

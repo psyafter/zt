@@ -66,6 +66,7 @@ class webhookModel extends model
 
         $this->loadModel('action');
         $actions = $this->dao->select('*')->from(TABLE_ACTION)->where('id')->in($actions)->fetchAll('id');
+
         $users   = $this->loadModel('user')->getPairs('noletter');
         foreach($logs as $log)
         {
@@ -80,16 +81,20 @@ class webhookModel extends model
             $object = $this->dao->select('*')->from($this->config->objectTables[$action->objectType])->where('id')->eq($action->objectID)->fetch();
             $field  = zget($this->config->action->objectNameFields, $action->objectType, $action->objectType);
 
-            if(!is_object($object)) 
+            if(!is_object($object))
             {
                 $object = new stdclass;
                 $object->$field = '';
             }
 
             $text = '';
-            if(isset($data->markdown) and is_object($data->markdown)) 
+            if(isset($data->markdown->text))
             {
                 $text = substr($data->markdown->text, 0, strpos($data->markdown->text, '(http'));
+            }
+            elseif(isset($data->markdown->content))
+            {
+                $text = substr($data->markdown->content, 0, strpos($data->markdown->content, '(http'));
             }
             else
             {
@@ -98,6 +103,9 @@ class webhookModel extends model
 
             $log->action    = $text;
             $log->actionURL = $this->getViewLink($action->objectType, $action->objectID);
+            $log->module    = $action->objectType;
+            $log->moduleID  = $action->objectID;
+            $log->dialog    = $action->objectType == 'todo' ? 1 : 0;
         }
         return $logs;
     }
@@ -110,7 +118,9 @@ class webhookModel extends model
      */
     public function getDataList()
     {
-        return $this->dao->select('*')->from(TABLE_NOTIFY)->where('status')->eq('wait')->andWhere('objectType')->eq('webhook')->orderBy('id')->fetchAll('id');
+        $dataList  = $this->dao->select('*')->from(TABLE_NOTIFY)->where('status')->eq('wait')->andWhere('objectType')->eq('webhook')->orderBy('id')->fetchAll('id');
+        $dataList += $this->dao->select('*')->from(TABLE_NOTIFY)->where('status')->eq('senting')->andWhere('sendTime')->ge(date('Y-m-d H:i:s', time() - 3 * 3600))->andWhere('objectType')->eq('webhook')->orderBy('id')->fetchAll('id');
+        return $dataList;
     }
 
     /**
@@ -143,11 +153,17 @@ class webhookModel extends model
             ->join('products', ',')
             ->join('projects', ',')
             ->skipSpecial('url')
+            ->trim('agentId')
+            ->trim('appKey')
+            ->trim('appSecret')
+            ->trim('wechatAgentId')
+            ->trim('wechatCorpId')
+            ->trim('wechatCorpSecret')
             ->remove('allParams, allActions')
             ->get();
         $webhook->params = $this->post->params ? implode(',', $this->post->params) . ',text' : 'text';
 
-        if($webhook->type == 'dingapi')
+        if($webhook->type == 'dinguser')
         {
             $webhook->secret = array();
             $webhook->secret['agentId']   = $webhook->agentId;
@@ -162,6 +178,23 @@ class webhookModel extends model
             $webhook->secret = json_encode($webhook->secret);
             $webhook->url    = $this->config->webhook->dingapiUrl;
         }
+        elseif($webhook->type == 'wechatuser')
+        {
+            $webhook->secret = array();
+            $webhook->secret['agentId']   = $webhook->wechatAgentId;
+            $webhook->secret['appKey']    = $webhook->wechatCorpId;
+            $webhook->secret['appSecret'] = $webhook->wechatCorpSecret;
+
+            if(empty($webhook->wechatCorpId))     dao::$errors['wechatCorpId']     = sprintf($this->lang->error->notempty, $this->lang->webhook->wechatCorpId);
+            if(empty($webhook->wechatCorpSecret)) dao::$errors['wechatCorpSecret'] = sprintf($this->lang->error->notempty, $this->lang->webhook->wechatCorpSecret);
+            if(empty($webhook->wechatAgentId))    dao::$errors['wechatAgentId']    = sprintf($this->lang->error->notempty, $this->lang->webhook->wechatAgentId);
+            if(dao::isError()) return false;
+
+            $webhook->secret = json_encode($webhook->secret);
+            $webhook->url    = $this->config->webhook->wechatApiUrl;
+        }
+
+        unset($webhook->wechatCorpId, $webhook->wechatCorpSecret, $webhook->wechatAgentId);
         
         $this->dao->insert(TABLE_WEBHOOK)->data($webhook, 'agentId,appKey,appSecret')
             ->batchCheck($this->config->webhook->create->requiredFields, 'notempty')
@@ -187,10 +220,17 @@ class webhookModel extends model
             ->join('products', ',')
             ->join('projects', ',')
             ->skipSpecial('url')
+            ->trim('agentId')
+            ->trim('appKey')
+            ->trim('appSecret')
+            ->trim('wechatAgentId')
+            ->trim('wechatCorpId')
+            ->trim('wechatCorpSecret')
             ->remove('allParams, allActions')
             ->get();
         $webhook->params  = $this->post->params ? implode(',', $this->post->params) . ',text' : 'text';
-        if($webhook->type == 'dingapi')
+
+        if($webhook->type == 'dinguser')
         {
             $webhook->secret = array();
             $webhook->secret['agentId']   = $webhook->agentId;
@@ -204,6 +244,22 @@ class webhookModel extends model
 
             $webhook->secret = json_encode($webhook->secret);
         }
+        elseif($webhook->type == 'wechatuser')
+        {
+            $webhook->secret = array();
+            $webhook->secret['agentId']   = $webhook->wechatAgentId;
+            $webhook->secret['appKey']    = $webhook->wechatCorpId;
+            $webhook->secret['appSecret'] = $webhook->wechatCorpSecret;
+
+            if(empty($webhook->wechatCorpId))     dao::$errors['wechatCorpId']     = sprintf($this->lang->error->notempty, $this->lang->webhook->wechatCorpId);
+            if(empty($webhook->wechatCorpSecret)) dao::$errors['wechatCorpSecret'] = sprintf($this->lang->error->notempty, $this->lang->webhook->wechatCorpSecret);
+            if(empty($webhook->wechatAgentId))    dao::$errors['wechatAgentId']    = sprintf($this->lang->error->notempty, $this->lang->webhook->wechatAgentId);
+            if(dao::isError()) return false;
+
+            $webhook->secret = json_encode($webhook->secret);
+        }
+
+        unset($webhook->wechatCorpId, $webhook->wechatCorpSecret, $webhook->wechatAgentId);
 
         $this->dao->update(TABLE_WEBHOOK)->data($webhook, 'agentId,appKey,appSecret')
             ->batchCheck($this->config->webhook->edit->requiredFields, 'notempty')
@@ -266,7 +322,7 @@ class webhookModel extends model
 
             if($webhook->sendType == 'async')
             {
-                if($webhook->type == 'dingapi')
+                if($webhook->type == 'dinguser')
                 {
                     $openIdList = $this->getOpenIdList($webhook->id, $actionID);
                     if(empty($openIdList)) continue;
@@ -275,9 +331,9 @@ class webhookModel extends model
                 $this->saveData($id, $actionID, $postData, $actor);
                 continue;
             }
-            
+
             $result = $this->fetchHook($webhook, $postData, $actionID);
-            $this->saveLog($webhook, $actionID, $postData, $result);
+            if(!empty($result)) $this->saveLog($webhook, $actionID, $postData, $result);
         }
         return !dao::isError();
     }
@@ -339,15 +395,15 @@ class webhookModel extends model
         }
         $action->text = $text;
 
-        if($webhook->type == 'dingding' or $webhook->type == 'dingapi')
+        if($webhook->type == 'dinggroup' or $webhook->type == 'dinguser')
         {
-            $data = $this->getDingdingData($title, $text, $webhook->type == 'dingapi' ? '' : $mobile);
+            $data = $this->getDingdingData($title, $text, $webhook->type == 'dinguser' ? '' : $mobile);
         }
         elseif($webhook->type == 'bearychat')
         {
             $data = $this->getBearychatData($text, $mobile, $email, $objectType, $objectID);
         }
-        elseif($webhook->type == 'weixin')
+        elseif($webhook->type == 'wechatgroup' or $webhook->type == 'wechatuser')
         {
             $data = $this->getWeixinData($title, $text, $mobile);
         }
@@ -377,7 +433,7 @@ class webhookModel extends model
             unset($_GET['onlybody']);
         }
         if($objectType == 'case') $objectType = 'testcase';
-        $viewLink = helper::createLink($objectType, 'view', "id=$objectID");
+        $viewLink = helper::createLink($objectType, 'view', "id=$objectID", 'html');
         if($oldOnlyBody) $_GET['onlybody'] = $oldOnlyBody;
 
         return $viewLink;
@@ -515,25 +571,34 @@ class webhookModel extends model
     {
         if(!extension_loaded('curl')) die(helper::jsonEncode($this->lang->webhook->error->curl));
 
-        if($webhook->type == 'dingapi')
+        if($webhook->type == 'dinguser' || $webhook->type == 'wechatuser')
         {
             if(is_string($webhook->secret)) $webhook->secret = json_decode($webhook->secret);
 
             $openIdList = $this->getOpenIdList($webhook->id, $actionID);
             if(empty($openIdList)) return false;
-
-            $this->app->loadClass('dingapi', true);
-            $dingapi = new dingapi($webhook->secret->appKey, $webhook->secret->appSecret, $webhook->secret->agentId);
-            $result  = $dingapi->send($openIdList, $sendData);
-            return json_encode($result);
+            if($webhook->type == 'dinguser')
+            {
+                $this->app->loadClass('dingapi', true);
+                $dingapi = new dingapi($webhook->secret->appKey, $webhook->secret->appSecret, $webhook->secret->agentId);
+                $result  = $dingapi->send($openIdList, $sendData);
+                return json_encode($result);
+            }
+            elseif($webhook->type == 'wechatuser')
+            {
+                $this->app->loadClass('wechatapi', true);
+                $wechatapi = new wechatapi($webhook->secret->appKey, $webhook->secret->appSecret, $webhook->secret->agentId);
+                $result  = $wechatapi->send($openIdList, $sendData);
+                return json_encode($result);
+            }
         }
 
         $contentType = "Content-Type: {$webhook->contentType};charset=utf-8";
-        if($webhook->type == 'dingding' or $webhook->type == 'weixin') $contentType = "Content-Type: application/json";
+        if($webhook->type == 'dinggroup' or $webhook->type == 'wechatgroup') $contentType = "Content-Type: application/json";
         $header[] = $contentType;
 
         $url = $webhook->url;
-        if($webhook->type == 'dingding' and $webhook->secret)
+        if($webhook->type == 'dinggroup' and $webhook->secret)
         {
             $timestamp = time() * 1000;
             $sign = $timestamp . "\n" . $webhook->secret;
@@ -589,10 +654,9 @@ class webhookModel extends model
 
     /**
      * Save log. 
-     * 
-     * @param  int    $webhookID 
-     * @param  int    $actionID 
+     *
      * @param  object $webhook 
+     * @param  int    $actionID 
      * @param  string $data 
      * @param  string $result
      * @access public
@@ -612,5 +676,20 @@ class webhookModel extends model
 
         $this->dao->insert(TABLE_LOG)->data($log)->exec();
         return !dao::isError();
+    }
+
+    /**
+     * Set sent status.
+     * 
+     * @param  array  $idList 
+     * @param  string $status 
+     * @param  string $time 
+     * @access public
+     * @return void
+     */
+    public function setSentStatus($idList, $status, $time = '')
+    {
+        if(empty($time)) $time = helper::now();
+        $this->dao->update(TABLE_NOTIFY)->set('status')->eq($status)->set('sendTime')->eq($time)->where('id')->in($idList)->exec();
     }
 }

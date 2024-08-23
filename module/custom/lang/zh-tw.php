@@ -1,25 +1,31 @@
 <?php
-$lang->custom->common     = '自定義';
-$lang->custom->index      = '首頁';
-$lang->custom->set        = '自定義配置';
-$lang->custom->restore    = '恢復預設';
-$lang->custom->key        = '鍵';
-$lang->custom->value      = '值';
-$lang->custom->flow       = '流程';
-$lang->custom->working    = '工作方式';
-$lang->custom->select     = '請選擇流程：';
-$lang->custom->branch     = '多分支';
-$lang->custom->owner      = '所有者';
-$lang->custom->module     = '模組';
-$lang->custom->section    = '附加部分';
-$lang->custom->lang       = '所屬語言';
-$lang->custom->setPublic  = '設為公共';
-$lang->custom->required   = '必填項';
-$lang->custom->score      = '積分';
-$lang->custom->timezone   = '時區';
-$lang->custom->scoreReset = '重置積分';
-$lang->custom->scoreTitle = '積分功能';
+$lang->custom->common        = '自定義';
+$lang->custom->index         = '首頁';
+$lang->custom->set           = '自定義配置';
+$lang->custom->restore       = '恢復預設';
+$lang->custom->key           = '鍵';
+$lang->custom->value         = '值';
+$lang->custom->flow          = '流程';
+$lang->custom->working       = '工作方式';
+$lang->custom->select        = '請選擇流程：';
+$lang->custom->branch        = '多分支';
+$lang->custom->owner         = '所有者';
+$lang->custom->module        = '模組';
+$lang->custom->section       = '附加部分';
+$lang->custom->lang          = '所屬語言';
+$lang->custom->setPublic     = '設為公共';
+$lang->custom->required      = '必填項';
+$lang->custom->score         = '積分';
+$lang->custom->timezone      = '時區';
+$lang->custom->scoreReset    = '重置積分';
+$lang->custom->scoreTitle    = '積分功能';
+$lang->custom->project       = $lang->projectCommon;
+$lang->custom->product       = $lang->productCommon;
+$lang->custom->closedProject = '已關閉' . $lang->projectCommon;
+$lang->custom->closedProduct = '已關閉' . $lang->productCommon;
 
+$lang->custom->object['product']  = $lang->productCommon;
+$lang->custom->object['project']  = $lang->projectCommon;
 $lang->custom->object['story']    = $lang->storyCommon;
 $lang->custom->object['task']     = '任務';
 $lang->custom->object['bug']      = 'Bug';
@@ -100,6 +106,8 @@ $lang->custom->notice->noClosedBlock               = '沒有永久關閉的區�
 $lang->custom->notice->required                    = '頁面提交時，選中的欄位必填';
 $lang->custom->notice->conceptResult               = '我們已經根據您的選擇為您設置了<b> %s-%s </b>模式，使用<b>%s</b> + <b> %s</b>。';
 $lang->custom->notice->conceptPath                 = '您可以在：後台 -> 自定義 -> 流程頁面修改。';
+$lang->custom->notice->readOnlyOfProduct           = '禁止修改後，已關閉' . $lang->productCommon . '下的' . $lang->storyCommon . '、Bug、用例、日誌、發佈、計劃都禁止修改。';
+$lang->custom->notice->readOnlyOfProject           = '禁止修改後，已關閉' . $lang->projectCommon . '下的任務、版本、日誌以及關聯需求都禁止修改。';
 
 $lang->custom->notice->indexPage['product']        = "從8.2版本起增加了產品主頁視圖，是否預設進入產品主頁？";
 $lang->custom->notice->indexPage['project']        = "從8.2版本起增加了項目主頁視圖，是否預設進入項目主頁？";
@@ -135,7 +143,7 @@ $lang->custom->productProject->notice = '請根據實際情況選擇適合自己
 
 $lang->custom->workingList['full']      = '完整研發管理工具';
 $lang->custom->workingList['onlyTest']  = '測試管理工具';
-$lang->custom->workingList['onlyStory'] = "{$lang->storyCommon}管理工具";
+$lang->custom->workingList['onlyStory'] = "需求管理工具";
 $lang->custom->workingList['onlyTask']  = '任務管理工具';
 
 $lang->custom->menuTip  = '點擊顯示或隱藏導航條目，拖拽來更改顯示順序。';
@@ -145,13 +153,20 @@ $lang->custom->page     = '頁面';
 $lang->custom->scoreStatus[1] = '開啟';
 $lang->custom->scoreStatus[0] = '關閉';
 
+$lang->custom->CRProduct[1] = '允許修改';
+$lang->custom->CRProduct[0] = '禁止修改';
+
+$lang->custom->CRProject[1] = '允許修改';
+$lang->custom->CRProject[0] = '禁止修改';
+
 $lang->custom->moduleName['product']     = $lang->productCommon;
 $lang->custom->moduleName['productplan'] = '計劃';
 $lang->custom->moduleName['project']     = $lang->projectCommon;
 
-$lang->custom->conceptQuestions['overview']   = "1. 下述哪種組合方式更適合您公司的管理現狀？";
-$lang->custom->conceptQuestions['story']      = "2. 您公司是在使用需求概念還是用戶故事概念？";
-$lang->custom->conceptQuestions['storypoint'] = "3. 您公司是在使用工時還是故事點來做規模估算？";
+$lang->custom->conceptQuestions['overview']         = "1. 下述哪種組合方式更適合您公司的管理現狀？";
+$lang->custom->conceptQuestions['story']            = "2. 您公司是在使用需求概念還是用戶故事概念？";
+$lang->custom->conceptQuestions['requirementpoint'] = "3. 您公司是在使用工時還是功能點來做規模估算？";
+$lang->custom->conceptQuestions['storypoint']       = "3. 您公司是在使用工時還是故事點來做規模估算？";
 
 $lang->custom->conceptOptions = new stdclass;
 
@@ -162,3 +177,4 @@ $lang->custom->conceptOptions->story['1'] = '故事';
 $lang->custom->conceptOptions->hourPoint = array();
 $lang->custom->conceptOptions->hourPoint['0'] = '工時';
 $lang->custom->conceptOptions->hourPoint['1'] = '故事點';
+$lang->custom->conceptOptions->hourPoint['2'] = '功能點';

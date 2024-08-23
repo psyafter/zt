@@ -63,6 +63,8 @@ $lang->user->unlock        = "Entsperren";
 $lang->user->delete        = "Löschen";
 $lang->user->unbind        = "Zdoo verbindung aufheben";
 $lang->user->login         = "Anmelden";
+$lang->user->bind          = "Bind User";
+$lang->user->oauthRegister = "Register a new account";
 $lang->user->mobileLogin   = "Mobil";
 $lang->user->editProfile   = "Bearbeiten";
 $lang->user->deny          = "Zugriff verweigert.";
@@ -214,3 +216,6 @@ $lang->user->noticeResetFile = "<h5>Kontaktieren Sie den Administrator um Ihr Pa
     <li>Die Datei muss leer sein.</li>
     <li>Wenn die Datei bereits existiert löschen Sie diese und erstellen Sie eine neue.</li>
     </ol>";
+$lang->user->notice4Safe = "Warning: Weak password of one click package detected";
+$lang->user->process4DIR = "It is detected that you may be using the one click installation package environment. Other sites in the environment are still using simple passwords. For security reasons, if you do not use other sites, please handle them in time. Delete or rename the %s directory. Visit: <a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";
+$lang->user->process4DB  = "It is detected that you may be using the one click installation package environment. Other sites in the environment are still using simple passwords. For security reasons, if you do not use other sites, please handle them in time. Please login database and modify password field of zt_user table of %s database. Visit: <a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";

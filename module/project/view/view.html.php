@@ -53,7 +53,7 @@
                 <li <?php if($action->major) echo "class='active'";?>>
                   <div class='text-ellipsis'>
                     <span class="timeline-tag"><?php echo $action->date;?></span>
-                    <span class="timeline-text"><?php echo zget($users, $action->actor) . ' ' . $action->actionLabel . $action->objectLabel . ' ' . html::a($action->objectLink, $action->objectName, '', "title='$action->objectName'");?></span>
+                    <span class="timeline-text"><?php echo zget($users, $action->actor) . ' ' . "<span class='label-action'>{$action->actionLabel}</span>" . $action->objectLabel . ' ' . html::a($action->objectLink, $action->objectName, '', "title='$action->objectName'");?></span>
                   </div>
                 </li>
                 <?php endforeach;?>
@@ -102,7 +102,7 @@
                 <?php $j++;?>
                 <?php endforeach;?>
                 <div class="col-xs-6">
-                  <?php common::printLink('project', 'manageMembers', "projectID=$project->id", "<i class='icon icon-plus hl-primary text-primary'></i> &nbsp;" . $lang->project->manageMembers, '', "class='text-muted'");?>
+                  <?php if($canBeChanged) common::printLink('project', 'manageMembers', "projectID=$project->id", "<i class='icon icon-plus hl-primary text-primary'></i> &nbsp;" . $lang->project->manageMembers, '', "class='text-muted'");?>
                 </div>
                 <?php endif;?>
               </div>
@@ -133,7 +133,7 @@
                 <?php $i++;?>
                 <?php endforeach;?>
                 <div class="col-xs-6">
-                  <?php common::printLink('doc', 'createLib', "type=project&objectID=$project->id", "<i class='icon icon-plus hl-primary text-primary'></i> &nbsp;" . $lang->doc->createLib, '', "class='text-muted iframe' data-width='1000px'");?>
+                  <?php if($canBeChanged) common::printLink('doc', 'createLib', "type=project&objectID=$project->id", "<i class='icon icon-plus hl-primary text-primary'></i> &nbsp;" . $lang->doc->createLib, '', "class='text-muted iframe' data-width='1000px'");?>
                 </div>
                 <?php endif;?>
               </div>
@@ -231,7 +231,7 @@
                     <tr class='statsTr'><td class='w-100px'></td><td></td><td></td><td></td></tr>
                     <tr>
                       <td colspan="4">
-                        <?php $progress = ($project->totalConsumed + $project->totalLeft) ? round($project->totalConsumed / ($project->totalConsumed + $project->totalLeft), 3) * 100 : 0;?>
+                        <?php $progress = ($project->totalConsumed + $project->totalLeft) ? floor($project->totalConsumed / ($project->totalConsumed + $project->totalLeft) * 1000) / 1000 * 100 : 0;?>
                         <?php echo $lang->project->progress;?> <em><?php echo $progress . $lang->percent;?></em> &nbsp;
                         <div class="progress inline-block">
                           <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="<?php echo $progress;?>" aria-valuemin="0" aria-valuemax="100" style="width: <?php echo $progress . $lang->percent;?>"></div>
@@ -242,23 +242,23 @@
                       <th><?php echo $lang->project->begin;?></th>
                       <td><?php echo $project->begin;?></td>
                       <th><?php echo $lang->project->totalEstimate;?></th>
-                      <td><em><?php echo $project->totalEstimate . $lang->project->workHour;?></em></td>
+                      <td><em><?php echo (float)$project->totalEstimate . $lang->project->workHour;?></em></td>
                     </tr>
                     <tr>
                       <th><?php echo $lang->project->end;?></th>
                       <td><?php echo $project->end;?></td>
                       <th><?php echo $lang->project->totalConsumed;?></th>
-                      <td><em><?php echo $project->totalConsumed . $lang->project->workHour;?></em></td>
+                      <td><em><?php echo (float)$project->totalConsumed . $lang->project->workHour;?></em></td>
                     </tr>
                     <tr>
                       <th><?php echo $lang->project->totalDays;?></th>
                       <td><?php echo $project->days;?></td>
                       <th><?php echo $lang->project->totalLeft;?></th>
-                      <td><em><?php echo $project->totalLeft . $lang->project->workHour;?></em></td>
+                      <td><em><?php echo (float)$project->totalLeft . $lang->project->workHour;?></em></td>
                     </tr>
                     <tr>
                       <th><?php echo $lang->project->totalHours;?></th>
-                      <td><em><?php echo $project->totalHours . $lang->project->workHour;?></em></td>
+                      <td><em><?php echo (float)$project->totalHours . $lang->project->workHour;?></em></td>
                     </tr>
                   </tbody>
                 </table>

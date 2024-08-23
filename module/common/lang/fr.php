@@ -30,7 +30,7 @@ $lang->aboutZenTao    = 'A Propos';
 $lang->profile        = 'Profil';
 $lang->changePassword = 'Mot de Passe';
 $lang->runInfo        = "<div class='row'><div class='u-1 a-center' id='debugbar'>Time %s MS, Memory %s KB, Query %s.  </div></div>";
-$lang->agreement      = "I have read and agreed to the terms and conditions of <a href='http://zpl.pub/page/zplv12.html' target='_blank'> Z PUBLIC LICENSE 1.2 </a>. <span class='text-danger'>Without authorization, I should not remove, hide or cover any logos/links of ZenTao.</span>";
+$lang->agreement      = "J'ai lu et j'accepte les termes et conditions de la <a href='http://zpl.pub/page/zplv12.html' target='_blank'> Z PUBLIC LICENSE 1.2 </a>. <span class='text-danger'>Sans autorisation, je ne dois pas supprimer, masquer ou couvrir les logos / liens de ZenTao.</span>";
 $lang->designedByAIUX = "<a href='https://api.zentao.pm/goto.php?item=aiux' class='link-aiux' target='_blank'>Designed by <strong>AIUX</strong></a>";
 
 $lang->reset        = 'Réinitialiser';
@@ -58,6 +58,8 @@ $lang->trunk        = 'Tronc';
 $lang->sort         = 'Ordre';
 $lang->required     = 'Obligatoire';
 $lang->noData       = 'No data.';
+$lang->fullscreen   = 'Plein Ecran';
+$lang->retrack      = 'Réduire';
 
 $lang->actions         = 'Action';
 $lang->restore         = 'Réinitialiser';
@@ -80,15 +82,14 @@ $lang->duplicate       = '%s a le même titre que le fichier existant.';
 $lang->ipLimited       = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8' /></head><body>Sorry, your current IP is restricted. PLease contact your Administer to grant your permissions.</body></html>";
 $lang->unfold          = '+';
 $lang->fold            = '-';
-$lang->homepage        = 'Set Home';
+$lang->homepage        = 'Accueil';
 $lang->noviceTutorial  = 'Tutoriel ZenTao';
 $lang->changeLog       = 'Change Log';
-$lang->manual          = 'User Manual';
-$lang->manualUrl       = 'https://www.zentao.pm/book/zentaomanual/zentao-installation-11.html';
+$lang->manual          = 'Manuel Utilisateur';
 $lang->customMenu      = 'Personnalisation Menu';
 $lang->customField     = 'Personnalisation Champ';
 $lang->lineNumber      = 'Ligne No.';
-$lang->tutorialConfirm = 'You are using ZenTao tutorial. Do you want to quit right now？';
+$lang->tutorialConfirm = 'Vous utilisez le didacticiel ZenTao. Voulez-vous quitter maintenant ？';
 
 $lang->preShortcutKey  = '[Shortcut:←]';
 $lang->nextShortcutKey = '[Shortcut:→]';
@@ -98,9 +99,10 @@ $lang->select        = 'Sélectionner';
 $lang->selectAll     = 'Tout sélectionner';
 $lang->selectReverse = "Sélectionner l'inverse";
 $lang->loading       = 'Chargement...';
-$lang->notFound      = 'Not found !';
+$lang->notFound      = 'Non trouvé !';
 $lang->notPage       = 'Désolé, la fonctionnalité que vous souhaitez utiliser est encore en développement !';
 $lang->showAll       = '[[Voir Tout]]';
+$lang->selectedItems = '<strong>{0}</strong> items sélectionnés';
 
 $lang->future       = 'En Attente';
 $lang->year         = 'Année';
@@ -122,7 +124,7 @@ $lang->menu->my      = '<span>Dashboard</span>|my|index';
 $lang->menu->product = $lang->productCommon . '|product|index|locate=no';
 $lang->menu->project = $lang->projectCommon . '|project|index|locate=no';
 $lang->menu->qa      = 'Test|qa|index';
-$lang->menu->repo    = 'Code|repo|log';
+$lang->menu->ci      = 'CI|repo|browse';
 $lang->menu->doc     = 'Doc|doc|index';
 $lang->menu->report  = 'Rapports|report|index';
 $lang->menu->company = 'Entreprise|company|index';
@@ -269,18 +271,24 @@ $lang->build->menu = $lang->project->menu;
 $lang->qa = new stdclass();
 $lang->qa->menu = new stdclass();
 
-$lang->qa->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->qa->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s');
-$lang->qa->menu->testtask  = array('link' => 'Recette|testtask|browse|productID=%s');
-$lang->qa->menu->testsuite = array('link' => 'Cahier Recette|testsuite|browse|productID=%s');
-$lang->qa->menu->report    = array('link' => 'Rapport|testreport|browse|productID=%s');
-$lang->qa->menu->caselib   = array('link' => 'Library Recette|caselib|browse');
+$lang->qa->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,resolve,close,activate,report,batchedit,batchactivate,confirmbug,assignto');
+$lang->qa->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib');
+$lang->qa->menu->testtask  = array('link' => 'Recette|testtask|browse|productID=%s', 'alias' => 'view,create,edit,linkcase,cases,start,close,batchrun,groupcase,report');
+$lang->qa->menu->testsuite = array('link' => 'Cahier Recette|testsuite|browse|productID=%s', 'alias' => 'view,create,edit,linkcase');
+$lang->qa->menu->report    = array('link' => 'Rapport|testreport|browse|productID=%s', 'alias' => 'view,create,edit');
+$lang->qa->menu->caselib   = array('link' => 'Library Recette|caselib|browse', 'alias' => 'create,createcase,view,edit,batchcreatecase,showimport');
+
+$lang->qa->subMenu = new stdclass();
+$lang->qa->subMenu->testcase = new stdclass();
+$lang->qa->subMenu->testcase->feature = array('link' => 'Functional Test|testcase|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'subModule' => 'tree,story');
+$lang->qa->subMenu->testcase->unit    = array('link' => 'Unit Test|testtask|browseUnits|productID=%s');
 
 $lang->bug = new stdclass();
 $lang->bug->menu = new stdclass();
+$lang->bug->subMenu = $lang->qa->subMenu;
 
 $lang->bug->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,resolve,close,activate,report,batchedit,batchactivate,confirmbug,assignto', 'subModule' => 'tree');
-$lang->bug->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s');
+$lang->bug->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover');
 $lang->bug->menu->testtask  = array('link' => 'Recette|testtask|browse|productID=%s');
 $lang->bug->menu->testsuite = array('link' => 'Cahier Recette|testsuite|browse|productID=%s');
 $lang->bug->menu->report    = array('link' => 'Rapport|testreport|browse|productID=%s');
@@ -288,8 +296,9 @@ $lang->bug->menu->caselib   = array('link' => 'Library Recette|caselib|browse');
 
 $lang->testcase = new stdclass();
 $lang->testcase->menu = new stdclass();
+$lang->testcase->subMenu = $lang->qa->subMenu;
 $lang->testcase->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->testcase->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'subModule' => 'tree');
+$lang->testcase->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'subModule' => 'tree', 'class' => 'dropdown dropdown-hover');
 $lang->testcase->menu->testtask  = array('link' => 'Recette|testtask|browse|productID=%s');
 $lang->testcase->menu->testsuite = array('link' => 'Cahier Recette|testsuite|browse|productID=%s');
 $lang->testcase->menu->report    = array('link' => 'Rapport|testreport|browse|productID=%s');
@@ -297,8 +306,9 @@ $lang->testcase->menu->caselib   = array('link' => 'Library Recette|caselib|brow
 
 $lang->testtask = new stdclass();
 $lang->testtask->menu = new stdclass();
+$lang->testtask->subMenu = $lang->qa->subMenu;
 $lang->testtask->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->testtask->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s');
+$lang->testtask->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover');
 $lang->testtask->menu->testtask  = array('link' => 'Recette|testtask|browse|productID=%s', 'alias' => 'view,create,edit,linkcase,cases,start,close,batchrun,groupcase,report');
 $lang->testtask->menu->testsuite = array('link' => 'Cahier Recette|testsuite|browse|productID=%s');
 $lang->testtask->menu->report    = array('link' => 'Rapport|testreport|browse|productID=%s');
@@ -306,8 +316,9 @@ $lang->testtask->menu->caselib   = array('link' => 'Library Recette|caselib|brow
 
 $lang->testsuite = new stdclass();
 $lang->testsuite->menu = new stdclass();
+$lang->testsuite->subMenu = $lang->qa->subMenu;
 $lang->testsuite->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->testsuite->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s');
+$lang->testsuite->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover');
 $lang->testsuite->menu->testtask  = array('link' => 'Recette|testtask|browse|productID=%s');
 $lang->testsuite->menu->testsuite = array('link' => 'Cahier Recette|testsuite|browse|productID=%s', 'alias' => 'view,create,edit,linkcase');
 $lang->testsuite->menu->report    = array('link' => 'Rapport|testreport|browse|productID=%s');
@@ -315,8 +326,9 @@ $lang->testsuite->menu->caselib   = array('link' => 'Library Recette|caselib|bro
 
 $lang->testreport = new stdclass();
 $lang->testreport->menu = new stdclass();
+$lang->testreport->subMenu = $lang->qa->subMenu;
 $lang->testreport->menu->bug       = array('link' => 'Bug|bug|browse|productID=%s');
-$lang->testreport->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s');
+$lang->testreport->menu->testcase  = array('link' => 'CasTest|testcase|browse|productID=%s', 'class' => 'dropdown dropdown-hover');
 $lang->testreport->menu->testtask  = array('link' => 'Recette|testtask|browse|productID=%s');
 $lang->testreport->menu->testsuite = array('link' => 'Cahier Recette|testsuite|browse|productID=%s');
 $lang->testreport->menu->report    = array('link' => 'Rapport|testreport|browse|productID=%s', 'alias' => 'view,create,edit');
@@ -325,17 +337,33 @@ $lang->testreport->menu->caselib   = array('link' => 'Library Recette|caselib|br
 $lang->caselib = new stdclass();
 $lang->caselib->menu = new stdclass();
 $lang->caselib->menu->bug       = array('link' => 'Bug|bug|browse|');
-$lang->caselib->menu->testcase  = array('link' => 'CasTest|testcase|browse|');
+$lang->caselib->menu->testcase  = array('link' => 'CasTest|testcase|browse|', 'class' => 'dropdown dropdown-hover');
 $lang->caselib->menu->testtask  = array('link' => 'Recette|testtask|browse|');
 $lang->caselib->menu->testsuite = array('link' => 'Cahier Recette|testsuite|browse|');
 $lang->caselib->menu->report    = array('link' => 'Rapport|testreport|browse|');
 $lang->caselib->menu->caselib   = array('link' => 'Library Recette|caselib|browse|libID=%s', 'alias' => 'create,createcase,view,edit,batchcreatecase,showimport', 'subModule' => 'tree,testcase');
 
-$lang->repo = new stdclass();
-$lang->repo->menu = new stdclass();
-$lang->repo->menu->browse   = array('link' =>'Browse|repo|log|repoID=%s&entry=', 'alias' => 'diff,view,revision,showsynccomment');
-$lang->repo->menu->settings = 'Settings|repo|settings|repoID=%s';
-$lang->repo->menu->delete   = array('link' => 'Delete|repo|delete|repoID=%s', 'target' => 'hiddenwin');
+$lang->caselib->subMenu = new stdclass();
+$lang->caselib->subMenu->testcase = new stdclass();
+$lang->caselib->subMenu->testcase->feature = array('link' => 'Functional Test|testcase|browse|', 'alias' => 'view,create,batchcreate,edit,batchedit,showimport,groupcase,importfromlib', 'subModule' => 'tree,story');
+$lang->caselib->subMenu->testcase->unit    = array('link' => 'Unit Test|testtask|browseUnits|');
+
+$lang->ci = new stdclass();
+$lang->ci->menu = new stdclass();
+$lang->ci->menu->code     = array('link' => 'Code|repo|browse|repoID=%s', 'alias' => 'diff,view,revision,log,blame,showsynccomment');
+$lang->ci->menu->build    = array('link' => 'Build|job|browse', 'subModule' => 'compile,job');
+$lang->ci->menu->jenkins  = array('link' => 'Jenkins|jenkins|browse', 'alias' => 'create,edit');
+$lang->ci->menu->maintain = array('link' => 'Repo|repo|maintain', 'alias' => 'create,edit');
+$lang->ci->menu->rules    = array('link' => 'Rule|repo|setrules');
+
+$lang->repo          = new stdclass();
+$lang->jenkins       = new stdclass();
+$lang->compile       = new stdclass();
+$lang->job           = new stdclass();
+$lang->repo->menu    = $lang->ci->menu;
+$lang->jenkins->menu = $lang->ci->menu;
+$lang->compile->menu = $lang->ci->menu;
+$lang->job->menu     = $lang->ci->menu;
 
 /* Doc menu settings. */
 $lang->doc = new stdclass();
@@ -349,7 +377,7 @@ $lang->git = new stdclass();
 $lang->report = new stdclass();
 $lang->report->menu = new stdclass();
 
-$lang->report->menu->annual  = array('link' => 'Annual Summary|report|annualData', 'target' => '_blank');
+$lang->report->menu->annual  = array('link' => 'Annual Summary|report|annualData|year=&dept=&userID=' . (isset($_SESSION['user']) ? zget($_SESSION['user'], 'id', 0) : 0), 'target' => '_blank');
 $lang->report->menu->product = array('link' => $lang->productCommon . '|report|productsummary');
 $lang->report->menu->prj     = array('link' => $lang->projectCommon . '|report|projectdeviation');
 $lang->report->menu->test    = array('link' => 'Recette|report|bugcreate', 'alias' => 'bugassign');
@@ -380,9 +408,9 @@ $lang->admin = new stdclass();
 $lang->admin->menu = new stdclass();
 $lang->admin->menu->index     = array('link' => 'Accueil|admin|index', 'alias' => 'register,certifytemail,certifyztmobile,ztcompany');
 $lang->admin->menu->message   = array('link' => 'Notification|message|index', 'subModule' => 'message,mail,webhook');
-$lang->admin->menu->custom    = array('link' => 'Personnalisation|custom|set', 'subModule' => 'custom');
+$lang->admin->menu->custom    = array('link' => 'Personnalisation|custom|index', 'subModule' => 'custom');
 $lang->admin->menu->sso       = array('link' => 'Intégration|admin|sso');
-
+$lang->admin->menu->extension = array('link' => 'Extension|extension|browse', 'subModule' => 'extension');
 $lang->admin->menu->dev       = array('link' => 'Dévelop.|dev|api', 'alias' => 'db', 'subModule' => 'dev,entry');
 $lang->admin->menu->translate = array('link' => 'Traduire|dev|translate');
 $lang->admin->menu->data      = array('link' => 'Données|backup|index', 'subModule' => 'backup,action');
@@ -475,32 +503,38 @@ $lang->menugroup->entry       = 'admin';
 $lang->menugroup->webhook     = 'admin';
 $lang->menugroup->message     = 'admin';
 
+$lang->menugroup->repo    = 'ci';
+$lang->menugroup->jenkins = 'ci';
+$lang->menugroup->compile = 'ci';
+$lang->menugroup->job     = 'ci';
+
 /* Error info. */
 $lang->error = new stdclass();
-$lang->error->companyNotFound = "The domain %s cannot be found!";
-$lang->error->length          = array("『 %s 』length error. It should be『%s』", "『%s』length should be <=『%s』and >『%s』.");
-$lang->error->reg             = "『 %s 』format error. It should be『%s』.";
-$lang->error->unique          = "『 %s 』『 %s 』exists. Go to Admin->Recycle Bin to restore it, if you are sure it is deleted.";
-$lang->error->gt              = "『 %s 』should be > 『 %s 』.";
-$lang->error->ge              = "『 %s 』should be >= 『 %s 』.";
-$lang->error->notempty        = "『 %s 』should not be blank.";
-$lang->error->empty           = "『 %s 』should be null.";
-$lang->error->equal           = "『 %s 』has to be 『 %s 』.";
-$lang->error->int             = array("『 %s 』should be numbers", "『 %s 』should be 『 %s-%s 』.");
-$lang->error->float           = "『 %s 』should have numbers, or decimals.";
-$lang->error->email           = "『 %s 』should be valid Email.";
-$lang->error->URL             = "『 %s 』should be url.";
-$lang->error->date            = "『%s』should be valid date.";
-$lang->error->datetime        = "『 %s 』should be valid date.";
-$lang->error->code            = "『 %s 』should be letters or numbers.";
-$lang->error->account         = "『 %s 』should be >= 3 letters or numbers.";
-$lang->error->passwordsame    = "Passwords should be consistent.";
-$lang->error->passwordrule    = "Password should conform to rules. It should be >= 6 characters.";
-$lang->error->accessDenied    = 'Access is denied.';
-$lang->error->pasteImg        = 'Images are not allowed to be pasted in your browser!';
+$lang->error->companyNotFound = "Le domaine %s ne peut être trouvé !";
+$lang->error->length          = array("『 %s 』erreur de longueur. Il devrait être『%s』", "La longueur de 『%s』devrait être <=『%s』et >『%s』.");
+$lang->error->reg             = "『 %s 』erreur de format. Il devrait être『%s』.";
+$lang->error->unique          = "『 %s 』『 %s 』existes. Allez à Admin->Recycle Bin pour le restaurer, si vous êtes sûr qu'il est supprimé.";
+$lang->error->gt              = "『 %s 』devrait être > 『 %s 』.";
+$lang->error->ge              = "『 %s 』devrait être >= 『 %s 』.";
+$lang->error->notempty        = "『 %s 』ne devrait pas être à blanc.";
+$lang->error->empty           = "『 %s 』devrait être nul.";
+$lang->error->equal           = "『 %s 』doit être 『 %s 』.";
+$lang->error->int             = array("『 %s 』devrait être des nombres", "『 %s 』devrait être 『 %s-%s 』.");
+$lang->error->float           = "『 %s 』devrait avoir des nombres ou des décimales.";
+$lang->error->email           = "『 %s 』doit être une adresse mail valide.";
+$lang->error->URL             = "『 %s 』doit être une url.";
+$lang->error->date            = "『%s』doit être une date valide.";
+$lang->error->datetime        = "『 %s 』doit être une date valide.";
+$lang->error->code            = "『 %s 』doit être des lettres ou des chiffres.";
+$lang->error->account         = "『 %s 』doit être >= 3 lettres ou chiffres.";
+$lang->error->passwordsame    = "Les mots de passe doivent être cohérents.";
+$lang->error->passwordrule    = "Le mot de passe doit être conforme aux règles. Il devrait être >= 6 caractères.";
+$lang->error->accessDenied    = 'Accès refusé.';
+$lang->error->pasteImg        = 'Les images ne peuvent pas être collées dans votre navigateur !';
 $lang->error->noData          = 'No data.';
-$lang->error->editedByOther   = 'This record might have been changed. Please refresh and try to edit again!';
-$lang->error->tutorialData    = 'No data can be imported in tutorial mode. Please quit tutorial first!';
+$lang->error->editedByOther   = 'Cet enregistrement a peut-être été modifié. Veuillez actualiser et réessayer !';
+$lang->error->tutorialData    = "Aucune donnée ne peut être importée en mode tutoriel. Veuillez d'abord quitter le didacticiel !";
+$lang->error->noCurlExt       = 'Aucun module Curl installé';
 
 /* Page info. */
 $lang->pager = new stdclass();
@@ -530,24 +564,23 @@ $lang->colorPicker = new stdclass();
 $lang->colorPicker->errorTip = "Ce n'est pas une valeur de couleur valide";
 
 $lang->proVersion     = "<a href='https://www.zentao.pm/book/zentaopromanual/free-open-source-project-management-software-zentaopro-127.html' target='_blank' id='proLink' class='text-important'>ZenTao Pro <i class='text-danger icon-pro-version'></i></a> &nbsp; ";
-$lang->downNotify     = "Download Desktop Notification";
-$lang->downloadClient = "Download ZenTao Desktop";
-$lang->clientHelp     = "Client Help";
+$lang->downNotify     = "Télécharger la notification sur le bureau";
+$lang->downloadClient = "Télécharger ZenTao Desktop";
+$lang->clientHelp     = "Aide Client";
 $lang->clientHelpLink = "https://www.zentao.pm/book/zentaomanual/scrum-tool-im-integration-206.html";
 $lang->website        = "https://www.zentao.pm";
 
-$lang->suhosinInfo     = "Warning ! Data is reaching the limit. Please change <font color=red>sohusin.post.max_vars</font> and <font color=red>sohusin.request.max_vars</font> (set larger %s value) in php.ini, then save and restart Apache or php-fpm, or some data will not be saved.";
-$lang->maxVarsInfo     = "Warning ! Data is reaching the limit. Please change <font color=red>max_input_vars</font> (set larger %s value) in php.ini, then save and restart Apache or php-fpm, or some data will not be saved.";
+$lang->suhosinInfo     = "Avertissement ! Les données atteignent la limite. Veuillez changer <font color=red>sohusin.post.max_vars</font> et <font color=red>sohusin.request.max_vars</font> (set larger %s value) dans php.ini, puis relancez Apache ou php-fpm, ou des données ne seront pas sauvegardées.";
+$lang->maxVarsInfo     = "Avertissement ! Les données atteignent la limite. Veuillez changer <font color=red>max_input_vars</font> (set larger %s value) dans php.ini, puis relancez Apache ou php-fpm, ou des données ne seront pas sauvegardées.";
 $lang->pasteTextInfo   = "Collez le texte ici. Chaque ligne sera un titre. ";
 $lang->noticeImport    = "Les données importées contiennent des données qui existent déjà dans le système. Confirmez s'il vous plait cette action.";
 $lang->importConfirm   = "Importer";
 $lang->importAndCover  = "Ecraser";
 $lang->importAndInsert = "Inserer";
 
-$lang->noResultsMatch     = "Aucun résults trouvé !";
-$lang->searchMore         = "Plus de résults ：";
+$lang->noResultsMatch     = "Aucun résultat trouvé !";
+$lang->searchMore         = "Plus de résultats ：";
 $lang->chooseUsersToMail  = "Choisissez les utilisateurs à avertir.";
-$lang->browserNotice      = "Le navigateur que vous utilisez actuellement peut ne pas vous afficher les résultats correctement. Il est recommandé d'utiliser Chrome, Palemoon, Firefox, IE9+, Opera or Safari.";
 $lang->noticePasteImg     = "Vous pouvez déposer des images dans l'éditeur.";
 $lang->pasteImgFail       = "Echec lors de la dépose des images. Essayez plus tard.";
 $lang->pasteImgUploading  = "Chargement...";
@@ -670,7 +703,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyStory')
 
     unset($lang->menuOrder[15]);
     unset($lang->menuOrder[20]);
-    unset($lang->menuOrder[30]);
+    unset($lang->menuOrder[35]);
 
     /* Adjust sub menu of my dashboard. */
     unset($lang->my->menu->bug);
@@ -706,7 +739,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTask')
 
     unset($lang->menuOrder[10]);
     unset($lang->menuOrder[20]);
-    unset($lang->menuOrder[30]);
+    unset($lang->menuOrder[35]);
 
     /* Adjust sub menu of my dashboard. */
     unset($lang->my->menu->bug);
@@ -743,7 +776,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTest')
 
     unset($lang->menuOrder[15]);
     unset($lang->menuOrder[20]);
-    unset($lang->menuOrder[30]);
+    unset($lang->menuOrder[35]);
 
     /* Rename product module. */
     $lang->menu->product = "{$lang->productCommon}|product|index";
@@ -761,17 +794,19 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTest')
 
     /* Add bug, testcase and testtask module. */
     $lang->menu->bug       = 'Bug|bug|index';
-    $lang->menu->testcase  = 'CasTest|testcase|index';
+    $lang->menu->testcase  = 'Tests Fonctionnels|testcase|index';
+    $lang->menu->unit      = 'Unité de Test|testtask|browseUnits';
     $lang->menu->testsuite = 'Cahier de Recette|testsuite|index';
     $lang->menu->testtask  = 'Recette|testtask|index';
     $lang->menu->caselib   = 'Library Recette|caselib|browse';
 
     $lang->menuOrder[6]  = 'bug';
     $lang->menuOrder[7]  = 'testcase';
-    $lang->menuOrder[8]  = 'testsuite';
-    $lang->menuOrder[9]  = 'testtask';
-    $lang->menuOrder[10] = 'caselib';
-    $lang->menuOrder[11] = 'product';
+    $lang->menuOrder[8]  = 'unit';
+    $lang->menuOrder[9]  = 'testsuite';
+    $lang->menuOrder[10] = 'testtask';
+    $lang->menuOrder[11] = 'caselib';
+    $lang->menuOrder[12] = 'product';
 
     /* Adjust sub menu of bug module. */
     $lang->bug->menu = new stdclass();
@@ -883,6 +918,7 @@ if(isset($config->global->flow) and $config->global->flow == 'onlyTest')
     /* Adjust menu group. */
     $lang->menugroup->bug        = 'bug';
     $lang->menugroup->testcase   = 'testcase';
+    $lang->menugroup->case       = 'testcase';
     $lang->menugroup->testtask   = 'testtask';
     $lang->menugroup->testsuite  = 'testsuite';
     $lang->menugroup->caselib    = 'caselib';

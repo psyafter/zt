@@ -47,7 +47,7 @@ $lang->task->case                = '相关用例';
 $lang->task->confirmStoryChange  = "确认{$lang->storyCommon}变动";
 $lang->task->storyChange         = "{$lang->storyCommon}变更";
 $lang->task->progress            = '进度';
-$lang->task->progressAB          = '%';
+$lang->task->progressAB          = '进度';
 $lang->task->progressTips        = '已消耗/(已消耗+剩余)';
 $lang->task->copy                = '复制任务';
 $lang->task->waitTask            = '未开始的任务';
@@ -189,6 +189,7 @@ $lang->task->confirmChangeProject  = "修改{$lang->projectCommon}会导致相�
 $lang->task->confirmFinish         = '"预计剩余"为0，确认将任务状态改为"已完成"吗？';
 $lang->task->confirmRecord         = '"剩余"为0，任务将标记为"已完成"，您确定吗？';
 $lang->task->confirmTransfer       = '"当前剩余"为0，任务将被转交，您确定吗？';
+$lang->task->noticeTaskStart       = '"总计消耗"和"预计剩余"不能同时为0';
 $lang->task->noticeLinkStory       = "没有可关联的相关{$lang->storyCommon}，您可以为当前项目%s，然后%s";
 $lang->task->noticeSaveRecord      = '您有尚未保存的工时记录，请先将其保存。';
 $lang->task->commentActions        = '%s. %s, 由 <strong>%s</strong> 添加备注。';
@@ -196,10 +197,13 @@ $lang->task->deniedNotice          = '当前任务只有%s才可以%s。';
 $lang->task->noTask                = '暂时没有任务。';
 $lang->task->createDenied          = '你不能在该项目添加任务';
 $lang->task->cannotDeleteParent    = '不能删除父任务。';
+$lang->task->addChildTask          = '因该任务已经产生消耗，为保证数据一致性，我们会帮您创建一条同名子任务记录该消耗。';
 
 $lang->task->error                   = new stdclass();
+$lang->task->error->totalNumber      = '"总计消耗"必须为数字';
 $lang->task->error->consumedNumber   = '"本次消耗"必须为数字';
-$lang->task->error->estimateNumber   = '"预计剩余"必须为数字';
+$lang->task->error->estimateNumber   = '"最初预计"必须为数字';
+$lang->task->error->leftNumber       = '"预计剩余"必须为数字';
 $lang->task->error->recordMinus      = '工时不能为负数';
 $lang->task->error->consumedSmall    = '"总计消耗"必须大于之前消耗';
 $lang->task->error->consumedThisTime = '请填写"工时"';
@@ -208,8 +212,10 @@ $lang->task->error->work             = '"备注"必须小于%d个字符';
 $lang->task->error->skipClose        = '任务：%s 不是“已完成”或“已取消”状态，确定要关闭吗？';
 $lang->task->error->consumed         = '任务：%s工时不能小于0，忽略该任务工时的改动';
 $lang->task->error->assignedTo       = '当前状态的多人任务不能指派给任务团队外的成员。';
-$lang->task->error->consumedEmpty    = '"本次消耗"不能为空';
+$lang->task->error->consumedEmpty    = '"本次消耗"不能为0';
 $lang->task->error->deadlineSmall    = '"截止日期"必须大于"预计开始"';
+$lang->task->error->alreadyStarted   = '此任务已被启动，不能重复启动！';
+$lang->task->error->alreadyConsumed  = '当前选中的父任务已有消耗。';
 
 /* Report. */
 $lang->task->report         = new stdclass();
@@ -295,3 +301,6 @@ $lang->task->report->tasksPerClosedReason->graph->xAxisName = '关闭原因';
 
 $lang->task->report->finishedTasksPerDay->type             = 'bar';
 $lang->task->report->finishedTasksPerDay->graph->xAxisName = '日期';
+
+$lang->taskestimate           = new stdclass();
+$lang->taskestimate->consumed = '工时';

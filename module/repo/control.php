@@ -29,7 +29,6 @@ class repo extends control
 
         $this->scm = $this->app->loadClass('scm');
         $this->repos = $this->repo->getRepoPairs();
-        if(common::hasPriv('repo', 'create')) $this->lang->modulePageActions = html::a(helper::createLink('repo', 'create'), "<i class='icon icon-plus'></i> " . $this->lang->repo->create, '', "class='btn btn-primary'");
         if(empty($this->repos) and $this->methodName != 'create') die(js::locate($this->repo->createLink('create')));
 
         /* Unlock session for wait to get data of repo. */
@@ -37,54 +36,105 @@ class repo extends control
     }
 
     /**
-     * Create repo. 
-     * 
+     * List all repo.
+     *
+     * @param  string $orderBy
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
+     * @access public
+     * @return void
+     */
+    public function maintain($orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    {
+        $repoID = $this->session->repoID;
+        $this->repo->setMenu($this->repos, $repoID, false);
+        if(common::hasPriv('repo', 'create')) $this->lang->TRActions = html::a(helper::createLink('repo', 'create'), "<i class='icon icon-plus'></i> " . $this->lang->repo->create, '', "class='btn btn-primary'");
+
+        $this->app->loadClass('pager', $static = true);
+        $pager = new pager($recTotal, $recPerPage, $pageID);
+
+        $this->view->repoList   = $this->repo->getList($orderBy, $pager);
+
+        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->browse;
+        $this->view->position[] = $this->lang->repo->common;
+        $this->view->position[] = $this->lang->repo->browse;
+
+        $this->view->repoID    = $repoID;
+        $this->view->orderBy    = $orderBy;
+        $this->view->pager      = $pager;
+
+        $this->display();
+    }
+
+    /**
+     * Create a repo.
+     *
      * @access public
      * @return void
      */
     public function create()
     {
-        $this->repo->setMenu($this->repos);
-        if(!empty($_POST))
+        if($_POST)
         {
             $repoID = $this->repo->create();
-            if(dao::isError()) die(js::error(dao::getError()));
-            die(js::locate($this->repo->createLink('showSyncComment', "repoID=$repoID"), 'parent'));
+
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
+
+            $link = $this->repo->createLink('showSyncCommit', "repoID=$repoID");
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $link));
         }
 
-        $this->view->title  = $this->lang->repo->create;
+        $this->repo->setMenu($this->repos, '', false);
+        $this->app->loadLang('action');
+
         $this->view->groups = $this->loadModel('group')->getPairs();
         $this->view->users  = $this->loadModel('user')->getPairs('noletter|noempty|nodeleted');
+
+        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->create;
+        $this->view->position[] = html::a(inlink('maintain'), $this->lang->repo->common);
+        $this->view->position[] = $this->lang->repo->create;
+
         $this->display();
     }
 
     /**
-     * Set repo. 
-     * 
-     * @param  int    $repoID 
+     * Edit a repo.
+     *
+     * @param  int $repoID
      * @access public
      * @return void
      */
-    public function settings($repoID = 0)
+    public function edit($repoID)
     {
-        $this->repo->setMenu($this->repos, $repoID);
-        if($repoID == 0) $repoID = $this->session->repoID;
-        if(!empty($_POST))
+        $repo = $this->repo->getRepoByID($repoID);
+        if($_POST)
         {
-            $needSync = $this->repo->saveSettings($repoID);
-            if(dao::isError()) die(js::error(dao::getError()));
-            if(!$needSync)
+            $noNeedSync = $this->repo->update($repoID);
+            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
+
+            if(!$noNeedSync)
             {
-                die(js::locate($this->repo->createLink('showSyncComment', "repoID=$repoID"), 'parent'));
+                $link = $this->repo->createLink('showSyncCommit', "repoID=$repoID");
+                $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $link));
             }
-            die(js::locate($this->repo->createLink('log', "repoID=$repoID"), 'parent'));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('maintain')));
         }
 
-        $this->view->title  = $this->lang->repo->settings;
-        $this->view->repo   = $this->repo->getRepoByID($repoID);
+        $this->repo->setMenu($this->repos, $repo->id, false);
+        $this->app->loadLang('action');
+
+        $repo->repoType     = $repo->id . '-' . $repo->SCM;
+        $this->view->repo   = $repo;
+        $this->view->repoID = $repoID;
         $this->view->groups = $this->loadModel('group')->getPairs();
-        $this->view->users  = $this->loadModel('user')->getPairs('noletter|noempty|nodeleted', !empty($repo->acl->users) ? $repo->acl->users : '');
-        $this->display(); 
+        $this->view->users  = $this->loadModel('user')->getPairs('noletter|noempty|nodeleted');
+
+        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->edit;
+        $this->view->position[] = html::a(inlink('maintain'), $this->lang->repo->common);
+        $this->view->position[] = $this->lang->repo->edit;
+
+        $this->display();
     }
 
     /**
@@ -101,12 +151,14 @@ class repo extends control
         {
             die(js::confirm($this->lang->repo->notice->delete, $this->repo->createLink('delete', "repoID=$repoID&confirm=yes")));
         }
+
         $this->dao->delete()->from(TABLE_REPO)->where('id')->eq($repoID)->exec();
         $this->dao->delete()->from(TABLE_REPOHISTORY)->where('repo')->eq($repoID)->exec();
         $this->dao->delete()->from(TABLE_REPOFILES)->where('repo')->eq($repoID)->exec();
         $this->dao->delete()->from(TABLE_REPOBRANCH)->where('repo')->eq($repoID)->exec();
-        echo js::alert($this->lang->repo->notice->successDelete);
-        die(js::locate($this->repo->createLink('log'), 'parent'));
+
+        if(dao::isError()) die(js::error(dao::getError()));
+        die(js::reload('parent'));
     }
 
     /**
@@ -122,10 +174,18 @@ class repo extends control
      */
     public function view($repoID, $entry, $revision = 'HEAD', $showBug = 'false', $encoding = '')
     {
-        if($this->get->entry) $entry = $this->get->entry;
+        if($this->get->repoPath) $entry = $this->get->repoPath;
         $this->repo->setMenu($this->repos, $repoID);
         $this->repo->setBackSession('view', $withOtherModule = true);
         if($repoID == 0) $repoID = $this->session->repoID;
+
+        if($_POST)
+        {
+            $oldRevision = isset($this->post->revision[1]) ? $this->post->revision[1] : '';
+            $newRevision = isset($this->post->revision[0]) ? $this->post->revision[0] : '';
+
+            $this->locate($this->repo->createLink('diff', "repoID=$repoID&entry=$entry&oldrevision=$oldRevision&newRevision=$newRevision"));
+        }
 
         $file  = $entry;
         $repo  = $this->repo->getRepoByID($repoID);
@@ -133,7 +193,8 @@ class repo extends control
 
         $this->scm->setEngine($repo);
         $info = $this->scm->info($entry, $revision);
-        if($info->kind == 'dir') $this->locate($this->repo->createLink('browse', "repoID=$repoID&path=&revision=$revision", "path=" . $this->repo->encodePath($info->path)));
+        $path = $entry ? $info->path : '';
+        if($info->kind == 'dir') $this->locate($this->repo->createLink('browse', "repoID=$repoID&path=" . $this->repo->encodePath($path) . "&revision=$revision"));
         $content  = $this->scm->cat($entry, $revision);
         $entry    = urldecode($entry);
         $pathInfo = pathinfo($entry); 
@@ -158,7 +219,7 @@ class repo extends control
 
         $commiters = $this->loadModel('user')->getCommiters();
         $logType   = 'file';
-        $revisions = $this->repo->getLogs($repo, '/' . $entry, 'HEAD', $logType, $pager);
+        $revisions = $this->repo->getCommits($repo, '/' . $entry, 'HEAD', $logType, $pager);
 
         $i = 0;
         foreach($revisions as $log)
@@ -193,6 +254,9 @@ class repo extends control
         $this->view->logType      = $logType;
         $this->view->info         = $info;
 
+        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->view;
+        $this->view->position[] = $this->lang->repo->common;
+        $this->view->position[] = $this->lang->repo->view;
         $this->display();
     }
 
@@ -208,8 +272,106 @@ class repo extends control
      */
     public function browse($repoID = 0, $path = '', $revision = 'HEAD', $refresh = 0)
     {
-        if($this->get->path) $path = $this->get->path;
-        $this->locate($this->repo->createLink('log', "repoID=$repoID&entry=&revision=$revision", empty($path) ? '' : "entry=$path"));
+        /* Get path and refresh. */
+        if($this->get->repoPath) $path = $this->get->repoPath;
+        if(empty($refresh) and $this->cookie->repoRefresh) $refresh = $this->cookie->repoRefresh;
+
+        /* Set menu and session. */
+        $this->repo->setMenu($this->repos, $repoID);
+        $this->repo->setBackSession('list', $withOtherModule = true);
+        if($repoID == 0) $repoID = $this->session->repoID;
+
+        /* Get repo and synchronous commit. */
+        $repo = $this->repo->getRepoByID($repoID);
+        if(!$repo->synced) $this->locate($this->repo->createLink('showSyncCommit', "repoID=$repoID"));
+
+        /* Decrypt path and get cacheFile. */
+        $path      = $this->repo->decodePath($path);
+        $cacheFile = $this->repo->getCacheFile($repoID, $path, $revision);
+        $this->scm->setEngine($repo);
+
+        /* Load pager. */
+        $this->app->loadClass('pager', $static = true);
+        $pager = new pager(0, 8, 1);
+
+        if($_POST)
+        {
+            $oldRevision = isset($this->post->revision[1]) ? $this->post->revision[1] : '';
+            $newRevision = isset($this->post->revision[0]) ? $this->post->revision[0] : '';
+
+            $this->locate($this->repo->createLink('diff', "repoID=$repoID&entry=" . $this->repo->encodePath($path) . "&oldrevision=$oldRevision&newRevision=$newRevision"));
+        }
+
+        /* Cache infos. */
+        if($refresh or !$cacheFile or !file_exists($cacheFile) or (time() - filemtime($cacheFile)) / 60 > $this->config->repo->cacheTime)
+        {
+            /* Get cache infos. */
+            $infos = $this->scm->ls($path, $revision);
+
+            if($infos)
+            {
+                /* Update code commit history. */
+                $commentGroup = $this->loadModel('job')->getTriggerGroup('commit', array($repo->id));
+
+                if($refresh and $repo->SCM == 'Git')
+                {
+                    $branch = $this->cookie->repoBranch;
+                    $this->loadModel('git')->updateCommit($repo, $commentGroup, false);
+                    $_COOKIE['repoBranch'] = $branch;
+                }
+                if($refresh and $repo->SCM == 'Subversion') $this->loadModel('svn')->updateCommit($repo, $commentGroup, false);
+
+                $revisionList = array();
+                foreach($infos as $info) $revisionList[$info->revision] = $info->revision;
+                $comments = $this->repo->getHistory($repoID, $revisionList);
+                foreach($infos as $info)
+                {
+                    if(isset($comments[$info->revision]))
+                    {
+                        $comment = $comments[$info->revision];
+                        $info->comment = $comment->comment;
+                    }
+                }
+            }
+
+            if($cacheFile)
+            {
+                if(!file_exists($cacheFile . '.lock'))
+                {
+                    touch($cacheFile .  '.lock');
+                    file_put_contents($cacheFile, serialize($infos));
+                    unlink($cacheFile . '.lock');
+                }
+            }
+        }
+        else
+        {
+            $infos = unserialize(file_get_contents($cacheFile));
+        }
+        if($this->cookie->repoRefresh) setcookie('repoRefresh', 0, 0, $this->config->webRoot);
+
+        /* Set logType and revisions and synchronous commit. */
+        $logType   = 'dir';
+        $revisions = $this->repo->getCommits($repo, $path, $revision, $logType, $pager);
+        if($repo->SCM == 'Git' and $infos and empty($revisions)) $this->locate($this->repo->createLink('showSyncCommit', "repoID=$repoID&branch=" . base64_encode($this->cookie->repoBranch)));
+
+        /* Set committers. */
+        $commiters = $this->loadModel('user')->getCommiters();
+        foreach($infos as $info) $info->committer = zget($commiters, $info->account, $info->account);
+        foreach($revisions as $log) $log->committer = zget($commiters, $log->committer, $log->committer);
+
+        $this->view->title     = $this->lang->repo->common;
+        $this->view->repo      = $repo;
+        $this->view->revisions = $revisions;
+        $this->view->revision  = $revision;
+        $this->view->infos     = $infos;
+        $this->view->repoID    = $repoID;
+        $this->view->pager     = $pager;
+        $this->view->path      = urldecode($path);
+        $this->view->logType   = $logType;
+        $this->view->cacheTime = date('m-d H:i', filemtime($cacheFile));
+
+        $this->display();
     }
 
     /**
@@ -227,9 +389,9 @@ class repo extends control
      */
     public function log($repoID = 0, $entry = '', $revision = 'HEAD', $type = 'dir', $recTotal = 0, $recPerPage = 50, $pageID = 1)
     {
-        if($this->get->entry) $entry = $this->get->entry;
+        if($this->get->repoPath) $entry = $this->get->repoPath;
         $this->repo->setMenu($this->repos, $repoID);
-        $this->repo->setBackSession('list', $withOtherModule = true);
+        $this->repo->setBackSession('log', $withOtherModule = true);
         if($repoID == 0) $repoID = $this->session->repoID;
 
         $repo  = $this->repo->getRepoByID($repoID);
@@ -239,10 +401,18 @@ class repo extends control
         $this->app->loadClass('pager', $static = true);
         $pager = new pager($recTotal, $recPerPage, $pageID);
 
+        if($_POST)
+        {
+            $oldRevision = isset($this->post->revision[1]) ? $this->post->revision[1] : '';
+            $newRevision = isset($this->post->revision[0]) ? $this->post->revision[0] : '';
+
+            $this->locate($this->repo->createLink('diff', "repoID=$repoID&entry=" . $this->repo->encodePath($path) . "&oldrevision=$oldRevision&newRevision=$newRevision"));
+        }
+
         $this->scm->setEngine($repo);
         $info = $this->scm->info($entry, $revision);
 
-        $logs      = $this->repo->getLogs($repo, $entry, $revision, $type, $pager);
+        $logs      = $this->repo->getCommits($repo, $entry, $revision, $type, $pager);
         $commiters = $this->loadModel('user')->getCommiters();
         foreach($logs as $log) $log->committer = zget($commiters, $log->committer, $log->committer);
 
@@ -264,7 +434,7 @@ class repo extends control
      *
      * @param int    $repoID
      * @param int    $revision
-     * @param string $path
+     * @param string $root
      * @param string $type
      *
      * @access public
@@ -272,6 +442,8 @@ class repo extends control
      */
     public function revision($repoID, $revision, $root = '', $type = 'dir')
     {
+        if($this->get->repoPath) $root = $this->get->repoPath;
+
         $this->repo->setMenu($this->repos, $repoID);
         $this->repo->setBackSession();
         if($repoID == 0) $repoID = $this->session->repoID;
@@ -283,10 +455,26 @@ class repo extends control
         $history = $this->dao->select('*')->from(TABLE_REPOHISTORY)->where('revision')->eq($log[0]->revision)->andWhere('repo')->eq($repoID)->fetch();
         if($history)
         {
-            $oldRevision = $this->dao->select('revision')->from(TABLE_REPOHISTORY)->where('commit')->eq($history->commit - 1)->andWhere('repo')->eq($repoID)->fetch('revision');
+            if($repo->SCM == 'Git')
+            {
+                $thisAndPrevRevisions = $this->scm->exec("rev-list -n 2 {$history->revision} --");
+
+                array_shift($thisAndPrevRevisions);
+                if($thisAndPrevRevisions) $oldRevision = array_shift($thisAndPrevRevisions);
+            }
+            else
+            {
+                $oldRevision = $this->dao->select('*')->from(TABLE_REPOHISTORY)->where('revision')->lt($history->revision)->andWhere('repo')->eq($repoID)->orderBy('revision_desc')->limit(1)->fetch('revision');
+            }
+
             $log[0]->commit = $history->commit;
         }
-        if(empty($oldRevision)) $oldRevision = '^';
+
+        if(empty($oldRevision))
+        {
+            $oldRevision = '^';
+            if($history and $repo->SCM == 'Git') $oldRevision = "{$history->revision}^";
+        }
 
         $changes  = array();
         $viewPriv = common::hasPriv('repo', 'view');
@@ -297,13 +485,13 @@ class repo extends control
             $encodePath = $this->repo->encodePath($path);
             if($change['kind'] == '' or $change['kind'] == 'file')
             {
-                $change['view'] = $viewPriv ? html::a($this->repo->createLink('view', "repoID=$repoID&entry=&revision=$revision", "entry=$encodePath"), $this->lang->repo->viewA) : '';
-                if($change['action'] == 'M') $change['diff'] = $diffPriv ? html::a($this->repo->createLink('diff', "repoID=$repoID&entry=&oldRevision=$oldRevision&newRevision=$revision", "entry=$encodePath"), $this->lang->repo->diffAB) : '';
+                $change['view'] = $viewPriv ? html::a($this->repo->createLink('view', "repoID=$repoID&entry=$encodePath&revision=$revision"), $this->lang->repo->viewA) : '';
+                if($change['action'] == 'M') $change['diff'] = $diffPriv ? html::a($this->repo->createLink('diff', "repoID=$repoID&entry=$encodePath&oldRevision=$oldRevision&newRevision=$revision"), $this->lang->repo->diffAB) : '';
             }
             else
             {
-                $change['view'] = $viewPriv ? html::a($this->repo->createLink('log', "repoID=$repoID&entry=&revision=$revision", "entry=$encodePath"), $this->lang->repo->log) : '';
-                if($change['action'] == 'M') $change['diff'] = $diffPriv ? html::a($this->repo->createLink('diff', "repoID=$repoID&entry=&oldRevision=$oldRevision&newRevision=$revision", "entry=$encodePath"), $this->lang->repo->diffAB) : '';
+                $change['view'] = $viewPriv ? html::a($this->repo->createLink('browse', "repoID=$repoID&path=$encodePath&revision=$revision"), $this->lang->repo->browse) : '';
+                if($change['action'] == 'M') $change['diff'] = $diffPriv ? html::a($this->repo->createLink('diff', "repoID=$repoID&entry=$encodePath&oldRevision=$oldRevision&newRevision=$revision"), $this->lang->repo->diffAB) : '';
             }
             $changes[$path] = $change;
         }
@@ -330,6 +518,55 @@ class repo extends control
         $this->view->oldRevision = $oldRevision;
         $this->view->preAndNext  = $this->repo->getPreAndNext($repo, $root, $revision, $type, 'revision');
 
+        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->viewRevision;
+        $this->view->position[] = $this->lang->repo->common;
+        $this->view->position[] = $this->lang->repo->viewRevision;
+
+        $this->display();
+    }
+
+    /**
+     * Blame repo file. 
+     * 
+     * @param  int    $repoID 
+     * @param  string $entry 
+     * @param  string $revision 
+     * @param  string $encoding 
+     * @access public
+     * @return void
+     */
+    public function blame($repoID, $entry, $revision = 'HEAD', $encoding = '')
+    {
+        if($this->get->repoPath) $entry = $this->get->repoPath;
+        $this->repo->setMenu($this->repos, $repoID);
+        if($repoID == 0) $repoID = $this->session->repoID;
+        $repo  = $this->repo->getRepoByID($repoID);
+        $file  = $entry;
+        $entry = $this->repo->decodePath($entry);
+
+        $this->scm->setEngine($repo);
+        $encoding  = empty($encoding) ? $repo->encoding : $encoding;
+        $encoding  = strtolower(str_replace('_', '-', $encoding));
+        $blames    = $this->scm->blame($entry, $revision);
+        $revisions = array();
+        foreach($blames as $i => $blame)
+        {
+            if(isset($blame['revision'])) $revisions[$blame['revision']] = $blame['revision'];
+            if($encoding != 'utf-8') $blames[$i]['content'] = helper::convertEncoding($blame['content'], $encoding);
+        }
+
+        $log = $repo->SCM == 'Git' ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->eq($revision)->andWhere('repo')->eq($repo->id)->fetch() : '';
+
+        $this->view->title        = $this->lang->repo->common;
+        $this->view->repoID       = $repoID;
+        $this->view->repo         = $repo;
+        $this->view->revision     = $revision;
+        $this->view->entry        = $entry;
+        $this->view->file         = $file;
+        $this->view->encoding     = str_replace('-', '_', $encoding);
+        $this->view->historys     = $repo->SCM == 'Git' ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->in($revisions)->andWhere('repo')->eq($repo->id)->fetchPairs() : '';
+        $this->view->revisionName = ($log and $repo->SCM == 'Git') ? $this->repo->getGitRevisionName($log->revision, $log->commit) : $revision;
+        $this->view->blames       = $blames;
         $this->display();
     }
 
@@ -347,7 +584,7 @@ class repo extends control
      */
     public function diff($repoID, $entry = '', $oldRevision = '0', $newRevision = 'HEAD', $showBug = 'false', $encoding = '')
     {
-        if($this->get->entry) $entry = $this->get->entry;
+        if($this->get->repoPath) $entry = $this->get->repoPath;
         $this->repo->setMenu($this->repos, $repoID);
         if($repoID == 0) $repoID = $this->session->repoID;
         $file    = $entry;
@@ -359,21 +596,19 @@ class repo extends control
         if(isset($pathInfo["extension"])) $suffix = strtolower($pathInfo["extension"]); 
 
         $arrange = $this->cookie->arrange ? $this->cookie->arrange : 'inline';
-        if(!empty($_POST))
+        if($this->server->request_method == 'POST')
         {
-            $oldRevision = isset($this->post->revision[1]) ?$this->post->revision[1] : '';
-            $newRevision = isset($this->post->revision[0]) ?$this->post->revision[0] : '';
+            $oldRevision = isset($this->post->revision[1]) ? $this->post->revision[1] : '';
+            $newRevision = isset($this->post->revision[0]) ? $this->post->revision[0] : '';
+
             if($this->post->arrange) 
             {
                 $arrange = $this->post->arrange;
                 setcookie('arrange', $arrange);
             }
             if($this->post->encoding) $encoding = $this->post->encoding;
-            if(!$oldRevision)
-            {
-                echo js::alert($this->lang->repo->error->diff);
-                die(js::locate('back'));
-            }
+
+            $this->locate($this->repo->createLink('diff', "repoID=$repoID&entry=" . $this->repo->encodePath($entry) . "&oldrevision=$oldRevision&newRevision=$newRevision&showBug=&encoding=$encoding"));
         }
 
         $this->scm->setEngine($repo);
@@ -420,9 +655,6 @@ class repo extends control
             }
         }
 
-        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->diff;
-        $this->view->position[] = $this->lang->repo->diff;
-
         $this->view->type        = 'diff';
         $this->view->showBug     = $showBug;
         $this->view->entry       = urldecode($entry);
@@ -438,6 +670,10 @@ class repo extends control
         $this->view->revision    = $newRevision;
         $this->view->historys    = $repo->SCM == 'Git' ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->in("$oldRevision,$newRevision")->andWhere('repo')->eq($repo->id)->fetchPairs() : '';
         $this->view->info        = $info;
+
+        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->diff;
+        $this->view->position[] = $this->lang->repo->common;
+        $this->view->position[] = $this->lang->repo->diff;
 
         $this->display();
     }
@@ -455,7 +691,7 @@ class repo extends control
      */
     public function download($repoID, $path, $fromRevision = 'HEAD', $toRevision = '', $type = 'file')
     {
-        if($this->get->path) $path = $this->get->path;
+        if($this->get->repoPath) $path = $this->get->repoPath;
         $entry = $this->repo->decodePath($path);
         $repo  = $this->repo->getRepoByID($repoID);
         $this->scm->setEngine($repo);
@@ -467,23 +703,53 @@ class repo extends control
     }
 
     /**
-     * Show sync comment.
+     * Set Rules.
      * 
-     * @param  int    $repoID 
      * @access public
      * @return void
      */
-    public function showSyncComment($repoID = 0)
+    public function setRules($module = '')
+    {
+        if($_POST)
+        {
+            $this->loadModel('setting')->setItem('system.repo.rules', json_encode($this->post->rules));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('setRules')));
+        }
+
+        $this->repo->setMenu($this->repos, $this->session->repoID, false);
+
+        $this->app->loadLang('task');
+        $this->app->loadLang('bug');
+        $this->app->loadLang('story');
+        if(is_string($this->config->repo->rules)) $this->config->repo->rules = json_decode($this->config->repo->rules, true);
+
+        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->setRules;
+        $this->view->position[] = $this->lang->repo->setRules;
+
+        $this->display();
+    }
+
+    /**
+     * Show sync comment.
+     * 
+     * @param  int    $repoID 
+     * @param  string $branch 
+     * @access public
+     * @return void
+     */
+    public function showSyncCommit($repoID = 0, $branch = '')
     {
         $this->repo->setMenu($this->repos, $repoID);
         if($repoID == 0) $repoID = $this->session->repoID;
+        if($branch) $branch = base64_decode($branch);
 
-        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->showSyncComment;
-        $this->view->position[] = $this->lang->repo->showSyncComment;
+        $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->showSyncCommit;
+        $this->view->position[] = $this->lang->repo->showSyncCommit;
 
-        $latestInDB = $this->repo->getLatestComment($repoID);
+        $latestInDB = $this->repo->getLatestCommit($repoID);
         $this->view->version = $latestInDB ? (int)$latestInDB->commit : 1;
         $this->view->repoID  = $repoID;
+        $this->view->branch  = $branch;
         $this->display();
     }
 
@@ -495,7 +761,7 @@ class repo extends control
      * @access public
      * @return void
      */
-    public function ajaxSyncComment($repoID = 0, $type = 'batch')
+    public function ajaxSyncCommit($repoID = 0, $type = 'batch')
     {
         set_time_limit(0);
         $repo = $this->repo->getRepoByID($repoID);
@@ -513,19 +779,21 @@ class repo extends control
                 /* Init branchID. */
                 if($this->cookie->syncBranch) $branchID = $this->cookie->syncBranch;
                 if(!isset($branches[$branchID])) $branchID = '';
-                if(empty($branchID)) $branchID = reset($branches);
+                if(empty($branchID)) $branchID = 'master';
 
                 /* Get unsynced branches. */
-                foreach($branches as $branch)
+                unset($branches['master']);
+                if($branchID != 'master')
                 {
-                    unset($branches[$branch]);
-                    if($branch == $branchID)
+                    foreach($branches as $branch)
                     {
-                        $this->repo->setRepoBranch($branchID);
-                        setcookie("syncBranch", $branchID, 0, $this->config->webRoot);
-                        break;
+                        unset($branches[$branch]);
+                        if($branch == $branchID) break;
                     }
                 }
+
+                $this->repo->setRepoBranch($branchID);
+                setcookie("syncBranch", $branchID, 0, $this->config->webRoot);
             }
         }
 
@@ -556,7 +824,7 @@ class repo extends control
             {
                 if($repo->SCM == 'Git')
                 {
-                    if($branchID) $this->repo->saveExistsLogBranch($repo->id, $branchID);
+                    if($branchID) $this->repo->saveExistCommits4Branch($repo->id, $branchID);
 
                     $branchID = reset($branches);
                     setcookie("syncBranch", $branchID, 0, $this->config->webRoot);
@@ -577,6 +845,54 @@ class repo extends control
     }
 
     /**
+     * Ajax sync git branch comment.
+     * 
+     * @param  int    $repoID 
+     * @param  string $branch 
+     * @access public
+     * @return void
+     */
+    public function ajaxSyncBranchCommit($repoID = 0, $branch = '')
+    {
+        set_time_limit(0);
+        $repo = $this->repo->getRepoByID($repoID);
+        if(empty($repo)) die();
+        if($repo->SCM != 'Git') die('finish');
+        if($branch) $branch = base64_decode($branch);
+
+        $this->scm->setEngine($repo);
+
+        $this->repo->setRepoBranch($branch);
+        setcookie("syncBranch", $branch, 0, $this->config->webRoot);
+
+        $latestInDB = $this->dao->select('DISTINCT t1.*')->from(TABLE_REPOHISTORY)->alias('t1')
+            ->leftJoin(TABLE_REPOBRANCH)->alias('t2')->on('t1.id=t2.revision')
+            ->where('t1.repo')->eq($repoID)
+            ->beginIF($repo->SCM == 'Git' and $this->cookie->repoBranch)->andWhere('t2.branch')->eq($this->cookie->repoBranch)->fi()
+            ->orderBy('t1.time')
+            ->limit(1)
+            ->fetch();
+
+        $version  = empty($latestInDB) ? 1 : $latestInDB->commit + 1;
+        $logs     = array();
+        $revision = $version == 1 ? 'HEAD' : $latestInDB->commit;
+
+        $logs = $this->scm->getCommits($revision, $this->config->repo->batchNum, $branch);
+        $commitCount = $this->repo->saveCommit($repoID, $logs, $version, $branch);
+        if(empty($commitCount))
+        {
+            if($branch) $this->repo->saveExistCommits4Branch($repo->id, $branch);
+
+            setcookie("syncBranch", $branch, 0, $this->config->webRoot);
+            $this->repo->markSynced($repoID);
+            die('finish');
+        }
+
+        $this->dao->update(TABLE_REPO)->set('commits=commits + ' . $commitCount)->where('id')->eq($repoID)->exec();
+        echo $commitCount;
+    }
+
+    /**
      * Ajax show side logs.
      * 
      * @param  int    $repoID 
@@ -588,16 +904,16 @@ class repo extends control
      * @access public
      * @return void
      */
-    public function ajaxSideLogs($repoID, $path, $type = 'dir', $recTotal = 0, $recPerPage = 8, $pageID = 1)
+    public function ajaxSideCommits($repoID, $path, $type = 'dir', $recTotal = 0, $recPerPage = 8, $pageID = 1)
     {
-        if($this->get->path) $path = $this->get->path;
+        if($this->get->repoPath) $path = $this->get->repoPath;
         $this->app->loadClass('pager', $static = true);
         $pager = new pager($recTotal, $recPerPage, $pageID);
 
         $repo      = $this->repo->getRepoByID($repoID);
         $path      = $this->repo->decodePath($path);
         $commiters = $this->loadModel('user')->getCommiters();
-        $revisions = $this->repo->getLogs($repo, $path, 'HEAD', $type, $pager);
+        $revisions = $this->repo->getCommits($repo, $path, 'HEAD', $type, $pager);
         foreach($revisions as $revision) $revision->committer = zget($commiters, $revision->committer, $revision->committer);
 
         $this->view->repo       = $this->repo->getRepoByID($repoID);
@@ -610,22 +926,32 @@ class repo extends control
     }
 
     /**
-     * Ajax sync latest commit.
+     * Ajax get svn tags 
      * 
      * @param  int    $repoID 
+     * @param  string $path 
      * @access public
      * @return void
      */
-    public function ajaxSyncLatestCommit($repoID)
+    public function ajaxGetSVNDirs($repoID, $path = '')
     {
-        set_time_limit(0);
         $repo = $this->repo->getRepoByID($repoID);
-        if((time() - strtotime($repo->lastSync)) / 60 >= $this->config->repo->syncTime)
+        if($repo->SCM != 'Subversion') die(json_encode(array()));
+
+        $path = $this->repo->decodePath($path);
+        $dirs = array();
+        if(empty($path))
         {
-            $commits = $this->repo->updateLatestCommit($repo);
-            if($commits > 0) die('finished');
+            $dirs['/'] = '';
+            if(empty($repo->prefix)) $path = '/';
         }
 
-        die('norecords');
+        $tags = $this->loadModel('svn')->getRepoTags($repo, $path);
+        if($tags)
+        {
+            $dirs['/'] = $this->repo->encodePath($path);
+            foreach($tags as $dirPath => $dirName) $dirs[$dirPath] = $this->repo->encodePath($dirPath);
+        }
+        die(json_encode($dirs));
     }
 }

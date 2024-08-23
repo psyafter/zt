@@ -40,15 +40,14 @@ $lang->doc->filePath       = 'Chemin Fichier';
 $lang->doc->extension      = 'Extension';
 $lang->doc->size           = 'Taille';
 $lang->doc->download       = 'Téléchargement';
-$lang->doc->acl            = 'Right';
+$lang->doc->acl            = 'Droit';
 $lang->doc->fileName       = 'Fichiers';
 $lang->doc->groups         = 'Groupes';
 $lang->doc->users          = 'Utilisateurs';
 $lang->doc->item           = ' Objets';
 $lang->doc->num            = 'Documents';
 $lang->doc->searchResult   = 'Résultat de Recherche';
-$lang->doc->fullscreen     = 'Plein Ecran';
-$lang->doc->retrack        = 'Réduire';
+$lang->doc->mailto         = 'Mailto';
 
 $lang->doc->moduleDoc      = 'Par Module';
 $lang->doc->searchDoc      = 'Rechercher';
@@ -157,6 +156,12 @@ $lang->doc->customShowLibsList['zero']     = 'Montrer Bibliothèques Vides';
 $lang->doc->customShowLibsList['children'] = 'Montrer sous-catégorie de Documents';
 $lang->doc->customShowLibsList['unclosed'] = "Montrer {$lang->projectCommon}s actifs seulement";
 
+$lang->doc->mail = new stdclass();
+$lang->doc->mail->create = new stdclass();
+$lang->doc->mail->edit   = new stdclass();
+$lang->doc->mail->create->title = "%s created document #%s:%s";
+$lang->doc->mail->edit->title   = "%s edited document #%s:%s";
+
 $lang->doc->confirmDelete      = "Voulez-vous supprimer ce document ?";
 $lang->doc->confirmDeleteLib   = "Voulez-vous supprimer cette Bibliothèque ?";
 $lang->doc->errorEditSystemDoc = "Vous n'avez pas besoin de changer de système de Bibliothèque.";
@@ -167,6 +172,7 @@ $lang->doc->accessDenied       = "Access is denied !";
 $lang->doc->versionNotFount    = "N'existe pas dans ce build.";
 $lang->doc->noDoc              = 'Aucun documents. ';
 $lang->doc->cannotCreateOffice = 'Désolé, %s peut seulement être créé dans ZenTao Enterprise. Contactez Zentao à renee@easysoft.ltd pour essayer ZenTao Enterprise.';
+$lang->doc->notSetOffice       = "<p>To create a %s document, you need to configure <a href='%s' target='_parent'>office convert</a>.<p>";
 $lang->doc->noSearchedDoc      = 'Aucun documents trouvé.';
 $lang->doc->noEditedDoc        = "Vous n'avez pas mis à jour de documents.";
 $lang->doc->noOpenedDoc        = "Vous n'avez pas ajouté de documents.";

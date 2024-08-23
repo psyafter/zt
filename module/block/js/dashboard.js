@@ -65,7 +65,8 @@ function refreshBlock($panel, afterRefresh)
         else
         {
             $panel.children('.panel-move-handler,style,script').remove();
-            $panel.find('.panel-body,.empty-tip').replaceWith($data);
+            $panel.find('.panel-body,.empty-tip').first().replaceWith($data);
+            $panel.find('.iframe').initIframeModal();
         }
         $panel.find('.progress-pie').progressPie();
         if($.isFunction(afterRefresh))
@@ -79,6 +80,7 @@ function refreshBlock($panel, afterRefresh)
         }
         $panel.find('.tablesorter').sortTable();
         initTableHeader($panel);
+        $(".sparkline").sparkline();
     }).fail(function()
     {
         $panel.addClass('panel-error');

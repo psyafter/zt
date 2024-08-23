@@ -11,6 +11,9 @@
  */
 ?>
 <?php include './header.html.php';?>
+<?php js::set('oldProductID', $story->product);?>
+<?php js::set('parentStory', !empty($story->children));?>
+<?php js::set('moveChildrenTips', $lang->story->moveChildrenTips);?>
 <div class='main-content' id='mainContent'>
   <form method='post' enctype='multipart/form-data' target='hiddenwin' id='dataform'>
     <div class='main-header'>
@@ -66,6 +69,7 @@
           <div class='detail'>
             <div class='detail-title'><?php echo $lang->story->legendBasicInfo;?></div>
             <table class='table table-form'>
+              <?php if($story->parent <= 0):?>
               <tr>
                 <th class='thWidth'><?php echo $lang->story->product;?></th>
                 <td>
@@ -76,8 +80,16 @@
                   </div>
                 </td>
               </tr>
+              <?php elseif($product->type != 'normal'):?>
               <tr>
-                <th><?php echo $lang->story->module;?></th>
+                <th class='thWidth'><?php echo $lang->product->branch;?></th>
+                <td>
+                  <div class='input-group'><?php if($product->type != 'normal') echo html::select('branch', $branches, $story->branch, "onchange='loadBranch();' class='form-control chosen control-branch'");?></div>
+                </td>
+              </tr>
+              <?php endif;?>
+              <tr>
+                <th class='thWidth'><?php echo $lang->story->module;?></th>
                 <td>
                   <div class='input-group' id='moduleIdBox'>
                   <?php
@@ -93,6 +105,11 @@
                   ?>
                   </div>
                 </td>
+              </tr>
+              <?php if($story->parent >= 0 and $story->type == 'story'):?>
+              <tr>
+                <th><?php echo $lang->story->parent;?></th>
+                <td><?php echo html::select('parent', $stories, $story->parent, "class='form-control chosen'");?></td>
               </tr>
               <tr>
                 <th><?php echo $lang->story->plan;?></th>
@@ -111,6 +128,7 @@
                   </div>
                 </td>
               </tr>
+              <?php endif;?>
               <tr>
                 <th><?php echo $lang->story->source;?></th>
                 <td><?php echo html::select('source', $lang->story->sourceList, $story->source, "class='form-control chosen'");?></td>
@@ -153,7 +171,7 @@
               </tr>
               <tr>
                 <th><?php echo $lang->story->estimate;?></th>
-                <td><?php echo html::input('estimate', $story->estimate, "class='form-control'");?></td>
+                <td><?php echo $story->parent >= 0 ? html::input('estimate', $story->estimate, "class='form-control'") : $story->estimate;?></td>
               </tr>
               <tr>
                 <th><?php echo $lang->story->keywords;?></th>
@@ -163,7 +181,7 @@
                 <th><?php echo $lang->story->mailto;?></th>
                 <td>
                   <div class='input-group'>
-                    <?php echo html::select('mailto[]', $users, str_replace(' ' , '', $story->mailto), "class='form-control' multiple");?>
+                    <?php echo html::select('mailto[]', $users, str_replace(' ' , '', $story->mailto), "class='form-control chosen' multiple");?>
                     <?php echo $this->fetch('my', 'buildContactLists');?>
                   </div>
                 </td>
@@ -278,4 +296,5 @@
     </div>
   </form>
 </div>
+<?php js::set('storyType', $story->type);?>
 <?php include '../../common/view/footer.html.php';?>

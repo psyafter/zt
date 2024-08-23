@@ -63,6 +63,8 @@ $lang->user->unlock        = "Débloquer Utilisateur";
 $lang->user->delete        = "Supprimer Utilisateur";
 $lang->user->unbind        = "Dissocier de Zdoo";
 $lang->user->login         = "Login";
+$lang->user->bind          = "Bind User";
+$lang->user->oauthRegister = "Register a new account";
 $lang->user->mobileLogin   = "Mobile";
 $lang->user->editProfile   = "Editer Profil";
 $lang->user->deny          = "Your access is denied.";
@@ -82,7 +84,7 @@ $lang->user->setTemplateTitle      = 'Entrez le titre du Modèle.';
 $lang->user->applyTemplate         = 'Modèles';
 $lang->user->confirmDeleteTemplate = 'Voulez-vous vraiment supprimer ce modèle ?';
 $lang->user->setPublicTemplate     = 'Définir comme Modèle Public';
-$lang->user->tplContentNotEmpty    = 'The template content cannot be empty!';
+$lang->user->tplContentNotEmpty    = 'Le contenu du modèle ne peut pas être vide !';
 
 $lang->user->profile     = 'Profil';
 $lang->user->project     = $lang->projectCommon . 's';
@@ -108,13 +110,13 @@ $lang->user->testTask2Him = 'Recette assignée à %s';
 $lang->user->case2Him     = 'CasTest assigné à %s';
 $lang->user->caseByHim    = 'CasTest créé par %s';
 
-$lang->user->errorDeny    = "Sorry, your access to <b>%s</b> of <b>%s</b> is denied. Please contact your Admin to get privileges. Click Back to return.";
-$lang->user->errorView    = "Sorry, your access view <b>%s</b> is denied. Please contact your Admin to get privileges. Click Back to return.";
+$lang->user->errorDeny    = "Désolé, votre accès à <b>%s</b> of <b>%s</b> est refusé. Veuillez contacter votre administrateur pour obtenir des privilèges. Cliquez sur Retour pour revenir.";
+$lang->user->errorView    = "Désolé, votre accès en consultation <b>%s</b> est refusé. Veuillez contacter votre administrateur pour obtenir des privilèges. Cliquez sur Retour pour revenir.";
 $lang->user->loginFailed  = "Echec de connexion. Vérifiez votre login et mot de passe.";
 $lang->user->lockWarning  = "Vous avez %s essais.";
 $lang->user->loginLocked  = "Votre compte est bloqué. Contactez l'administrateur pour débloquer votre compte ou attendez %s minutes pour une nouvelle tentative.";
 $lang->user->weakPassword = "Votre mot de passe ne respecte pas les règles de sécurité.";
-$lang->user->errorWeak    = "Passwords cannot use [%s] these commonly used weak passwords.";
+$lang->user->errorWeak    = "Les mots de passe ne peuvent pas utiliser ces [%s] mots de passe faibles couramment utilisés.";
 
 $lang->user->roleList['']       = '';
 $lang->user->roleList['dev']    = 'Développeur';
@@ -176,8 +178,8 @@ $lang->user->error->realname      = "ID %s，doit être votre véritable nom";
 $lang->user->error->password      = "ID %s，Mot de passe doit être >= 6 caractères.";
 $lang->user->error->mail          = "ID %s，entrez une adresse mail valide";
 $lang->user->error->reserved      = "ID %s，compte réservé. Vous ne pouvez pas l'utiliser.";
-$lang->user->error->weakPassword   = "ID %s，the password strength is less than the system setting.";
-$lang->user->error->dangerPassword = "ID %s，Passwords cannot be used with [%s] these commonly used if-passwords.";
+$lang->user->error->weakPassword   = "ID %s，la force du mot de passe est inférieure au paramètrage système.";
+$lang->user->error->dangerPassword = "ID %s，Les mots de passe ne peuvent pas utiliser ces [%s] mots de passe faibles couramment utilisés.";
 
 $lang->user->error->verifyPassword   = "Vérification en échec. Entrez votre Mot de Passe de Connexion.";
 $lang->user->error->originalPassword = "Ancien Mot de Passe incorrect.";
@@ -214,3 +216,6 @@ $lang->user->noticeResetFile = "<h5>Contactez l'administrateur pour réinitialis
     <li>Gardez ce fichier vide.</li>
     <li>Si le fichier existe déjà, supprimez le et créez le à nouveau.</li><li>Bonne chance.</li>
     </ol>";
+$lang->user->notice4Safe = "Warning: Weak password of one click package detected";
+$lang->user->process4DIR = "It is detected that you may be using the one click installation package environment. Other sites in the environment are still using simple passwords. For security reasons, if you do not use other sites, please handle them in time. Delete or rename the %s directory. Visit: <a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";
+$lang->user->process4DB  = "It is detected that you may be using the one click installation package environment. Other sites in the environment are still using simple passwords. For security reasons, if you do not use other sites, please handle them in time. Please login database and modify password field of zt_user table of %s database. Visit: <a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";

@@ -14,7 +14,8 @@
 <?php include '../../common/view/treetable.html.php';?>
 <?php include './caseheader.html.php';?>
 <?php js::set('browseType', $browseType);?>
-<div class="main-table" data-ride="table" data-checkable="false" data-group="true">
+<?php js::set('confirmUnlink', $lang->testtask->confirmUnlinkCase)?>
+<div id='casesForm' class="main-table" data-ride="table" data-checkable="false" data-group="true" data-replace-id="treetable">
   <table class='table table-grouped text-center' id='treetable'>
     <thead>
       <tr class="divider">
@@ -55,8 +56,8 @@
           <div class='group-header'><?php echo html::a('###', "<i class='icon-caret-down'></i> $groupName", '', "class='text-primary'");?></div>
         </td>
         <?php endif;?>
-        <?php 
-        if(!isset($run->case)) 
+        <?php
+        if(!isset($run->case))
         {
             echo "<td colspan='13'></td></tr>";
             break;
@@ -75,9 +76,17 @@
         <td><?php echo (common::hasPriv('testtask', 'results') and $run->results) ? html::a($this->createLink('testtask', 'results', "runID={$run->id}&caseID={$run->case}"), $run->results, '', "class='iframe'") : $run->results;?></td>
         <td><?php echo $run->stepNumber;?></td>
         <td class='c-actions'>
+          <?php if($canBeChanged):?>
           <?php common::printIcon('testtask', 'runCase', "runID=$run->id&caseID=$run->case&version=$run->caseVersion", '', 'list', 'play', '', 'runCase iframe', false, "data-width='95%'");?>
           <?php common::printIcon('testcase', 'edit', "caseID=$run->case", '', 'list');?>
-          <?php common::printIcon('testcase', 'delete', "caseID=$run->case", '', 'list', '', 'hiddenwin');?>
+          <?php
+          if(common::hasPriv('testtask', 'unlinkCase', $run))
+          {
+              $unlinkURL = helper::createLink('testtask', 'unlinkCase', "caseID=$run->id&confirm=yes");
+              echo html::a("javascript:ajaxDelete(\"$unlinkURL\", \"casesForm\", confirmUnlink)", '<i class="icon-unlink"></i>', '', "title='{$this->lang->testtask->unlinkCase}' class='btn'");
+          }
+          ?>
+          <?php endif;?>
         </td>
       </tr>
       <?php $i++;?>

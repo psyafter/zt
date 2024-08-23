@@ -24,6 +24,12 @@
         <?php include '../../common/view/customfield.html.php';?>
       </div>
     </div>
+    <?php
+    foreach(explode(',', $config->task->create->requiredFields) as $field)
+    {
+        if($field and strpos($showFields, $field) === false) $showFields .= ',' . $field;
+    }
+    ?>
     <form class='main-form form-ajax' method='post' enctype='multipart/form-data' id='dataform'>
       <table class='table table-form'>
         <tr>
@@ -69,16 +75,16 @@
           <th><?php echo $lang->task->status;?></th>
           <td><?php echo html::hidden('status', 'wait');?></td>
         </tr>
-        <?php $this->printExtendFields('', 'table');?>
+        <?php $this->printExtendFields('', 'table', 'columns=3');?>
         <?php if(strpos(",$showFields,", ',story,') !== false and $config->global->flow != 'onlyTask' and $project->type != 'ops'):?>
         <tr>
           <th><?php echo $lang->task->story;?></th>
           <td colspan='3'>
             <?php if(empty($stories)):?>
-            <span id='story'><?php printf($lang->task->noticeLinkStory, html::a($this->createLink('project', 'linkStory', "projectID=$project->id"), $lang->project->linkStory, '_blank', 'class="text-primary"'), html::a("javascript:loadStories($project->id)", $lang->refresh, '', 'class="text-primary"'));?></span>
+            <span id='storyBox'><?php printf($lang->task->noticeLinkStory, html::a($this->createLink('project', 'linkStory', "projectID=$project->id"), $lang->project->linkStory, '_blank', 'class="text-primary"'), html::a("javascript:loadStories($project->id)", $lang->refresh, '', 'class="text-primary"'));?></span>
             <?php else:?>
             <div class='input-group'>
-              <?php echo html::select('story', $stories, $task->story, "class='form-control chosen' onchange='setStoryRelated();'");?>
+              <?php echo html::select('story', array($task->story => $stories[$task->story]), $task->story, "class='form-control chosen' onchange='setStoryRelated();'");?>
               <span class='input-group-btn' id='preview'><a href='#' class='btn iframe'><?php echo $lang->preview;?></a></span>
             </div>
             <?php endif;?>
@@ -105,7 +111,7 @@
                 <?php foreach($stories as $storyID => $storyTitle):?>
                 <?php if(empty($storyID) or isset($testStoryIdList[$storyID])) continue;?>
                 <tr>
-                  <td><?php echo html::select("testStory[]", $stories, $storyID, "class='form-control chosen'");?></td>
+                  <td><?php echo html::select("testStory[]", array($storyID => $storyTitle), $storyID, "class='form-control chosen'");?></td>
                   <td><?php echo html::select("testPri[]", $lang->task->priList, $task->pri, "class='form-control chosen'");?></td>
                   <td>
                     <div class='input-group'>
@@ -124,29 +130,8 @@
                   </td>
                 </tr>
                 <?php $i++;?>
-                <?php if($i >= 5) break;?>
+                <?php if($i > 30) break;?>
                 <?php endforeach;?>
-                <?php if($i == 0):?>
-                <tr>
-                  <td><?php echo html::select("testStory[]", $stories, '', "class='form-control chosen'");?></td>
-                  <td><?php echo html::select("testPri[]", $lang->task->priList, $task->pri, "class='form-control chosen'");?></td>
-                  <td>
-                    <div class='input-group'>
-                      <?php echo html::input("testEstStarted[]", $task->estStarted, "class='form-control form-date' placeholder='{$lang->task->estStarted}'");?>
-                      <span class='input-group-addon fix-border'>~</span>
-                      <?php echo html::input("testDeadline[]", $task->deadline, "class='form-control form-date' placeholder='{$lang->task->deadline}'");?>
-                    </div>
-                  </td>
-                  <td><?php echo html::select("testAssignedTo[]", $members, $task->assignedTo, "class='form-control chosen'");?></td>
-                  <td><?php echo html::input("testEstimate[]", '', "class='form-control'");?></td>
-                  <td class='text-center'>
-                    <div class="btn-group">
-                      <button type="button" class="btn btn-sm" tabindex="-1" onclick='addItem(this)'><i class="icon icon-plus"></i></button>
-                      <button type="button" class="btn btn-sm" tabindex="-1" onclick='removeItem(this)'><i class="icon icon-close"></i></button>
-                    </div>
-                  </td>
-                </tr>
-                <?php endif;?>
               </tbody>
             </table>
           </td>
@@ -184,6 +169,11 @@
               }
               $priList = $lang->task->priList;
               if(end($priList)) unset($priList[0]);
+              if(!isset($priList[$task->pri]))
+              {
+                  reset($priList);
+                  $task->pri = key($priList);
+              }
               ?>
               <?php if($hasCustomPri):?>
               <?php echo html::select('pri', (array)$priList, $task->pri, "class='form-control'");?>
@@ -213,7 +203,7 @@
           <th><?php echo $lang->task->desc;?></th>
           <td colspan='3'>
             <?php echo $this->fetch('user', 'ajaxPrintTemplates', 'type=task&link=desc');?>
-            <?php echo html::textarea('desc', $task->desc, "rows='10' class='form-control'");?>
+            <?php echo html::textarea('desc', htmlspecialchars($task->desc), "rows='10' class='form-control'");?>
           </td>
         </tr>
         <tr>
@@ -305,6 +295,8 @@
     </form>
   </div>
 </div>
+<?php js::set('stories', $stories);?>
+<?php js::set('storyPinYin', (empty($config->isINT) and class_exists('common')) ? common::convert2Pinyin($stories) : array());?>
 <?php js::set('testStoryIdList', $testStoryIdList);?>
 <?php js::set('projectID', $project->id);?>
 <?php include '../../common/view/footer.html.php';?>

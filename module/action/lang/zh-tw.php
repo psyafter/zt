@@ -87,6 +87,7 @@ $lang->action->objectTypes['caselib']     = '用例庫';
 $lang->action->objectTypes['testreport']  = '報告';
 $lang->action->objectTypes['entry']       = '應用';
 $lang->action->objectTypes['webhook']     = 'Webhook';
+$lang->action->objectTypes['job']         = '構建';
 
 /* 用來描述操作歷史記錄。*/
 $lang->action->desc = new stdclass();
@@ -133,11 +134,18 @@ $lang->action->desc->linked2bug     = '$date 由 <strong>$actor</strong> 關聯�
 /* 用來描述和父子任務相關的操作歷史記錄。*/
 $lang->action->desc->createchildren     = '$date, 由 <strong>$actor</strong> 創建子任務 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->linkchildtask      = '$date, 由 <strong>$actor</strong> 關聯子任務 <strong>$extra</strong>。' . "\n";
-$lang->action->desc->linkchildtask      = '$date, 由 <strong>$actor</strong> 關聯子任務 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->unlinkchildrentask = '$date, 由 <strong>$actor</strong> 移除子任務 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->linkparenttask     = '$date, 由 <strong>$actor</strong> 關聯到父任務 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->unlinkparenttask   = '$date, 由 <strong>$actor</strong> 從父任務<strong>$extra</strong>取消關聯。' . "\n";
 $lang->action->desc->deletechildrentask = '$date, 由 <strong>$actor</strong> 刪除子任務<strong>$extra</strong>。' . "\n";
+
+/* 用來描述和父子需求相關的操作歷史記錄。*/
+$lang->action->desc->createchildrenstory = '$date, 由 <strong>$actor</strong> 創建子需求 <strong>$extra</strong>。' . "\n";
+$lang->action->desc->linkchildstory      = '$date, 由 <strong>$actor</strong> 關聯子需求 <strong>$extra</strong>。' . "\n";
+$lang->action->desc->unlinkchildrenstory = '$date, 由 <strong>$actor</strong> 移除子需求 <strong>$extra</strong>。' . "\n";
+$lang->action->desc->linkparentstory     = '$date, 由 <strong>$actor</strong> 關聯到父需求 <strong>$extra</strong>。' . "\n";
+$lang->action->desc->unlinkparentstory   = '$date, 由 <strong>$actor</strong> 從父需求<strong>$extra</strong>取消關聯。' . "\n";
+$lang->action->desc->deletechildrenstory = '$date, 由 <strong>$actor</strong> 刪除子需求<strong>$extra</strong>。' . "\n";
 
 /* 關聯用例和移除用例時的歷史操作記錄。*/
 $lang->action->desc->linkrelatedcase   = '$date, 由 <strong>$actor</strong> 關聯相關用例 <strong>$extra</strong>。' . "\n";
@@ -211,6 +219,12 @@ $lang->action->label->batchcreate         = "批量創建任務";
 $lang->action->label->createchildren      = "創建子任務";
 $lang->action->label->managed             = "維護";
 $lang->action->label->deletechildrentask  = "刪除子任務";
+$lang->action->label->createchildrenstory = "創建子需求";
+$lang->action->label->linkchildstory      = "關聯子需求";
+$lang->action->label->unlinkchildrenstory = "取消關聯子需求";
+$lang->action->label->linkparentstory     = "關聯到父需求";
+$lang->action->label->unlinkparentstory   = "從父需求取消關聯";
+$lang->action->label->deletechildrenstory = "刪除子需求";
 
 /* 動態信息按照對象分組 */
 $lang->action->dynamicAction = new stdclass();
@@ -220,7 +234,6 @@ $lang->action->dynamicAction->todo['erased']               = '刪除待辦';
 $lang->action->dynamicAction->todo['finished']             = '完成待辦';
 $lang->action->dynamicAction->todo['activated']            = '激活待辦';
 $lang->action->dynamicAction->todo['closed']               = '關閉待辦';
-$lang->action->dynamicAction->todo['deleted']              = '刪除待辦';
 $lang->action->dynamicAction->todo['assigned']             = '指派待辦';
 $lang->action->dynamicAction->todo['undeleted']            = '還原待辦';
 $lang->action->dynamicAction->todo['hidden']               = '隱藏待辦';
@@ -286,6 +299,11 @@ $lang->action->dynamicAction->task['unlinkparenttask']     = '從父任務取消
 $lang->action->dynamicAction->task['deletechildrentask']   = '刪除子任務';
 $lang->action->dynamicAction->task['linkparenttask']       = '關聯到父任務';
 $lang->action->dynamicAction->task['linkchildtask']        = '關聯子任務';
+$lang->action->dynamicAction->task['createchildrenstory']  = '創建子需求';
+$lang->action->dynamicAction->task['unlinkparentstory']    = '從父需求取消關聯';
+$lang->action->dynamicAction->task['deletechildrenstory']  = '刪除子需求';
+$lang->action->dynamicAction->task['linkparentstory']      = '關聯到父需求';
+$lang->action->dynamicAction->task['linkchildstory']       = '關聯子需求';
 $lang->action->dynamicAction->task['undeleted']            = '還原任務';
 $lang->action->dynamicAction->task['hidden']               = '隱藏任務';
 $lang->action->dynamicAction->task['svncommited']          = 'SVN提交';
@@ -302,6 +320,7 @@ $lang->action->dynamicAction->bug['bugconfirmed']          = '確認Bug';
 $lang->action->dynamicAction->bug['resolved']              = '解決Bug';
 $lang->action->dynamicAction->bug['undeleted']             = '還原Bug';
 $lang->action->dynamicAction->bug['hidden']                = '隱藏Bug';
+$lang->action->dynamicAction->bug['deleted']               = '刪除Bug';
 $lang->action->dynamicAction->bug['confirmed']             = "確認{$lang->storyCommon}變更";
 $lang->action->dynamicAction->bug['tostory']               = "轉{$lang->storyCommon}";
 $lang->action->dynamicAction->bug['totask']                = '轉任務';

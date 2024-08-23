@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `zt_action` (
   KEY `date` (`date`),
   KEY `actor` (`actor`),
   KEY `project` (`project`),
+  KEY `action` (`action`),
   KEY `objectID` (`objectID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_block`;
@@ -89,7 +90,7 @@ CREATE TABLE IF NOT EXISTS `zt_bug` (
   `duplicateBug` mediumint(8) unsigned NOT NULL,
   `linkBug` varchar(255) NOT NULL,
   `case` mediumint(8) unsigned NOT NULL,
-  `caseVersion` smallint(6) NOT NULL default '1',
+  `caseVersion` smallint(6) NOT NULL DEFAULT '1',
   `result` mediumint(8) unsigned NOT NULL,
   `repo` mediumint(8) unsigned NOT NULL,
   `entry` varchar(255) NOT NULL,
@@ -108,6 +109,8 @@ CREATE TABLE IF NOT EXISTS `zt_bug` (
   KEY `plan` (`plan`),
   KEY `story` (`story`),
   KEY `case` (`case`),
+  KEY `toStory` (`toStory`),
+  KEY `result` (`result`),
   KEY `assignedTo` (`assignedTo`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_build`;
@@ -154,6 +157,8 @@ CREATE TABLE IF NOT EXISTS `zt_case` (
   `keywords` varchar(255) NOT NULL,
   `pri` tinyint(3) unsigned NOT NULL default '3',
   `type` char(30) NOT NULL default '1',
+  `auto` varchar(10) NOT NULL default 'no',
+  `frame` varchar(10) NOT NULL,
   `stage` varchar(255) NOT NULL,
   `howRun` varchar(30) NOT NULL,
   `scriptedBy` varchar(30) NOT NULL,
@@ -175,7 +180,7 @@ CREATE TABLE IF NOT EXISTS `zt_case` (
   `linkCase` varchar(255) NOT NULL,
   `fromBug` mediumint(8) unsigned NOT NULL,
   `fromCaseID` mediumint(8) unsigned NOT NULL,
-  `fromCaseVersion` mediumint(8) unsigned NOT NULL,
+  `fromCaseVersion` mediumint(8) unsigned NOT NULL default '1',
   `deleted` enum('0','1') NOT NULL default '0',
   `lastRunner` varchar(30) NOT NULL,
   `lastRunDate` datetime NOT NULL,
@@ -183,6 +188,7 @@ CREATE TABLE IF NOT EXISTS `zt_case` (
   PRIMARY KEY (`id`),
   KEY `product` (`product`),
   KEY `story` (`story`),
+  KEY `fromBug` (`fromBug`),
   KEY `module` (`module`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_casestep`;
@@ -213,6 +219,24 @@ CREATE TABLE IF NOT EXISTS `zt_company` (
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY  (`id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+-- DROP TABLE IF EXISTS `zt_compile`;
+CREATE TABLE IF NOT EXISTS `zt_compile` (
+  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `job` mediumint(8) unsigned NOT NULL,
+  `queue` mediumint(8) NOT NULL,
+  `status` varchar(255) NOT NULL,
+  `logs` text,
+  `atTime` varchar(10) NOT NULL,
+  `testtask` mediumint(8) unsigned NOT NULL,
+  `tag` varchar(255) NOT NULL,
+  `times` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `createdBy` varchar(30) NOT NULL,
+  `createdDate` datetime NOT NULL,
+  `updateDate` datetime NOT NULL,
+  `deleted` enum('0','1') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_config`;
 CREATE TABLE IF NOT EXISTS `zt_config` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -284,6 +308,7 @@ CREATE TABLE IF NOT EXISTS `zt_doc` (
   `addedDate` datetime NOT NULL,
   `editedBy` varchar(30) NOT NULL,
   `editedDate` datetime NOT NULL,
+  `mailto` text,
   `acl` varchar(10) NOT NULL DEFAULT 'open',
   `groups` varchar(255) NOT NULL,
   `users` text NOT NULL,
@@ -300,7 +325,7 @@ CREATE TABLE IF NOT EXISTS `zt_doccontent` (
   `doc` mediumint(8) unsigned NOT NULL,
   `title` varchar(255) NOT NULL,
   `digest` varchar(255) NOT NULL,
-  `content` text NOT NULL,
+  `content` longtext NOT NULL,
   `files` text NOT NULL,
   `type` varchar(10) NOT NULL,
   `version` smallint(5) unsigned NOT NULL,
@@ -384,6 +409,7 @@ CREATE TABLE IF NOT EXISTS `zt_file` (
 -- DROP TABLE IF EXISTS `zt_group`;
 CREATE TABLE IF NOT EXISTS `zt_group` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
+  `PRJ` mediumint(8) unsigned NOT NULL DEFAULT 0,
   `name` char(30) NOT NULL,
   `role` char(30) NOT NULL default '',
   `desc` char(255) NOT NULL default '',
@@ -408,6 +434,46 @@ CREATE TABLE IF NOT EXISTS `zt_history` (
   PRIMARY KEY (`id`),
   KEY `action` (`action`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+-- DROP TABLE IF EXISTS `zt_jenkins`;
+CREATE TABLE IF NOT EXISTS `zt_jenkins` (
+  `id` smallint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `url` varchar(255) DEFAULT NULL,
+  `account` varchar(30) DEFAULT NULL,
+  `password` varchar(255) NOT NULL,
+  `token` varchar(255) DEFAULT NULL,
+  `createdBy` varchar(30) NOT NULL,
+  `createdDate` datetime NOT NULL,
+  `editedBy` varchar(30) NOT NULL,
+  `editedDate` datetime NOT NULL,
+  `deleted` enum('0','1') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+-- DROP TABLE IF EXISTS `zt_job`;
+CREATE TABLE IF NOT EXISTS `zt_job` (
+  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `repo` mediumint(8) unsigned NOT NULL,
+  `product` mediumint(8) unsigned NOT NULL,
+  `frame` varchar(20) NOT NULL,
+  `jkHost` mediumint(8) unsigned NOT NULL,
+  `jkJob` varchar(500) NOT NULL,
+  `triggerType` varchar(255) NOT NULL,
+  `svnDir` varchar(255) NOT NULL,
+  `atDay` varchar(255) DEFAULT NULL,
+  `atTime` varchar(10) DEFAULT NULL,
+  `customParam` text NOT NULL,
+  `comment` varchar(255) DEFAULT NULL,
+  `createdBy` varchar(30) NOT NULL,
+  `createdDate` datetime NOT NULL,
+  `editedBy` varchar(30) NOT NULL,
+  `editedDate` datetime NOT NULL,
+  `lastExec` datetime DEFAULT NULL,
+  `lastStatus` varchar(255) DEFAULT NULL,
+  `lastTag` varchar(255) DEFAULT NULL,
+  `deleted` enum('0','1') NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_module`;
 CREATE TABLE IF NOT EXISTS `zt_module` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -430,7 +496,7 @@ CREATE TABLE IF NOT EXISTS `zt_module` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_notify`;
 CREATE TABLE IF NOT EXISTS `zt_notify` (
-  `id` mediumint unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
   `objectType` varchar(50) NOT NULL,
   `objectID` mediumint unsigned NOT NULL,
   `action` mediumint NOT NULL,
@@ -442,7 +508,9 @@ CREATE TABLE IF NOT EXISTS `zt_notify` (
   `createdDate` datetime NOT NULL,
   `sendTime` datetime NOT NULL,
   `status` varchar(10) NOT NULL DEFAULT 'wait',
-  `failReason` text NOT NULL
+  `failReason` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `objectType_toList_status` (`objectType`,`toList`,`status`)
 ) ENGINE='MyISAM' COLLATE 'utf8_general_ci';
 -- DROP TABLE IF EXISTS `zt_oauth`;
 CREATE TABLE IF NOT EXISTS `zt_oauth` (
@@ -453,6 +521,13 @@ CREATE TABLE IF NOT EXISTS `zt_oauth` (
   KEY `account` (`account`),
   KEY `providerType` (`providerType`),
   KEY `providerID` (`providerID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+-- DROP TABLE IF EXISTS `zt_planstory`;
+CREATE TABLE IF NOT EXISTS `zt_planstory` (
+  `plan` mediumint(8) unsigned NOT NULL,
+  `story` mediumint(8) unsigned NOT NULL,
+  `order` mediumint(9) NOT NULL,
+  UNIQUE KEY `plan_story` (`plan`,`story`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_product`;
 CREATE TABLE IF NOT EXISTS `zt_product` (
@@ -588,6 +663,7 @@ CREATE TABLE IF NOT EXISTS `zt_repo` (
   `acl` text NOT NULL,
   `synced` tinyint(1) NOT NULL DEFAULT '0',
   `lastSync` datetime NOT NULL,
+  `desc` text NOT NULL,
   `deleted` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -631,6 +707,7 @@ CREATE TABLE IF NOT EXISTS `zt_repohistory` (
 -- DROP TABLE IF EXISTS `zt_story`;
 CREATE TABLE IF NOT EXISTS `zt_story` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
+  `parent` mediumint(9) NOT NULL default '0',
   `product` mediumint(8) unsigned NOT NULL default '0',
   `branch` mediumint(8) unsigned NOT NULL default '0',
   `module` mediumint(8) unsigned NOT NULL default '0',
@@ -640,7 +717,7 @@ CREATE TABLE IF NOT EXISTS `zt_story` (
   `fromBug` mediumint(8) unsigned NOT NULL default '0',
   `title` varchar(255) NOT NULL,
   `keywords` varchar(255) NOT NULL,
-  `type` varchar(30) NOT NULL default '',
+  `type` varchar(30) NOT NULL default 'story',
   `pri` tinyint(3) unsigned NOT NULL default '3',
   `estimate` float unsigned NOT NULL,
   `status` enum('','changed','active','draft','closed') NOT NULL default '',
@@ -723,7 +800,7 @@ CREATE TABLE IF NOT EXISTS `zt_task` (
   `assignedTo` varchar(30) NOT NULL,
   `assignedDate` datetime NOT NULL,
   `estStarted` date NOT NULL,
-  `realStarted` date NOT NULL,
+  `realStarted` datetime NOT NULL,
   `finishedBy` varchar(30) NOT NULL,
   `finishedDate` datetime NOT NULL,
   `finishedList` text NOT NULL,
@@ -738,6 +815,7 @@ CREATE TABLE IF NOT EXISTS `zt_task` (
    PRIMARY KEY (`id`),
   KEY `project` (`project`),
   KEY `story` (`story`),
+  KEY `parent` (`parent`),
   KEY `assignedTo` (`assignedTo`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_taskestimate`;
@@ -799,10 +877,14 @@ CREATE TABLE IF NOT EXISTS `zt_testresult` (
   `run` mediumint(8) unsigned NOT NULL,
   `case` mediumint(8) unsigned NOT NULL,
   `version` smallint(5) unsigned NOT NULL,
+  `job` mediumint(8) unsigned NOT NULL,
+  `compile` mediumint(8) unsigned NOT NULL,
   `caseResult` char(30) NOT NULL,
   `stepResults` text NOT NULL,
   `lastRunner` varchar(30) NOT NULL,
   `date` datetime NOT NULL,
+  `duration` float NOT NULL,
+  `xml` text NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `case` (`case`),
   KEY `version` (`version`),
@@ -852,6 +934,7 @@ CREATE TABLE IF NOT EXISTS `zt_testtask` (
   `desc` text NOT NULL,
   `report` text NOT NULL,
   `status` enum('blocked','doing','wait','done') NOT NULL DEFAULT 'wait',
+  `auto` varchar(10) NOT NULL DEFAULT 'no',
   `subStatus` varchar(30) NOT NULL default '',
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`),
@@ -892,6 +975,7 @@ CREATE TABLE IF NOT EXISTS `zt_user` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
   `dept` mediumint(8) unsigned NOT NULL default '0',
   `account` char(30) NOT NULL default '',
+  `type` char(30) NOT NULL DEFAULT 'inside',
   `password` char(32) NOT NULL default '',
   `role` char(10) NOT NULL default '',
   `realname` varchar(100) NOT NULL default '',
@@ -925,7 +1009,8 @@ CREATE TABLE IF NOT EXISTS `zt_user` (
   UNIQUE KEY `account` (`account`),
   KEY `dept` (`dept`),
   KEY `email` (`email`),
-  KEY `commiter` (`commiter`)
+  KEY `commiter` (`commiter`),
+  KEY `deleted` (`deleted`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_usercontact`;
 CREATE TABLE IF NOT EXISTS `zt_usercontact` (
@@ -994,7 +1079,7 @@ CREATE TABLE IF NOT EXISTS `zt_entry` (
 -- DROP TABLE IF EXISTS `zt_webhook`;
 CREATE TABLE IF NOT EXISTS `zt_webhook` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `type` varchar(10) NOT NULL DEFAULT 'default',
+  `type` varchar(15) NOT NULL DEFAULT 'default',
   `name` varchar(50) NOT NULL,
   `url` varchar(255) NOT NULL,
   `domain` varchar(255) NOT NULL,
@@ -1045,6 +1130,23 @@ CREATE TABLE `zt_score` (
   KEY `method` (`method`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+-- DROP TABLE IF EXISTS `zt_relation`;
+CREATE TABLE IF NOT EXISTS `zt_relation` (
+  `id` int(8) NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+  `program` mediumint(8) NOT NULL,
+  `product` mediumint(8) NOT NULL,
+  `project` mediumint(8) NOT NULL,
+  `AType` char(30) NOT NULL,
+  `AID` mediumint(8) NOT NULL,
+  `AVersion` char(30) NOT NULL,
+  `relation` char(30) NOT NULL,
+  `BType` char(30) NOT NULL,
+  `BID` mediumint(8) NOT NULL,
+  `BVersion` char(30) NOT NULL,
+  `extra` char(30) NOT NULL,
+  UNIQUE KEY `relation` (`relation`,`AType`,`BType`, `AID`, `BID`)
+) ENGINE='MyISAM' DEFAULT CHARSET=utf8;
+
 INSERT INTO `zt_cron` (`m`, `h`, `dom`, `mon`, `dow`, `command`, `remark`, `type`, `buildin`, `status`, `lastTime`) VALUES
 ('*',    '*',    '*',    '*',    '*',    '', '监控定时任务', 'zentao', 1, 'normal',   '0000-00-00 00:00:00'),
 ('30',   '23',   '*',    '*',    '*',    'moduleName=project&methodName=computeburn', '更新燃尽图',      'zentao', 1, 'normal', '0000-00-00 00:00:00'),
@@ -1055,7 +1157,10 @@ INSERT INTO `zt_cron` (`m`, `h`, `dom`, `mon`, `dow`, `command`, `remark`, `type
 ('*/5',  '*',    '*',    '*',    '*',    'moduleName=mail&methodName=asyncSend',      '异步发信',        'zentao', 1, 'normal', '0000-00-00 00:00:00'),
 ('*/5',  '*',    '*',    '*',    '*',    'moduleName=webhook&methodName=asyncSend',   '异步发送Webhook', 'zentao', 1, 'normal', '0000-00-00 00:00:00'),
 ('*/5',  '*',    '*',    '*',    '*',    'moduleName=admin&methodName=deleteLog',     '删除过期日志',    'zentao', 1, 'normal', '0000-00-00 00:00:00'),
-('1',    '1',    '*',    '*',    '*',    'moduleName=todo&methodName=createCycle',    '生成周期性待办',  'zentao', 1, 'normal', '0000-00-00 00:00:00');
+('1',    '1',    '*',    '*',    '*',    'moduleName=todo&methodName=createCycle',    '生成周期性待办',  'zentao', 1, 'normal', '0000-00-00 00:00:00'),
+('1',    '0',    '*',    '*',    '*',    'moduleName=ci&methodName=initQueue', '创建周期性任务', 'zentao', 1, 'normal',   '0000-00-00 00:00:00'),
+('*/5',  '*',    '*',    '*',    '*',    'moduleName=ci&methodName=checkCompileStatus', '同步Jenkins任务状态', 'zentao', 1, 'normal',   '0000-00-00 00:00:00'),
+('*/5',  '*',    '*',    '*',    '*',    'moduleName=ci&methodName=exec', '执行Jenkins任务', 'zentao', 1, 'normal',   '0000-00-00 00:00:00');
 
 INSERT INTO `zt_group` (`id`, `name`, `role`, `desc`) VALUES
 (1, 'ADMIN', 'admin', 'for administrator'),
@@ -1149,6 +1254,8 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'custom', 'working'),
 (1, 'custom', 'index'),
 (1, 'custom', 'restore'),
+(1, 'custom', 'project'),
+(1, 'custom', 'product'),
 (1, 'custom', 'set'),
 (1, 'dept', 'browse'),
 (1, 'dept', 'delete'),
@@ -1312,6 +1419,30 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'release', 'unlinkStory'),
 (1, 'release', 'view'),
 (1, 'release', 'changeStatus'),
+(1, 'repo', 'view'),
+(1, 'repo', 'blame'),
+(1, 'repo', 'revision'),
+(1, 'repo', 'showSyncCommit'),
+(1, 'repo', 'download'),
+(1, 'repo', 'browse'),
+(1, 'repo', 'diff'),
+(1, 'repo', 'log'),
+(1, 'repo', 'maintain'),
+(1, 'repo', 'setRules'),
+(1, 'repo', 'create'),
+(1, 'repo', 'edit'),
+(1, 'repo', 'delete'),
+(1, 'compile', 'browse'),
+(1, 'compile', 'logs'),
+(1, 'jenkins', 'browse'),
+(1, 'jenkins', 'create'),
+(1, 'jenkins', 'edit'),
+(1, 'jenkins', 'delete'),
+(1, 'job', 'browse'),
+(1, 'job', 'create'),
+(1, 'job', 'edit'),
+(1, 'job', 'delete'),
+(1, 'job', 'exec'),
 (1, 'report', 'bugAssign'),
 (1, 'report', 'bugCreate'),
 (1, 'report', 'index'),
@@ -1335,6 +1466,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1, 'story', 'change'),
 (1, 'story', 'close'),
 (1, 'story', 'create'),
+(1, 'story', 'batchToTask'),
 (1, 'story', 'delete'),
 (1, 'story', 'edit'),
 (1, 'story', 'assignTo'),
@@ -1583,6 +1715,14 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (2, 'release', 'browse'),
 (2, 'release', 'export'),
 (2, 'release', 'view'),
+(2, 'repo', 'view'),
+(2, 'repo', 'blame'),
+(2, 'repo', 'revision'),
+(2, 'repo', 'showSyncCommit'),
+(2, 'repo', 'download'),
+(2, 'repo', 'browse'),
+(2, 'repo', 'diff'),
+(2, 'repo', 'log'),
 (2, 'report', 'bugAssign'),
 (2, 'report', 'bugCreate'),
 (2, 'report', 'index'),
@@ -1600,6 +1740,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (2, 'story', 'bugs'),
 (2, 'story', 'cases'),
 (2, 'story', 'view'),
+(2, 'story', 'batchToTask'),
 (2, 'svn', 'apiSync'),
 (2, 'svn', 'cat'),
 (2, 'svn', 'diff'),
@@ -1769,6 +1910,14 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (3, 'release', 'browse'),
 (3, 'release', 'export'),
 (3, 'release', 'view'),
+(3, 'repo', 'view'),
+(3, 'repo', 'blame'),
+(3, 'repo', 'revision'),
+(3, 'repo', 'showSyncCommit'),
+(3, 'repo', 'download'),
+(3, 'repo', 'browse'),
+(3, 'repo', 'diff'),
+(3, 'repo', 'log'),
 (3, 'report', 'bugAssign'),
 (3, 'report', 'bugCreate'),
 (3, 'report', 'index'),
@@ -1787,6 +1936,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (3, 'story', 'cases'),
 (3, 'story', 'view'),
 (3, 'story', 'zeroCase'),
+(3, 'story', 'batchToTask'),
 (3, 'svn', 'apiSync'),
 (3, 'svn', 'cat'),
 (3, 'svn', 'diff'),
@@ -2032,6 +2182,30 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (4, 'release', 'browse'),
 (4, 'release', 'export'),
 (4, 'release', 'view'),
+(4, 'repo', 'view'),
+(4, 'repo', 'blame'),
+(4, 'repo', 'revision'),
+(4, 'repo', 'showSyncCommit'),
+(4, 'repo', 'download'),
+(4, 'repo', 'browse'),
+(4, 'repo', 'diff'),
+(4, 'repo', 'log'),
+(4, 'repo', 'create'),
+(4, 'repo', 'edit'),
+(4, 'repo', 'delete'),
+(4, 'repo', 'maintain'),
+(4, 'repo', 'setRules'),
+(4, 'compile', 'browse'),
+(4, 'compile', 'logs'),
+(4, 'jenkins', 'browse'),
+(4, 'jenkins', 'create'),
+(4, 'jenkins', 'edit'),
+(4, 'jenkins', 'delete'),
+(4, 'job', 'browse'),
+(4, 'job', 'create'),
+(4, 'job', 'edit'),
+(4, 'job', 'delete'),
+(4, 'job', 'exec'),
 (4, 'report', 'bugAssign'),
 (4, 'report', 'bugCreate'),
 (4, 'report', 'index'),
@@ -2050,6 +2224,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (4, 'story', 'cases'),
 (4, 'story', 'view'),
 (4, 'story', 'zeroCase'),
+(4, 'story', 'batchToTask'),
 (4, 'svn', 'apiSync'),
 (4, 'svn', 'cat'),
 (4, 'svn', 'diff'),
@@ -2290,6 +2465,30 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (5, 'release', 'unlinkStory'),
 (5, 'release', 'view'),
 (5, 'release', 'changeStatus'),
+(5, 'repo', 'view'),
+(5, 'repo', 'blame'),
+(5, 'repo', 'revision'),
+(5, 'repo', 'showSyncCommit'),
+(5, 'repo', 'download'),
+(5, 'repo', 'browse'),
+(5, 'repo', 'diff'),
+(5, 'repo', 'log'),
+(5, 'repo', 'create'),
+(5, 'repo', 'edit'),
+(5, 'repo', 'delete'),
+(5, 'repo', 'maintain'),
+(5, 'repo', 'setRules'),
+(5, 'compile', 'browse'),
+(5, 'compile', 'logs'),
+(5, 'jenkins', 'browse'),
+(5, 'jenkins', 'create'),
+(5, 'jenkins', 'edit'),
+(5, 'jenkins', 'delete'),
+(5, 'job', 'browse'),
+(5, 'job', 'create'),
+(5, 'job', 'edit'),
+(5, 'job', 'delete'),
+(5, 'job', 'exec'),
 (5, 'report', 'bugAssign'),
 (5, 'report', 'bugCreate'),
 (5, 'report', 'index'),
@@ -2536,6 +2735,14 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (6, 'release', 'browse'),
 (6, 'release', 'export'),
 (6, 'release', 'view'),
+(6, 'repo', 'view'),
+(6, 'repo', 'blame'),
+(6, 'repo', 'revision'),
+(6, 'repo', 'showSyncCommit'),
+(6, 'repo', 'download'),
+(6, 'repo', 'browse'),
+(6, 'repo', 'diff'),
+(6, 'repo', 'log'),
 (6, 'report', 'bugAssign'),
 (6, 'report', 'bugCreate'),
 (6, 'report', 'index'),
@@ -2554,6 +2761,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (6, 'story', 'cases'),
 (6, 'story', 'view'),
 (6, 'story', 'zeroCase'),
+(6, 'story', 'batchToTask'),
 (6, 'svn', 'apiSync'),
 (6, 'svn', 'cat'),
 (6, 'svn', 'diff'),
@@ -2775,6 +2983,14 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (7, 'release', 'unlinkStory'),
 (7, 'release', 'view'),
 (7, 'release', 'changeStatus'),
+(7, 'repo', 'view'),
+(7, 'repo', 'blame'),
+(7, 'repo', 'revision'),
+(7, 'repo', 'showSyncCommit'),
+(7, 'repo', 'download'),
+(7, 'repo', 'browse'),
+(7, 'repo', 'diff'),
+(7, 'repo', 'log'),
 (7, 'report', 'bugAssign'),
 (7, 'report', 'bugCreate'),
 (7, 'report', 'index'),
@@ -2997,6 +3213,14 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (8, 'release', 'browse'),
 (8, 'release', 'export'),
 (8, 'release', 'view'),
+(8, 'repo', 'view'),
+(8, 'repo', 'blame'),
+(8, 'repo', 'revision'),
+(8, 'repo', 'showSyncCommit'),
+(8, 'repo', 'download'),
+(8, 'repo', 'browse'),
+(8, 'repo', 'diff'),
+(8, 'repo', 'log'),
 (8, 'report', 'bugAssign'),
 (8, 'report', 'bugCreate'),
 (8, 'report', 'index'),
@@ -3015,6 +3239,7 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (8, 'story', 'cases'),
 (8, 'story', 'view'),
 (8, 'story', 'zeroCase'),
+(8, 'story', 'batchToTask'),
 (8, 'svn', 'apiSync'),
 (8, 'svn', 'cat'),
 (8, 'svn', 'diff'),
@@ -3237,6 +3462,14 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (9, 'release', 'browse'),
 (9, 'release', 'export'),
 (9, 'release', 'view'),
+(9, 'repo', 'view'),
+(9, 'repo', 'blame'),
+(9, 'repo', 'revision'),
+(9, 'repo', 'showSyncCommit'),
+(9, 'repo', 'download'),
+(9, 'repo', 'browse'),
+(9, 'repo', 'diff'),
+(9, 'repo', 'log'),
 (9, 'report', 'bugAssign'),
 (9, 'report', 'bugCreate'),
 (9, 'report', 'index'),
@@ -3380,6 +3613,14 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (10, 'qa',      'index'),
 (10, 'release', 'browse'),
 (10, 'release', 'view'),
+(10, 'repo', 'view'),
+(10, 'repo', 'blame'),
+(10, 'repo', 'revision'),
+(10, 'repo', 'showSyncCommit'),
+(10, 'repo', 'download'),
+(10, 'repo', 'browse'),
+(10, 'repo', 'diff'),
+(10, 'repo', 'log'),
 (10, 'report', 'bugAssign'),
 (10, 'report', 'bugCreate'),
 (10, 'report', 'index'),
@@ -3520,3 +3761,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (11, 'user', 'todo'),
 (11, 'user', 'view'),
 (12, 'my', 'limited');
+
+INSERT INTO `zt_config` (`owner`, `module`, `section`, `key`, `value`) VALUES ('system', 'common', '', 'CRProduct', '1');
+INSERT INTO `zt_config` (`owner`, `module`, `section`, `key`, `value`) VALUES ('system', 'common', '', 'CRProject', '1');

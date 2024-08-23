@@ -92,9 +92,11 @@ $(function()
     <div class="col col-nav">
       <ul class="nav nav-stacked nav-secondary scrollbar-hover" id='<?php echo $blockNavId;?>'>
         <li class='switch-icon prev'><a><i class='icon icon-arrow-left'></i></a></li>
+        <?php $selected = empty($_SESSION['project'])  ? key($projects) : $this->session->project;?>
+        <?php $selected = !isset($projects[$selected]) ? key($projects) : $selected;?>
         <?php foreach($projects as $project):?>
-        <li <?php if($project->id == $this->session->project) echo "class='active' id='activeProject'";?> projectID='<?php echo $project->id;?>'>
-          <a href="###" data-target="#tab3Content<?php echo $project->id;?>" data-toggle="tab"><?php echo $project->name;?></a>
+        <li <?php if($project->id == $selected) echo "class='active' id='activeProject'";?> projectID='<?php echo $project->id;?>'>
+          <a href="###" data-target="#tab3Content<?php echo $project->id;?>" data-toggle="tab" title='<?php echo $project->name;?>'><?php echo $project->name;?></a>
           <?php echo html::a(helper::createLink('project', 'task', "projectID=$project->id"), "<i class='icon-arrow-right text-primary'></i>", '', "class='btn-view' title={$lang->project->task}");?>
         </li>
         <?php endforeach;?>
@@ -103,7 +105,7 @@ $(function()
     </div>
     <div class="col tab-content">
       <?php foreach($projects as $project):?>
-      <div class="tab-pane fade<?php if($project->id == $this->session->project) echo ' active in';?>" id="tab3Content<?php echo $project->id;?>">
+      <div class="tab-pane fade<?php if($project->id == $selected) echo ' active in';?>" id="tab3Content<?php echo $project->id;?>">
         <div class="table-row">
           <div class="col-5 text-middle text-center">
             <div class="progress-pie inline-block space" data-value="<?php echo $project->progress;?>" data-doughnut-size="84">
@@ -116,17 +118,17 @@ $(function()
             <div class="table-row text-center small text-muted with-padding">
               <div class="col-4 text-bottom">
                 <div><?php echo $lang->project->totalEstimate;?></div>
-                <div><?php echo $project->totalEstimate;?> <span class="muted"><?php echo $lang->task->hour;?></span></div>
+                <div><?php echo (float)$project->totalEstimate;?> <span class="muted"><?php echo $lang->task->hour;?></span></div>
               </div>
               <div class="col-4">
                 <span class="label label-dot label-primary"></span>
                 <div><?php echo $lang->project->totalConsumed;?></div>
-                <div><?php echo $project->totalConsumed;?> <span class="muted"><?php echo $lang->task->hour;?></span></div>
+                <div><?php echo (float)$project->totalConsumed;?> <span class="muted"><?php echo $lang->task->hour;?></span></div>
               </div>
               <div class="col-4">
                 <span class="label label-dot label-pale"></span>
                 <div><?php echo $lang->project->totalLeft;?></div>
-                <div><?php echo $project->totalLeft;?> <span class="muted"><?php echo $lang->task->hour;?></span></div>
+                <div><?php echo (float)$project->totalLeft;?> <span class="muted"><?php echo $lang->task->hour;?></span></div>
               </div>
             </div>
           </div>
@@ -152,6 +154,7 @@ $(function()
                 </div>
               </div>
             </div>
+            <?php if($this->config->global->flow != 'onlyTask'): ?>
             <div class="product-info">
               <div class="progress-info"><i class="icon icon-check-circle text-success icon-sm"></i> <span class="text-muted"><?php echo $lang->story->released;?></span> <strong><?php echo $project->releasedStories;?></strong></div>
               <div class="progress">
@@ -193,6 +196,7 @@ $(function()
                 </div>
               </div>
             </div>
+            <?php endif;?>
           </div>
         </div>
       </div>

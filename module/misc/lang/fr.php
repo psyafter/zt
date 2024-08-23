@@ -13,7 +13,7 @@ $lang->misc = new stdclass();
 $lang->misc->common = 'Misc';
 $lang->misc->ping   = 'Ping';
 $lang->misc->api    = 'https://api.zentao.pm';
-$lang->misc->enApi  = 'http://api.zentao.pm';
+$lang->misc->enApi  = 'https://api.zentao.pm';
 
 $lang->misc->zentao = new stdclass();
 $lang->misc->zentao->version           = 'Version %s';
@@ -21,7 +21,7 @@ $lang->misc->zentao->labels['about']   = 'A Propos';
 $lang->misc->zentao->labels['support'] = 'Support Technique';
 $lang->misc->zentao->labels['cowin']   = 'Aider ZenTao';
 $lang->misc->zentao->labels['service'] = 'Services';
-$lang->misc->zentao->labels['others']  = 'Other Products';
+$lang->misc->zentao->labels['others']  = 'Autres Produits';
 
 $lang->misc->zentao->icons['about']   = 'group';
 $lang->misc->zentao->icons['support'] = 'question-sign';
@@ -44,17 +44,17 @@ $lang->misc->zentao->support['manual']     = "English User Manual";
 
 $lang->misc->zentao->cowin['reportbug']    = "Signaler un Bug";
 $lang->misc->zentao->cowin['feedback']     = "Feedback";
-$lang->misc->zentao->cowin['translate']    = "Translate";
+$lang->misc->zentao->cowin['translate']    = "Traduire";
 $lang->misc->zentao->cowin['recommend']    = "Plus...";
 
-$lang->misc->zentao->service['zentaotrain']= 'Zentao Train';
+
 $lang->misc->zentao->service['idc']        = 'Zentao Cloud';
 $lang->misc->zentao->service['custom']     = 'Zentao Custom';
 $lang->misc->zentao->service['servicemore']= 'Plus...';
 
 global $config;
 $lang->misc->zentao->others['chanzhi']  = "<img src='{$config->webRoot}theme/default/images/main/chanzhi.ico' /> Zsite";
-$lang->misc->zentao->others['ranzhi']   = "<img src='{$config->webRoot}theme/default/images/main/ranzhi.ico' /> Zdoo";
+$lang->misc->zentao->others['zdoo']     = "<img src='{$config->webRoot}theme/default/images/main/zdoo.ico' /> ZDOO";
 
 $lang->misc->zentao->others['ydisk']    = "<img src='{$config->webRoot}theme/default/images/main/ydisk.ico' /> Y Disk";
 $lang->misc->zentao->others['meshiot' ] = "<img src='{$config->webRoot}theme/default/images/main/meshiot.ico' /> MeshioT";
@@ -70,8 +70,9 @@ $lang->misc->connectFail = "Echec de connexion à la Base de données. Erreur: %
 $lang->misc->tableName   = "Nom de la Table";
 $lang->misc->tableStatus = "Statut";
 $lang->misc->novice      = "Nouveau dans ZenTao ? Voulez-vous commencer le Tutoriel ?";
-$lang->misc->showAnnual  = 'Add annual summary';
-$lang->misc->annualDesc  = 'After version 12.0, the new annual report function can be viewed on the 『Report->Annual Summary』 page. <a href="%s" target="_blank" id="showAnnual" class="btn btn-mini btn-primary">See now</a>.';
+$lang->misc->showAnnual  = 'Ajouter un résumé annuel';
+$lang->misc->annualDesc  = 'A partir de la version 12.0, la nouvelle fonction de rapport annuel peut être consultée sur la page 『Report->Annual Summary』. <a href="%s" target="_blank" id="showAnnual" class="btn btn-mini btn-primary">Consulter Maintenant</a>.';
+$lang->misc->remind      = 'Rappels des nouvelles fonctionnalités';
 
 $lang->misc->noticeRepair = "<h5>Si vous n'êtes pas l'administrateur, contactez votre administrateur ZenTao pour réparer les tables.</h5>
     <h5>Si vous êtes l'administrateur, connectez-vous à votre serveur ZenTao et créez un fichier vide dont le nom est <span>%s</span>.</h5>
@@ -85,6 +86,21 @@ $lang->misc->feature = new stdclass();
 $lang->misc->feature->lastest  = 'Dernière Version';
 $lang->misc->feature->detailed = 'Détail';
 
+$lang->misc->releaseDate['12.5.3']      = '2021-01-06';
+$lang->misc->releaseDate['12.5.2']      = '2020-12-18';
+$lang->misc->releaseDate['12.5.1']      = '2020-11-30';
+$lang->misc->releaseDate['12.5.stable'] = '2020-11-19';
+$lang->misc->releaseDate['12.4.4']      = '2020-10-30';
+$lang->misc->releaseDate['12.4.3']      = '2020-10-13';
+$lang->misc->releaseDate['12.4.2']      = '2020-09-18';
+$lang->misc->releaseDate['12.4.1']      = '2020-08-10';
+$lang->misc->releaseDate['12.4.stable'] = '2020-07-28';
+$lang->misc->releaseDate['12.3.3']      = '2020-07-02';
+$lang->misc->releaseDate['12.3.2']      = '2020-06-01';
+$lang->misc->releaseDate['12.3.1']      = '2020-05-15';
+$lang->misc->releaseDate['12.3']        = '2020-04-08';
+$lang->misc->releaseDate['12.2']        = '2020-03-25';
+$lang->misc->releaseDate['12.1']        = '2020-03-10';
 $lang->misc->releaseDate['12.0.1']      = '2020-02-12';
 $lang->misc->releaseDate['12.0']        = '2020-01-03';
 $lang->misc->releaseDate['11.7']        = '2019-11-28';
@@ -123,6 +139,24 @@ $lang->misc->releaseDate['7.2.stable']  = '2015-05-22';
 $lang->misc->releaseDate['7.1.stable']  = '2015-03-07';
 $lang->misc->releaseDate['6.3.stable']  = '2014-11-07';
 
+$lang->misc->feature->all['12.5.3'][]      = array('title' => 'Adjust annual data.', 'desc' => '');
+$lang->misc->feature->all['12.5.2'][]      = array('title' => 'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['12.5.1'][]      = array('title' => 'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['12.5.stable'][] = array('title' => 'Fix Bug. Complete high priority story.', 'desc' => '');
+
+$lang->misc->feature->all['12.4.4'][] = array('title'=>'Compatible with professional and enterprise editions', 'desc' => '');
+$lang->misc->feature->all['12.4.3'][] = array('title'=>'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['12.4.2'][] = array('title'=>'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['12.4.1'][] = array('title'=>'Fix Bug', 'desc' => '');
+
+$lang->misc->feature->all['12.4.stable'][] = array('title'=>'Fix Bug', 'desc' => '');
+
+$lang->misc->feature->all['12.3.3'][] = array('title'=>'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['12.3.2'][] = array('title'=>'Fix workflow', 'desc' => '');
+$lang->misc->feature->all['12.3.1'][] = array('title'=>'Fix bugs of high severity.', 'desc' => '');
+$lang->misc->feature->all['12.3'][]   = array('title'=>'Integrate unit test, open the continuous integration closed-loop.', 'desc' => '');
+$lang->misc->feature->all['12.2'][]   = array('title'=>'Add parent-child story, compatible xuanxuan.', 'desc' => '');
+$lang->misc->feature->all['12.1'][]   = array('title'=>'Add Integration.', 'desc' => '<p>Add integration, and build in Jenkins</p>');
 $lang->misc->feature->all['12.0.1'][] = array('title'=>'Fix Bug.', 'desc' => '');
 
 $lang->misc->feature->all['12.0'][]   = array('title'=>'Move repo function to zentao', 'desc' => '');

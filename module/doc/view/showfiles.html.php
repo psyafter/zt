@@ -36,6 +36,7 @@
                   echo html::hidden('pageID',     isset($this->get->pageID) ? $this->get->pageID : 0);
               }
               ?>
+              <?php echo html::hidden('onlybody', isonlybody() ? 'yes' : 'no');?>
               <?php echo html::input('title', $this->get->title, "class='form-control' placeholder='{$lang->doc->fileTitle}'");?>
               <?php echo html::submitButton("<i class='icon icon-search'></i>", '', "btn  btn-icon btn-link input-control-icon-right");?>
             </form>
@@ -78,7 +79,7 @@
                 <td class="c-actions">
                   <?php
                   common::printLink('file', 'download', "fileID=$file->id", '<i class="icon-import"></i>', "data-toggle='modal'", "class='btn' title={$lang->doc->download}", true, false, $file);
-                  common::printLink('file', 'delete',   "fileID=$file->id", '<i class="icon-trash"></i>', 'hiddenwin', "class='btn' title={$lang->delete}", true, false, $file);
+                  if($canBeChanged) common::printLink('file', 'delete',   "fileID=$file->id", '<i class="icon-trash"></i>', 'hiddenwin', "class='btn' title={$lang->delete}", true, false, $file);
                   ?>
                 </td>
               </tr>
@@ -134,7 +135,7 @@
                 <div class='file-name'><a href='<?php echo $this->createLink($file->objectType, 'view', "objectID=$file->objectID");?>' title='<?php echo substr($file->addedDate, 0, 10)?>'><?php echo $file->title . ' [' . strtoupper($file->objectType) . ' #' . $file->objectID . ']';?></a></div>
               </div>
               <div class='actions'>
-                <?php if(common::hasPriv('file', 'delete')): ?>
+                <?php if(common::hasPriv('file', 'delete') and $canBeChanged): ?>
                 <a href='<?php echo $this->createLink('file', 'delete', "fileID=$file->id"); ?>' target='hiddenwin' title='<?php echo $lang->delete?>' class='delete btn btn-link'><i class='icon icon-trash'></i></a>
                 <?php endif?>
               </div>
@@ -142,7 +143,12 @@
           </div>
           <?php endforeach;?>
         </div>
+        <?php if(!empty($files)):?>
         <div class='table-footer'><?php $pager->show('right', 'pagerjs');?></div>
+        <?php else:?>
+        <div class='table-empty-tip text-muted'><?php echo $lang->pager->noRecord;?></div>
+        <?php endif?>
+        </div>
       </div>
       <?php endif?>
     </div>

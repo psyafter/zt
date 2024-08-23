@@ -42,7 +42,7 @@ $lang->user->join             = '入職日期';
 $lang->user->visits           = '訪問次數';
 $lang->user->ip               = '最後IP';
 $lang->user->last             = '最後登錄';
-$lang->user->ranzhi           = '然之帳號';
+$lang->user->ranzhi           = 'ZDOO帳號';
 $lang->user->ditto            = '同上';
 $lang->user->originalPassword = '原密碼';
 $lang->user->newPassword      = '新密碼';
@@ -61,14 +61,16 @@ $lang->user->edit          = "編輯用戶";
 $lang->user->batchEdit     = "批量編輯";
 $lang->user->unlock        = "解鎖用戶";
 $lang->user->delete        = "刪除用戶";
-$lang->user->unbind        = "解除然之綁定";
+$lang->user->unbind        = "解除ZDOO綁定";
 $lang->user->login         = "用戶登錄";
+$lang->user->bind          = "綁定已有賬戶";
+$lang->user->oauthRegister = "註冊新賬號";
 $lang->user->mobileLogin   = "手機訪問";
 $lang->user->editProfile   = "修改檔案";
 $lang->user->deny          = "訪問受限";
 $lang->user->confirmDelete = "您確定刪除該用戶嗎？";
 $lang->user->confirmUnlock = "您確定解除該用戶的鎖定狀態嗎？";
-$lang->user->confirmUnbind = "您確定解除該用戶跟然之的綁定嗎？";
+$lang->user->confirmUnbind = "您確定解除該用戶跟ZDOO的綁定嗎？";
 $lang->user->relogin       = "重新登錄";
 $lang->user->asGuest       = "遊客訪問";
 $lang->user->goback        = "返回前一頁";
@@ -214,3 +216,6 @@ $lang->user->noticeResetFile = "<h5>普通用戶請聯繫管理員重置密碼</
     <li>檔案內容為空。</li>
     <li>如果之前檔案存在，刪除之後重新創建。</li>
     </ol>"; 
+$lang->user->notice4Safe = "警告：檢測到一鍵安裝包密碼口令弱";
+$lang->user->process4DIR = "檢測到您可能在使用一鍵安裝包環境，該環境中其他站點還在用簡單密碼，安全起見，如果不使用其他站點，請及時處理。將 %s 目錄刪除或改名。詳情查看：<a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";
+$lang->user->process4DB  = "檢測到您可能在使用一鍵安裝包環境，該環境中其他站點還在用簡單密碼，安全起見，如果不使用其他站點，請及時處理。請登錄資料庫，修改 %s 資料庫的zt_user表的password欄位。詳情查看：<a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";

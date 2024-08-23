@@ -69,6 +69,7 @@ class fileModel extends model
     public function getById($fileID)
     {
         $file = $this->dao->findById($fileID)->from(TABLE_FILE)->fetch();
+        if(empty($file)) return false;
 
         $realPathName   = $this->getRealPathName($file->pathname);
         $file->realPath = $this->savePath . $realPathName;
@@ -210,6 +211,9 @@ class fileModel extends model
         $file['chunks']    = isset($_POST['chunks']) ? intval($_POST['chunks']) : 0;
         $file['chunk']     = isset($_POST['chunk'])  ? intval($_POST['chunk'])  : 0;
 
+        /* Fix for build uuid like '../../'. */
+        if(!preg_match('/[a-z0-9_]/i', $file['uuid'])) return false;
+
         if(stripos($this->config->file->allowed, ',' . $file['extension'] . ',') === false)
         {
             $file['pathname'] = $file['pathname'] . '.notAllowed';
@@ -296,6 +300,8 @@ class fileModel extends model
     public function getExtension($filename)
     {
         $extension = trim(strtolower(pathinfo($filename, PATHINFO_EXTENSION)));
+        if($extension and strpos($extension, '::') !== false) $extension = substr($extension, 0, strpos($extension, '::'));
+
         if(empty($extension) or stripos(",{$this->config->file->dangers},", ",{$extension},") !== false) return 'txt';
         if(empty($extension) or stripos(",{$this->config->file->allowed},", ",{$extension},") === false) return 'txt';
         if($extension == 'php') return 'txt';
@@ -346,6 +352,20 @@ class fileModel extends model
             ->markRight(1)
             ->orderBy('id')
             ->fetchAll();
+    }
+
+    /**
+     * Get tmp import path.
+     * 
+     * @access public
+     * @return string
+     */
+    public function getPathOfImportedFile()
+    {
+        $path = $this->app->getTmpRoot() . 'import';
+        if(!is_dir($path)) mkdir($path, 0755, true);
+
+        return $path;
     }
 
     /**
@@ -518,11 +538,11 @@ class fileModel extends model
     public function parseCSV($fileName)
     {
         /* Parse file only in zentao. */
-        if(strpos(realpath($fileName), $this->app->getBasePath()) !== 0) return array();
+        if(strpos($fileName, $this->app->getBasePath()) !== 0) return array();
 
         $content = file_get_contents($fileName);
         /* Fix bug #890. */
-        $content = str_replace("\x82\x32", "\x10", $content);
+        $content = str_replace(array("\r\n","\r"), "\n", $content);
         $lines   = explode("\n", $content);
 
         $col  = -1;
@@ -569,7 +589,7 @@ class fileModel extends model
                 while($line)
                 {
                     /* the cell has '"', the delimiter is '",'. */
-                    if($line{0} == '"')
+                    if($line[0] == '"')
                     {
                         $pos  = strpos($line, '",');
                         if($pos === false)
@@ -814,19 +834,22 @@ class fileModel extends model
             if(isset($this->config->file->convertURL['common'][$methodName]) or isset($this->config->file->convertURL[$moduleName][$methodName]))
             {
                 $fieldData = $data->$field;
-                preg_match_all('/(<a[^>]*>[^<]*<\/a>)/i', $fieldData, $aTags);
+                preg_match_all('/(<a[^>]*>.*<\/a>)/Ui', $fieldData, $aTags);
                 preg_match_all('/(<img[^>]*>)/i', $fieldData, $imgTags);
                 preg_match_all('/(<iframe[^>]*>[^<]*<\/iframe>)/i', $fieldData, $iframeTags);
+                preg_match_all('/(<pre[^>]*>.*<\/pre>)/sUi', $fieldData, $preTags);
 
                 foreach($aTags[0] as $i => $aTag) $fieldData = str_replace($aTag, "<A_{$i}>", $fieldData);
                 foreach($imgTags[0] as $i => $imgTag) $fieldData = str_replace($imgTag, "<IMG_{$i}>", $fieldData);
                 foreach($iframeTags[0] as $i => $iframeTag) $fieldData = str_replace($iframeTag, "<IFRAME_{$i}>", $fieldData);
+                foreach($preTags[0] as $i => $preTag) $fieldData = str_replace($preTag, "<PRE_{$i}>", $fieldData);
 
                 $fieldData = preg_replace('/(http:\/\/|https:\/\/)((\w|=|\?|\.|\/|\&|-|%|;)+)/i', "<a href='\\0' target='_blank'>\\0</a>", $fieldData);
 
                 foreach($aTags[0] as $i => $aTag) $fieldData = str_replace("<A_{$i}>", $aTag, $fieldData);
                 foreach($imgTags[0] as $i => $imgTag) $fieldData = str_replace("<IMG_{$i}>", $imgTag, $fieldData);
                 foreach($iframeTags[0] as $i => $iframeTag) $fieldData = str_replace("<IFRAME_{$i}>", $iframeTag, $fieldData);
+                foreach($preTags[0] as $i => $preTag) $fieldData = str_replace("<PRE_{$i}>", $preTag, $fieldData);
 
                 $data->$field = $fieldData;
             }
@@ -869,7 +892,7 @@ class fileModel extends model
      * @access public
      * @return void
      */
-    public function sendDownHeader($fileName, $fileType, $content)
+    public function sendDownHeader($fileName, $fileType, $content, $type = 'content')
     {
         /* Clean the ob content to make sure no space or utf-8 bom output. */
         $obLevel = ob_get_level();
@@ -877,6 +900,9 @@ class fileModel extends model
 
         /* Set the downloading cookie, thus the export form page can use it to judge whether to close the window or not. */
         setcookie('downloading', 1, 0, $this->config->webRoot, '', false, false);
+
+        /* Only download upload file that is in zentao. */
+        if($type == 'file' and stripos($content, $this->savePath) !== 0) die();
 
         /* Append the extension name auto. */
         $extension = '.' . $fileType;
@@ -893,6 +919,17 @@ class fileModel extends model
         header("Content-Disposition: attachment; filename=\"$fileName\"");
         header("Pragma: no-cache");
         header("Expires: 0");
-        die($content);
+        if($type == 'content') die($content);
+        if($type == 'file' and file_exists($content))
+        {
+            if(stripos($content, $this->app->getBasePath()) !== 0) die();
+
+            set_time_limit(0);
+            $chunkSize = 10 * 1024 * 1024;
+            $handle    = fopen($content, "r");
+            while(!feof($handle)) echo fread($handle, $chunkSize);
+            fclose($handle);
+            die();
+        }
     }
 }

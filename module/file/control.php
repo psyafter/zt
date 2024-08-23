@@ -149,8 +149,7 @@ class file extends control
                 /* Down the file. */
                 $fileName = $file->title;
                 if(!preg_match("/\.{$file->extension}$/", $fileName)) $fileName .= '.' . $file->extension;
-                $fileData = file_get_contents($file->realPath);
-                $this->sendDownHeader($fileName, $file->extension, $fileData);
+                $this->sendDownHeader($fileName, $file->extension, $file->realPath, 'file');
             }
         }
         else
@@ -244,9 +243,9 @@ class file extends control
      * @access public
      * @return void
      */
-    public function sendDownHeader($fileName, $fileType, $content)
+    public function sendDownHeader($fileName, $fileType, $content, $type = 'content')
     {
-        $this->file->sendDownHeader($fileName, $fileType, $content);
+        $this->file->sendDownHeader($fileName, $fileType, $content, $type);
     }
 
     /**
@@ -280,13 +279,15 @@ class file extends control
      *
      * @param  array  $files
      * @param  string $fieldset
+     * @param  object $object
      * @access public
      * @return void
      */
-    public function printFiles($files, $fieldset)
+    public function printFiles($files, $fieldset, $object = null)
     {
         $this->view->files    = $files;
         $this->view->fieldset = $fieldset;
+        $this->view->object   = $object;
         $this->display();
     }
 
@@ -332,10 +333,7 @@ class file extends control
      */
     public function ajaxPasteImage($uid = '')
     {
-        if($_POST)
-        {
-            echo $this->file->pasteImage($this->post->editor, $uid);
-        }
+        if($_POST) die($this->file->pasteImage($this->post->editor, $uid));
     }
 
     /**
@@ -458,7 +456,7 @@ class file extends control
         $obLevel = ob_get_level();
         for($i = 0; $i < $obLevel; $i++) ob_end_clean();
 
-        $mime = in_array($file->extension, $this->config->file->imageExtensions) ? "image/{$file->extension}" : $this->config->file->mimes['default'];
+        $mime = (isset($file->extension) and in_array($file->extension, $this->config->file->imageExtensions)) ? "image/{$file->extension}" : $this->config->file->mimes['default'];
         header("Content-type: $mime");
 
         $cacheMaxAge = 10 * 365 * 24 * 3600;

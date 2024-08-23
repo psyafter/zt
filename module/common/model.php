@@ -11,6 +11,8 @@
  */
 class commonModel extends model
 {
+    static public $requestErrors = array();
+
     /**
      * The construc method, to do some auto things.
      *
@@ -44,6 +46,19 @@ class commonModel extends model
     {
         header("Content-Type: text/html; Language={$this->config->charset}");
         header("Cache-control: private");
+
+        if($this->loadModel('setting')->getItem('owner=system&module=sso&key=turnon'))
+        {    
+            if(isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == 'on') 
+            {    
+                $session = $this->config->sessionVar . '=' . session_id();
+                header("Set-Cookie: $session; SameSite=None; Secure=true", false);
+            }    
+        }    
+        else 
+        {    
+            if(!empty($this->config->xFrameOptions)) header("X-Frame-Options: {$this->config->xFrameOptions}");
+        } 
     }
 
     /**
@@ -167,10 +182,19 @@ class commonModel extends model
         {
             if(stripos($method, 'ajax') !== false) return true;
             if($module == 'misc' and $method == 'downloadclient') return true;
+            if($module == 'misc' and $method == 'changelog')  return true;
+            if($module == 'tutorial' and $method == 'start')  return true;
+            if($module == 'tutorial' and $method == 'index')  return true;
+            if($module == 'tutorial' and $method == 'quit')   return true;
+            if($module == 'tutorial' and $method == 'wizard') return true;
+            if($module == 'block' and $method == 'admin') return true;
+            if($module == 'block' and $method == 'set') return true;
+            if($module == 'block' and $method == 'sort') return true;
+            if($module == 'block' and $method == 'resize') return true;
+            if($module == 'block' and $method == 'dashboard') return true;
+            if($module == 'block' and $method == 'printblock') return true;
             if($module == 'block' and $method == 'main') return true;
-            if($module == 'misc' and $method == 'changelog') return true;
-            if($module == 'tutorial') return true;
-            if($module == 'block') return true;
+            if($module == 'block' and $method == 'delete') return true;
             if($module == 'product' and $method == 'showerrornone') return true;
             if($module == 'report' and $method == 'annualdata') return true;
         }
@@ -254,7 +278,7 @@ class commonModel extends model
             {
                 echo '<li class="user-profile-item">';
                 echo "<a href='" . helper::createLink('my', 'profile') . "' class='" . (!empty($app->user->role) && isset($lang->user->roleList[$app->user->role]) ? '' : ' no-role') . "'>";
-                echo "<div class='avatar avatar bg-secondary avatar-circle'>" . strtoupper($app->user->account{0}) . "</div>\n";
+                echo "<div class='avatar avatar bg-secondary avatar-circle'>" . strtoupper($app->user->account[0]) . "</div>\n";
                 echo '<div class="user-profile-name">' . (empty($app->user->realname) ? $app->user->account : $app->user->realname) . '</div>';
                 if(isset($lang->user->roleList[$app->user->role])) echo '<div class="user-profile-role">' . $lang->user->roleList[$app->user->role] . '</div>';
                 echo '</a></li><li class="divider"></li>';
@@ -316,7 +340,10 @@ class commonModel extends model
         echo "<a data-toggle='dropdown'>" . $lang->help . "</a>";
         echo "<ul class='dropdown-menu pull-left'>";
         if($config->global->flow == 'full' && !commonModel::isTutorialMode() and $app->user->account != 'guest') echo '<li>' . html::a(helper::createLink('tutorial', 'start'), $lang->noviceTutorial, '', "class='iframe' data-class-name='modal-inverse' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . "</li>";
-        echo '<li>' . html::a($lang->manualUrl, $lang->manual, '_blank', "class='open-help-tab'") . '</li>';
+
+        $manualUrl = (!empty($config->isINT)) ? $config->manualUrl['int'] : $config->manualUrl['home'];
+        echo '<li>' . html::a($manualUrl, $lang->manual, '_blank', "class='open-help-tab'") . '</li>';
+
         echo '<li>' . html::a(helper::createLink('misc', 'changeLog'), $lang->changeLog, '', "class='iframe' data-width='800' data-headerless='true' data-backdrop='true' data-keyboard='true'") . '</li>';
         echo "</ul></li>\n";
         echo '<li>' . html::a(helper::createLink('misc', 'about'), $lang->aboutZenTao, '', "class='about iframe' data-width='1050' data-headerless='true' data-backdrop='true' data-keyboard='true' data-class='modal-about'") . '</li>';
@@ -548,8 +575,11 @@ class commonModel extends model
         $isTutorialMode = commonModel::isTutorialMode();
         $currentModule  = $app->getModuleName();
         $currentMethod  = $app->getMethodName();
-        $menu           = customModel::getModuleMenu($moduleName);
         $isMobile       = $app->viewType === 'mhtml';
+
+        /* When use workflow then set rawModule to moduleName. */
+        if($moduleName == 'flow') $moduleName = $app->rawModule;
+        $menu = customModel::getModuleMenu($moduleName);
 
         /* If this is not workflow then use rawModule and rawMethod to judge highlight. */
         if(!$app->isFlow)
@@ -557,6 +587,7 @@ class commonModel extends model
             $currentModule  = $app->rawModule;
             $currentMethod  = $app->rawMethod;
         }
+
         if($isTutorialMode and defined('WIZARD_MODULE')) $currentModule  = WIZARD_MODULE;
         if($isTutorialMode and defined('WIZARD_METHOD')) $currentMethod  = WIZARD_METHOD;
 
@@ -662,11 +693,8 @@ class commonModel extends model
         echo '<li>' . html::a(helper::createLink('my', 'index'), $lang->zentaoPMS) . '</li>';
         if($moduleName != 'index')
         {
-            if(!isset($lang->menu->$mainMenu))
-            {
-                echo "</ul>";
-                return;
-            }
+            if(!isset($lang->menu->$mainMenu)) return print("</ul>");
+
             $menuLink = $lang->menu->$mainMenu;
             list($menuLabel, $module, $method) = explode('|', $menuLink);
             echo '<li>' . html::a(helper::createLink($module, $method), $menuLabel) . '</li>';
@@ -680,9 +708,10 @@ class commonModel extends model
             echo '</ul>';
             return;
         }
-        foreach($position as $key => $link)
+
+        if(is_array($position))
         {
-            echo "<li class='active'>" . $link . '</li>';
+            foreach($position as $key => $link) echo "<li class='active'>" . $link . '</li>';
         }
         echo '</ul>';
     }
@@ -859,6 +888,13 @@ class commonModel extends model
     </div>
   </div>
 </div>
+<script>
+$(function()
+{
+    \$body = $('body', window.parent.document);
+    if(\$body.hasClass('hide-modal-close')) \$body.removeClass('hide-modal-close');
+});
+</script>
 EOD;
     }
 
@@ -928,6 +964,7 @@ EOD;
         }
         if(strpos(',edit,copy,report,export,delete,', ",$method,") !== false) $module = 'common';
         $class = "icon-$module-$method";
+
         if(!$clickable) $class .= ' disabled';
         if($icon)       $class .= ' icon-' . $icon;
 
@@ -1210,11 +1247,9 @@ EOD;
      */
     public function getPreAndNextObject($type, $objectID)
     {
-        $preAndNextObject = new stdClass();
-
-        /* Use existObject when the preAndNextObject of this objectID has exist in session. */
-        $existObject = $type . 'PreAndNext';
-        if(isset($_SESSION[$existObject]) and $_SESSION[$existObject]['objectID'] == $objectID) return $_SESSION[$existObject]['preAndNextObject'];
+        $preAndNextObject       = new stdClass();
+        $preAndNextObject->pre  = '';
+        $preAndNextObject->next = '';
 
         /* Get objectIDList. */
         $table             = $this->config->objectTables[$type];
@@ -1236,8 +1271,6 @@ EOD;
         }
 
         $preObj  = false;
-        $preAndNextObject->pre  = '';
-        $preAndNextObject->next = '';
         while($object = $queryObjects->fetch())
         {
             $key = (!$this->session->$typeOnlyCondition and $type == 'testcase' and isset($object->case)) ? 'case' : 'id';
@@ -1259,6 +1292,7 @@ EOD;
             if($preObj !== true) $preObj = $object;
         }
 
+        $existObject = $type . 'PreAndNext';
         $this->session->set($existObject, array('objectID' => $objectID, 'preAndNextObject' => $preAndNextObject));
         return $preAndNextObject;
     }
@@ -1276,17 +1310,17 @@ EOD;
         /* Set the query condition session. */
         if($onlyCondition)
         {
-            $queryCondition = explode('WHERE', $sql);
+            $queryCondition = explode(' WHERE ', $sql);
             $queryCondition = isset($queryCondition[1]) ? $queryCondition[1] : '';
             if($queryCondition)
             {
-                $queryCondition = explode('ORDER', $queryCondition);
+                $queryCondition = explode(' ORDER BY ', $queryCondition);
                 $queryCondition = str_replace('t1.', '', $queryCondition[0]);
             }
         }
         else
         {
-            $queryCondition = explode('ORDER', $sql);
+            $queryCondition = explode(' ORDER BY ', $sql);
             $queryCondition = $queryCondition[0];
         }
         $queryCondition = trim($queryCondition);
@@ -1296,11 +1330,11 @@ EOD;
         $this->session->set($objectType . 'OnlyCondition', $onlyCondition);
 
         /* Set the query condition session. */
-        $orderBy = explode('ORDER BY', $sql);
+        $orderBy = explode(' ORDER BY ', $sql);
         $orderBy = isset($orderBy[1]) ? $orderBy[1] : '';
         if($orderBy)
         {
-            $orderBy = explode('LIMIT', $orderBy);
+            $orderBy = explode(' LIMIT ', $orderBy);
             $orderBy = $orderBy[0];
             if($onlyCondition) $orderBy = str_replace('t1.', '', $orderBy);
         }
@@ -1385,6 +1419,20 @@ EOD;
     }
 
     /**
+     * Check safe file.
+     *
+     * @access public
+     * @return string|false
+     */
+    public function checkSafeFile()
+    {
+        if($this->app->getModuleName() == 'upgrade' and $this->session->upgrading) return false;
+
+        $statusFile = $this->app->getAppRoot() . 'www' . DIRECTORY_SEPARATOR . 'ok.txt';
+        return (!is_file($statusFile) or (time() - filemtime($statusFile)) > 3600) ? $statusFile : false;
+    }
+
+    /**
      * Check upgrade's status file is ok or not.
      *
      * @access public
@@ -1392,9 +1440,10 @@ EOD;
      */
     public function checkUpgradeStatus()
     {
-        $statusFile = $this->loadModel('upgrade')->checkSafeFile();
+        $statusFile = $this->checkSafeFile();
         if($statusFile)
         {
+            $this->app->loadLang('upgrade');
             $cmd = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' ? $this->lang->upgrade->createFileWinCMD : $this->lang->upgrade->createFileLinuxCMD;
             $cmd = sprintf($cmd, $statusFile);
 
@@ -1421,14 +1470,13 @@ EOD;
             $method = $this->app->rawMethod;
         }
 
-        if(!empty($this->app->user->modifyPassword) and (($module != 'my' or $method != 'changepassword') and ($module != 'user' or $method != 'logout'))) die(js::locate(helper::createLink('my', 'changepassword')));
+        if(!empty($this->app->user->modifyPassword) and (($module != 'my' or $method != 'changepassword') and ($module != 'user' or $method != 'logout'))) die(js::locate(helper::createLink('my', 'changepassword', '', '', true)));
         if($this->isOpenMethod($module, $method)) return true;
         if(!$this->loadModel('user')->isLogon() and $this->server->php_auth_user) $this->user->identifyByPhpAuth();
         if(!$this->loadModel('user')->isLogon() and $this->cookie->za) $this->user->identifyByCookie();
 
         if(isset($this->app->user))
         {
-            if(!defined('IN_UPGRADE')) $this->session->user->view = $this->loadModel('user')->grantUserView();
             $this->app->user = $this->session->user;
 
             if(!commonModel::hasPriv($module, $method)) $this->deny($module, $method);
@@ -1453,13 +1501,17 @@ EOD;
     {
         global $app, $lang;
 
+        $module  = strtolower($module);
+        $method  = strtolower($method);
+
+        /* Check the parent object is closed. */
+        if(!empty($method) and strpos('close|batchclose', $method) === false and !commonModel::canBeChanged($module, $object)) return false;
+
         /* Check is the super admin or not. */
         if(!empty($app->user->admin) || strpos($app->company->admins, ",{$app->user->account},") !== false) return true;
         /* If not super admin, check the rights. */
         $rights  = $app->user->rights['rights'];
         $acls    = $app->user->rights['acls'];
-        $module  = strtolower($module);
-        $method  = strtolower($method);
 
         if((($app->user->account != 'guest') or ($app->company->guest and $app->user->account == 'guest')) and $module == 'report' and $method == 'annualdata') return true;
 
@@ -1635,6 +1687,7 @@ EOD;
     public static function getSysURL()
     {
         $httpType = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == 'on') ? 'https' : 'http';
+        if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) and strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https') $httpType = 'https';
         $httpHost = $_SERVER['HTTP_HOST'];
         return "$httpType://$httpHost";
     }
@@ -1721,16 +1774,19 @@ EOD;
         $isFreepasswd = ($_GET['m'] == 'user' and strtolower($_GET['f']) == 'apilogin' and $_GET['account'] and $entry->freePasswd);
         if($isFreepasswd) $entry->account = $_GET['account'];
 
-        $user = $this->dao->findByAccount($entry->account)->from(TABLE_USER)->fetch();
+        $user = $this->dao->findByAccount($entry->account)->from(TABLE_USER)->andWhere('deleted')->eq(0)->fetch();
         if(!$user) $this->response('INVALID_ACCOUNT');
 
         $this->loadModel('user');
+        $user->last   = time();
         $user->rights = $this->user->authorize($user->account);
         $user->groups = $this->user->getGroups($user->account);
         $user->view   = $this->user->grantUserView($user->account, $user->rights['acls']);
         $user->admin  = strpos($this->app->company->admins, ",{$user->account},") !== false;
         $this->session->set('user', $user);
         $this->app->user = $user;
+
+        $this->dao->update(TABLE_USER)->set('last')->eq($user->last)->where('account')->eq($user->account)->exec();
         $this->loadModel('action')->create('user', $user->id, 'login');
         $this->loadModel('score')->create('user', 'login');
 
@@ -1769,7 +1825,7 @@ EOD;
         {
             $timestamp = $queryString['time'];
             if(strlen($timestamp) > 10) $timestamp = substr($timestamp, 0, 10);
-            if(strlen($timestamp) != 10 or $timestamp{0} >= '4') $this->response('ERROR_TIMESTAMP');
+            if(strlen($timestamp) != 10 or $timestamp[0] >= '4') $this->response('ERROR_TIMESTAMP');
 
             $result = $this->get->token == md5($entry->code . $entry->key . $queryString['time']);
             if($result)
@@ -1799,6 +1855,56 @@ EOD;
     }
 
     /**
+     * Check the object can be changed.
+     *
+     * @param  string $module
+     * @param  object $object
+     * @static
+     * @access public
+     * @return bool
+     */
+    public static function canBeChanged($module, $object = null)
+    {
+        global $app, $config;
+
+        /* Check the product is closed. */
+        if(!empty($object->product) and is_numeric($object->product) and empty($config->CRProduct))
+        {
+            $product = $app->control->loadModel('product')->getByID($object->product);
+            if($product->status == 'closed') return false;
+        }
+
+        /* Check the project is closed. */
+        $productModuleList = array('story', 'bug', 'testtask');
+        if(!in_array($module, $productModuleList) and !empty($object->project) and is_numeric($object->project) and empty($config->CRProject))
+        {
+            $project = $app->control->loadModel('project')->getByID($object->project);
+            if($project->status == 'closed') return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check object can modify.
+     *
+     * @param  string $type    product|project
+     * @param  object $object
+     * @static
+     * @access public
+     * @return bool
+     */
+    public static function canModify($type, $object)
+    {
+        global $config;
+
+        if($type == 'product' and empty($config->CRProduct) and $object->status == 'closed') return false;
+        if($type == 'project' and empty($config->CRProject) and $object->status == 'closed') return false;
+
+        return true;
+    }
+
+    /**
      * Response.
      *
      * @param  string $code
@@ -1819,14 +1925,21 @@ EOD;
      *
      * @param  string       $url
      * @param  string|array $data
+     * @param  array        $options   This is option and value pair, like CURLOPT_HEADER => true. Use curl_setopt function to set options.
+     * @param  array        $headers   Set request headers.
      * @static
      * @access public
      * @return string
      */
-    public static function http($url, $data = null)
+    public static function http($url, $data = null, $options = array(), $headers = array())
     {
         global $lang, $app;
         if(!extension_loaded('curl')) return json_encode(array('result' => 'fail', 'message' => $lang->error->noCurlExt));
+
+        commonModel::$requestErrors = array();
+
+        if(!is_array($headers)) $headers = (array)$headers;
+        $headers[] = "API-RemoteIP: " . zget($_SERVER, 'REMOTE_ADDR', '');
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0);
@@ -1839,16 +1952,17 @@ EOD;
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
         curl_setopt($curl, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
         curl_setopt($curl, CURLOPT_HEADER, FALSE);
-
-        $headers[] = "API-RemoteIP: " . $_SERVER['REMOTE_ADDR'];
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLINFO_HEADER_OUT, TRUE);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl, CURLOPT_URL, $url);
+
         if(!empty($data))
         {
             curl_setopt($curl, CURLOPT_POST, true);
             curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         }
+
+        if($options) curl_setopt_array($curl, $options);
 
         $response = curl_exec($curl);
         $errors   = curl_error($curl);
@@ -1867,6 +1981,8 @@ EOD;
             if(!empty($errors)) fwrite($fh, "errors: " . $errors . "\n");
             fclose($fh);
         }
+
+        if($errors) commonModel::$requestErrors[] = $errors;
 
         return $response;
     }

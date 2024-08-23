@@ -13,7 +13,7 @@ $lang->misc = new stdclass();
 $lang->misc->common = '雜項';
 $lang->misc->ping   = '防超時';
 $lang->misc->api    = 'https://api.zentao.pm';
-$lang->misc->enApi  = 'http://api.zentao.pm';
+$lang->misc->enApi  = 'https://api.zentao.pm';
 
 $lang->misc->zentao = new stdclass();
 $lang->misc->zentao->version           = '版本%s';
@@ -54,7 +54,7 @@ $lang->misc->zentao->service['servicemore']= '更多服務...';
 
 global $config;
 $lang->misc->zentao->others['chanzhi']  = "<img src='{$config->webRoot}theme/default/images/main/chanzhi.ico' /> 蟬知門戶";
-$lang->misc->zentao->others['ranzhi']   = "<img src='{$config->webRoot}theme/default/images/main/ranzhi.ico' /> 然之協同";
+$lang->misc->zentao->others['zdoo']     = "<img src='{$config->webRoot}theme/default/images/main/zdoo.ico' /> ZDOO協同";
 $lang->misc->zentao->others['xuanxuan'] = "<img src='{$config->webRoot}theme/default/images/main/xuanxuan.ico' /> 喧喧聊天";
 $lang->misc->zentao->others['ydisk']    = "<img src='{$config->webRoot}theme/default/images/main/ydisk.ico' /> 悅庫網盤";
 $lang->misc->zentao->others['meshiot' ] = "<img src='{$config->webRoot}theme/default/images/main/meshiot.ico' /> 易天物聯";
@@ -72,6 +72,7 @@ $lang->misc->tableStatus = "狀態";
 $lang->misc->novice      = "您可能初次使用禪道，是否進入新手模式？";
 $lang->misc->showAnnual  = '新增年度總結功能';
 $lang->misc->annualDesc  = '12.0版本後，新增年度總結功能，可以到『統計->年度總結』頁面查看。 是否現在<a href="%s" target="_blank" id="showAnnual" class="btn btn-mini btn-primary">查看</a>';
+$lang->misc->remind      = '新功能提醒';
 
 $lang->misc->noticeRepair = "<h5>普通用戶請聯繫管理員進行修復</h5>
     <h5>管理員請登錄禪道所在的伺服器，創建<span>%s</span>檔案。</h5>
@@ -85,6 +86,21 @@ $lang->misc->feature = new stdclass();
 $lang->misc->feature->lastest  = '最新版本';
 $lang->misc->feature->detailed = '詳情';
 
+$lang->misc->releaseDate['12.5.3']      = '2021-01-06';
+$lang->misc->releaseDate['12.5.2']      = '2020-12-18';
+$lang->misc->releaseDate['12.5.1']      = '2020-11-30';
+$lang->misc->releaseDate['12.5.stable'] = '2020-11-19';
+$lang->misc->releaseDate['12.4.4']      = '2020-10-30';
+$lang->misc->releaseDate['12.4.3']      = '2020-10-13';
+$lang->misc->releaseDate['12.4.2']      = '2020-09-18';
+$lang->misc->releaseDate['12.4.1']      = '2020-08-10';
+$lang->misc->releaseDate['12.4.stable'] = '2020-07-28';
+$lang->misc->releaseDate['12.3.3']      = '2020-07-02';
+$lang->misc->releaseDate['12.3.2']      = '2020-06-01';
+$lang->misc->releaseDate['12.3.1']      = '2020-05-15';
+$lang->misc->releaseDate['12.3']        = '2020-04-08';
+$lang->misc->releaseDate['12.2']        = '2020-03-25';
+$lang->misc->releaseDate['12.1']        = '2020-03-10';
 $lang->misc->releaseDate['12.0.1']      = '2020-02-12';
 $lang->misc->releaseDate['12.0']        = '2020-01-03';
 $lang->misc->releaseDate['11.7']        = '2019-11-28';
@@ -123,6 +139,24 @@ $lang->misc->releaseDate['7.2.stable']  = '2015-05-22';
 $lang->misc->releaseDate['7.1.stable']  = '2015-03-07';
 $lang->misc->releaseDate['6.3.stable']  = '2014-11-07';
 
+$lang->misc->feature->all['12.5.3'][]      = array('title' => '優化年度總結', 'desc' => '');
+$lang->misc->feature->all['12.5.2'][]      = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['12.5.1'][]      = array('title' => '修復漏洞。', 'desc' => '');
+$lang->misc->feature->all['12.5.stable'][] = array('title' => '解決bug，完成高優先順序需求。', 'desc' => '');
+
+$lang->misc->feature->all['12.4.4'][] = array('title' => '兼容專業版和企業版', 'desc' => '');
+$lang->misc->feature->all['12.4.3'][] = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['12.4.2'][] = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['12.4.1'][] = array('title' => '修復Bug', 'desc' => '');
+
+$lang->misc->feature->all['12.4.stable'][] = array('title'=>'修復Bug', 'desc' => '');
+
+$lang->misc->feature->all['12.3.3'][] = array('title'=>'修復Bug', 'desc' => '');
+$lang->misc->feature->all['12.3.2'][] = array('title'=>'修復工作流。', 'desc' => '');
+$lang->misc->feature->all['12.3.1'][] = array('title'=>'修復重要程度高的Bug。', 'desc' => '');
+$lang->misc->feature->all['12.3'][]   = array('title'=>'整合單元測試，打通持續整合閉環。', 'desc' => '');
+$lang->misc->feature->all['12.2'][]   = array('title'=>'增加父子需求，兼容最新喧喧。', 'desc' => '');
+$lang->misc->feature->all['12.1'][]   = array('title'=>'增加構建功能', 'desc' => '<p>增加構建功能，整合Jenkins進行構建</p>');
 $lang->misc->feature->all['12.0.1'][] = array('title'=>'修復Bug', 'desc' => '');
 
 $lang->misc->feature->all['12.0'][]   = array('title'=>'將代碼功能版本瀏覽功能轉移到開源版', 'desc' => '');
@@ -173,7 +207,7 @@ $lang->misc->feature->all['10.2.stable'][] = array('title'=>'整合喧喧IM', 'd
 
 $lang->misc->feature->all['10.0.stable'][] = array('title'=>'全新的界面和交互體驗', 'desc' => '<ol><li>全新的我的地盤</li><li>全新的動態頁面</li><li>全新的產品主頁</li><li>全新的產品概況</li><li>全新的路線圖</li><li>全新的項目主頁</li><li>全新的項目概況</li><li>全新的測試主頁</li><li>全新的文檔主頁</li><li>我的地盤新增工作統計區塊</li><li>我的地盤待辦區塊可以直接添加、編輯、完成待辦</li><li>產品主頁新增產品統計區塊</li><li>產品主頁新增產品總覽區塊</li><li>項目主頁新增項目統計區塊</li><li>項目主頁新增項目總覽區塊</li><li>測試主頁新增測試統計區塊</li><li>所有產品、產品主頁、所有項目、項目主頁、測試主頁等按鈕從二級導航右側移動到了左側</li><li>項目任務列表看板、燃盡圖、樹狀圖、分組查看等按鈕從三級導航中移動到二級導航中，樹狀圖、分組查看和任務列表整合到一個下拉列表中</li><li>項目下二級導航中Bug、版本、測試單三個跟測試相關的導航整合到一個下拉列表中</li><li>版本、測試單列表按照產品分組展示，佈局更加合理</li><li>文檔左側增加樹狀圖顯示</li><li>文檔增加快速訪問功能，包括最近更新、我的文檔、我的收藏三個入口</li><li>文檔增加收藏功能</li><ol>');
 
-$lang->misc->feature->all['9.8.stable'][] = array('title'=>'實現集中的消息處理機制', 'desc' => '<p>郵件，短信，webhook都放統一的消息發送</p><p>移植然之裡面的消息通知功能</p>');
+$lang->misc->feature->all['9.8.stable'][] = array('title'=>'實現集中的消息處理機制', 'desc' => '<p>郵件，短信，webhook都放統一的消息發送</p><p>移植ZDOO裡面的消息通知功能</p>');
 $lang->misc->feature->all['9.8.stable'][] = array('title'=>'實現周期性待辦功能', 'desc' => '');
 $lang->misc->feature->all['9.8.stable'][] = array('title'=>'增加指派給我的區塊', 'desc' => '');
 $lang->misc->feature->all['9.8.stable'][] = array('title'=>'項目可以選擇多個測試單生成報告', 'desc' => '');

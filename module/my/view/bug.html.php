@@ -17,7 +17,7 @@
     $recTotalLabel = " <span class='label label-light label-badge'>{$pager->recTotal}</span>";
     echo html::a(inlink('bug', "type=assignedTo"), "<span class='text'>{$lang->bug->assignedTo}</span>" . ($type == 'assignedTo' ? $recTotalLabel : ''), '', "class='btn btn-link" . ($type == 'assignedTo' ? ' btn-active-text' : '') . "'");
     echo html::a(inlink('bug', "type=openedBy"),   "<span class='text'>{$lang->bug->openedByMe}</span>" . ($type == 'openedBy'   ? $recTotalLabel : ''),   '', "class='btn btn-link" . ($type == 'openedBy'   ? ' btn-active-text' : '') . "'");
-    echo html::a(inlink('bug', "type=resolvedBy"), "<span class='text'>{$lang->bug->resolvedBy}</span>" . ($type == 'resolvedBy' ? $recTotalLabel : ''), '', "class='btn btn-link" . ($type == 'resolvedBy' ? ' btn-active-text' : '') . "'");
+    echo html::a(inlink('bug', "type=resolvedBy"), "<span class='text'>{$lang->bug->resolvedByMe}</span>" . ($type == 'resolvedBy' ? $recTotalLabel : ''), '', "class='btn btn-link" . ($type == 'resolvedBy' ? ' btn-active-text' : '') . "'");
     echo html::a(inlink('bug', "type=closedBy"),   "<span class='text'>{$lang->bug->closedByMe}</span>" . ($type == 'closedBy'   ? $recTotalLabel : ''),   '', "class='btn btn-link" . ($type == 'closedBy'   ? ' btn-active-text' : '') . "'");
     ?>
   </div>
@@ -29,13 +29,20 @@
   </div>
   <?php else:?>
   <form id='myBugForm' class="main-table table-bug" data-ride="table" method="post" action='<?php echo $this->createLink('bug', 'batchEdit', "productID=0");?>'>
-    <?php $canBatchEdit  = common::hasPriv('bug', 'batchEdit');?>
+    <?php
+    $canBatchEdit     = common::hasPriv('bug', 'batchEdit');
+    $canBatchConfirm  = common::hasPriv('bug', 'batchConfirm');
+    $canBatchClose    = (common::hasPriv('bug', 'batchClose') and strtolower($type) != 'closedby');
+    $canBatchAssignTo = common::hasPriv('bug', 'batchAssignTo');
+
+    $canBatchAction   = ($canBatchEdit or $canBatchConfirm or $canBatchClose or $canBatchAssignTo);
+    ?>
     <table class="table has-sort-head table-fixed" id='bugList'>
       <?php $vars = "type=$type&orderBy=%s&recTotal=$recTotal&recPerPage=$recPerPage&pageID=$pageID"; ?>
       <thead>
         <tr>
           <th class="w-100px">
-            <?php if($canBatchEdit):?>
+            <?php if($canBatchAction):?>
             <div class="checkbox-primary check-all" title="<?php echo $lang->selectAll?>">
               <label></label>
             </div>
@@ -66,11 +73,12 @@
       ?>
       <tbody>
         <?php foreach($bugs as $bug):?>
+        <?php $canBeChanged = common::canBeChanged('bug', $bug);?>
         <tr>
           <td class="c-id">
-            <?php if($canBatchEdit):?>
+            <?php if($canBatchAction):?>
             <div class="checkbox-primary">
-              <input type='checkbox' name='bugIDList[]' value='<?php echo $bug->id;?>' />
+              <input type='checkbox' name='bugIDList[]' value='<?php echo $bug->id;?>' <?php if(!$canBeChanged) echo 'disabled';?> />
               <label></label>
             </div>
             <?php endif;?>
@@ -92,12 +100,15 @@
           <td><?php echo zget($lang->bug->resolutionList, $bug->resolution);?></td>
           <td class='c-actions'>
             <?php
-            $params = "bugID=$bug->id";
-            common::printIcon('bug', 'confirmBug', $params, $bug, 'list', 'confirm', '', 'iframe', true);
-            common::printIcon('bug', 'resolve',    $params, $bug, 'list', 'checked', '', 'iframe', true);
-            common::printIcon('bug', 'close',      $params, $bug, 'list', '', '', 'iframe', true);
-            common::printIcon('bug', 'edit',       $params, $bug, 'list');
-            common::printIcon('bug', 'create',     "product=$bug->product&branch=$bug->branch&extra=$params", $bug, 'list', 'copy');
+            if($canBeChanged)
+            {
+                $params = "bugID=$bug->id";
+                common::printIcon('bug', 'confirmBug', $params, $bug, 'list', 'confirm', '', 'iframe', true);
+                common::printIcon('bug', 'resolve',    $params, $bug, 'list', 'checked', '', 'iframe', true);
+                common::printIcon('bug', 'close',      $params, $bug, 'list', '', '', 'iframe', true);
+                common::printIcon('bug', 'edit',       $params, $bug, 'list');
+                common::printIcon('bug', 'create',     "product=$bug->product&branch=$bug->branch&extra=$params", $bug, 'list', 'copy');
+            }
             ?>
           </td>
         </tr>
@@ -105,23 +116,23 @@
       </tbody>
     </table>
     <div class="table-footer">
-      <?php if($canBatchEdit):?>
+      <?php if($canBatchAction):?>
       <div class="checkbox-primary check-all"><label><?php echo $lang->selectAll?></label></div>
       <?php endif;?>
       <div class="table-actions btn-toolbar">
         <?php
         $actionLink = $this->createLink('bug', 'batchEdit');
-        $misc       = common::hasPriv('bug', 'batchEdit') ? "onclick=\"setFormAction('$actionLink')\"" : "disabled='disabled'";
+        $misc       = $canBatchEdit ? "onclick=\"setFormAction('$actionLink')\"" : "disabled='disabled'";
         echo html::commonButton($lang->edit, $misc);
         ?>
         <?php
-        if(common::hasPriv('bug', 'batchConfirm'))
+        if($canBatchConfirm)
         {
           $actionLink = $this->createLink('bug', 'batchConfirm');
           $misc = "onclick=\"setFormAction('$actionLink', 'hiddenwin')\"";
           echo html::commonButton($lang->bug->confirmBug, $misc);
         }
-        if(common::hasPriv('bug', 'batchClose'))
+        if($canBatchClose)
         {
           $actionLink = $this->createLink('bug', 'batchClose');
           $misc = "onclick=\"setFormAction('$actionLink', 'hiddenwin')\"";
@@ -129,7 +140,6 @@
         }
         ?>
         <?php
-        $canBatchAssignTo = common::hasPriv('bug', 'batchAssignTo');
         if($canBatchAssignTo && count($bugs)):?>
         <div class="btn-group dropup">
           <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->bug->assignedTo?> <span class="caret"></span></button>

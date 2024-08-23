@@ -60,7 +60,7 @@ $lang->project->createStory   = "添加{$lang->storyCommon}";
 $lang->project->all           = '所有';
 $lang->project->undone        = '未完成';
 $lang->project->unclosed      = '未關閉';
-$lang->project->typeDesc      = "運維{$lang->projectCommon}沒有{$lang->storyCommon}、bug、版本、測試功能，同時禁用燃盡圖。";
+$lang->project->typeDesc      = "運維{$lang->projectCommon}沒有{$lang->storyCommon}、bug、版本、測試功能。";
 $lang->project->mine          = '我負責：';
 $lang->project->other         = '其他：';
 $lang->project->deleted       = '已刪除';
@@ -71,6 +71,8 @@ $lang->project->readjustTask  = '順延任務的起止時間';
 $lang->project->effort        = '日誌';
 $lang->project->relatedMember = '相關成員';
 $lang->project->watermark     = '由禪道導出';
+$lang->project->burnXUnit     = '(日期)';
+$lang->project->burnYUnit     = '(工時)';
 $lang->project->viewByUser    = '按用戶查看';
 
 $lang->project->start    = "開始";
@@ -227,6 +229,7 @@ $lang->project->end                 = '截止日期';
 $lang->project->lblStats            = '工時統計';
 $lang->project->stats               = '可用工時 <strong>%s</strong> 工時，總共預計 <strong>%s</strong> 工時，已經消耗 <strong>%s</strong> 工時，預計剩餘 <strong>%s</strong> 工時';
 $lang->project->taskSummary         = "本頁共 <strong>%s</strong> 個任務，未開始 <strong>%s</strong>，進行中 <strong>%s</strong>，總預計 <strong>%s</strong> 工時，已消耗 <strong>%s</strong> 工時，剩餘 <strong>%s</strong> 工時。";
+$lang->project->pageSummary         = "本頁共 <strong>%total%</strong> 個任務，未開始 <strong>%wait%</strong>，進行中 <strong>%doing%</strong>，總預計 <strong>%estimate%</strong> 工時，已消耗 <strong>%consumed%</strong> 工時，剩餘 <strong>%left%</strong> 工時。";
 $lang->project->checkedSummary      = "選中 <strong>%total%</strong> 個任務，未開始 <strong>%wait%</strong>，進行中 <strong>%doing%</strong>，總預計 <strong>%estimate%</strong> 工時，已消耗 <strong>%consumed%</strong> 工時，剩餘 <strong>%left%</strong> 工時。";
 $lang->project->memberHoursAB       = "<div>%s有 <strong>%s</strong> 工時</div>";
 $lang->project->memberHours         = '<div class="table-col"><div class="clearfix segments"><div class="segment"><div class="segment-title">%s可用工時</div><div class="segment-value">%s</div></div></div></div>';
@@ -272,10 +275,14 @@ $lang->project->noweekend             = '去除周末';
 $lang->project->withweekend           = '顯示周末';
 $lang->project->interval              = '間隔';
 $lang->project->fixFirstWithLeft      = '修改剩餘工時';
+$lang->project->unfinishedProject     = "該{$lang->projectCommon}下還有";
+$lang->project->unfinishedTask        = "[%s]個未完成的任務，";
+$lang->project->unresolvedBug         = "[%s]個未解決的bug，";
 
 $lang->project->action = new stdclass();
 $lang->project->action->opened  = '$date, 由 <strong>$actor</strong> 創建。$extra' . "\n";
 $lang->project->action->managed = '$date, 由 <strong>$actor</strong> 維護。$extra' . "\n";
+$lang->project->action->edited  = '$date, 由 <strong>$actor</strong> 編輯。$extra' . "\n";
 $lang->project->action->extra   = '相關產品為 %s。';
 
 /* 統計。*/

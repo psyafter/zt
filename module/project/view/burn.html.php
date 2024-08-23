@@ -15,6 +15,8 @@
 <?php js::set('projectID', $projectID);?>
 <?php js::set('projectName', $project->name);?>
 <?php js::set('watermark', $lang->project->watermark);?>
+<?php js::set('burnXUnit', $lang->project->burnXUnit);?>
+<?php js::set('burnYUnit', $lang->project->burnYUnit);?>
 <?php js::set('type', $type);?>
 <div id='mainMenu' class='clearfix'>
   <div class='btn-toolbar pull-left'>
@@ -23,7 +25,7 @@
     common::printLink('project', 'computeBurn', 'reload=yes', '<i class="icon icon-refresh"></i> ' . $lang->project->computeBurn, 'hiddenwin', "title='{$lang->project->computeBurn}{$lang->project->burn}' class='btn btn-primary' id='computeBurn'");
     echo '<div class="space"></div>';
     echo html::a($this->createLink('project', 'burn', "projectID=$projectID&type=$weekend&interval=$interval"), $lang->project->$weekend, '', "class='btn btn-link'");
-    common::printLink('project', 'fixFirst', "project=$project->id", $lang->project->fixFirst, '', "class='btn btn-link iframe' data-width='700'");
+    if(common::canModify('project', $project)) common::printLink('project', 'fixFirst', "project=$project->id", $lang->project->fixFirst, '', "class='btn btn-link iframe' data-width='700'");
     echo $lang->project->howToUpdateBurn;
     ?>
     <?php if($interval):?>
@@ -42,7 +44,8 @@
     <div id="burnChart">
       <canvas id="burnCanvas"></canvas>
     </div>
-    <div id="burnYUnit"><?php echo "({$lang->project->workHour})";?></div>
+    <div id="burnYUnit"><?php echo $lang->project->burnYUnit;?></div>
+    <div id="burnXUnit"><?php echo $lang->project->burnXUnit;?></div>
     <div id="burnLegend">
       <div class="line-ref"><div class='barline'></div><?php echo $lang->project->charts->burn->graph->reference;?></div>
       <div class="line-real"><div class='barline bg-primary'></div><?php echo $lang->project->charts->burn->graph->actuality;?></div>

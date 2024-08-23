@@ -157,10 +157,11 @@ class productplanModel extends model
      * @param  array|int    $product
      * @param  int          $branch
      * @param  string       $expired
+     * @param  bool         $skipParent
      * @access public
      * @return array
      */
-    public function getPairs($product = 0, $branch = 0, $expired = '')
+    public function getPairs($product = 0, $branch = 0, $expired = '', $skipParent = false)
     {
         $date = date('Y-m-d');
         $plans = $this->dao->select('id,title,parent,begin,end')->from(TABLE_PRODUCTPLAN)
@@ -168,6 +169,7 @@ class productplanModel extends model
             ->andWhere('deleted')->eq(0)
             ->beginIF($branch)->andWhere("branch")->in("0,$branch")->fi()
             ->beginIF($expired == 'unexpired')->andWhere('end')->ge($date)->fi()
+            ->beginIF($skipParent)->andWhere('parent')->ne(-1)->fi()
             ->orderBy('begin desc')
             ->fetchAll('id');
 
@@ -179,6 +181,7 @@ class productplanModel extends model
                 ->andWhere('end')->lt($date)
                 ->beginIF($branch)->andWhere("branch")->in("0,$branch")->fi()
                 ->beginIF($plans)->andWhere("id")->notIN(array_keys($plans))->fi()
+                ->beginIF($skipParent)->andWhere('parent')->ne(-1)->fi()
                 ->orderBy('begin desc')
                 ->limit(5)
                 ->fetchAll('id');
@@ -207,10 +210,11 @@ class productplanModel extends model
      *
      * @param  array|int    $product
      * @param  int          $branch
+     * @param  bool         $skipParent
      * @access public
      * @return array
      */
-    public function getPairsForStory($product = 0, $branch = 0)
+    public function getPairsForStory($product = 0, $branch = 0, $skipParent = false)
     {
         $date = date('Y-m-d');
         $plans = $this->dao->select('id,title,parent,begin,end')->from(TABLE_PRODUCTPLAN)
@@ -218,6 +222,7 @@ class productplanModel extends model
             ->andWhere('deleted')->eq(0)
             ->andWhere('end')->ge($date)
             ->beginIF($branch)->andWhere("branch")->in("0,$branch")->fi()
+            ->beginIF($skipParent)->andWhere('parent')->ne(-1)->fi()
             ->orderBy('begin desc')
             ->fetchAll('id');
 
@@ -228,6 +233,7 @@ class productplanModel extends model
                 ->andWhere('deleted')->eq(0)
                 ->andWhere('end')->lt($date)
                 ->beginIF($branch)->andWhere("branch")->in("0,$branch")->fi()
+                ->beginIF($skipParent)->andWhere('parent')->ne(-1)->fi()
                 ->orderBy('begin desc')
                 ->limit(5)
                 ->fetchAll('id');
@@ -466,36 +472,32 @@ class productplanModel extends model
         $stories = $this->story->getByList($this->post->stories);
         $plan    = $this->getByID($planID);
 
-        $currentOrder = $plan->order;
         foreach($this->post->stories as $storyID)
         {
             if(!isset($stories[$storyID])) continue;
+
             $story = $stories[$storyID];
+            if(strpos(",$story->plan,", ",{$planID},") !== false) continue;
 
-            /* Fix Bug #1538*/
-            $currentOrder = $currentOrder . $storyID . ',';
-            $oldOrder = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where("id")->eq($story->plan)->fetch('order'); 
-            $oldOrder = explode(',', $oldOrder);
-            unset($oldOrder[array_search($storyID,  $oldOrder)]);
-            $oldOrder = implode(',', $oldOrder);
-            $this->dao->update(TABLE_PRODUCTPLAN)->set("order")->eq($oldOrder)->where('id')->eq($story->plan)->exec();
-
+            /* Update the plan linked with the story and the order of the story in the plan. */
             if($this->session->currentProductType == 'normal' or $story->branch != 0 or empty($story->plan))
             {
                 $this->dao->update(TABLE_STORY)->set("plan")->eq($planID)->where('id')->eq((int)$storyID)->exec();
+
+                $this->story->updateStoryOrderOfPlan($storyID, $planID, $story->plan);
             }
             else
             {
-                $plans = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where('id')->in($story->plan)->fetchPairs('branch', 'id');
-                $plans[$plan->branch] = $planID;
-                $this->dao->update(TABLE_STORY)->set("plan")->eq(join(',', $plans))->where('id')->eq((int)$storyID)->andWhere('branch')->eq('0')->exec();
+                $plansOfStory = $story->plan . ',' . $planID;
+
+                $this->dao->update(TABLE_STORY)->set("plan")->eq($plansOfStory)->where('id')->eq((int)$storyID)->andWhere('branch')->eq('0')->exec();
+
+                $this->story->updateStoryOrderOfPlan($storyID, $planID);
             }
+
             $this->action->create('story', $storyID, 'linked2plan', '', $planID);
             $this->story->setStage($storyID);
-
         }
-
-        $this->dao->update(TABLE_PRODUCTPLAN)->set("order")->eq($currentOrder)->where('id')->eq((int)$planID)->exec();
     }
 
     /**
@@ -511,14 +513,11 @@ class productplanModel extends model
         $plans = array_unique(explode(',', trim(str_replace(",$planID,", ',', ',' . trim($story->plan) . ','). ',')));
         $this->dao->update(TABLE_STORY)->set('plan')->eq(join(',', $plans))->where('id')->eq((int)$storyID)->exec();
 
-        /* Fix Bug #1538. */ 
-        $oldOrder = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where("id")->eq($story->plan)->fetch('order');
-        $oldOrder = explode(',', $oldOrder);
-        unset($oldOrder[array_search($storyID, $oldOrder)]);
-        $oldOrder = implode(',', $oldOrder);
-        $this->dao->update(TABLE_PRODUCTPLAN)->set('order')->eq($oldOrder)->where('id')->eq($story->plan)->exec();
+        /* Delete the story in the sort of the plan. */
+        $this->loadModel('story');
+        $this->story->updateStoryOrderOfPlan($storyID, '', $planID);
 
-        $this->loadModel('story')->setStage($storyID);
+        $this->story->setStage($storyID);
         $this->loadModel('action')->create('story', $storyID, 'unlinkedfromplan', '', $planID);
     }
 
@@ -533,8 +532,15 @@ class productplanModel extends model
     {
         $this->loadModel('story');
         $this->loadModel('action');
+
+        $bugs = $this->loadModel('bug')->getByList($this->post->bugs);
         foreach($this->post->bugs as $bugID)
         {
+            if(!isset($bugs[$bugID])) continue;
+
+            $bug = $bugs[$bugID];
+            if($bug->plan == $planID) continue;
+
             $this->dao->update(TABLE_BUG)->set('plan')->eq($planID)->where('id')->eq((int)$bugID)->exec();
             $this->action->create('bug', $bugID, 'linked2plan', '', $planID);
         }

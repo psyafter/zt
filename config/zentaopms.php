@@ -10,21 +10,6 @@
 * @link        https://www.zentao.pm
 */
 
-/* Framework settings. */
-$config->framework->autoRepairTable = true;
-$config->framework->autoLang        = false;
-$config->framework->filterCSRF      = false;
-
-/* Upload settings. */
-$config->allowedTags = '<p><span><h1><h2><h3><h4><h5><em><u><strong><br><ol><ul><li><img><a><b><font><hr><pre><div><table><td><th><tr><tbody><embed><style>';
-$config->accountRule = '|^[a-zA-Z0-9_]{1}[a-zA-Z0-9_\.]{1,}[a-zA-Z0-9_]{1}$|';
-$config->checkVersion = true;              // Auto check for new version or not.
-
-/* Set the wide window size and timeout(ms) and duplicate interval time(s). */
-$config->wideSize      = 1400;
-$config->timeout       = 30000;
-$config->duplicateTime = 60;
-
 /* Product common list. */
 $config->productCommonList['zh-cn'][0] = '产品';
 $config->productCommonList['zh-cn'][1] = '项目';
@@ -40,6 +25,9 @@ $config->productCommonList['de'][1] = 'Projekt';
 
 $config->productCommonList['fr'][0] = 'Product';
 $config->productCommonList['fr'][1] = 'Projet';
+
+$config->productCommonList['vi'][0] = 'Sản phẩm';
+$config->productCommonList['vi'][1] = 'Dự án';
 
 /* Project common list. */
 $config->projectCommonList['zh-cn'][0] = '项目';
@@ -62,6 +50,10 @@ $config->projectCommonList['fr'][0] = 'Projet';
 $config->projectCommonList['fr'][1] = 'Iteration';
 $config->projectCommonList['fr'][2] = 'Sprint';
 
+$config->projectCommonList['vi'][0] = 'Dự án';
+$config->projectCommonList['vi'][1] = 'Lặp lại';
+$config->projectCommonList['vi'][2] = 'Sprint';
+
 /* Story common list. */
 $config->storyCommonList['zh-cn'][0] = '需求';
 $config->storyCommonList['zh-cn'][1] = '故事';
@@ -78,21 +70,36 @@ $config->storyCommonList['de'][1] = 'Story';
 $config->storyCommonList['fr'][0] = 'Story';
 $config->storyCommonList['fr'][1] = 'Story';
 
+$config->storyCommonList['vi'][0] = 'Câu chuyện';
+$config->storyCommonList['vi'][1] = 'Câu chuyện';
+
 /* Story common list. */
 $config->hourPointCommonList['zh-cn'][0] = '工时';
 $config->hourPointCommonList['zh-cn'][1] = '故事点';
+$config->hourPointCommonList['zh-cn'][2] = '功能点';
 
 $config->hourPointCommonList['zh-tw'][0] = '工时';
 $config->hourPointCommonList['zh-tw'][1] = '故事点';
+$config->hourPointCommonList['zh-tw'][2] = '功能点';
 
 $config->hourPointCommonList['en'][0] = 'hour';
 $config->hourPointCommonList['en'][1] = 'story point';
+$config->hourPointCommonList['en'][2] = 'function point';
 
 $config->hourPointCommonList['de'][0] = 'hour';
 $config->hourPointCommonList['de'][1] = 'story point';
+$config->hourPointCommonList['de'][2] = 'function point';
 
 $config->hourPointCommonList['fr'][0] = 'hour';
 $config->hourPointCommonList['fr'][1] = 'story point';
+$config->hourPointCommonList['fr'][2] = 'function point';
+
+$config->hourPointCommonList['vi'][0] = 'giờ';
+$config->hourPointCommonList['vi'][1] = 'điểm';
+$config->hourPointCommonList['vi'][2] = 'function point';
+
+$config->manualUrl['home'] = 'https://www.zentao.pm/book/zentaopmshelp.html?fullScreen=zentao';
+$config->manualUrl['int']  = 'https://www.zentao.pm/book/zentaomanual/zentao-installation-11.html?fullScreen=zentao';
 
 /* Supported charsets. */
 $config->charsets['zh-cn']['utf-8'] = 'UTF-8';
@@ -105,9 +112,8 @@ $config->charsets['de']['utf-8']    = 'UTF-8';
 $config->charsets['de']['GBK']      = 'GBK';
 $config->charsets['fr']['utf-8']    = 'UTF-8';
 $config->charsets['fr']['GBK']      = 'GBK';
-
-/* IP white list settings.*/
-$config->ipWhiteList = '*';
+$config->charsets['vi']['utf-8']    = 'UTF-8';
+$config->charsets['vi']['GBK']      = 'GBK';
 
 /* Define the tables. */
 define('TABLE_COMPANY',       '`' . $config->db->prefix . 'company`');
@@ -136,6 +142,7 @@ define('TABLE_STORY',         '`' . $config->db->prefix . 'story`');
 define('TABLE_STORYSPEC',     '`' . $config->db->prefix . 'storyspec`');
 define('TABLE_STORYSTAGE',    '`' . $config->db->prefix . 'storystage`');
 define('TABLE_PRODUCTPLAN',   '`' . $config->db->prefix . 'productplan`');
+define('TABLE_PLANSTORY',     '`' . $config->db->prefix . 'planstory`');
 define('TABLE_RELEASE',       '`' . $config->db->prefix . 'release`');
 
 define('TABLE_PROJECT',       '`' . $config->db->prefix . 'project`');
@@ -163,14 +170,18 @@ define('TABLE_TESTSUITE',     '`' . $config->db->prefix . 'testsuite`');
 define('TABLE_SUITECASE',     '`' . $config->db->prefix . 'suitecase`');
 define('TABLE_TESTREPORT',    '`' . $config->db->prefix . 'testreport`');
 
-define('TABLE_ENTRY',   '`' . $config->db->prefix . 'entry`');
-define('TABLE_WEBHOOK', '`' . $config->db->prefix . 'webhook`');
-define('TABLE_LOG',     '`' . $config->db->prefix . 'log`');
-define('TABLE_SCORE',   '`' . $config->db->prefix . 'score`');
-define('TABLE_NOTIFY',  '`' . $config->db->prefix . 'notify`');
-define('TABLE_OAUTH',   '`' . $config->db->prefix . 'oauth`');
+define('TABLE_ENTRY',         '`' . $config->db->prefix . 'entry`');
+define('TABLE_WEBHOOK',       '`' . $config->db->prefix . 'webhook`');
+define('TABLE_LOG',           '`' . $config->db->prefix . 'log`');
+define('TABLE_SCORE',         '`' . $config->db->prefix . 'score`');
+define('TABLE_NOTIFY',        '`' . $config->db->prefix . 'notify`');
+define('TABLE_OAUTH',         '`' . $config->db->prefix . 'oauth`');
+define('TABLE_JENKINS',       '`' . $config->db->prefix . 'jenkins`');
+define('TABLE_JOB',           '`' . $config->db->prefix . 'job`');
+define('TABLE_COMPILE',       '`' . $config->db->prefix . 'compile`');
 
 define('TABLE_REPO',        '`' . $config->db->prefix . 'repo`');
+define('TABLE_RELATION',    '`' . $config->db->prefix . 'relation`');
 define('TABLE_REPOHISTORY', '`' . $config->db->prefix . 'repohistory`');
 define('TABLE_REPOFILES',   '`' . $config->db->prefix . 'repofiles`');
 define('TABLE_REPOBRANCH',  '`' . $config->db->prefix . 'repobranch`');
@@ -199,3 +210,4 @@ $config->objectTables['module']      = TABLE_MODULE;
 $config->objectTables['caselib']     = TABLE_TESTSUITE;
 $config->objectTables['entry']       = TABLE_ENTRY;
 $config->objectTables['webhook']     = TABLE_WEBHOOK;
+$config->objectTables['job']         = TABLE_JOB;

@@ -53,6 +53,8 @@ class testsuite extends control
         $sort = $this->loadModel('common')->appendOrder($orderBy);
         $productName = isset($this->products[$productID]) ? $this->products[$productID] : '';
 
+        $suites = $this->testsuite->getSuites($productID, $sort, $pager);
+
         $this->view->title       = $productName . $this->lang->testsuite->common;
         $this->view->position[]  = html::a($this->createLink('testsuite', 'browse', "productID=$productID"), $productName);
         $this->view->position[]  = $this->lang->testsuite->common;
@@ -60,9 +62,10 @@ class testsuite extends control
         $this->view->productID   = $productID;
         $this->view->productName = $productName;
         $this->view->orderBy     = $orderBy;
-        $this->view->suites      = $this->testsuite->getSuites($productID, $sort, $pager);
+        $this->view->suites      = $suites;
         $this->view->users       = $this->loadModel('user')->getPairs('noclosed|noletter');
         $this->view->pager       = $pager;
+        $this->view->product     = $this->product->getByID($productID);
 
         $this->display();
     }
@@ -149,15 +152,16 @@ class testsuite extends control
         $this->view->position[] = $this->lang->testsuite->common;
         $this->view->position[] = $this->lang->testsuite->view;
 
-        $this->view->productID = $productID;
-        $this->view->suite     = $suite;
-        $this->view->users     = $this->loadModel('user')->getPairs('noclosed|noletter');
-        $this->view->actions   = $this->loadModel('action')->getList('testsuite', $suiteID);
-        $this->view->cases     = $this->testsuite->getLinkedCases($suiteID, $sort, $pager);
-        $this->view->orderBy   = $orderBy;
-        $this->view->pager     = $pager;
-        $this->view->modules   = $this->loadModel('tree')->getOptionMenu($suite->product, 'case');
-        $this->view->branches  = $this->loadModel('branch')->getPairs($suite->product, 'noempty');
+        $this->view->productID    = $productID;
+        $this->view->suite        = $suite;
+        $this->view->users        = $this->loadModel('user')->getPairs('noclosed|noletter');
+        $this->view->actions      = $this->loadModel('action')->getList('testsuite', $suiteID);
+        $this->view->cases        = $this->testsuite->getLinkedCases($suiteID, $sort, $pager);
+        $this->view->orderBy      = $orderBy;
+        $this->view->pager        = $pager;
+        $this->view->modules      = $this->loadModel('tree')->getOptionMenu($suite->product, 'case');
+        $this->view->branches     = $this->loadModel('branch')->getPairs($suite->product, 'noempty');
+        $this->view->canBeChanged = common::canBeChanged('testsuite', $suite);
 
         $this->display();
     }
@@ -229,6 +233,7 @@ class testsuite extends control
         }
         else
         {
+            $suite = $this->testsuite->getById($suiteID);
             if($suite->type == 'private' and $suite->addedBy != $this->app->user->account and !$this->app->user->admin) die(js::error($this->lang->error->accessDenied) . js::locate('back'));
 
             $this->testsuite->delete($suiteID);

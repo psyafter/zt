@@ -20,6 +20,9 @@ js::set('createRelease', $lang->release->create);
 js::set('createBuild', $lang->build->create);
 js::set('refresh', $lang->refresh);
 js::set('flow', $config->global->flow);
+js::set('stepsRequired', $stepsRequired);
+js::set('stepsNotEmpty', $lang->bug->stepsNotEmpty);
+js::set('isStepsTemplate', $isStepsTemplate);
 ?>
 <div id="mainContent" class="main-content fade">
   <div class="center-block">
@@ -30,6 +33,12 @@ js::set('flow', $config->global->flow);
         <?php include '../../common/view/customfield.html.php';?>
       </div>
     </div>
+    <?php
+    foreach(explode(',', $config->bug->create->requiredFields) as $field)
+    {
+        if($field and strpos($showFields, $field) === false) $showFields .= ',' . $field;
+    }
+    ?>
     <form class="load-indicator main-form form-ajax" method='post' enctype='multipart/form-data' id='dataform'>
       <table class="table table-form">
         <tbody>
@@ -87,7 +96,7 @@ js::set('flow', $config->global->flow);
             <td>
               <div class='input-group' id='buildBox'>
                 <span class="input-group-addon"><?php echo $lang->bug->openedBuild?></span>
-                <?php echo html::select('openedBuild[]', $builds, $buildID, "size=4 multiple=multiple class='chosen form-control'");?>
+                <?php echo html::select('openedBuild[]', $builds, empty($buildID) ? '' : $buildID, "multiple=multiple class='chosen form-control'");?>
                 <span class='input-group-addon fix-border' id='buildBoxActions'></span>
                 <div class='input-group-btn'><?php echo html::commonButton($lang->bug->allBuilds, "class='btn' id='all' data-toggle='tooltip' onclick='loadAllBuilds()'")?></div>
               </div>
@@ -195,6 +204,11 @@ js::set('flow', $config->global->flow);
                 }
                 $priList = $lang->bug->priList;
                 if(end($priList)) unset($priList[0]);
+                if(!isset($priList[$pri]))
+                {
+                    reset($priList);
+                    $pri = key($priList);
+                }
                 ?>
                 <?php if($hasCustomPri):?>
                 <?php echo html::select('pri', (array)$priList, $pri, "class='form-control'");?>
@@ -255,10 +269,10 @@ js::set('flow', $config->global->flow);
             <?php if($showMailto):?>
             <td>
               <div class='input-group' id='contactListGroup'>
-              <?php
-              echo html::select('mailto[]', $users, str_replace(' ', '', $mailto), "class='form-control chosen' multiple");
-              echo $this->fetch('my', 'buildContactLists');
-              ?>
+                <?php
+                echo html::select('mailto[]', $users, str_replace(' ', '', $mailto), "class='form-control chosen' multiple");
+                echo $this->fetch('my', 'buildContactLists');
+                ?>
               </div>
             </td>
             <?php endif;?>
@@ -290,7 +304,7 @@ js::set('flow', $config->global->flow);
               <?php echo html::submitButton();?>
               <?php if($caseID == 0) echo html::backButton();?>
               <?php echo html::hidden('case', (int)$caseID) . html::hidden('caseVersion', (int)$version);?>
-              <?php echo html::hidden('result', (int)$runID) . html::hidden('testtask', (int)$testtask);?>
+              <?php echo html::hidden('result', (int)$runID) . html::hidden('testtask', $testtask ? (int)$testtask->id : 0);?>
             </td>
           </tr>
         </tfoot>

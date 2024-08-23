@@ -91,7 +91,7 @@ class caselibModel extends model
                 if(common::hasPriv('caselib', 'import'))
                 {
                     $link = helper::createLink('caselib', 'import', "libID=$libID");
-                    $pageActions .= html::a($link, "<i class='icon muted icon-import'> </i>" . $this->lang->testcase->importFile, '', "class='btn btn-link export'");
+                    $pageActions .= html::a($link, "<i class='icon muted icon-import'> </i>" . $this->lang->testcase->fileImport, '', "class='btn btn-link export'");
                 }
                 $pageActions .= '</div>';
                 $params = "libID=$libID&moduleID=" . (isset($moduleID) ? $moduleID : 0);
@@ -114,10 +114,11 @@ class caselibModel extends model
         }
         $pageNav .= $selectHtml;
 
-        $this->lang->modulePageNav     = $pageNav;
-        $this->lang->modulePageActions = $pageActions;
+        $this->lang->modulePageNav = $pageNav;
+        $this->lang->TRActions     = $pageActions;
         foreach($this->lang->caselib->menu as $key => $value)
         {
+            if($this->config->global->flow == 'full') $this->loadModel('qa')->setSubMenu('caselib', $key, $libID);
             $replace = $libID;
             common::setMenuVars($this->lang->caselib->menu, $key, $replace);
         }
@@ -454,7 +455,6 @@ class caselibModel extends model
             {
                 $caseID      = $data->id[$key];
                 $stepChanged = false;
-                $steps       = array();
                 $oldStep     = isset($oldSteps[$caseID]) ? $oldSteps[$caseID] : array();
                 $oldCase     = $oldCases[$caseID];
 
@@ -468,8 +468,8 @@ class caselibModel extends model
                         if(empty($desc)) continue;
                         $step = new stdclass();
                         $step->type   = $data->stepType[$key][$id];
-                        $step->desc   = $desc;
-                        $step->expect = trim($data->expect[$key][$id]);
+                        $step->desc   = htmlspecialchars($desc);
+                        $step->expect = htmlspecialchars(trim($data->expect[$key][$id]));
 
                         $steps[] = $step;
                     }
@@ -551,8 +551,8 @@ class caselibModel extends model
                         $stepData->parent  = ($stepData->type == 'item') ? $parentStepID : 0;
                         $stepData->case    = $caseID;
                         $stepData->version = 1;
-                        $stepData->desc    = $desc;
-                        $stepData->expect  = $data->expect[$key][$id];
+                        $stepData->desc    = htmlspecialchars($desc);
+                        $stepData->expect  = htmlspecialchars(trim($data->expect[$key][$id]));
                         $this->dao->insert(TABLE_CASESTEP)->data($stepData)->autoCheck()->exec();
                         if($stepData->type == 'group') $parentStepID = $this->dao->lastInsertID();
                         if($stepData->type == 'step')  $parentStepID = 0;
@@ -562,8 +562,11 @@ class caselibModel extends model
             }
         }
 
-        unlink($this->session->importFile);
-        unset($_SESSION['importFile']);
+        if($this->post->isEndPage)
+        {
+            unlink($this->session->fileImport);
+            unset($_SESSION['fileImport']);
+        }
     }
 
     /**
@@ -578,14 +581,14 @@ class caselibModel extends model
         $this->loadModel('testcase');
         $this->loadModel('action');
 
-        $now      = helper::now();
-        $cases    = fixer::input('post')->get();
-        $batchNum = count(reset($cases));
+        $now   = helper::now();
+        $libID = (int)$libID;
+        $cases = fixer::input('post')->get();
 
         $result = $this->loadModel('common')->removeDuplicate('case', $cases, "lib={$libID}");
         $cases  = $result['data'];
 
-        for($i = 0; $i < $batchNum; $i++)
+        foreach($cases->title as $i => $title)
         {
             if(!empty($cases->title[$i]) and empty($cases->type[$i])) die(js::alert(sprintf($this->lang->error->notempty, $this->lang->testcase->type)));
         }
@@ -593,18 +596,18 @@ class caselibModel extends model
         $module = 0;
         $type   = '';
         $pri    = 3;
-        for($i = 0; $i < $batchNum; $i++)
+        foreach($cases->title as $i => $title)
         {
             $module = $cases->module[$i] == 'ditto' ? $module : $cases->module[$i];
             $type   = $cases->type[$i] == 'ditto'   ? $type   : $cases->type[$i];
-            $pri    = $cases->pri[$i] == 'ditto'    ?  $pri   : $cases->pri[$i];
+            $pri    = $cases->pri[$i] == 'ditto'    ? $pri    : $cases->pri[$i];
             $cases->module[$i] = (int)$module;
             $cases->type[$i]   = $type;
             $cases->pri[$i]    = $pri;
         }
 
         $forceNotReview = $this->testcase->forceNotReview();
-        for($i = 0; $i < $batchNum; $i++)
+        foreach($cases->title as $i => $title)
         {
             if($cases->type[$i] != '' and $cases->title[$i] != '')
             {

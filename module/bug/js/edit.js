@@ -1,3 +1,8 @@
+$(function()
+{
+    loadModuleRelated();
+});
+
 /**
  * Set duplicate field.
  * 
@@ -52,5 +57,6 @@ function loadModuleRelated()
 {
     moduleID  = $('#module').val();
     productID = $('#product').val();
-    setStories(moduleID, productID);
+    storyID   = $('#story').val();
+    setStories(moduleID, productID, storyID);
 }

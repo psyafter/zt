@@ -40,9 +40,9 @@ class testtaskModel extends model
             $selectHtml .= "</div>";
             $selectHtml .= "</div>";
 
-            $this->lang->modulePageActions = '';
-            if(common::hasPriv('testtask', 'view'))     $this->lang->modulePageActions .= html::a(helper::createLink('testtask', 'view', "taskID={$testtask->id}"), "<i class='icon icon-file-text'> </i>" . $this->lang->testtask->view, '', "class='btn'");
-            if(common::hasPriv('testreport', 'browse')) $this->lang->modulePageActions .= html::a(helper::createLink('testreport', 'browse', "objectID=$productID&objectType=product&extra={$testtask->id}"), "<i class='icon icon-flag'> </i>" . $this->lang->testtask->reportField, '', "class='btn'");
+            $this->lang->TRActions = '';
+            if(common::hasPriv('testtask', 'view'))     $this->lang->TRActions .= html::a(helper::createLink('testtask', 'view', "taskID={$testtask->id}"), "<i class='icon icon-file-text'> </i>" . $this->lang->testtask->view, '', "class='btn'");
+            if(common::hasPriv('testreport', 'browse')) $this->lang->TRActions .= html::a(helper::createLink('testreport', 'browse', "objectID=$productID&objectType=product&extra={$testtask->id}"), "<i class='icon icon-flag'> </i>" . $this->lang->testtask->reportField, '', "class='btn'");
         }
 
         $this->app->loadLang('qa');
@@ -75,10 +75,11 @@ class testtaskModel extends model
         }
         $pageNav .= $selectHtml;
 
-        $this->lang->modulePageNav     = $pageNav;
-        $this->lang->modulePageActions = $pageActions;
+        $this->lang->modulePageNav = $pageNav;
+        $this->lang->TRActions     = $pageActions;
         foreach($this->lang->testtask->menu as $key => $value)
         {
+            if($this->config->global->flow == 'full') $this->loadModel('qa')->setSubMenu('testtask', $key, $productID);
             if($this->config->global->flow != 'onlyTest')
             {
                 $replace = ($key == 'product') ? $selectHtml : $productID;
@@ -109,6 +110,76 @@ class testtaskModel extends model
                     $replace['branch']    = $branch;
                     $replace['scope']     = $this->session->testTaskVersionScope;
                 }
+            }
+            common::setMenuVars($this->lang->testtask->menu, $key, $replace);
+        }
+    }
+
+    /**
+     * Set unit menu.
+     * 
+     * @param  array  $products 
+     * @param  int    $productID 
+     * @param  int    $branch 
+     * @param  int    $testtask 
+     * @access public
+     * @return void
+     */
+    public function setUnitMenu($products, $productID, $branch = 0, $testtask = 0)
+    {
+        $this->loadModel('product')->setMenu($products, $productID, $branch);
+        $selectHtml = $this->product->select($products, $productID, 'testtask', 'browseUnits', '', $branch);
+
+        if($testtask and $this->app->viewType != 'mhtml')
+        {
+            $testtasks = $this->getProductUnitTasks($productID, 'all', 'id_desc');
+            if(!isset($testtasks[$testtask])) $testtasks[$testtask] = $this->getById($testtask);
+
+            $selectHtml .= "<div class='btn-group angle-btn'>";
+            $selectHtml .= "<div class='btn-group'>";
+            $selectHtml .= "<a data-toggle='dropdown' class='btn'>" . $testtasks[$testtask]->name . " <span class='caret'></span></a>";
+            $selectHtml .= "<ul class='dropdown-menu'>";
+            foreach($testtasks as $testtask) $selectHtml .= '<li>' . html::a(helper::createLink('testtask', 'unitCases', "taskID=$testtask->id"), "<i class='icon icon-file-o'></i> {$testtask->name}") . '</li>';
+            $selectHtml .= "</ul>";
+            $selectHtml .= "</div>";
+            $selectHtml .= "</div>";
+        }
+
+        $this->app->loadLang('qa');
+        $productIndex  = '<div class="btn-group angle-btn"><div class="btn-group">' . html::a(helper::createLink('qa', 'index', 'locate=no'), $this->lang->qa->index, '', "class='btn'") . '</div></div>';
+        $productIndex .= $selectHtml;
+
+        $pageNav     = '';
+        $pageActions = '';
+        $isMobile    = $this->app->viewType == 'mhtml';
+        if($isMobile)
+        {
+            $this->app->loadLang('qa');
+            $pageNav  = html::a(helper::createLink('qa', 'index'), $this->lang->qa->index) . $this->lang->colon;
+        }
+        else
+        {
+            if($this->config->global->flow == 'full')
+            {
+                $this->app->loadLang('qa');
+                $pageNav = '<div class="btn-group angle-btn"><div class="btn-group">' . html::a(helper::createLink('qa', 'index', 'locate=no'), $this->lang->qa->index, '', "class='btn'") . '</div></div>';
+            }
+        }
+        $pageNav .= $selectHtml;
+
+        $this->lang->modulePageNav = $pageNav;
+        $this->lang->TRActions     = $pageActions;
+        if($this->config->global->flow != 'full') $this->lang->testtask->menu = new stdclass();
+        foreach($this->lang->testtask->menu as $key => $value)
+        {
+            if($this->config->global->flow == 'full') $this->loadModel('qa')->setSubMenu('testtask', $key, $productID);
+            if($this->config->global->flow != 'onlyTest')
+            {
+                $replace = ($key == 'product') ? $selectHtml : $productID;
+            }
+            else
+            {
+                if($key == 'product') $replace = $selectHtml;
             }
             common::setMenuVars($this->lang->testtask->menu, $key, $replace);
         }
@@ -166,6 +237,7 @@ class testtaskModel extends model
                 ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id')
                 ->leftJoin(TABLE_BUILD)->alias('t4')->on('t1.build = t4.id')
                 ->where('t1.deleted')->eq(0)
+                ->andWhere('t1.auto')->ne('unit')
                 ->beginIF($scopeAndStatus[0] == 'local')->andWhere('t1.product')->eq((int)$productID)->fi()
                 ->beginIF($scopeAndStatus[0] == 'all')->andWhere('t1.product')->in($products)->fi()
                 ->beginIF($scopeAndStatus[1] == 'totalStatus')->andWhere('t1.status')->in(('blocked,doing,wait,done'))->fi()
@@ -185,7 +257,8 @@ class testtaskModel extends model
                 ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t5')->on('t1.project = t5.project and t1.product = t5.product')
 
                 ->where('t1.deleted')->eq(0)
-                ->andWhere('t3.id')->in($this->app->user->view->projects)
+                ->andWhere('t1.auto')->ne('unit')
+                ->andWhere('t1.project')->in("0,{$this->app->user->view->projects}") //Fix bug #3260.
                 ->beginIF($scopeAndStatus[0] == 'local')->andWhere('t1.product')->eq((int)$productID)->fi()
                 ->beginIF($scopeAndStatus[0] == 'all')->andWhere('t1.product')->in($products)->fi()
                 ->beginIF($scopeAndStatus[1] == 'totalStatus')->andWhere('t1.status')->in('blocked,doing,wait,done')->fi()
@@ -197,6 +270,77 @@ class testtaskModel extends model
                 ->page($pager)
                 ->fetchAll('id');
         }
+    }
+
+    /**
+     * Get product unit tasks.
+     * 
+     * @param  int    $productID 
+     * @param  string $browseType 
+     * @param  string $orderBy 
+     * @param  int    $pager 
+     * @access public
+     * @return void
+     */
+    public function getProductUnitTasks($productID, $browseType = '', $orderBy = 'id_desc', $pager = null)
+    {
+        $beginAndEnd = $this->loadModel('action')->computeBeginAndEnd($browseType);
+        if($browseType == 'newest') $orderBy = 'end_desc,' . $orderBy;
+        if($this->config->global->flow == 'onlyTest')
+        {
+            $tasks = $this->dao->select("t1.*, t2.name AS productName,t4.name AS buildName")
+                ->from(TABLE_TESTTASK)->alias('t1')
+                ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id')
+                ->leftJoin(TABLE_BUILD)->alias('t4')->on('t1.build = t4.id')
+                ->where('t1.deleted')->eq(0)
+                ->andWhere('t1.product')->eq($productID)
+                ->andWhere('t1.auto')->eq('unit')
+                ->beginIF($browseType != 'all' and $browseType != 'newest' and $beginAndEnd)
+                ->andWhere('t1.end')->ge($beginAndEnd['begin'])
+                ->andWhere('t1.end')->le($beginAndEnd['end'])
+                ->fi()
+                ->orderBy($orderBy)
+                ->page($pager)
+                ->fetchAll('id');
+        }
+        else
+        {
+            $tasks = $this->dao->select("t1.*, t2.name AS productName, t3.name AS projectName, t4.name AS buildName")
+                ->from(TABLE_TESTTASK)->alias('t1')
+                ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id')
+                ->leftJoin(TABLE_PROJECT)->alias('t3')->on('t1.project = t3.id')
+                ->leftJoin(TABLE_BUILD)->alias('t4')->on('t1.build = t4.id')
+                ->where('t1.deleted')->eq(0)
+                ->andWhere('t1.product')->eq($productID)
+                ->andWhere('t1.auto')->eq('unit')
+                ->beginIF($browseType != 'all' and $browseType != 'newest' and $beginAndEnd)
+                ->andWhere('t1.end')->ge($beginAndEnd['begin'])
+                ->andWhere('t1.end')->le($beginAndEnd['end'])
+                ->fi()
+                ->orderBy($orderBy)
+                ->page($pager)
+                ->fetchAll('id');
+        }
+        $resultGroups = $this->dao->select('t1.task, t2.*')->from(TABLE_TESTRUN)->alias('t1')
+            ->leftJoin(TABLE_TESTRESULT)->alias('t2')->on('t1.id=t2.run')
+            ->where('t1.task')->in(array_keys($tasks))
+            ->fetchGroup('task', 'run');
+
+        foreach($tasks as $taskID => $task)
+        {
+            $results = zget($resultGroups, $taskID, array());
+
+            $task->caseCount = count($results);
+            $task->passCount = 0;
+            $task->failCount = 0;
+            foreach($results as $result)
+            {
+                if($result->caseResult == 'pass') $task->passCount ++;
+                if($result->caseResult == 'fail') $task->failCount ++;
+            }
+        }
+
+        return $tasks;
     }
 
     /**
@@ -214,6 +358,7 @@ class testtaskModel extends model
             ->from(TABLE_TESTTASK)->alias('t1')
             ->leftJoin(TABLE_BUILD)->alias('t2')->on('t1.build = t2.id')
             ->where('t1.project')->eq((int)$projectID)
+            ->andWhere('t1.auto')->ne('unit')
             ->andWhere('t1.deleted')->eq(0)
             ->orderBy($orderBy)
             ->page($pager)
@@ -253,15 +398,29 @@ class testtaskModel extends model
         }
         else
         {
-            $task = $this->dao->select("t1.*, t2.name AS productName, t2.type AS productType, t3.name AS projectName, t4.name AS buildName, if(t4.name != '', t4.branch, t5.branch) AS branch")
-                ->from(TABLE_TESTTASK)->alias('t1')
-                ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id')
-                ->leftJoin(TABLE_PROJECT)->alias('t3')->on('t1.project = t3.id')
-                ->leftJoin(TABLE_BUILD)->alias('t4')->on('t1.build = t4.id')
-                ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t5')->on('t1.project = t5.project')
-                ->where('t1.id')->eq((int)$taskID)
-                ->andWhere('t5.product = t1.product')
-                ->fetch();
+            $task = $this->dao->select("*")->from(TABLE_TESTTASK)->where('id')->eq((int)$taskID)->fetch();
+            if($task)
+            {
+                $product = $this->dao->select('name,type')->from(TABLE_PRODUCT)->where('id')->eq($task->product)->fetch();
+                $task->productName = $product->name;
+                $task->productType = $product->type;
+                $task->branch      = 0;
+                $task->projectName = '';
+                $task->buildName   = '';
+
+                if($task->project)
+                {
+                    $task->projectName = $this->dao->select('name')->from(TABLE_PROJECT)->where('id')->eq($task->project)->fetch('name');
+                    $task->branch      = $this->dao->select('branch')->from(TABLE_PROJECTPRODUCT)->where('project')->eq($task->project)->andWhere('product')->eq($task->product)->fetch('branch');
+                }
+
+                $build = $this->dao->select('branch,name')->from(TABLE_BUILD)->where('id')->eq($task->build)->fetch();
+                if($build)
+                {
+                    $task->buildName = $build->name;
+                    $task->branch    = $build->branch;
+                }
+            }
         }
 
         if(!$task) return false;
@@ -285,6 +444,7 @@ class testtaskModel extends model
             ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
             ->leftJoin(TABLE_BUILD)->alias('t3')->on('t1.build = t3.id')
             ->where('t1.deleted')->eq(0)
+            ->andWhere('t1.auto')->ne('unit')
             ->andWhere('t1.owner')->eq($account)
             ->andWhere('t2.id')->in($this->app->user->view->projects)
             ->beginIF($type == 'wait')->andWhere('t1.status')->ne('done')->fi()
@@ -335,7 +495,7 @@ class testtaskModel extends model
         if($type == 'bystory') $cases = $this->getLinkableCasesByStory($productID, $task, $query, $linkedCases, $pager);
         if($type == 'bybug')   $cases = $this->getLinkableCasesByBug($productID, $task, $query, $linkedCases, $pager);
         if($type == 'bysuite') $cases = $this->getLinkableCasesBySuite($productID, $task, $query, $param, $linkedCases, $pager);
-        if($type == 'bybuild') $cases = $this->getLinkableCasesByTestTask($param, $linkedCases, $pager);
+        if($type == 'bybuild') $cases = $this->getLinkableCasesByTestTask($param, $linkedCases, $query, $pager);
 
         return $cases;
     }
@@ -355,6 +515,7 @@ class testtaskModel extends model
         return $this->dao->select('*')->from(TABLE_CASE)->where($query)
                 ->andWhere('id')->notIN($linkedCases)
                 ->andWhere('status')->ne('wait')
+                ->andWhere('type')->ne('unit')
                 ->beginIF($task->branch)->andWhere('branch')->in("0,$task->branch")->fi()
                 ->andWhere('deleted')->eq(0)
                 ->orderBy('id desc')
@@ -464,11 +625,18 @@ class testtaskModel extends model
      * @access public
      * @return array
      */
-    public function getLinkableCasesByTestTask($testTask, $linkedCases, $pager)
+    public function getLinkableCasesByTestTask($testTask, $linkedCases, $query, $pager)
     {
-        $caseList  = $this->dao->select("`case`")->from(TABLE_TESTRUN)->where('task')->eq($testTask)->andWhere('`case`')->notin($linkedCases)->fetchPairs('case');
+        $query = preg_replace('/`(\w+)`/', 't1.`$1`', $query);
 
-        return $this->dao->select("*")->from(TABLE_CASE)->where('id')->in($caseList)->andWhere('status')->ne('wait')->page($pager)->fetchAll();
+        return $this->dao->select("t1.*,t2.lastRunner,t2.lastRunDate,t2.lastRunResult")->from(TABLE_CASE)->alias('t1')
+            ->leftJoin(TABLE_TESTRUN)->alias('t2')->on('t1.id = t2.case')
+            ->where($query)
+            ->andWhere('t1.id')->notin($linkedCases)
+            ->andWhere('t2.task')->eq($testTask)
+            ->andWhere('t1.status')->ne('wait')
+            ->page($pager)
+            ->fetchAll();
     }
 
     /**
@@ -485,6 +653,7 @@ class testtaskModel extends model
 
         return $this->dao->select('id, name')->from(TABLE_TESTTASK)
             ->where('product')->eq($productID)
+            ->andWhere('auto')->ne('unit')
             ->beginIF($beginDate)->andWhere('begin')->le($beginDate)->fi()
             ->andWhere('deleted')->eq('0')
             ->andWhere('id')->notin($testTaskID)
@@ -574,7 +743,13 @@ class testtaskModel extends model
      */
     public function getDataOfTestTaskPerRunner($taskID)
     {
-        $datas = $this->dao->select('lastRunner AS name, COUNT(*) AS value')->from(TABLE_TESTRUN)->where('task')->eq($taskID)->groupBy('name')->orderBy('value DESC')->fetchAll('name');
+        $datas = $this->dao->select("t1.lastRunner AS name, COUNT('t1.*') AS value")->from(TABLE_TESTRUN)->alias('t1')
+            ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
+            ->where('t1.task')->eq($taskID)
+            ->andWhere('t2.deleted')->eq(0)
+            ->groupBy('name')
+            ->orderBy('value DESC')
+            ->fetchAll('name');
         if(!$datas) return array();
         $users = $this->loadModel('user')->getPairs('noclosed|noletter');
         foreach($datas as $result => $data) $data->name = $result ? zget($users, $result, $result) : $this->lang->testtask->unexecuted;
@@ -705,7 +880,7 @@ class testtaskModel extends model
     public function update($taskID)
     {
         $oldTask = $this->dao->select("*")->from(TABLE_TESTTASK)->where('id')->eq((int)$taskID)->fetch();
-        $task = fixer::input('post')->stripTags($this->config->testtask->editor->edit['id'], $this->config->allowedTags)->join('mailto', ',')->remove('uid,comment')->get();
+        $task = fixer::input('post')->stripTags($this->config->testtask->editor->edit['id'], $this->config->allowedTags)->join('mailto', ',')->remove('uid,comment,contactListMenu')->get();
         $task = $this->loadModel('file')->processImgURL($task, $this->config->testtask->editor->edit['id'], $this->post->uid);
         $this->dao->update(TABLE_TESTTASK)->data($task)
             ->autoCheck()
@@ -854,7 +1029,10 @@ class testtaskModel extends model
      */
     public function getRuns($taskID, $moduleID, $orderBy, $pager = null)
     {
-        $orderBy = (strpos($orderBy, 'assignedTo') !== false or strpos($orderBy, 'lastRunResult') !== false) ? ('t1.' . $orderBy) : ('t2.' . $orderBy);
+        /* Select the table for these special fields. */
+        $specialFields = ',assignedTo,status,lastRunResult,lastRunner,lastRunDate,';
+        $fieldToSort   = substr($orderBy, 0, strpos($orderBy, '_'));
+        $orderBy       = strpos($specialFields, ',' . $fieldToSort . ',') !== false ? ('t1.' . $orderBy) : ('t2.' . $orderBy);
 
         return $this->dao->select('t2.*,t1.*,t2.version as caseVersion,t3.title as storyTitle,t2.status as caseStatus')->from(TABLE_TESTRUN)->alias('t1')
             ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
@@ -878,7 +1056,10 @@ class testtaskModel extends model
      */
     public function getUserRuns($taskID, $user, $modules = '', $orderBy, $pager = null)
     {
-        $orderBy = strpos($orderBy, 'assignedTo') !== false ? ('t1.' . $orderBy) : ('t2.' . $orderBy);
+        /* Select the table for these special fields. */
+        $specialFields = ',assignedTo,status,lastRunResult,lastRunner,lastRunDate,';
+        $fieldToSort   = substr($orderBy, 0, strpos($orderBy, '_'));
+        $orderBy       = strpos($specialFields, ',' . $fieldToSort . ',') !== false ? ('t1.' . $orderBy) : ('t2.' . $orderBy);
 
         return $this->dao->select('t2.*,t1.*,t2.version as caseVersion,t3.title as storyTitle,t2.status as caseStatus')->from(TABLE_TESTRUN)->alias('t1')
             ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
@@ -910,6 +1091,7 @@ class testtaskModel extends model
         /* Set modules and browse type. */
         $modules    = $moduleID ? $this->loadModel('tree')->getAllChildId($moduleID) : '0';
         $browseType = ($browseType == 'bymodule' and $this->session->taskCaseBrowseType and $this->session->taskCaseBrowseType != 'bysearch') ? $this->session->taskCaseBrowseType : $browseType;
+        $browseType = strtolower($browseType);
 
         if($browseType == 'bymodule' or $browseType == 'all')
         {
@@ -945,6 +1127,12 @@ class testtaskModel extends model
 
             $caseQuery = preg_replace('/`(\w+)`/', 't2.`$1`', $caseQuery);
             $caseQuery = str_replace(array('t2.`assignedTo`', 't2.`lastRunner`', 't2.`lastRunDate`', 't2.`lastRunResult`', 't2.`status`'), array('t1.`assignedTo`', 't1.`lastRunner`', 't1.`lastRunDate`', 't1.`lastRunResult`', 't1.`status`'), $caseQuery);
+
+            /* Select the table for these special fields. */
+            $specialFields = ',assignedTo,status,lastRunResult,lastRunner,lastRunDate,';
+            $fieldToSort   = substr($sort, 0, strpos($sort, '_'));
+            $orderBy       = strpos($specialFields, ',' . $fieldToSort . ',') !== false ? ('t1.' . $sort) : ('t2.' . $sort);
+
             $runs = $this->dao->select('t2.*,t1.*, t2.version as caseVersion,t3.title as storyTitle,t2.status as caseStatus')->from(TABLE_TESTRUN)->alias('t1')
                 ->leftJoin(TABLE_CASE)->alias('t2')->on('t1.case = t2.id')
                 ->leftJoin(TABLE_STORY)->alias('t3')->on('t2.story = t3.id')
@@ -953,7 +1141,7 @@ class testtaskModel extends model
                 ->andWhere('t2.deleted')->eq(0)
                 ->beginIF($queryProductID != 'all')->andWhere('t2.product')->eq($queryProductID)->fi()
                 ->beginIF($task->branch)->andWhere('t2.branch')->in("0,{$task->branch}")->fi()
-                ->orderBy(strpos($sort, 'assignedTo') !== false ? ('t1.' . $sort) : ('t2.' . $sort))
+                ->orderBy($orderBy)
                 ->page($pager)
                 ->fetchAll('id');
         }
@@ -1252,6 +1440,7 @@ class testtaskModel extends model
         if($action == 'block')    return ($testtask->status == 'doing'   || $testtask->status == 'wait');
         if($action == 'activate') return ($testtask->status == 'blocked' || $testtask->status == 'done');
         if($action == 'close')    return $testtask->status != 'done';
+        if($action == 'runcase' and isset($testtask->auto) and $testtask->auto == 'unit')  return false;
         if($action == 'runcase')  return isset($testtask->caseStatus) ? $testtask->caseStatus != 'wait' : $testtask->status != 'wait';
         return true;
     }
@@ -1269,11 +1458,20 @@ class testtaskModel extends model
      */
     public function printCell($col, $run, $users, $task, $branches, $mode = 'datatable')
     {
+        $canBatchEdit   = common::hasPriv('testcase', 'batchEdit');
+        $canBatchUnlink = common::hasPriv('testtask', 'batchUnlinkCases');
+        $canBatchAssign = common::hasPriv('testtask', 'batchAssign');
+        $canBatchRun    = common::hasPriv('testtask', 'batchRun');
+
+        $canBatchAction = ($canBatchEdit or $canBatchUnlink or $canBatchAssign or $canBatchRun);
+
         $canView     = common::hasPriv('testcase', 'view');
         $caseLink    = helper::createLink('testcase', 'view', "caseID=$run->case&version=$run->version&from=testtask&taskID=$run->task");
         $account     = $this->app->user->account;
         $id          = $col->id;
         $caseChanged = $run->version < $run->caseVersion;
+        $fromCaseID  = $run->fromCaseID;
+
         if($col->show)
         {
             $class = "c-$id ";
@@ -1285,10 +1483,18 @@ class testtaskModel extends model
             if($id == 'actions') $class .= 'c-actions';
 
             echo "<td class='" . $class . "'" . ($id=='title' ? "title='{$run->title}'":'') . ">";
+            if(isset($this->config->bizVersion)) $this->loadModel('flow')->printFlowCell('testcase', $run, $id);
             switch ($id)
             {
             case 'id':
-                echo html::checkbox('caseIDList', array($run->case => sprintf('%03d', $run->case)));
+                if($canBatchAction)
+                {
+                    echo html::checkbox('caseIDList', array($run->case => sprintf('%03d', $run->case)));
+                }
+                else
+                {
+                    printf('%03d', $run->case);
+                }
                 break;
             case 'pri':
                 echo "<span class='label-pri label-pri-" . $run->pri . "' title='" . zget($this->lang->testcase->priList, $run->pri, $run->pri) . "'>";
@@ -1297,7 +1503,21 @@ class testtaskModel extends model
                 break;
             case 'title':
                 if($run->branch) echo "<span class='label label-info label-outline'>{$branches[$run->branch]}</span>";
-                echo $canView ? html::a($caseLink, $run->title) : $run->title;
+                if($canView)
+                {
+                    if($fromCaseID)
+                    {
+                        echo html::a($caseLink, $run->title, null, "style='color: $run->color'") . html::a(helper::createLink('testcase', 'view', "caseID=$fromCaseID"), "[<i class='icon icon-share' title='{$this->lang->testcase->fromCase}'></i>#$fromCaseID]");
+                    }
+                    else
+                    {
+                        echo html::a($caseLink, $run->title, null, "style='color: $run->color'");
+                    }
+                }
+                else
+                {
+                    echo "<span style='color: $run->color'>$run->title</span>";
+                }
                 break;
             case 'branch':
                 echo $branches[$run->branch];
@@ -1321,8 +1541,7 @@ class testtaskModel extends model
                 echo $run->version;
                 break;
             case 'openedBy':
-                $openedBy = zget($users, $run->openedBy);
-                echo substr($openedBy, strpos($openedBy, ':') + 1);
+                echo zget($users, $run->openedBy);
                 break;
             case 'openedDate':
                 echo substr($run->openedDate, 5, 11);
@@ -1340,8 +1559,7 @@ class testtaskModel extends model
                 echo substr($run->lastEditedDate, 5, 11);
                 break;
             case 'lastRunner':
-                $lastRunner = zget($users, $run->lastRunner);
-                echo substr($lastRunner, strpos($lastRunner, ':') + 1);
+                echo zget($users, $run->lastRunner);
                 break;
             case 'lastRunDate':
                 if(!helper::isZeroDate($run->lastRunDate)) echo date(DT_MONTHTIME1, strtotime($run->lastRunDate));
@@ -1355,8 +1573,7 @@ class testtaskModel extends model
                 if($run->story and $run->storyTitle) echo html::a(helper::createLink('story', 'view', "storyID=$run->story"), $run->storyTitle);
                 break;
             case 'assignedTo':
-                $assignedTo = zget($users, $run->assignedTo);
-                echo substr($assignedTo, strpos($assignedTo, ':') + 1);
+                echo zget($users, $run->assignedTo);
                 break;
             case 'bugs':
                 echo (common::hasPriv('testcase', 'bugs') and $run->bugs) ? html::a(helper::createLink('testcase', 'bugs', "runID={$run->id}&caseID={$run->case}"), $run->bugs, '', "class='iframe'") : $run->bugs;
@@ -1434,7 +1651,7 @@ class testtaskModel extends model
 
         /* Send mail. */
         $this->mail->send($toList, $subject, $mailContent, $ccList);
-        if($this->mail->isError()) trigger_error(join("\n", $this->mail->getError()));
+        if($this->mail->isError()) error_log(join("\n", $this->mail->getError()));
     }
 
     /**
@@ -1491,5 +1708,532 @@ class testtaskModel extends model
             }
         }
         return array($toList, $ccList);
+    }
+
+    /**
+     * Import unit results.
+     * 
+     * @param  int    $productID 
+     * @access public
+     * @return string
+     */
+    public function importUnitResult($productID)
+    {
+        $frame = $this->post->frame;
+        unset($_POST['frame']);
+
+        $fileName = $this->session->resultFile;
+        $data     = $this->parseXMLResult($fileName, $productID, $frame);
+        if($frame == 'cppunit' and empty($data['cases'])) $data = $this->parseCppXMLResult($fileName, $productID, $frame);
+
+        /* Create task. */
+        $this->post->set('auto', 'unit');
+        $testtaskID = $this->create();
+
+        unlink($fileName);
+        unset($_SESSION['resultFile']);
+        if(dao::isError()) return false;
+
+        return $this->processAutoResult($testtaskID, $productID, $data['suites'], $data['cases'], $data['results'], $data['suiteNames'], $data['caseTitles'], 'unit');
+    }
+
+    /**
+     * Process auto test result.
+     * 
+     * @param  int    $testtaskID 
+     * @param  int    $productID 
+     * @param  array  $suites 
+     * @param  array  $cases 
+     * @param  array  $results 
+     * @param  array  $suiteNames 
+     * @param  array  $caseTitles 
+     * @param  string $auto     unit|func 
+     * @access public
+     * @return int
+     */
+    public function processAutoResult($testtaskID, $productID, $suites, $cases, $results, $suiteNames = array(), $caseTitles = array(), $auto = 'unit')
+    {
+        if(empty($cases)) die(js::alert($this->lang->testtask->noImportData));
+
+        /* Import cases and link task and insert result. */
+        $this->loadModel('action');
+        $existSuites = $this->dao->select('*')->from(TABLE_TESTSUITE)->where('name')->in($suiteNames)->andWhere('product')->eq($productID)->andWhere('type')->eq($auto)->andWhere('deleted')->eq(0)->fetchPairs('name', 'id');
+        foreach($suites as $suiteIndex => $suite)
+        {
+            $suiteID = 0;
+            if($suite)
+            {
+                if(!isset($existSuites[$suite->name]))
+                {
+                    $this->dao->insert(TABLE_TESTSUITE)->data($suite)->exec();
+                    $suiteID = $this->dao->lastInsertID();
+                    $this->action->create('testsuite', $suiteID, 'opened');
+                }
+                else
+                {
+                    $suiteID = $existSuites[$suite->name];
+                }
+            }
+
+            if($suiteID)
+            {
+                $existCases = $this->dao->select('t1.*')->from(TABLE_CASE)->alias('t1')
+                    ->leftJoin(TABLE_SUITECASE)->alias('t2')->on('t1.id=t2.case')
+                    ->where('t1.title')->in($caseTitles[$suiteIndex])
+                    ->andWhere('t1.product')->eq($productID)
+                    ->beginIF($auto == 'unit')->andWhere('t1.auto')->eq($auto)->fi()
+                    ->andWhere('t1.deleted')->eq(0)
+                    ->orderBy('id')
+                    ->fetchPairs('title', 'id');
+            }
+            else
+            {
+                $existCases = $this->dao->select('*')->from(TABLE_CASE)
+                    ->where('title')->in($caseTitles[$suiteIndex])
+                    ->beginIF($auto == 'unit')->andWhere('auto')->eq($auto)->fi()
+                    ->andWhere('product')->eq($productID)
+                    ->andWhere('deleted')->eq(0)
+                    ->orderBy('id')
+                    ->fetchPairs('title', 'id');
+            }
+
+            foreach($cases[$suiteIndex] as $i => $case)
+            {
+                if(isset($case->id))
+                {
+                    $caseID = $case->id;
+                    $this->dao->update(TABLE_CASE)->data($case)->where('id')->eq($caseID)->exec();
+                }
+                elseif(!isset($existCases[$case->title]))
+                {
+                    $this->dao->insert(TABLE_CASE)->data($case)->exec();
+                    $caseID = $this->dao->lastInsertID();
+                    $this->action->create('case', $caseID, 'Opened');
+                }
+                else
+                {
+                    $caseID = $existCases[$case->title];
+                }
+
+                $testrun = new stdclass();
+                $testrun->task          = $testtaskID;
+                $testrun->case          = $caseID;
+                $testrun->version       = $case->version;
+                $testrun->lastRunner    = $case->lastRunner;
+                $testrun->lastRunDate   = $case->lastRunDate;
+                $testrun->lastRunResult = $case->lastRunResult;
+                $testrun->status        = 'done';
+
+                $this->dao->replace(TABLE_TESTRUN)->data($testrun)->exec();
+                $runID = $this->dao->lastInsertID();
+
+                if($suiteID)
+                {
+                    $suitecase = new stdclass();
+                    $suitecase->suite   = $suiteID;
+                    $suitecase->case    = $caseID;
+                    $suitecase->version = $case->version;
+                    $suitecase->product = $case->product;
+                    $this->dao->replace(TABLE_SUITECASE)->data($suitecase)->exec();
+                }
+
+                $testresult = $results[$suiteIndex][$i];
+                $testresult->run  = $runID;
+                $testresult->case = $caseID;
+                $this->dao->insert(TABLE_TESTRESULT)->data($testresult)->exec();
+            }
+        }
+
+        return $testtaskID;
+    }
+
+    /**
+     * Parse cppunit XML result.
+     * 
+     * @param  string $fileName 
+     * @param  int    $productID 
+     * @param  string $frame 
+     * @access public
+     * @return array
+     */
+    public function parseCppXMLResult($fileName, $productID, $frame)
+    {
+        /* Parse result xml. */
+        $parsedXML = simplexml_load_file($fileName);
+
+        /* Get testcase node. */
+        $failNodes  = $parsedXML->xpath('FailedTests/FailedTest');
+        $passNodes  = $parsedXML->xpath('SuccessfulTests/Test');
+        $matchNodes = array_merge($failNodes, $passNodes);
+        if(count($matchNodes) == 0) return array('suites' => array(), 'cases' => array(), 'results' => array(), 'suiteNames' => array(), 'caseTitles' => array());
+
+        /* Get cases and results by parsed node. */
+        $now        = helper::now();
+        $cases      = array();
+        $results    = array();
+        $caseTitles = array();
+        $suiteNames = array();
+        $suiteIndex = 0;
+        $suites     = array($suiteIndex => '');
+        foreach($matchNodes as $caseIndex => $matchNode)
+        {
+            $case = new stdclass();
+            $case->product    = $productID;
+            $case->title      = (string)$matchNode->Name;
+            $case->pri        = 3;
+            $case->type       = 'unit';
+            $case->stage      = 'unittest';
+            $case->status     = 'normal';
+            $case->openedBy   = $this->app->user->account;
+            $case->openedDate = $now;
+            $case->version    = 1;
+            $case->auto       = 'unit';
+            $case->frame      = $frame ? $frame : 'junit';
+
+            $result = new stdclass();
+            $result->case       = 0;
+            $result->version    = 1;
+            $result->caseResult = 'pass';
+            $result->lastRunner = $this->app->user->account;
+            $result->date       = $now;
+            $result->duration   = 0;
+            $result->xml        = $matchNode->asXML();
+            $result->stepResults[0]['result'] = 'pass';
+            $result->stepResults[0]['real']   = '';
+            if(isset($matchNode->Message))
+            {
+                $result->caseResult = 'fail';
+                $result->stepResults[0]['result'] = 'fail';
+                $result->stepResults[0]['real']   = (string)$matchNode->Message;
+            }
+            $result->stepResults = serialize($result->stepResults);
+            $case->lastRunner    = $this->app->user->account;
+            $case->lastRunDate   = $now;
+            $case->lastRunResult = $result->caseResult;
+
+            $caseTitles[$suiteIndex][]        = $case->title;
+            $cases[$suiteIndex][$caseIndex]   = $case;
+            $results[$suiteIndex][$caseIndex] = $result;
+        }
+
+        return array('suites' => $suites, 'cases' => $cases, 'results' => $results, 'suiteNames' => $suiteNames, 'caseTitles' => $caseTitles);
+    }
+
+    /**
+     * Parse unit result from xml.
+     * 
+     * @param  string $fileName 
+     * @param  int    $productID 
+     * @param  string $frame 
+     * @access public
+     * @return array
+     */
+    public function parseXMLResult($fileName, $productID, $frame)
+    {
+        /* Parse result xml. */
+        $rules     = zget($this->config->testtask->unitResultRules, $frame, $this->config->testtask->unitResultRules->common);
+        $parsedXML = simplexml_load_file($fileName);
+
+        /* Get testcase node. */
+        $matchPaths = $rules['path'];
+        $nameFields = $rules['name'];
+        $failure    = $rules['failure'];
+        $skipped    = $rules['skipped'];
+        $suiteField = $rules['suite'];
+        $aliasSuite = zget($rules, 'aliasSuite', array());
+        $aliasName  = zget($rules, 'aliasName', array());
+        $matchNodes = array();
+        foreach($matchPaths as $matchPath)
+        {
+            $matchNodes = $parsedXML->xpath($matchPath);
+            if(count($matchNodes) != 0) break;
+        }
+        if(count($matchNodes) == 0) return array('suites' => array(), 'cases' => array(), 'results' => array(), 'suiteNames' => array(), 'caseTitles' => array());
+
+        $parentPath  = '';
+        $caseNode    = $matchPath;
+        $parentNodes = array($parsedXML);
+        if(strpos($matchPath, '/') !== false)
+        {
+            $explodedPath = explode('/', $matchPath);
+            $caseNode     = array_pop($explodedPath);
+            $parentPath   = implode('/', $explodedPath);
+            $parentNodes  = $parsedXML->xpath($parentPath);
+        }
+
+        /* Get cases and results by parsed node. */
+        $now        = helper::now();
+        $cases      = array();
+        $results    = array();
+        $suites     = array();
+        $caseTitles = array();
+        $suiteNames = array();
+        foreach($parentNodes as $suiteIndex => $parentNode)
+        {
+            $caseNodes  = $parentNode->xpath($caseNode);
+            $attributes = $parentNode->attributes();
+            $suite      = '';
+            if(isset($attributes[$suiteField]))
+            {
+                $suite = new stdclass();
+                $suite->product   = $productID;
+                $suite->name      = (string)$attributes[$suiteField];
+                $suite->type      = 'unit';
+                $suite->addedBy   = $this->app->user->account;
+                $suite->addedDate = $now;
+                $suiteNames[]     = $suite->name;
+            }
+            else
+            {
+                $attributes = $caseNodes[0]->attributes();
+                foreach($aliasSuite as $alias)
+                {
+                    if(isset($attributes[$alias]))
+                    {
+                        $suite = new stdclass();
+                        $suite->product   = $productID;
+                        $suite->name      = (string)$attributes[$alias];
+                        $suite->type      = 'unit';
+                        $suite->addedBy   = $this->app->user->account;
+                        $suite->addedDate = $now;
+                        $suiteNames[]     = $suite->name;
+                        break;
+                    }
+                }
+            }
+            $suites[$suiteIndex] = $suite;
+
+            foreach($caseNodes as $caseIndex => $matchNode)
+            {
+                $case = new stdclass();
+                $case->product    = $productID;
+                $case->title      = '';
+                $case->pri        = 3;
+                $case->type       = 'unit';
+                $case->stage      = 'unittest';
+                $case->status     = 'normal';
+                $case->openedBy   = $this->app->user->account;
+                $case->openedDate = $now;
+                $case->version    = 1;
+                $case->auto       = 'unit';
+                $case->frame      = $frame ? $frame : 'junit';
+
+                $attributes = $matchNode->attributes();
+                foreach($nameFields as $field)
+                {
+                    if(!isset($attributes[$field])) continue;
+                    $case->title .= (string)$attributes[$field] . ' ';
+                }
+                $case->title = trim($case->title);
+                if(empty($case->title))
+                {
+                    foreach($aliasName as $field)
+                    {
+                        if(!isset($attributes[$field])) continue;
+                        $case->title .= (string)$attributes[$field] . ' ';
+                    }
+                    $case->title = trim($case->title);
+                }
+                if(empty($case->title)) continue;
+
+                $result = new stdclass();
+                $result->case       = 0;
+                $result->version    = 1;
+                $result->caseResult = 'pass';
+                $result->lastRunner = $this->app->user->account;
+                $result->date       = $now;
+                $result->duration   = isset($attributes['time']) ? (float)$attributes['time'] : 0;
+                $result->xml        = $matchNode->asXML();
+                $result->stepResults[0]['result'] = 'pass';
+                $result->stepResults[0]['real']   = '';
+                if(isset($matchNode->$failure))
+                {
+                    $result->caseResult = 'fail';
+                    $result->stepResults[0]['result'] = 'fail';
+                    if(is_string($matchNode->$failure))
+                    {
+                        $result->stepResults[0]['real'] = (string)$matchNode->$failure;
+                    }
+                    elseif(isset($matchNode->$failure[0]))
+                    {
+                        $result->stepResults[0]['real'] = (string)$matchNode->$failure[0];
+                    }
+                    else
+                    {
+                        $failureAttrs = $matchNode->$failure->attributes();
+                        $result->stepResults[0]['real'] = (string)$failureAttrs['message'];
+                    }
+                }
+                elseif(isset($matchNode->$skipped))
+                {
+                    $result->caseResult = 'n/a';
+                    $result->stepResults[0]['result'] = 'n/a';
+                    $result->stepResults[0]['real']   = '';
+                }
+                $result->stepResults = serialize($result->stepResults);
+                $case->lastRunner    = $this->app->user->account;
+                $case->lastRunDate   = $now;
+                $case->lastRunResult = $result->caseResult;
+
+                $caseTitles[$suiteIndex][]        = $case->title;
+                $cases[$suiteIndex][$caseIndex]   = $case;
+                $results[$suiteIndex][$caseIndex] = $result;
+            }
+        }
+
+        return array('suites' => $suites, 'cases' => $cases, 'results' => $results, 'suiteNames' => $suiteNames, 'caseTitles' => $caseTitles);
+    }
+
+    /**
+     * Parse unit result from ztf.
+     * 
+     * @param  array  $caseResults 
+     * @param  string $frame 
+     * @param  int    $productID 
+     * @param  int    $jobID 
+     * @param  int    $compileID 
+     * @access public
+     * @return array
+     */
+    public function parseZTFUnitResult($caseResults, $frame, $productID, $jobID, $compileID)
+    {
+        $now        = helper::now();
+        $cases      = array();
+        $results    = array();
+        $suites     = array();
+        $caseTitles = array();
+        $suiteNames = array();
+        $suiteIndex = 0;
+        foreach($caseResults as $caseIndex => $caseResult)
+        {
+            $suite = '';
+            if(isset($caseResult->testSuite) and !isset($suiteNames[$caseResult->testSuite]))
+            {
+                $suite = new stdclass();
+                $suite->product   = $productID;
+                $suite->name      = $caseResult->testSuite;
+                $suite->type      = 'unit';
+                $suite->addedBy   = $this->app->user->account;
+                $suite->addedDate = $now;
+
+                $suiteNames[$suite->name] = $suite->name;
+                $suiteIndex ++;
+            }
+            if(!isset($suites[$suiteIndex])) $suites[$suiteIndex] = $suite;
+
+            $case = new stdclass();
+            $case->product    = $productID;
+            $case->title      = $caseResult->title;
+            $case->pri        = 3;
+            $case->type       = 'unit';
+            $case->stage      = 'unittest';
+            $case->status     = 'normal';
+            $case->openedBy   = $this->app->user->account;
+            $case->openedDate = $now;
+            $case->version    = 1;
+            $case->auto       = 'unit';
+            $case->frame      = $frame;
+
+            $result = new stdclass();
+            $result->case       = 0;
+            $result->version    = 1;
+            $result->caseResult = 'pass';
+            $result->lastRunner = $this->app->user->account;
+            $result->job        = $jobID;
+            $result->compile    = $compileID;
+            $result->date       = $now;
+            $result->duration   = zget($caseResult, 'duration', 0);
+            $result->stepResults[0]['result'] = 'pass';
+            $result->stepResults[0]['real']   = '';
+            if(!empty($caseResult->failure))
+            {
+                $result->caseResult = 'fail';
+                $result->stepResults[0]['result'] = 'fail';
+                $result->stepResults[0]['real']   = zget($caseResult->failure, 'desc', '');
+            }
+            $result->stepResults = serialize($result->stepResults);
+            $case->lastRunner    = $this->app->user->account;
+            $case->lastRunDate   = $now;
+            $case->lastRunResult = $result->caseResult;
+
+            $caseTitles[$suiteIndex][]        = $case->title;
+            $cases[$suiteIndex][$caseIndex]   = $case;
+            $results[$suiteIndex][$caseIndex] = $result;
+        }
+
+        return array('suites' => $suites, 'cases' => $cases, 'results' => $results, 'suiteNames' => $suiteNames, 'caseTitles' => $caseTitles);
+    }
+
+    /**
+     * Parse function result from ztf.
+     * 
+     * @param  array  $caseResults 
+     * @param  string $frame 
+     * @param  int    $productID 
+     * @param  int    $jobID 
+     * @param  int    $compileID 
+     * @access public
+     * @return array
+     */
+    public function parseZTFFuncResult($caseResults, $frame, $productID, $jobID, $compileID)
+    {
+        $now        = helper::now();
+        $cases      = array();
+        $results    = array();
+        $suites     = array();
+        $caseTitles = array();
+        $suiteNames = array();
+        $suiteIndex = 0;
+        foreach($caseResults as $caseIndex => $caseResult)
+        {
+            $suite = '';
+            if(!isset($suites[$suiteIndex])) $suites[$suiteIndex] = $suite;
+
+            $case = new stdclass();
+            $case->product    = $productID;
+            $case->title      = $caseResult->title;
+            $case->pri        = 3;
+            $case->type       = 'feature';
+            $case->stage      = 'feature';
+            $case->status     = 'normal';
+            $case->openedBy   = $this->app->user->account;
+            $case->openedDate = $now;
+            $case->version    = 1;
+            $case->auto       = 'func';
+            $case->frame      = $frame;
+
+            $result = new stdclass();
+            $result->case       = 0;
+            $result->version    = 1;
+            $result->caseResult = 'pass';
+            $result->lastRunner = $this->app->user->account;
+            $result->job        = $jobID;
+            $result->compile    = $compileID;
+            $result->date       = $now;
+            $result->stepResults[0]['result'] = 'pass';
+            $result->stepResults[0]['real']   = '';
+            if(!empty($caseResult->steps))
+            {
+                $result->stepResults = array();
+                $stepStatus = 'pass';
+                foreach($caseResult->steps as $i => $step)
+                {
+                    $result->stepResults[$i]['result'] = $step->status ? 'pass' : 'fail';
+                    $result->stepResults[$i]['real']   = $step->status ? '' : $step->checkPoints[0]->actual;
+                    if(!$step->status) $stepStatus = 'fail';
+                }
+                $result->caseResult = $stepStatus;
+            }
+            $result->stepResults = serialize($result->stepResults);
+            $case->lastRunner    = $this->app->user->account;
+            $case->lastRunDate   = $now;
+            $case->lastRunResult = $result->caseResult;
+
+            $caseTitles[$suiteIndex][]        = $case->title;
+            $cases[$suiteIndex][$caseIndex]   = $case;
+            $results[$suiteIndex][$caseIndex] = $result;
+        }
+
+        return array('suites' => $suites, 'cases' => $cases, 'results' => $results, 'suiteNames' => $suiteNames, 'caseTitles' => $caseTitles);
     }
 }

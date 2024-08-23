@@ -19,7 +19,14 @@ class custom extends control
      */
     public function index()
     {
-        die(js::locate(inlink('set')));
+        if(common::hasPriv('custom', 'product')) die(js::locate(inlink('product')));
+        if(common::hasPriv('custom', 'project')) die(js::locate(inlink('project')));
+        if(common::hasPriv('custom', 'set')) die(js::locate(inlink('set')));
+
+        foreach($this->lang->custom->system as $sysObject)
+        {
+            if(common::hasPriv('custom', $sysObject)) die(js::locate(inlink($sysObject)));
+        }
     }
 
     /**
@@ -124,7 +131,7 @@ class custom extends control
                     {
                         if(!is_numeric($key) or $key > 255) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidNumberKey));
                     }
-                    if(!empty($key) and !empty($oldCustoms) and !isset($oldCustoms[$key]) and $key != 'n/a' and !validater::checkREG($key, '/^[a-z_0-9]+$/')) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStringKey));
+                    if(!empty($key) and !isset($oldCustoms[$key]) and $key != 'n/a' and !validater::checkREG($key, '/^[a-z_0-9]+$/')) $this->send(array('result' => 'fail', 'message' => $this->lang->custom->notice->invalidStringKey));
 
                     /* The length of roleList in user module and typeList in todo module is less than 10. check it when saved. */
                     if($field == 'roleList' or $module == 'todo' and $field == 'typeList')
@@ -160,7 +167,7 @@ class custom extends control
                 }
             }
             if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('custom', 'set', "module=$module&field=$field&lang=" . str_replace('-', '_', $lang))));
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('custom', 'set', "module=$module&field=$field&lang=" . str_replace('-', '_', isset($this->config->langs[$lang]) ? $lang : 'all'))));
         }
 
         /* Check whether the current language has been customized. */
@@ -287,6 +294,7 @@ class custom extends control
 
         /* Get this module requiredFields. */
         $this->loadModel($moduleName);
+        if($moduleName == 'user') $this->app->loadModuleConfig($moduleName);
         $requiredFields = $this->custom->getRequiredFields($this->config->$moduleName);
 
         if($moduleName == 'doc')
@@ -343,6 +351,46 @@ class custom extends control
 
         $this->view->title = $this->lang->custom->timezone;
         $this->view->position[] = $this->lang->custom->timezone;
+        $this->display();
+    }
+
+    /**
+     * Set whether the project is read-only.
+     *
+     * @access public
+     * @return void
+     */
+    public function project()
+    {
+        if($_POST)
+        {
+            $this->loadModel('setting')->setItem('system.common.CRProject', $this->post->project);
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
+        }
+
+        $this->view->title      = $this->lang->custom->project;
+        $this->view->position[] = $this->lang->custom->common;
+        $this->view->position[] = $this->view->title;
+        $this->display();
+    }
+
+    /**
+     * Set whether the product is read-only.
+     *
+     * @access public
+     * @return void
+     */
+    public function product()
+    {
+        if($_POST)
+        {
+            $this->loadModel('setting')->setItem('system.common.CRProduct', $this->post->product);
+            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
+        }
+
+        $this->view->title      = $this->lang->custom->product;
+        $this->view->position[] = $this->lang->custom->common;
+        $this->view->position[] = $this->view->title;
         $this->display();
     }
 
@@ -460,8 +508,13 @@ class custom extends control
             }
             if($module !== 'main')
             {
-                $menu['module']     = customModel::getModuleMenu($module, true);
-                $menu['feature']    = customModel::getFeatureMenu($module, $method);
+                $menu['module']  = array();
+                $menu['feature'] = array();
+                if(!isset($this->config->custom->noModuleMenu[$module]))
+                {
+                    $menu['module']  = customModel::getModuleMenu($module, true);
+                    $menu['feature'] = customModel::getFeatureMenu($module, $method);
+                }
                 $menu['moduleName'] = $module;
                 $menu['methodName'] = $method;
             }

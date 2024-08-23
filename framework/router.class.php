@@ -48,6 +48,14 @@ class router extends baseRouter
     public $rawParams;
 
     /**
+     * 原始URI 
+     * 
+     * @var string   
+     * @access public
+     */
+    public $rawURI;
+
+    /**
      * 标记是否是工作流
      * Whether the tag is a workflow
      *
@@ -55,6 +63,18 @@ class router extends baseRouter
      * @access public
      */
     public $isFlow = false;
+
+    /**
+     * Get the $moduleRoot var.
+     * 
+     * @param  string $appName 
+     * @access public
+     * @return string
+     */
+    public function getModuleRoot($appName = '')
+    {
+        return $this->moduleRoot;
+    }
 
     /**
      * Merge system and translated langs.
@@ -106,23 +126,11 @@ class router extends baseRouter
                 $commonSettings = array();
                 try
                 {
-                    $commonSettings = $this->dbh->query('SELECT `key`, value FROM' . TABLE_CONFIG . "WHERE `owner`='system' AND `module`='custom' and `key` in ('productProject','storyRequirement','hourPoint')")->fetchAll();
+                    $commonSettings = $this->dbh->query('SELECT `key`, value FROM' . TABLE_CONFIG . "WHERE `owner`='system' AND `module`='custom' and `key` in ('productProject','URAndSR','URSRName','storyRequirement','hourPoint')")->fetchAll();
                 }
-                catch (PDOException $exception) 
+                catch (PDOException $exception)
                 {
-                    $repairCode = '|1034|1035|1194|1195|1459|';
-                    $errorInfo = $exception->errorInfo;
-                    $errorCode = $errorInfo[1];
-                    $errorMsg  = $errorInfo[2];
-                    $message   = $exception->getMessage();
-                    if(strpos($repairCode, "|$errorCode|") !== false or ($errorCode == '1016' and strpos($errorMsg, 'errno: 145') !== false) or strpos($message, 'repair') !== false)
-                    {
-                        if(isset($config->framework->autoRepairTable) and $config->framework->autoRepairTable)
-                        {
-                            header("location: " . $config->webRoot . 'checktable.php');
-                            exit;
-                        }
-                    }
+                    helper::checkDB2Repair($exception);
                 }
             }
 
@@ -133,14 +141,36 @@ class router extends baseRouter
             {
                 if($setting->key == 'productProject') list($productCommon, $projectCommon) = explode('_',  $setting->value);
                 if($setting->key == 'storyRequirement') $storyCommon = $setting->value;
-                if($setting->key == 'hourPoint') $hourCommon = $setting->value;
+                if($setting->key == 'hourPoint') $hourCommon    = $setting->value;
+                if($setting->key == 'URAndSR') $URAndSR = $setting->value;
+                if($setting->key == 'URSRName')
+                {
+                    $URSRName = json_decode($setting->value, true);
+                    if(isset($URSRName['URCommon'][$this->clientLang])) $lang->URCommon = $URSRName['URCommon'][$this->clientLang];
+                    if(isset($URSRName['SRCommon'][$this->clientLang])) $lang->SRCommon = $URSRName['SRCommon'][$this->clientLang];
+                }
             }
+
+            $config->storyCommon = $storyCommon;
 
             /* Set productCommon, projectCommon, storyCommon and hourCommon. Default english lang. */
             $lang->productCommon = isset($this->config->productCommonList[$this->clientLang][(int)$productCommon]) ? $this->config->productCommonList[$this->clientLang][(int)$productCommon] : $this->config->productCommonList['en'][(int)$productCommon];
             $lang->projectCommon = isset($this->config->projectCommonList[$this->clientLang][(int)$projectCommon]) ? $this->config->projectCommonList[$this->clientLang][(int)$projectCommon] : $this->config->projectCommonList['en'][(int)$projectCommon];
             $lang->storyCommon   = isset($this->config->storyCommonList[$this->clientLang][(int)$storyCommon])     ? $this->config->storyCommonList[$this->clientLang][(int)$storyCommon]     : $this->config->storyCommonList['en'][(int)$storyCommon];
             $lang->hourCommon    = isset($this->config->hourPointCommonList[$this->clientLang][(int)$hourCommon])  ? $this->config->hourPointCommonList[$this->clientLang][(int)$hourCommon]  : $this->config->hourPointCommonList['en'][(int)$hourCommon];
+
+            if($storyCommon == 0 and isset($URAndSR))
+            {
+                $config->URAndSR = $URAndSR;
+                if(!empty($URAndSR) and !empty($lang->SRCommon)) $lang->storyCommon = $lang->SRCommon;
+            }
+        }
+
+        /* When module is custom then reset storyCommon. */
+        if($moduleName == 'custom')
+        {
+            global $config;
+            $lang->storyCommon   = isset($this->config->storyCommonList[$this->clientLang][(int)$config->storyCommon])     ? $this->config->storyCommonList[$this->clientLang][(int)$config->storyCommon]     : $this->config->storyCommonList['en'][(int)$config->storyCommon];
         }
 
         parent::loadLang($moduleName, $appName);
@@ -319,6 +349,7 @@ class router extends baseRouter
         /* Check if the requested module is defined in workflow. */
         $flow = $this->dbh->query("SELECT * FROM " . TABLE_WORKFLOW . " WHERE `module` = '$this->moduleName'")->fetch();
         if(!$flow) return parent::setControlFile($exitIfNone);
+        if($flow->status != 'normal') die("<html><head><meta charset='utf-8'></head><body>{$this->lang->flowNotRelease}</body></html>");
 
         /**
          * 工作流中配置的标签应该请求browse方法，而某些内置流程本身包含browse方法。在这里处理请求的时候会无法区分是内置的browse方法还是工作
@@ -395,6 +426,8 @@ class router extends baseRouter
      */
     public function setFlowURI($moduleName, $methodName)
     {
+        $this->rawURI = $this->URI;
+
         $this->setModuleName($moduleName);
         $this->setMethodName($methodName);
 
@@ -469,6 +502,25 @@ class router extends baseRouter
     }
 
     /**
+     * 获取$URL。
+     * Get the $URL.
+     * 
+     * @param  bool $full  true, the URI contains the webRoot, else only hte URI.
+     * @access public
+     * @return string
+     */
+    public function getURI($full = false)
+    {
+        $URI = !empty($this->rawURI) ? $this->rawURI : $this->URI;
+        if($full and $this->config->requestType == 'PATH_INFO')
+        {
+            if($URI) return $this->config->webRoot . $URI . '.' . $this->viewType;
+            return $this->config->webRoot;
+        }
+        return $URI;
+    }
+
+    /**
      * 如果$this->isFlow的值为true，说明这个请求需要工作流引擎来处理，则要根据工作流引擎的需要重新设置参数。
      * If the values of $this->isFlow is true, indicating that the request needs to be processed
      * by the workflow engine, the parameters are reset according to the needs of the workflow engine.
@@ -488,6 +540,7 @@ class router extends baseRouter
             /* 如果请求的方法名不是browse、create、edit、view、delete、export中的任何一个，则需要添加action参数来传递请求的方法名。 */
             /* If the requested method name is not any of browse, create, edit, view, delete, or export, you need to add an action parameter to pass the requested method name. */
             if(isset($this->config->workflowaction->default->actions) and !in_array($this->rawMethod, $this->config->workflowaction->default->actions)) $passedParams['action'] = $this->rawMethod;
+
             /* 添加module参数来传递请求的模块名。 */
             /* Add the module parameter to pass the requested module name. */
             $passedParams['module'] = $this->rawModule;

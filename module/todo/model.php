@@ -33,13 +33,22 @@ class todoModel extends model
             ->setIF($this->post->type == 'feedback' and $this->post->feedback, 'idvalue', $this->post->feedback)
             ->setIF($this->post->date == false,  'date', '2030-01-01')
             ->setIF($this->post->begin == false, 'begin', '2400')
-            ->setIF($this->post->end   == false, 'end',   '2400')
+            ->setIF($this->post->begin == false or $this->post->end   == false, 'end',   '2400')
             ->stripTags($this->config->todo->editor->create['id'], $this->config->allowedTags)
             ->remove('bug, task, story, uid, feedback')
             ->get();
+
+        if($todo->end < $todo->begin)
+        {
+            dao::$errors[] = sprintf($this->lang->error->gt, $this->lang->todo->end, $this->lang->todo->begin);
+            return false;
+        }
+
         if(empty($todo->cycle)) unset($todo->config);
         if(!empty($todo->cycle))
         {
+            $todo->date = date('Y-m-d');
+
             $todo->config['begin'] = $todo->date;
             if($todo->config['type'] == 'day')
             {
@@ -58,6 +67,7 @@ class todoModel extends model
                 unset($todo->config['week']);
                 $todo->config['month'] = join(',', $todo->config['month']);
             }
+            $todo->config['beforeDays'] = (int)$todo->config['beforeDays'];
             $todo->config = json_encode($todo->config);
             $todo->type   = 'cycle';
         }
@@ -91,6 +101,8 @@ class todoModel extends model
     public function batchCreate()
     {
         $todos = fixer::input('post')->get();
+
+        $validTodos = array();
         for($i = 0; $i < $this->config->todo->batchCreate; $i++)
         {
             if($todos->names[$i] != '' || isset($todos->bugs[$i + 1]) || isset($todos->tasks[$i + 1]))
@@ -118,15 +130,9 @@ class todoModel extends model
                 if($todo->type == 'task')  $todo->idvalue = isset($todos->tasks[$i + 1]) ? $todos->tasks[$i + 1] : 0;
                 if($todo->type == 'story') $todo->idvalue = isset($todos->storys[$i + 1]) ? $todos->storys[$i + 1] : 0;
 
-                $this->dao->insert(TABLE_TODO)->data($todo)->autoCheck()->exec();
-                if(dao::isError())
-                {
-                    echo js::error(dao::getError());
-                    die(js::reload('parent'));
-                }
-                $todoID = $this->dao->lastInsertID();
-                $this->loadModel('score')->create('todo', 'create', $todoID);
-                $this->loadModel('action')->create('todo', $todoID, 'opened');
+                if($todo->end < $todo->begin) die(js::alert(sprintf($this->lang->error->gt, $this->lang->todo->end, $this->lang->todo->begin)));
+
+                $validTodos[] = $todo;
             }
             else
             {
@@ -137,6 +143,19 @@ class todoModel extends model
                 unset($todos->begins[$i]);
                 unset($todos->ends[$i]);
             }
+        }
+
+        foreach($validTodos as $todo)
+        {
+            $this->dao->insert(TABLE_TODO)->data($todo)->autoCheck()->exec();
+            if(dao::isError())
+            {
+                echo js::error(dao::getError());
+                die(js::reload('parent'));
+            }
+            $todoID = $this->dao->lastInsertID();
+            $this->loadModel('score')->create('todo', 'create', $todoID);
+            $this->loadModel('action')->create('todo', $todoID, 'opened');
         }
     }
 
@@ -154,16 +173,29 @@ class todoModel extends model
         $todo = fixer::input('post')
             ->cleanInt('pri, begin, end, private')
             ->add('account', $oldTodo->account)
-            ->setIF(in_array($oldTodo->type, array('bug', 'task', 'story')), 'name', '')
+            ->setIF(in_array($this->post->type, array('bug', 'task', 'story')), 'name', '')
+            ->setIF($this->post->type == 'bug'  and $this->post->bug,  'idvalue', $this->post->bug)
+            ->setIF($this->post->type == 'task' and $this->post->task, 'idvalue', $this->post->task)
+            ->setIF($this->post->type == 'story' and $this->post->story, 'idvalue', $this->post->story)
+            ->setIF($this->post->type == 'feedback' and $this->post->feedback, 'idvalue', $this->post->feedback)
             ->setIF($this->post->date  == false, 'date', '2030-01-01')
             ->setIF($this->post->begin == false, 'begin', '2400')
             ->setIF($this->post->end   == false, 'end', '2400')
             ->setDefault('private', 0)
             ->stripTags($this->config->todo->editor->edit['id'], $this->config->allowedTags)
-            ->remove('uid')
+            ->remove('bug, task, story, feedback, uid')
             ->get();
+
+        if($todo->end < $todo->begin)
+        {
+            dao::$errors[] = sprintf($this->lang->error->gt, $this->lang->todo->end, $this->lang->todo->begin);
+            return false;
+        }
+
         if(!empty($oldTodo->cycle))
         {
+            $todo->date = date('Y-m-d');
+
             $todo->config['begin'] = $todo->date;
             if($todo->config['type'] == 'day')
             {
@@ -182,6 +214,7 @@ class todoModel extends model
                 unset($todo->config['week']);
                 $todo->config['month'] = join(',', $todo->config['month']);
             }
+            $todo->config['beforeDays'] = (int)$todo->config['beforeDays'];
             $todo->config = json_encode($todo->config);
         }
 
@@ -189,6 +222,10 @@ class todoModel extends model
         $this->dao->update(TABLE_TODO)->data($todo)
             ->autoCheck()
             ->checkIF($todo->type == 'custom', $this->config->todo->edit->requiredFields, 'notempty')
+            ->checkIF($todo->type == 'bug'   and $todo->idvalue == 0, 'idvalue', 'notempty')
+            ->checkIF($todo->type == 'task'  and $todo->idvalue == 0, 'idvalue', 'notempty')
+            ->checkIF($todo->type == 'story' and $todo->idvalue == 0, 'idvalue', 'notempty')
+            ->checkIF($todo->type == 'feedback' and $todo->idvalue == 0, 'idvalue', 'notempty')
             ->where('id')->eq($todoID)
             ->exec();
         if(!dao::isError())
@@ -229,6 +266,8 @@ class todoModel extends model
                 if($todo->type == 'bug')  $todo->idvalue = isset($data->bugs[$todoID]) ? $data->bugs[$todoID] : 0;
                 if($todo->type == 'story')$todo->idvalue = isset($data->storys[$todoID]) ? $data->storys[$todoID] : 0;
 
+                if($todo->end < $todo->begin) die(js::alert(sprintf($this->lang->error->gt, $this->lang->todo->end, $this->lang->todo->begin)));
+
                 $todos[$todoID] = $todo;
             }
 
@@ -236,12 +275,14 @@ class todoModel extends model
             foreach($todos as $todoID => $todo)
             {
                 $oldTodo = $oldTodos[$todoID];
-                if($oldTodo->type == 'bug' or $oldTodo->type == 'task') $oldTodo->name = '';
+                if($oldTodo->type == 'bug' or $oldTodo->type == 'task' or $oldTodo->type == 'story' or $oldTodo->type == 'feedback') $oldTodo->name = '';
                 $this->dao->update(TABLE_TODO)->data($todo)
                     ->autoCheck()
                     ->checkIF($todo->type == 'custom', $this->config->todo->edit->requiredFields, 'notempty')
-                    ->checkIF($todo->type == 'bug', 'idvalue', 'notempty')
-                    ->checkIF($todo->type == 'task', 'idvalue', 'notempty')
+                    ->checkIF($todo->type == 'bug'   and $todo->idvalue == 0, 'idvalue', 'notempty')
+                    ->checkIF($todo->type == 'task'  and $todo->idvalue == 0, 'idvalue', 'notempty')
+                    ->checkIF($todo->type == 'story' and $todo->idvalue == 0, 'idvalue', 'notempty')
+                    ->checkIF($todo->type == 'feedback' and $todo->idvalue == 0, 'idvalue', 'notempty')
                     ->where('id')->eq($todoID)
                     ->exec();
 
@@ -260,6 +301,20 @@ class todoModel extends model
 
         return $allChanges;
     }
+
+    /**
+     * Start one todo.
+     *
+     * @param  string $todoID
+     * @access public
+     * @return void
+     */
+    public function start($todoID)
+    {
+        $this->dao->update(TABLE_TODO)->set('status')->eq('doing')->where('id')->eq((int)$todoID)->exec();
+        $this->loadModel('action')->create('todo', $todoID, 'started');
+    }
+
 
     /**
      * Change the status of a todo.
@@ -451,6 +506,12 @@ class todoModel extends model
             return $todo->status != 'done';
         }
 
+        if($action == 'start')
+        {
+            if(!empty($todo->cycle)) return false;
+            return $todo->status == 'wait';
+        }
+
         return true;
     }
 
@@ -489,10 +550,10 @@ class todoModel extends model
             $newTodo->name       = $todo->name;
             $newTodo->desc       = $todo->desc;
             $newTodo->status     = 'wait';
-            $newTodo->private    = $todo->private;
-            $newTodo->assignedTo = $todo->assignedTo;
-            $newTodo->assignedBy = $todo->assignedBy;
-            if($todo->assignedTo) $newTodo->assignedDate = $now;
+            $newTodo->private    = isset($todo->private) ? $todo->private : '';
+            $newTodo->assignedTo = isset($todo->assignedTo) ? $todo->assignedTo : '';
+            $newTodo->assignedBy = isset($todo->assignedBy) ? $todo->assignedBy : '';
+            if(isset($todo->assignedTo) and $todo->assignedTo) $newTodo->assignedDate = $now;
 
             $start  = strtotime($begin);
             $finish = strtotime("$today +{$beforeDays} days");
@@ -504,11 +565,46 @@ class todoModel extends model
 
                 if($todo->config->type == 'day')
                 {
-                    $day = (int)$todo->config->day;
-                    if($day <= 0) continue;
+                    if(isset($todo->config->day))
+                    {
+                        $day = (int)$todo->config->day;
+                        if($day <= 0) continue;
 
-                    if(empty($lastCycle))        $date = date('Y-m-d', strtotime("{$today} +" . ($day - 1) . " days"));
-                    if(!empty($lastCycle->date)) $date = date('Y-m-d', strtotime("{$lastCycle->date} +{$day} days"));
+                        /* If no data, judge the interval from the begin time. */
+                        if(empty($lastCycle))
+                        {
+                            $todayTime = new DateTime($today);
+                            $beginTime = new DateTime($todo->config->begin);
+                            $interval  = $todayTime->diff($beginTime)->days;
+
+                            if($interval != $day) continue;
+
+                            $date = $today;
+                        }
+
+                        /* If have data, judge the interval from the last cycle time. */
+                        if(!empty($lastCycle->date))
+                        {
+                            $todayTime     = new DateTime($today);
+                            $lastCycleTime = new DateTime($lastCycle->date);
+                            $interval      = $todayTime->diff($lastCycleTime)->days;
+
+                            if($interval != $day) continue;
+
+                            $date = date('Y-m-d', strtotime("{$lastCycle->date} +{$day} days"));
+                        }
+                    }
+                    if(isset($todo->config->specifiedDate))
+                    {
+                        $date          = $today;
+                        $specifiedDate = $todo->config->specify->month + 1 . '-' . $todo->config->specify->day;
+
+                        /* If not set cycle every year and have data, continue. */
+                        if(!empty($lastCycle) and !isset($todo->config->cycleYear)) continue;
+
+                        /* If set specified date, only judge month and day. */
+                        if(date('m-d', strtotime($date)) != $specifiedDate) continue;
+                    }
                 }
                 elseif($todo->config->type == 'week')
                 {
@@ -529,11 +625,12 @@ class todoModel extends model
                     }
                 }
 
-                if(!$date)                         continue;
-                if($date < $todo->config->begin)   continue;
-                if($date < date('Y-m-d'))          continue;
-                if($date > date('Y-m-d', $finish)) continue;
-                if(!empty($end) && $date > $end)   continue;
+                if(!$date)                                     continue;
+                if($date < $todo->config->begin)               continue;
+                if($date < date('Y-m-d'))                      continue;
+                if($date > date('Y-m-d', $finish))             continue;
+                if(!empty($end) && $date > $end)               continue;
+                if($lastCycle and ($date == $lastCycle->date)) continue;
 
                 $newTodo->date = $date;
 

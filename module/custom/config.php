@@ -9,6 +9,8 @@ $config->custom->canAdd['todo']     = 'priList,typeList';
 $config->custom->canAdd['user']     = 'roleList';
 $config->custom->canAdd['block']    = '';
 
+$config->custom->noModuleMenu = array();
+
 $config->custom->requiredModules[15] = 'product';
 $config->custom->requiredModules[20] = 'story';
 $config->custom->requiredModules[25] = 'productplan';
@@ -25,7 +27,7 @@ $config->custom->requiredModules[65] = 'testreport';
 $config->custom->requiredModules[70] = 'caselib';
 $config->custom->requiredModules[75] = 'testtask';
 
-$config->custom->requiredModules[75] = 'doc';
+$config->custom->requiredModules[80] = 'doc';
 
 $config->custom->requiredModules[85] = 'user';
 

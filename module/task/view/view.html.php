@@ -83,7 +83,7 @@
         <div class='detail-title'><?php echo $lang->task->case;?></div>
         <div class='detail-content article-content'>
           <ul class='list-unstyled'>
-            <?php foreach($task->cases as $caseID => $case) echo '<li>' . html::a($this->createLink('testcase', 'view', "caseID=$caseID", '', true), "#$caseID " . $case, '', "data-toggle='modal' data-type='iframe' data-width='90%'") . '</li>';?>
+            <?php foreach($task->cases as $caseID => $case) echo '<li>' . html::a($this->createLink('testcase', 'view', "caseID=$caseID", '', true), "#$caseID " . $case, '', isonlybody() ? '' : "data-toggle='modal' data-type='iframe' data-width='90%'") . '</li>';?>
           </ul>
         </div>
       </div>
@@ -129,10 +129,10 @@
                   common::printIcon('task', 'assignTo', "projectID=$child->project&taskID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
                   common::printIcon('task', 'start',    "taskID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
                   common::printIcon('task', 'activate', "taskID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
+                  common::printIcon('task', 'close',    "taskID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
+                  common::printIcon('task', 'finish',   "taskID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
                   common::printIcon('task', 'recordEstimate', "taskID=$child->id", $child, 'list', 'time', '', 'iframe showinonlybody', true);
-                  common::printIcon('task', 'finish', "taskID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
-                  common::printIcon('task', 'close',  "taskID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
-                  common::printIcon('task', 'edit',   "taskID=$child->id", $child, 'list');
+                  common::printIcon('task', 'edit', "taskID=$child->id", $child, 'list');
                   ?>
                 </td>
               </tr>
@@ -142,8 +142,12 @@
         </div>
       </div>
       <?php endif;?>
-      <?php echo $this->fetch('file', 'printFiles', array('files' => $task->files, 'fieldset' => 'true'));?>
-      <?php $actionFormLink = $this->createLink('action', 'comment', "objectType=task&objectID=$task->id");?>
+      <?php
+      echo $this->fetch('file', 'printFiles', array('files' => $task->files, 'fieldset' => 'true', 'object' => $task));
+
+      $canBeChanged = common::canBeChanged('task', $task);
+      if($canBeChanged) $actionFormLink = $this->createLink('action', 'comment', "objectType=task&objectID=$task->id");
+      ?>
     </div>
     <?php $this->printExtendFields($task, 'div', "position=left&inForm=0&inCell=1");?>
     <div class="cell"><?php include '../../common/view/action.html.php';?></div>
@@ -227,12 +231,14 @@
                   ?>
                   <td title='<?php echo $moduleTitle?>'><?php echo $printModule?></td>
                 </tr>
+                <?php if($config->global->flow != 'onlyTask' and $project->type != 'ops'):?>
                 <tr class='nofixed'>
                   <th><?php echo $lang->task->story;?></th>
                   <td>
                     <?php
                     if(!$task->storyTitle) echo $lang->noData;
-                    if($task->storyTitle and !common::printLink('story', 'view', "storyID=$task->story", $task->storyTitle, '', "class='iframe' data-width='80%'", true, true)) echo $task->storyTitle;
+                    $class = isonlybody() ? 'showinonlybody' : 'iframe';
+                    if($task->storyTitle and !common::printLink('story', 'view', "storyID=$task->story", $task->storyTitle, '', "class=$class data-width='80%'", true, true)) echo $task->storyTitle;
                     if($task->needConfirm)
                     {
                         echo "(<span class='warning'>{$lang->story->changed}</span> ";
@@ -242,6 +248,7 @@
                     ?>
                   </td>
                 </tr>
+                <?php endif;?>
                 <?php if($task->fromBug):?>
                 <tr>
                   <th><?php echo $lang->task->fromBug;?></th>

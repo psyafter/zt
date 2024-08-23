@@ -30,7 +30,9 @@
   </div>
   <?php if(!isonlybody()):?>
   <div class="btn-toolbar pull-right">
+    <?php if(common::canModify('product', $product)):?>
     <?php common::printLink('bug', 'create', "productID={$bug->product}&branch={$bug->branch}&extra=moduleID={$bug->module}", "<i class='icon icon-plus'></i>" . $lang->bug->create, '', "class='btn btn-primary'"); ?>
+    <?php endif;?>
   </div>
   <?php endif;?>
 </div>
@@ -55,8 +57,11 @@
           ?>
         </div>
       </div>
-      <?php echo $this->fetch('file', 'printFiles', array('files' => $bug->files, 'fieldset' => 'true'));?>
-      <?php $actionFormLink = $this->createLink('action', 'comment', "objectType=bug&objectID=$bug->id");?>
+      <?php echo $this->fetch('file', 'printFiles', array('files' => $bug->files, 'fieldset' => 'true', 'object' => $bug));?>
+      <?php
+      $canBeChanged = common::canBeChanged('bug', $bug);
+      if($canBeChanged) $actionFormLink = $this->createLink('action', 'comment', "objectType=bug&objectID=$bug->id");
+      ?>
     </div>
     <?php $this->printExtendFields($bug, 'div', "position=left&inForm=0&inCell=1");?>
     <div class='cell'><?php include '../../common/view/action.html.php';?></div>
@@ -106,7 +111,7 @@
               <tbody>
                 <tr valign='middle'>
                   <th class='thWidth'><?php echo $lang->bug->product;?></th>
-                  <td><?php if(!common::printLink('bug', 'browse', "productID=$bug->product", $productName)) echo $productName;?></td>
+                  <td><?php if(!common::printLink('product', 'browse', "productID=$bug->product", $productName)) echo $productName;?></td>
                 </tr>
                 <?php if($this->session->currentProductType != 'normal'):?>
                 <tr>
@@ -340,7 +345,7 @@
                 <?php if($bug->case):?>
                 <tr>
                   <th class='w-60px'><?php echo $lang->bug->fromCase;?></th>
-                  <td><?php echo html::a($this->createLink('testcase', 'view', "caseID=$bug->case", '', true), "#$bug->case $bug->caseTitle", '', "class='iframe' data-width='80%'");?></td>
+                  <td><?php echo html::a($this->createLink('testcase', 'view', "caseID=$bug->case&caseVersion=" . ($bug->testtask ? "&from=testtask&taskID={$bug->testtask}" : ''), '', true), "#$bug->case $bug->caseTitle", '', "class='iframe' data-width='80%'");?></td>
                 </tr>
                 <?php endif;?>
                 <?php if($bug->toCases):?>

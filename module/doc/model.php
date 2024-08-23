@@ -107,10 +107,17 @@ class docModel extends model
                 }
             }
 
-            $actions  = $this->setFastMenu($fastLib);
-            $actions .= common::hasPriv('doc', 'createLib') ? html::a(helper::createLink('doc', 'createLib', "type={$type}&objectID={$currentLib}"), "<i class='icon icon-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe'") : '';
+            /* Determines whether the doc lib is editable. */
+            $docLib          = new stdClass();
+            $docLib->product = $productID;
+            $docLib->project = $projectID;
+            $canBeChanged    = common::canBeChanged('doc', $docLib);
 
-            $this->lang->modulePageActions = $actions;
+            $lib      = isset($lib) ? $lib : new stdClass();
+            $actions  = $this->setFastMenu($fastLib);
+            $actions .= ($canBeChanged and common::hasPriv('doc', 'createLib', $lib)) ? html::a(helper::createLink('doc', 'createLib', "type={$type}&objectID={$currentLib}"), "<i class='icon icon-plus'></i> " . $this->lang->doc->createLib, '', "class='btn btn-secondary iframe'") : '';
+
+            $this->lang->TRActions = $actions;
         }
 
         //$selectHtml .= $crumb ? $crumb : $this->getCrumbs($libID, $moduleID);
@@ -136,7 +143,7 @@ class docModel extends model
      * @param  string $extra
      * @param  string $appendLibs
      * @access public
-     * @return void
+     * @return array
      */
     public function getLibs($type = '', $extra = '', $appendLibs = '')
     {
@@ -159,6 +166,7 @@ class docModel extends model
 
             $stmt = $this->dao->select('*')->from(TABLE_DOCLIB)
                 ->where('deleted')->eq(0)
+                ->beginIF(strpos($extra, 'noBook') !== false)->andWhere('type')->ne('book')->fi()
                 ->beginIF(strpos($extra, 'unclosedProject') !== false)
                 ->andWhere('project', true)->eq('0')
                 ->orWhere('project')->in($unclosedProjects)
@@ -338,7 +346,7 @@ class docModel extends model
                 ->andWhere('addedBy')->eq($this->app->user->account)
                 ->orderBy($sort)
                 ->page($pager)
-                ->fetchAll();
+                ->fetchAll('id');
         }
         elseif($browseType == 'byediteddate')
         {
@@ -365,7 +373,7 @@ class docModel extends model
                 ->andWhere('collector')->like("%,{$this->app->user->account},%")
                 ->orderBy($sort)
                 ->page($pager)
-                ->fetchAll();
+                ->fetchAll('id');
         }
         elseif($browseType == "bymodule")
         {
@@ -422,7 +430,7 @@ class docModel extends model
                 ->andWhere('lib')->in($allLibs)
                 ->orderBy($sort)
                 ->page($pager)
-                ->fetchAll();
+                ->fetchAll('id');
         }
         elseif($browseType == 'fastsearch')
         {
@@ -440,7 +448,7 @@ class docModel extends model
                 ->andWhere('t1.lib')->in($allLibs)
                 ->orderBy($sort)
                 ->page($pager)
-                ->fetchAll();
+                ->fetchAll('id');
             foreach($docs as $doc) $doc->title = str_replace($this->session->searchDoc, "<span style='color:red'>{$this->session->searchDoc}</span>", $doc->title);
         }
 
@@ -513,13 +521,15 @@ class docModel extends model
      *
      * @param  int    $libID
      * @param  int    $module
+     * @param  string $mode  normal|all
      * @access public
      * @return void
      */
-    public function getPrivDocs($libID = 0, $module = 0)
+    public function getPrivDocs($libID = 0, $module = 0, $mode = 'normal')
     {
         $stmt = $this->dao->select('*')->from(TABLE_DOC)
-            ->where('deleted')->eq(0)
+            ->where('1=1')
+            ->beginIF($mode == 'normal')->andWhere('deleted')->eq(0)->fi()
             ->beginIF($this->config->doc->notArticleType)->andWhere('type')->notIN($this->config->doc->notArticleType)->fi()
             ->beginIF($libID)->andWhere('lib')->in($libID)->fi()
             ->beginIF(strpos($this->config->doc->custom->showLibs, 'children') === false)->andWhere('module')->in($module)->fi()
@@ -616,7 +626,8 @@ class docModel extends model
             ->cleanInt('product,project,module,lib')
             ->join('groups', ',')
             ->join('users', ',')
-            ->remove('files,labels,uid')
+            ->join('mailto', ',')
+            ->remove('files,labels,uid,contactListMenu')
             ->get();
 
         /* Fix bug #2929. strip_tags($this->post->contentMarkdown, $this->config->allowedTags)*/
@@ -691,7 +702,8 @@ class docModel extends model
             ->cleanInt('module')
             ->join('groups', ',')
             ->join('users', ',')
-            ->remove('comment,files,labels,uid')
+            ->join('mailto', ',')
+            ->remove('comment,files,labels,uid,contactListMenu')
             ->get();
         if($doc->contentType == 'markdown') $doc->content = $this->post->content;
         if($doc->acl == 'private') $doc->users = $oldDoc->addedBy;
@@ -1212,7 +1224,7 @@ class docModel extends model
             }
             else
             {
-                $hasProject  = $this->dao->select('DISTINCT t1.product, count(project) as projectCount')->from(TABLE_PROJECTPRODUCT)->alias('t1')
+                $hasProject  = $this->dao->select('DISTINCT t1.product, count(t1.project) as projectCount')->from(TABLE_PROJECTPRODUCT)->alias('t1')
                     ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project=t2.id')
                     ->where('t1.product')->eq($objectID)
                     ->beginIF(strpos($this->config->doc->custom->showLibs, 'unclosed') !== false)->andWhere('t2.status')->notin('done,closed')->fi()
@@ -1314,10 +1326,12 @@ class docModel extends model
         $searchTitle = $this->get->title;
         if($type == 'product')
         {
-            $storyIdList   = $this->dao->select('id')->from(TABLE_STORY)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
-            $bugIdList     = $this->dao->select('id')->from(TABLE_BUG)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
-            $releaseIdList = $this->dao->select('id')->from(TABLE_RELEASE)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
-            $planIdList    = $this->dao->select('id')->from(TABLE_PRODUCTPLAN)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
+            $storyIdList      = $this->dao->select('id')->from(TABLE_STORY)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->andWhere('type')->in('story,requirement')->get();
+            $bugIdList        = $this->dao->select('id')->from(TABLE_BUG)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
+            $releaseIdList    = $this->dao->select('id')->from(TABLE_RELEASE)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
+            $planIdList       = $this->dao->select('id')->from(TABLE_PRODUCTPLAN)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
+            $testReportIdList = $this->dao->select('id')->from(TABLE_TESTREPORT)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
+            $caseIdList       = $this->dao->select('id')->from(TABLE_CASE)->where('product')->eq($objectID)->andWhere('deleted')->eq('0')->andWhere('product')->in($this->app->user->view->products)->get();
             $files = $this->dao->select('*')->from(TABLE_FILE)->alias('t1')
                 ->where('size')->gt('0')
                 ->andWhere("(objectType = 'product' and objectID = $objectID)", true)
@@ -1326,6 +1340,8 @@ class docModel extends model
                 ->orWhere("(objectType = 'bug' and objectID in ($bugIdList))")
                 ->orWhere("(objectType = 'release' and objectID in ($releaseIdList))")
                 ->orWhere("(objectType = 'productplan' and objectID in ($planIdList))")
+                ->orWhere("(objectType = 'testreport' and objectID in ($testReportIdList))")
+                ->orWhere("(objectType = 'testcase' and objectID in ($caseIdList))")
                 ->markRight(1)
                 ->beginIF($searchTitle)->andWhere('title')->like("%{$searchTitle}%")->fi()
                 ->orderBy($orderBy)
@@ -1618,5 +1634,114 @@ class docModel extends model
         $actions .='</ul>';
 
         return $actions;
+    }
+
+    /**
+     * Send mail.
+     *
+     * @param  int    $docID
+     * @param  int    $actionID
+     * @access public
+     * @return void
+     */
+    public function sendmail($docID, $actionID)
+    {
+        /* Load module and get doc and users. */
+        $this->loadModel('mail');
+        $doc   = $this->getById($docID);
+        $users = $this->loadModel('user')->getPairs('noletter');
+
+        /* When the content type is markdown format, add attributes to the table. */
+        if($doc->contentType == 'markdown')
+        {
+            $doc->content = $this->app->loadClass('hyperdown')->makeHtml($doc->content);
+            $doc->content = str_replace("<table>", "<table style='border-collapse: collapse;'>", $doc->content);
+            $doc->content = str_replace("<th>", "<th style='word-break: break-word; border:1px solid #000;'>", $doc->content);
+            $doc->content = str_replace("<td>", "<td style='word-break: break-word; border:1px solid #000;'>", $doc->content);
+        }
+
+        /* Get action info. */
+        $action          = $this->loadModel('action')->getById($actionID);
+        $history         = $this->action->getHistory($actionID);
+        $action->history = isset($history[$actionID]) ? $history[$actionID] : array();
+
+        /* Get mail content. */
+        $modulePath = $this->app->getModulePath($appName = '', 'doc');
+        $oldcwd     = getcwd();
+        $viewFile   = $modulePath . 'view/sendmail.html.php';
+        chdir($modulePath . 'view');
+        if(file_exists($modulePath . 'ext/view/sendmail.html.php'))
+        {
+            $viewFile = $modulePath . 'ext/view/sendmail.html.php';
+            chdir($modulePath . 'ext/view');
+        }
+        ob_start();
+        include $viewFile;
+        foreach(glob($modulePath . 'ext/view/sendmail.*.html.hook.php') as $hookFile) include $hookFile;
+        $mailContent = ob_get_contents();
+        ob_end_clean();
+        chdir($oldcwd);
+
+        /* Get sender and subject. */
+        $sendUsers = $this->getToAndCcList($doc);
+        if(!$sendUsers) return;
+        list($toList, $ccList) = $sendUsers;
+        $subject = $this->getSubject($doc, $action->action);
+
+        /* Send mail. */
+        $this->mail->send($toList, $subject, $mailContent, $ccList);
+        if($this->mail->isError()) error_log(join("\n", $this->mail->getError()));
+    }
+
+    /**
+     * Get mail subject.
+     *
+     * @param  object $doc
+     * @param  string $actionType created|edited
+     * @access public
+     * @return string
+     */
+    public function getSubject($doc, $actionType)
+    {
+        /* Set email title. */
+        if($actionType == 'created')
+        {
+            return sprintf($this->lang->doc->mail->create->title, $this->app->user->realname, $doc->id, $doc->title);
+        }
+        else
+        {
+            return sprintf($this->lang->doc->mail->edit->title, $this->app->user->realname, $doc->id, $doc->title);
+        }
+    }
+
+    /**
+     * Get toList and ccList.
+     *
+     * @param  object     $doc
+     * @access public
+     * @return bool|array
+     */
+    public function getToAndCcList($doc)
+    {
+        /* Set toList and ccList. */
+        $toList   = '';
+        $ccList   = str_replace(' ', '', trim($doc->mailto, ','));
+
+        if(empty($toList))
+        {
+            if(empty($ccList)) return false;
+            if(strpos($ccList, ',') === false)
+            {
+                $toList = $ccList;
+                $ccList = '';
+            }
+            else
+            {
+                $commaPos = strpos($ccList, ',');
+                $toList   = substr($ccList, 0, $commaPos);
+                $ccList   = substr($ccList, $commaPos + 1);
+            }
+        }
+        return array($toList, $ccList);
     }
 }

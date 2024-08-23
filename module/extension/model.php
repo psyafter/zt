@@ -91,7 +91,7 @@ class extensionModel extends model
     {
         $requestType = $this->config->requestType;
         $webRoot     = helper::safe64Encode($this->config->webRoot, '', false, true);
-        $apiURL      = $this->apiRoot . 'apiGetmodules-' . $requestType . '-' . $webRoot . '.json';
+        $apiURL      = $this->apiRoot . 'apiGetmodules-' . helper::safe64Encode($requestType) . '-' . $webRoot . '.json';
         $data = $this->fetchAPI($apiURL);
         if(isset($data->modules)) return $data->modules;
         return false;
@@ -151,20 +151,6 @@ class extensionModel extends model
         if(isset($data->incompatibleExts)) return (array)$data->incompatibleExts;
         return array();
 
-    }
-
-    /**
-     * Download an extension.
-     * 
-     * @param  string    $extension 
-     * @param  string    $downLink 
-     * @access public
-     * @return void
-     */
-    public function downloadPackage($extension, $downLink)
-    {
-        $packageFile = $this->getPackageFile($extension);
-        file_put_contents($packageFile, common::http($downLink));
     }
 
     /**
@@ -575,8 +561,11 @@ class extensionModel extends model
         foreach($pathes as $path)
         {
             if($path == 'db' or $path == 'doc' or $path == 'hook' or $path == '..' or $path == '.') continue;
-            $copiedFiles = $this->classFile->copyDir($extensionDir . $path, $appRoot . $path);
+
+            $result      = $this->classFile->copyDir($extensionDir . $path, $appRoot . $path, true);
+            $copiedFiles = zget($result, 'copiedFiles', array());
         }
+
         foreach($copiedFiles as $key => $copiedFile)
         {
             $copiedFiles[$copiedFile] = md5_file($copiedFile);
@@ -626,7 +615,8 @@ class extensionModel extends model
             rsort($dirs);    // remove from the lower level directory.
             foreach($dirs as $dir)
             {
-                if(!is_writable($appRoot . $dir) or !rmdir($appRoot . $dir)) $removeCommands[] = "rmdir $appRoot$dir";
+                if(!is_dir($appRoot . $dir)) continue;
+                if(!rmdir($appRoot . $dir)) $removeCommands[] = "rmdir $appRoot$dir"; // fix bug #2965
             }
         }
 
@@ -882,20 +872,22 @@ class extensionModel extends model
 
     /**
      * Get extension expire date.
-     * 
+     *
      * @param  int    $extension 
      * @access public
-     * @return void
+     * @return string
      */
     public function getExpireDate($extension)
     {
         $licencePath = $this->app->getConfigRoot() . 'license/';
         $today       = date('Y-m-d');
-        $expireDate  = '';
+        $expiredDate = '';
 
-        $licenceOrderFiles = glob($licencePath . 'order*' . $extension->code . $extension->version . '.txt');
+        $licenceOrderFiles = glob($licencePath . 'order*.txt');
         foreach($licenceOrderFiles as $licenceOrderFile)
         {
+            if(stripos($licenceOrderFile, "{$extension->code}{$extension->version}.txt") === false) continue;
+
             $order = file_get_contents($licenceOrderFile);
             $order = unserialize($order);
             if($order->type != 'life')
@@ -903,11 +895,15 @@ class extensionModel extends model
                 $days = isset($order->days) ? $order->days : 0;
                 if($order->type == 'demo') $days = 31;
                 if($order->type == 'year') $days = 365;
-                $startDate  = $order->paidDate != '0000-00-00 00:00:00' ? $order->paidDate : $order->createdDate;
-                if($days) $expireDate = date('Y-m-d', strtotime($startDate) + $days * 24 * 3600);
+                $startDate  = !helper::isZeroDate($order->paidDate) ? $order->paidDate : $order->createdDate;
+                if($days) $expiredDate = date('Y-m-d', strtotime($startDate) + $days * 24 * 3600);
+            }
+            else
+            {
+                $expiredDate = $order->type;
             }
         }
 
-        return $expireDate;
+        return $expiredDate;
     }
 }

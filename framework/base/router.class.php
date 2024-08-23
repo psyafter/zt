@@ -830,6 +830,8 @@ class baseRouter
         {
             $sessionName = $this->config->sessionVar;
             session_name($sessionName);
+            session_set_cookie_params(0, $this->config->webRoot);
+            if($this->config->customSession) session_save_path($this->getTmpRoot() . 'session');
             session_start();
 
             $this->sessionID = session_id();
@@ -1378,7 +1380,7 @@ class baseRouter
         if(empty($extFiles) and empty($hookFiles)) return $mainModelFile;
 
         /* 计算合并之后的modelFile路径。Compute the merged model file path. */
-        $extModelPrefix  = ($siteExtended and !empty($this->siteCode)) ? $this->siteCode{0} . DS . $this->siteCode : '';
+        $extModelPrefix  = ($siteExtended and !empty($this->siteCode)) ? $this->siteCode[0] . DS . $this->siteCode : '';
         $mergedModelDir  = $this->getTmpRoot() . 'model' . DS . ($extModelPrefix ? $extModelPrefix . DS : '');
         $mergedModelFile = $mergedModelDir . $moduleName . '.php';
         if(!is_dir($mergedModelDir)) mkdir($mergedModelDir, 0755, true);
@@ -1771,6 +1773,9 @@ class baseRouter
             $params = $_GET;
         }
 
+        /* Fix bug #3267. Param 'words' is not validated when searching. */
+        if($this->rawModule == 'search' and $this->rawMethod == 'index') unset($params['words']);
+
         $this->params = $this->mergeParams($defaultParams, $params);
     }
 
@@ -2143,7 +2148,9 @@ class baseRouter
         }    
         try 
         {
-            $dbh = new PDO($dsn, $params->user, $params->password, array(PDO::ATTR_PERSISTENT => $params->persistant));
+            $dbPassword = helper::decryptPassword($params->password);
+
+            $dbh = new PDO($dsn, $params->user, $dbPassword, array(PDO::ATTR_PERSISTENT => $params->persistant));
             $dbh->exec("SET NAMES {$params->encoding}");
 
             /*
@@ -2213,7 +2220,11 @@ class baseRouter
         /* 设置错误信息(Set the error info) */
         $message = htmlspecialchars($message);
         if(preg_match('/[^\x00-\x80]/', $message)) $message = helper::convertEncoding($message, 'gbk');
-        $log     = "ERROR: $message in $file on line $line";
+
+        /* Only show error when debug is open. */
+        if(!$this->config->debug) die();
+
+        $log = "ERROR: $message in $file on line $line";
         if(isset($_SERVER['SCRIPT_URI'])) $log .= ", request: $_SERVER[SCRIPT_URI]";; 
         $trace = debug_backtrace();
         extract($trace[0]);

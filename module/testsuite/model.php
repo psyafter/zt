@@ -53,10 +53,11 @@ class testsuiteModel extends model
         }
         $pageNav .= $selectHtml;
 
-        $this->lang->modulePageNav     = $pageNav;
-        $this->lang->modulePageActions = $pageActions;
+        $this->lang->modulePageNav = $pageNav;
+        $this->lang->TRActions     = $pageActions;
         foreach($this->lang->testsuite->menu as $key => $value)
         {
+            if($this->config->global->flow == 'full') $this->loadModel('qa')->setSubMenu('testsuite', $key, $productID);
             $replace = $productID;
             common::setMenuVars($this->lang->testsuite->menu, $key, $replace);
         }
@@ -145,6 +146,24 @@ class testsuiteModel extends model
             ->andWhere("(`type` = 'public' OR (`type` = 'private' and addedBy = '{$this->app->user->account}'))")
             ->orderBy($orderBy)
             ->page($pager)
+            ->fetchAll('id');
+    }
+
+    /**
+     * Get unit suite.
+     * 
+     * @param  int    $productID 
+     * @param  string $orderBy 
+     * @access public
+     * @return array
+     */
+    public function getUnitSuites($productID, $orderBy = 'id_desc')
+    {
+        return $this->dao->select("*")->from(TABLE_TESTSUITE)
+            ->where('product')->eq((int)$productID)
+            ->andWhere('deleted')->eq(0)
+            ->andWhere('type')->eq('unit')
+            ->orderBy($orderBy)
             ->fetchAll('id');
     }
 

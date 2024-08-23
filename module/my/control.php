@@ -71,7 +71,7 @@ class my extends control
      * My todos.
      *
      * @param  string $type
-     * @param  string $account
+     * @param  int    $userID
      * @param  string $status
      * @param  int    $recTotal
      * @param  int    $recPerPage
@@ -79,7 +79,7 @@ class my extends control
      * @access public
      * @return void
      */
-    public function todo($type = 'all', $account = '', $status = 'all', $orderBy = "date_desc,status,begin", $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    public function todo($type = 'all', $userID = '', $status = 'all', $orderBy = "date_desc,status,begin", $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Save session. */
         $uri = $this->app->getURI(true);
@@ -94,6 +94,10 @@ class my extends control
         $this->app->loadClass('pager', $static = true);
         if($this->app->getViewType() == 'mhtml') $recPerPage = 10;
         $pager = pager::init($recTotal, $recPerPage, $pageID);
+
+        if(empty($userID)) $userID = $this->app->user->id;
+        $user    = $this->loadModel('user')->getById($userID, 'id');
+        $account = $user->account;
 
         /* The title and position. */
         $this->view->title      = $this->lang->my->common . $this->lang->colon . $this->lang->my->todo;
@@ -110,6 +114,7 @@ class my extends control
         $this->view->recPerPage   = $recPerPage;
         $this->view->pageID       = $pageID;
         $this->view->status       = $status;
+        $this->view->user         = $user;
         $this->view->account      = $this->app->user->account;
         $this->view->orderBy      = $orderBy == 'date_desc,status,begin,id_desc' ? '' : $orderBy;
         $this->view->pager        = $pager;
@@ -375,10 +380,14 @@ class my extends control
         $this->app->loadConfig('user');
         $this->app->loadLang('user');
 
+        $userGroups = $this->loadModel('group')->getByAccount($this->app->user->account);
+
         $this->view->title      = $this->lang->my->common . $this->lang->colon . $this->lang->my->editProfile;
         $this->view->position[] = $this->lang->my->editProfile;
         $this->view->user       = $this->user->getById($this->app->user->account);
         $this->view->rand       = $this->user->updateSessionRandom();
+        $this->view->userGroups = implode(',', array_keys($userGroups));
+        $this->view->groups     = $this->dao->select('id, name')->from(TABLE_GROUP)->fetchPairs('id', 'name');
 
         $this->display();
     }
@@ -419,18 +428,19 @@ class my extends control
     {
         if($_POST)
         {
-            if($this->post->mode == 'new')
+            $data = fixer::input('post')->get();
+            if($data->mode == 'new')
             {
-                $listID = $this->user->createContactList($this->post->newList, $this->post->users);
-                $this->user->setGlobalContacts($listID, isset($_POST['share']));
+                $listID = $this->user->createContactList($data->newList, $data->users);
+                $this->user->setGlobalContacts($listID, isset($data->share));
                 if(isonlybody()) die(js::closeModal('parent.parent', '', ' function(){parent.parent.ajaxGetContacts(\'#mailto\')}'));
                 die(js::locate(inlink('manageContacts', "listID=$listID"), 'parent'));
             }
-            elseif($this->post->mode == 'edit')
+            elseif($data->mode == 'edit')
             {
-                $this->user->updateContactList($this->post->listID, $this->post->listName, $this->post->users);
-                $this->user->setGlobalContacts($this->post->listID, isset($_POST['share']));
-                die(js::locate(inlink('manageContacts', "listID={$this->post->listID}"), 'parent'));
+                $this->user->updateContactList($data->listID, $data->listName, $data->users);
+                $this->user->setGlobalContacts($data->listID, isset($data->share));
+                die(js::locate(inlink('manageContacts', "listID={$data->listID}"), 'parent'));
             }
         }
 
@@ -467,10 +477,13 @@ class my extends control
             $this->view->list       = $this->user->getContactListByID($listID);
         }
 
+        $users = $this->user->getPairs('noletter|noempty|noclosed|noclosed', $mode == 'new' ? '' : $this->view->list->userList, $this->config->maxCount);
+        if(isset($this->config->user->moreLink)) $this->config->moreLinks['users[]'] = $this->config->user->moreLink;
+
         $this->view->mode           = $mode;
         $this->view->lists          = $lists;
         $this->view->listID         = $listID;
-        $this->view->users          = $this->user->getPairs('noletter|noempty|noclosed|noclosed');
+        $this->view->users          = $users;
         $this->view->disabled       = $disabled;
         $this->view->globalContacts = $globalContacts;
         $this->display();
@@ -536,10 +549,9 @@ class my extends control
      * My dynamic.
      *
      * @param  string $type
-     * @param  string $orderBy
      * @param  int    $recTotal
-     * @param  int    $recPerPage
-     * @param  int    $pageID
+     * @param  string $date
+     * @param  string $direction    next|pre
      * @access public
      * @return void
      */
@@ -577,7 +589,7 @@ class my extends control
         $this->view->type       = $type;
         $this->view->orderBy    = $orderBy;
         $this->view->pager      = $pager;
-        $this->view->dateGroups = $this->action->buildDateGroup($actions, $direction);
+        $this->view->dateGroups = $this->action->buildDateGroup($actions, $direction, $type);
         $this->view->direction  = $direction;
         $this->display();
     }
@@ -602,5 +614,4 @@ class my extends control
             die(js::locate($this->createLink('my', 'profile'), 'parent'));
         }
     }
-
 }

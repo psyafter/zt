@@ -53,13 +53,13 @@ class backup extends control
                     $backupFile = new stdclass();
                     $backupFile->time  = filemtime($file);
                     $backupFile->name  = substr($fileName, 0, strpos($fileName, '.'));
-                    $backupFile->files[$file] = abs(filesize($file));
+                    $backupFile->files[$file] = $this->backup->getBackupSummary($file);
 
                     $fileBackup = $this->backup->getBackupFile($backupFile->name, 'file');
-                    if($fileBackup) $backupFile->files[$fileBackup] = $this->backup->getBackupSize($fileBackup);
+                    if($fileBackup) $backupFile->files[$fileBackup] = $this->backup->getBackupSummary($fileBackup);
 
                     $codeBackup = $this->backup->getBackupFile($backupFile->name, 'code');
-                    if($codeBackup) $backupFile->files[$codeBackup] = $this->backup->getBackupSize($codeBackup);
+                    if($codeBackup) $backupFile->files[$codeBackup] = $this->backup->getBackupSummary($codeBackup);
 
                     $backups[$backupFile->name] = $backupFile;
                 }
@@ -143,21 +143,26 @@ class backup extends control
         $backupFiles = glob("{$this->backupPath}*.*");
         if(!empty($backupFiles))
         {
-            $time = time();
+            $time  = time();
+            $zfile = $this->app->loadClass('zfile');
             foreach($backupFiles as $file)
             {
-                if($time - filemtime($file) > $this->config->backup->holdDays * 24 * 3600) unlink($file);
+                /* Only delete backup file. */
+                $fileName = basename($file);
+                if(!preg_match('/[0-9]+\.(sql|file|code)/', $fileName)) continue;
+
+                /* Remove before holdDays file. */
+                if($time - filemtime($file) > $this->config->backup->holdDays * 24 * 3600)
+                {
+                    $rmFunc = is_file($file) ? 'removeFile' : 'removeDir';
+                    $zfile->{$rmFunc}($file);
+                    if($rmFunc == 'removeDir') $this->backup->processSummary($file, 0, 0, array(), 0, 'delete');
+                }
             }
         }
 
-        if($reload == 'yes')
-        {
-            die(js::reload('parent'));
-        }
-        else
-        {
-            echo $this->lang->backup->success->backup . "\n";
-        }
+        if($reload == 'yes') die(js::reload('parent'));
+        echo $this->lang->backup->success->backup . "\n";
     }
 
     /**
@@ -275,6 +280,7 @@ class backup extends control
         {
             $zfile = $this->app->loadClass('zfile');
             $zfile->removeDir($this->backupPath . $fileName . '.file');
+            $this->backup->processSummary($this->backupPath . $fileName . '.file', 0, 0, array(), 0, 'delete');
         }
 
         /* Delete code file. */
@@ -290,6 +296,7 @@ class backup extends control
         {
             $zfile = $this->app->loadClass('zfile');
             $zfile->removeDir($this->backupPath . $fileName . '.code');
+            $this->backup->processSummary($this->backupPath . $fileName . '.code', 0, 0, array(), 0, 'delete');
         }
 
         die(js::reload('parent'));
@@ -321,6 +328,15 @@ class backup extends control
      */
     public function setting()
     {
+        /* Check safe file. */
+        $statusFile = $this->loadModel('common')->checkSafeFile();
+        if($statusFile)
+        {
+            $this->app->loadLang('extension');
+            $this->view->error = sprintf($this->lang->extension->noticeOkFile, str_replace(dirname($this->app->getBasePath()) . DS, '', $statusFile));
+            die($this->display());
+        }
+
         if(strtolower($this->server->request_method) == "post")
         {
             $data    = fixer::input('post')->join('setting', ',')->get();
@@ -358,7 +374,7 @@ class backup extends control
     {
         session_write_close();
 
-        $files = glob($this->backupPath . '/*');
+        $files = glob($this->backupPath . '/*.*');
         rsort($files);
 
         $fileName = basename($files[0]);
@@ -369,23 +385,24 @@ class backup extends control
         $sqlFileName = $this->backup->getBackupFile($fileName, 'sql');
         if($sqlFileName)
         {
-            $fileSize = $this->backup->getBackupSize($sqlFileName);
-            $message  = sprintf($this->lang->backup->progressSQL, $this->backup->processFileSize($fileSize));
+            $summary = $this->backup->getBackupSummary($sqlFileName);
+            $message = sprintf($this->lang->backup->progressSQL, $this->backup->processFileSize($summary['size']));
         }
 
         $attachFileName = $this->backup->getBackupFile($fileName, 'file');
         if($attachFileName)
         {
-            $fileSize = $this->backup->getBackupSize($attachFileName);
-            $message  = sprintf($this->lang->backup->progressAttach, $this->backup->processFileSize($fileSize));
+            $log = $this->backup->getBackupDirProgress($attachFileName);
+            $message = sprintf($this->lang->backup->progressAttach, zget($log, 'allCount', 0), zget($log, 'count', 0));
         }
 
         $codeFileName = $this->backup->getBackupFile($fileName, 'code');
         if($codeFileName)
         {
-            $fileSize = $this->backup->getBackupSize($codeFileName);
-            $message  = sprintf($this->lang->backup->progressCode, $this->backup->processFileSize($fileSize));
+            $log = $this->backup->getBackupDirProgress($codeFileName);
+            $message = sprintf($this->lang->backup->progressCode, zget($log, 'allCount', 0), zget($log, 'count', 0));
         }
+
         die($message);
     }
 }

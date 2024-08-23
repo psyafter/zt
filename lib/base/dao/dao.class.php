@@ -137,15 +137,6 @@ class baseDAO
     public $autoLang;
 
     /**
-     * 需要修复表的错误代码
-     * The sql code of need repair table.
-     * 
-     * @var string
-     * @access public
-     */
-    public $repairCode = '|1034|1035|1194|1195|1459|';
-
-    /**
      * 执行的请求，所有的查询都保存在该数组。
      * The queries executed. Every query will be saved in this array.
      * 
@@ -712,8 +703,9 @@ class baseDAO
     /**
      * 将记录进行分页，自动设置limit语句。
      * Page the records, set the limit part auto.
-     * 
-     * @param  object $pager 
+     *
+     * @param  object $pager
+     * @param  string $distinctField
      * @access public
      * @return object the dao object self.
      */
@@ -722,15 +714,16 @@ class baseDAO
         if(!is_object($pager)) return $this;
 
         /*
-         * 如果$pager的总记录为0，需要计算总结果数。
-         * If the record total is 0, compute it. 
-         **/
-        if($pager->recTotal == 0)
-        {
-            $recTotal = $this->count($distinctField);
-            $pager->setRecTotal($recTotal);
-            $pager->setPageTotal();
-        }
+         * 重新计算分页数据，并判断是否需要返回上一页。
+         * Calculate pagination to determine whether to return to the previous page.
+         */
+        $originalPageID = $pager->pageID;
+        $recTotal       = $this->count($distinctField);
+
+        $pager->setRecTotal($recTotal);
+        $pager->setPageTotal();
+        if($originalPageID > $pager->pageTotal) $pager->setPageID($pager->pageTotal);
+
         $this->sqlobj->limit($pager->limit());
         return $this;
     }
@@ -1067,8 +1060,8 @@ class baseDAO
         {
             $table = strtolower($this->table);
         }
-        $fieldLabel = isset($lang->$table->$fieldName) ? $lang->$table->$fieldName : $fieldName;
-        $value = isset($this->sqlobj->data->$fieldName) ? $this->sqlobj->data->$fieldName : null;
+        $fieldLabel = isset($lang->$table->$fieldName)       ? $lang->$table->$fieldName       : $fieldName;
+        $value      = isset($this->sqlobj->data->$fieldName) ? $this->sqlobj->data->$fieldName : null;
 
         /* 
          * 检查唯一性。
@@ -1103,6 +1096,7 @@ class baseDAO
             {
                 ${"arg$i"} = isset($funcArgs[$i + 2]) ? $funcArgs[$i + 2] : null;
             }
+
             $checkFunc = 'check' . $funcName;
             if(validater::$checkFunc($value, $arg0, $arg1, $arg2) === false)
             {
@@ -1380,16 +1374,9 @@ class baseDAO
      */
     public function sqlError($exception)
     {
-        $errorInfo = $exception->errorInfo;
-        $errorCode = $errorInfo[1];
-        $errorMsg  = $errorInfo[2];
-        $message   = $exception->getMessage();
-        if(strpos($this->repairCode, "|$errorCode|") !== false or ($errorCode == '1016' and strpos($errorMsg, 'errno: 145') !== false) or strpos($message, 'repair') !== false)
-        {
-            global $config;
-            if(isset($config->framework->autoRepairTable) and $config->framework->autoRepairTable) die(js::locate($config->webRoot . 'checktable.php', 'top'));
-            $message .=  ' ' . $this->lang->repairTable;
-        }
+        $message  = $exception->getMessage();
+        $message .= ' ' . helper::checkDB2Repair($exception);
+
         $sql = $this->sqlobj->get();
         $this->app->triggerError($message . "<p>The sql is: $sql</p>", __FILE__, __LINE__, $exit = true);
     }

@@ -459,7 +459,7 @@ class upgradeModel extends model
         case '11_1':
             $this->saveLogs('Execute 11_1');
             $this->execSQL($this->getUpgradeFile('11.1'));
-            if(!isset($this->config->isINT) or !($this->config->isINT))
+            if(empty($this->config->isINT))
             {
                 if(!$executeXuanxuan)
                 {
@@ -488,7 +488,7 @@ class upgradeModel extends model
             $this->saveLogs('Execute 11_4_1');
             $this->execSQL($this->getUpgradeFile('11.4.1'));
             $this->addPriv11_5();
-            if(!isset($this->config->isINT) or !($this->config->isINT))
+            if(empty($this->config->isINT))
             {
                 if(!$executeXuanxuan)
                 {
@@ -540,7 +540,7 @@ class upgradeModel extends model
             $this->rmEditorAndTranslateDir();
             $this->setConceptSetted();
 
-            if(!isset($this->config->isINT) or !($this->config->isINT))
+            if(empty($this->config->isINT))
             {
                 if(!$executeXuanxuan)
                 {
@@ -561,6 +561,78 @@ class upgradeModel extends model
             $this->loadModel('setting')->setItem('system.common.global.showAnnual', '1');
             $this->appendExec('11_7');
         case '12_0':
+            $this->saveLogs('Execute 12_0');
+            $this->appendExec('12_0');
+        case '12_0_1':
+            $this->saveLogs('Execute 12_0_1');
+            $this->execSQL($this->getUpgradeFile('12.0.1'));
+            $this->importRepoFromConfig();
+            $this->appendExec('12_0_1');
+        case '12_1':
+            $this->saveLogs('Execute 12_1');
+            $this->execSQL($this->getUpgradeFile('12.1'));
+
+            if(empty($this->config->isINT))
+            {
+                if(!$executeXuanxuan)
+                {
+                    $xuanxuanSql = $this->app->getAppRoot() . 'db' . DS . 'upgradexuanxuan3.1.1.sql';
+                    $this->execSQL($xuanxuanSql);
+                }
+            }
+
+            $this->appendExec('12_1');
+        case '12_2':
+            $this->saveLogs('Execute 12_2');
+            $this->execSQL($this->getUpgradeFile('12.2'));
+            $this->appendExec('12_2');
+        case '12_3':
+            $this->saveLogs('Execute 12_3');
+            $this->appendExec('12_3');
+        case '12_3_1':
+            $this->saveLogs('Execute 12_3_1');
+            $this->appendExec('12_3_1');
+        case '12_3_2':
+            $this->saveLogs('Execute 12_3_2');
+            $this->execSQL($this->getUpgradeFile('12.3.2'));
+            $this->appendExec('12_3_2');
+        case '12_3_3':
+            $this->saveLogs('Execute 12_3_3');
+            $this->execSQL($this->getUpgradeFile('12.3.3'));
+            $this->addPriv12_3_3();
+            $this->processImport2TaskBugs();  //Code for task #7552
+            $this->appendExec('12_3_3');
+        case '12_4':
+            $this->saveLogs('Execute 12_4');
+            $this->execSQL($this->getUpgradeFile('12.4'));
+            $this->appendExec('12_4');
+        case '12_4_1':
+            $this->saveLogs('Execute 12_4_1');
+            $this->execSQL($this->getUpgradeFile('12.4.1'));
+            $this->appendExec('12_4_1');
+        case '12_4_2':
+            $this->saveLogs('Execute 12_4_2');
+            $this->execSQL($this->getUpgradeFile('12.4.2'));
+            $this->fixFromCaseVersion();
+            $this->initStoryOfPlan();
+            $this->appendExec('12_4_2');
+        case '12_4_3':
+            $this->saveLogs('Execute 12_4_3');
+            $this->appendExec('12_4_3');
+        case '12_4_4':
+            $this->saveLogs('Execute 12_4_4');
+            $this->execSQL($this->getUpgradeFile('12.4.4'));
+            $this->adjustPriv12_5();
+            $this->appendExec('12_4_4');
+        case '12_5':
+            $this->saveLogs('Execute 12_5');
+            $this->appendExec('12_5');
+        case '12_5_1':
+            $this->saveLogs('Execute 12_5_1');
+            $this->appendExec('12_5_1');
+        case '12_5_2':
+            $this->saveLogs('Execute 12_5_2');
+            $this->appendExec('12_5_2');
         }
 
         $this->deletePatch();
@@ -685,7 +757,7 @@ class upgradeModel extends model
             case '11_0':
             case '11_1':
                 $confirmContent .= file_get_contents($this->getUpgradeFile('11.1'));
-                if(!isset($this->config->isINT) or !($this->config->isINT))
+                if(empty($this->config->isINT))
                 {
                     $xuanxuanSql     = $this->app->getAppRoot() . 'db' . DS . 'upgradexuanxuan2.3.0.sql';
                     $confirmContent .= file_get_contents($xuanxuanSql);
@@ -695,7 +767,7 @@ class upgradeModel extends model
             case '11_4': $confirmContent .= file_get_contents($this->getUpgradeFile('11.4'));
             case '11_4_1':
                 $confirmContent .= file_get_contents($this->getUpgradeFile('11.4.1'));
-                if(!isset($this->config->isINT) or !($this->config->isINT))
+                if(empty($this->config->isINT))
                 {
                     $xuanxuanSql     = $this->app->getAppRoot() . 'db' . DS . 'upgradexuanxuan2.4.0.sql';
                     $confirmContent .= file_get_contents($xuanxuanSql);
@@ -712,7 +784,7 @@ class upgradeModel extends model
             case '11_6_4' : $confirmContent .= file_get_contents($this->getUpgradeFile('11.6.4'));
             case '11_6_5' :
                 $confirmContent .= file_get_contents($this->getUpgradeFile('11.6.5'));
-                if(!isset($this->config->isINT) or !($this->config->isINT))
+                if(empty($this->config->isINT))
                 {
                     $xuanxuanSql     = $this->app->getAppRoot() . 'db' . DS . 'upgradexuanxuan2.5.7.sql';
                     $confirmContent .= file_get_contents($xuanxuanSql);
@@ -723,6 +795,27 @@ class upgradeModel extends model
                 }
             case '11_7' : $confirmContent .= file_get_contents($this->getUpgradeFile('11.7'));
             case '12_0' :
+            case '12_0_1': $confirmContent .= file_get_contents($this->getUpgradeFile('12.0.1'));
+            case '12_1':
+                $confirmContent .= file_get_contents($this->getUpgradeFile('12.1'));
+                if(empty($this->config->isINT))
+                {
+                    $xuanxuanSql     = $this->app->getAppRoot() . 'db' . DS . 'upgradexuanxuan3.1.1.sql';
+                    $confirmContent .= file_get_contents($xuanxuanSql);
+                }
+            case '12_2': $confirmContent .= file_get_contents($this->getUpgradeFile('12.2'));
+            case '12_3':
+            case '12_3_1':
+            case '12_3_2': $confirmContent .= file_get_contents($this->getUpgradeFile('12.3.2'));
+            case '12_3_3': $confirmContent .= file_get_contents($this->getUpgradeFile('12.3.3'));
+            case '12_4':   $confirmContent .= file_get_contents($this->getUpgradeFile('12.4'));
+            case '12_4_1': $confirmContent .= file_get_contents($this->getUpgradeFile('12.4.1'));
+            case '12_4_2': $confirmContent .= file_get_contents($this->getUpgradeFile('12.4.2'));
+            case '12_4_3':
+            case '12_4_4': $confirmContent .= file_get_contents($this->getUpgradeFile('12.4.4'));
+            case '12_5':
+            case '12_5_1':
+            case '12_5_2':
         }
         return str_replace('zt_', $this->config->db->prefix, $confirmContent);
     }
@@ -772,61 +865,72 @@ class upgradeModel extends model
         $standardSQL = $this->app->getAppRoot() . 'db' . DS . 'standard' . DS . 'zentao' . $version . '.sql';
         if(!file_exists($standardSQL)) return $alterSQL;
 
-        $tableExists = true;
-        $handle      = fopen($standardSQL, 'r');
-        if($handle)
+        $lines = file($standardSQL);
+        if(empty($this->config->isINT))
         {
-            while(!feof($handle))
+            $xVersion = $version;
+            $version  = str_replace('.', '_', $version);
+            if(strpos($version, 'pro') !== false and isset($this->config->proVersion[$version])) $xVersion = str_replace('_', '.', $this->config->proVersion[$version]);
+            if(strpos($version, 'biz') !== false and isset($this->config->bizVersion[$version])) $xVersion = str_replace('_', '.', $this->config->bizVersion[$version]);
+
+            $xStandardSQL = $this->app->getAppRoot() . 'db' . DS . 'standard' . DS . 'xuanxuan' . $xVersion . '.sql';
+            if(file_exists($xStandardSQL))
             {
-                $line = trim(fgets($handle));
-                if(strpos($line, 'DROP TABLE ') !== false) continue;
-                if(strpos($line, 'CREATE TABLE ') !== false)
+                $xLines = file($xStandardSQL);
+                $lines  = array_merge($lines, $xLines);
+            }
+        }
+
+        $tableExists = true;
+        foreach($lines as $line)
+        {
+            $line = trim($line);
+            if(strpos($line, 'DROP TABLE ') !== false) continue;
+            if(strpos($line, 'CREATE TABLE ') !== false)
+            {
+                preg_match_all('/`([^`]*)`/', $line, $out);
+                if(isset($out[1][0]))
                 {
-                    preg_match_all('/`([^`]*)`/', $line, $out);
-                    if(isset($out[1][0]))
+                    $fields = array();
+                    $table  = str_replace('zt_', $this->config->db->prefix, $out[1][0]);
+                    try
                     {
-                        $fields = array();
-                        $table  = str_replace('zt_', $this->config->db->prefix, $out[1][0]);
+                        $tableExists = true;
+                        $stmt        = $this->dbh->query("show fields from `{$table}`");
+                        while($row = $stmt->fetch()) $fields[$row->Field] = $row->Field;
+                    }
+                    catch(PDOException $e)
+                    {
+                        $errorInfo = $e->errorInfo;
+                        $errorCode = $errorInfo[1];
+                        $line      = str_replace('zt_', $this->config->db->prefix, $line);
+                        if($errorCode == '1146') $tableExists = false;
+                    }
+                }
+            }
+            if(!$tableExists) $alterSQL .= $line . "\n";
+
+            if(!empty($fields))
+            {
+                if(preg_match('/^`([^`]*)` /', $line))
+                {
+                    list($field) = explode(' ', $line);
+                    $field = trim($field, '`');
+                    if(!isset($fields[$field]))
+                    {
+                        $line = rtrim($line, ',');
+                        if(stripos($line, 'auto_increment') !== false) $line .= ' primary key';
                         try
                         {
-                            $tableExists = true;
-                            $stmt        = $this->dbh->query("show fields from `{$table}`");
-                            while($row = $stmt->fetch()) $fields[$row->Field] = $row->Field;
+                            $this->dbh->exec("ALTER TABLE `{$table}` ADD $line");
                         }
                         catch(PDOException $e)
                         {
-                            $errorInfo = $e->errorInfo;
-                            $errorCode = $errorInfo[1];
-                            $line      = str_replace('zt_', $this->config->db->prefix, $line);
-                            if($errorCode == '1146') $tableExists = false;
-                        }
-                    }
-                }
-                if(!$tableExists) $alterSQL .= $line . "\n";
-
-                if(!empty($fields))
-                {
-                    if(preg_match('/^`([^`]*)` /', $line))
-                    {
-                        list($field) = explode(' ', $line);
-                        $field = trim($field, '`');
-                        if(!isset($fields[$field]))
-                        {
-                            $line = rtrim($line, ',');
-                            if(stripos($line, 'auto_increment') !== false) $line .= ' primary key';
-                            try
-                            {
-                                $this->dbh->exec("ALTER TABLE `{$table}` ADD $line");
-                            }
-                            catch(PDOException $e)
-                            {
-                                $alterSQL .= "ALTER TABLE `{$table}` ADD $line;\n";
-                            }
+                            $alterSQL .= "ALTER TABLE `{$table}` ADD $line;\n";
                         }
                     }
                 }
             }
-            fclose($handle);
         }
 
         return $alterSQL;
@@ -841,16 +945,28 @@ class upgradeModel extends model
     public function deleteFiles()
     {
         $result = array();
+        $zfile  = $this->app->loadClass('zfile');
+
         foreach($this->config->delete as $deleteFiles)
         {
             $basePath = $this->app->getBasePath();
+
             foreach($deleteFiles as $file)
             {
                 if(isset($this->config->excludeFiles[$file])) continue;
+
                 $fullPath = $basePath . str_replace('/', DIRECTORY_SEPARATOR, $file);
-                if(file_exists($fullPath) and !unlink($fullPath)) $result[] = $fullPath;
+                if(file_exists($fullPath))
+                {
+                    if((is_dir($fullPath)  and !$zfile->removeDir($fullPath)) or
+                       (is_file($fullPath) and !$zfile->removeFile($fullPath)))
+                    {
+                        $result[] = $fullPath;
+                    }
+                }
             }
         }
+
         return $result;
     }
 
@@ -1507,6 +1623,34 @@ class upgradeModel extends model
     }
 
     /**
+     * Add priv for version 12.3.3
+     *
+     * @access public
+     * @return bool
+     */
+    public function addPriv12_3_3()
+    {
+        $this->saveLogs('Run Method ' . __FUNCTION__);
+        $privTable = $this->config->db->prefix . 'grouppriv';
+
+        $oldPriv = $this->dao->select('*')->from($privTable)
+            ->where('module')->eq('todo')
+            ->andWhere('method')->eq('edit')
+            ->fetchAll();
+        foreach($oldPriv as $item)
+        {
+            $this->dao->replace($privTable)
+                ->set('module')->eq('todo')
+                ->set('method')->eq('start')
+                ->set('`group`')->eq($item->group)
+                ->exec();
+            $this->saveLogs($this->dao->get());
+        }
+
+        return true;
+    }
+
+    /**
      * Add priv for 8.2.
      *
      * @access public
@@ -1672,6 +1816,28 @@ class upgradeModel extends model
             ->where('status')->in('done,closed')
             ->andWhere('finishedBy')->eq('')
             ->exec();
+        $this->saveLogs($this->dao->get());
+
+        return true;
+    }
+
+    /**
+     * Process bugs which import to project tasks but canceled.
+     *
+     * @access public
+     * @return void
+     */
+    public function processImport2TaskBugs()
+    {
+        $this->saveLogs('Run Method ' . __FUNCTION__);
+        $bugs = $this->dao->select('t1.id')->from(TABLE_BUG)->alias('t1')
+            ->leftJoin(TABLE_TASK)->alias('t2')->on('t1.toTask = t2.id')
+            ->where('t1.toTask')->ne(0)
+            ->andWhere('t1.status')->eq('active')
+            ->andWhere('t2.canceledBy')->ne('')
+            ->fetchPairs();
+
+        $this->dao->update(TABLE_BUG)->set('toTask')->eq(0)->where('id')->in($bugs)->exec();
         $this->saveLogs($this->dao->get());
 
         return true;
@@ -2542,9 +2708,7 @@ class upgradeModel extends model
      */
     public function checkSafeFile()
     {
-        if($this->app->getModuleName() == 'upgrade' and $this->session->upgrading) return false;
-        $statusFile = $this->app->getAppRoot() . 'www' . DIRECTORY_SEPARATOR . 'ok.txt';
-        return (!file_exists($statusFile) or (time() - filemtime($statusFile)) > 3600) ? $statusFile : false;
+        return $this->loadModel('common')->checkSafeFile();
     }
 
     /**
@@ -3631,6 +3795,141 @@ class upgradeModel extends model
     }
 
     /**
+     * Save repo from svn and git config.
+     * 
+     * @access public
+     * @return bool
+     */
+    public function importRepoFromConfig()
+    {
+        $this->app->loadConfig('svn');
+        if(isset($this->config->svn->repos))
+        {
+            $scm = $this->app->loadClass('scm');
+            foreach($this->config->svn->repos as $i => $repo)
+            {
+                $repoPath = $repo['path'];
+                if(empty($repoPath)) continue;
+
+                $existRepo = $this->dao->select('*')->from(TABLE_REPO)->where('path')->eq($repoPath)->andWhere('SCM')->eq('Subversion')->fetch();
+                if($existRepo) continue;
+
+                $svnRepo = new stdclass();
+                $svnRepo->client   = $this->config->svn->client;
+                $svnRepo->name     = basename($repoPath);
+                $svnRepo->path     = $repoPath;
+                $svnRepo->SCM      = 'Subversion';
+                $svnRepo->account  = $repo['username'];
+                $svnRepo->password = $repo['password'];
+                $svnRepo->encrypt  = 'base64';
+                $svnRepo->encoding = zget($repo, 'encoding', $this->config->svn->encoding);
+
+                $scm->setEngine($svnRepo);
+                $info = $scm->info('');
+                $svnRepo->prefix = empty($info->root) ? '' : trim(str_ireplace($info->root, '', str_replace('\\', '/', $svnRepo->path)), '/');
+                if($svnRepo->prefix) $svnRepo->prefix = '/' . $svnRepo->prefix;
+
+                $svnRepo->password = base64_encode($repo['password']);
+                $this->dao->insert(TABLE_REPO)->data($svnRepo)->exec();
+            }
+        }
+
+        $this->app->loadConfig('git');
+        if(isset($this->config->git->repos))
+        {
+            foreach($this->config->git->repos as $i => $repo)
+            {
+                $repoPath = $repo['path'];
+                if(empty($repoPath)) continue;
+
+                $existRepo = $this->dao->select('*')->from(TABLE_REPO)->where('path')->eq($repoPath)->andWhere('SCM')->eq('Git')->fetch();
+                if($existRepo) continue;
+
+                $gitRepo = new stdclass();
+                $gitRepo->client   = $this->config->git->client;
+                $gitRepo->name     = basename($repoPath);
+                $gitRepo->path     = $repoPath;
+                $gitRepo->prefix   = '';
+                $gitRepo->SCM      = 'Git';
+                $gitRepo->account  = '';
+                $gitRepo->password = '';
+                $gitRepo->encrypt  = 'base64';
+                $gitRepo->encoding = zget($repo, 'encoding', $this->config->git->encoding);
+                $this->dao->insert(TABLE_REPO)->data($gitRepo)->exec();
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Fix fromCaseVersion field for zt_case table.
+     * 
+     * @access public
+     * @return bool
+     */
+    public function fixFromCaseVersion()
+    {
+        /* Get imported cases and cases version is null. */
+        $errorCasePairs = $this->dao->select('id,fromCaseID,fromCaseVersion')->from(TABLE_CASE)->where('fromCaseID')->ne(0)->andWhere('fromCaseVersion')->eq(0)->fetchPairs('id', 'fromCaseID');
+        $this->saveLogs($this->dao->get());
+        if(empty($errorCasePairs)) return true;
+
+        /* Get from case versions by from cases. */
+        $fromCaseIdList   = array_unique(array_values($errorCasePairs));
+        $fromCaseVersions = $this->dao->select('id,version')->from(TABLE_CASE)->where('id')->in($fromCaseIdList)->fetchPairs('id', 'version');
+        $this->saveLogs($this->dao->get());
+
+        /* Fix fromCaseVersion field. */
+        foreach($errorCasePairs as $caseID => $fromCaseID)
+        {
+            $fromCaseVersion = zget($fromCaseVersions, $fromCaseID, 1);
+            $this->dao->update(TABLE_CASE)->set('fromCaseVersion')->eq($fromCaseVersion)->where('id')->eq($caseID)->exec();
+            $this->saveLogs($this->dao->get());
+        }
+
+        return true;
+    }
+
+    /**
+     * Adjust priv 12.5. 
+     * 
+     * @access public
+     * @return bool
+     */
+    public function adjustPriv12_5()
+    {
+        $this->saveLogs('Run Method ' . __FUNCTION__);
+
+        $groups = $this->dao->select('*')->from(TABLE_GROUPPRIV)->where('module')->eq('custom')->andWhere('method')->eq('set')->fetchPairs('group', 'group');
+        foreach($groups as $groupID)
+        {
+            $groupPriv = new stdclass();
+            $groupPriv->group  = $groupID;
+            $groupPriv->module = 'custom';
+            $groupPriv->method = 'product';
+            $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
+            $this->saveLogs($this->dao->get());
+
+            $groupPriv->method = 'project';
+            $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
+            $this->saveLogs($this->dao->get());
+        }
+
+        $groups = $this->dao->select('*')->from(TABLE_GROUPPRIV)->where('module')->eq('task')->andWhere('method')->eq('create')->fetchPairs('group', 'group');
+        foreach($groups as $groupID)
+        {
+            $groupPriv = new stdclass();
+            $groupPriv->group  = $groupID;
+            $groupPriv->module = 'story';
+            $groupPriv->method = 'batchToTask';
+            $this->dao->replace(TABLE_GROUPPRIV)->data($groupPriv)->exec();
+            $this->saveLogs($this->dao->get());
+        }
+
+        return true;
+    }
+
+    /**
      * Save Logs.
      * 
      * @param  string    $log 
@@ -3657,5 +3956,63 @@ class upgradeModel extends model
      */
     public function appendExec($zentaoVersion)
     {
+    }
+
+    /**
+     * Init story sort of plan.
+     *
+     * @access public
+     * @return bool
+     */
+    public function initStoryOfPlan()
+    {
+        /* Get all the planned stories and story sort. */
+        $stories   = $this->dao->select('id, plan')->from(TABLE_STORY)->where('plan')->ne(0)->andWhere('plan')->ne('')->orderBy('id_desc')->fetchAll('id');
+        $planOrder = $this->dao->select('id, `order`')->from(TABLE_PRODUCTPLAN)->where('`order`')->ne('')->fetchAll('id');
+
+        /* Organize the stories according to the plan. */
+        $plans = array();
+        foreach($stories as $storyID => $story)
+        {
+            $planIDList = explode(',', trim($story->plan, ','));
+            foreach($planIDList as $planID) $plans[$planID][$storyID] = $storyID;
+        }
+
+        foreach($plans as $planID => $storyIDList)
+        {
+            /* Order the story according to the plan. */
+            if(!empty($planOrder[$planID]))
+            {
+                $sortIDList = array();
+                $storySort  = explode(',', $planOrder[$planID]->order);
+
+                /* Reorder story id list by story order of plan. */
+                foreach($storySort as $storyID)
+                {
+                    if(empty($storyID)) continue;
+                    if(!isset($storyIDList[$storyID])) continue;
+                    $sortIDList[$storyID] = $storyID;
+                    unset($storyIDList[$storyID]);
+                }
+
+                if($storyIDList) $sortIDList += $storyIDList;
+                $storyIDList = $sortIDList;
+                unset($sortIDList);
+            }
+
+            /* Loop insert sort data by plan. */
+            $order = 1;
+            foreach($storyIDList as $storyID)
+            {
+                $this->dao->replace(TABLE_PLANSTORY)
+                    ->set('plan')->eq($planID)
+                    ->set('story')->eq($storyID)
+                    ->set('`order`')->eq($order)
+                    ->exec();
+                $order++;
+            }
+        }
+
+        return true;
     }
 }

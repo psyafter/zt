@@ -87,6 +87,7 @@ $lang->action->objectTypes['caselib']     = 'Bibliothek';
 $lang->action->objectTypes['testreport']  = 'Berichte';
 $lang->action->objectTypes['entry']       = 'Eintrag';
 $lang->action->objectTypes['webhook']     = 'Webhook';
+$lang->action->objectTypes['job']         = 'Job';
 
 /* 用来描述操作历史记录。*/
 $lang->action->desc = new stdclass();
@@ -133,11 +134,18 @@ $lang->action->desc->linked2bug     = '$date Verknüpft mit <strong>$extra</stro
 /* 子任务修改父任务的历史操作记录 */
 $lang->action->desc->createchildren     = '$date, <strong>$actor</strong> created a child task <strong>$extra</strong>。' . "\n";
 $lang->action->desc->linkchildtask      = '$date, <strong>$actor</strong> linked a child task <strong>$extra</strong>。' . "\n";
-$lang->action->desc->linkchildtask      = '$date, <strong>$actor</strong> linked a child task <strong>$extra</strong>。' . "\n";
 $lang->action->desc->unlinkchildrentask = '$date, <strong>$actor</strong> unlinked a child task <strong>$extra</strong>。' . "\n";
 $lang->action->desc->linkparenttask     = '$date, <strong>$actor</strong> linked to a parent task <strong>$extra</strong>。' . "\n";
 $lang->action->desc->unlinkparenttask   = '$date, <strong>$actor</strong> unlinked a parent task <strong>$extra</strong>。' . "\n";
 $lang->action->desc->deletechildrentask = '$date, <strong>$actor</strong> deleted a child task <strong>$extra</strong>。' . "\n";
+
+/* 用来描述和父子需求相关的操作历史记录。*/
+$lang->action->desc->createchildrenstory = '$date, <strong>$actor</strong> created a child story <strong>$extra</strong>。' . "\n";
+$lang->action->desc->linkchildstory      = '$date, <strong>$actor</strong> linked a child story <strong>$extra</strong>。' . "\n";
+$lang->action->desc->unlinkchildrenstory = '$date, <strong>$actor</strong> unlinked a child story <strong>$extra</strong>。' . "\n";
+$lang->action->desc->linkparentstory     = '$date, <strong>$actor</strong> linked to a parent story <strong>$extra</strong>。' . "\n";
+$lang->action->desc->unlinkparentstory   = '$date, <strong>$actor</strong> unlinked a parent story <strong>$extra</strong>。' . "\n";
+$lang->action->desc->deletechildrenstory = '$date, <strong>$actor</strong> deleted a child story <strong>$extra</strong>。' . "\n";
 
 /* 关联用例和移除用例时的历史操作记录。*/
 $lang->action->desc->linkrelatedcase   = '$date, <strong>$actor</strong> hat einen Fall verknüpft <strong>$extra</strong>.' . "\n";
@@ -211,6 +219,12 @@ $lang->action->label->batchcreate         = "batch created tasks";
 $lang->action->label->createchildren      = "create child tasks";
 $lang->action->label->managed             = "managed";
 $lang->action->label->deletechildrentask  = "delete children task";
+$lang->action->label->createchildrenstory = "create child stories";
+$lang->action->label->linkchildstory      = "linked a child story";
+$lang->action->label->unlinkchildrenstory = "unlinked a child story";
+$lang->action->label->linkparentstory     = "linked a parent story";
+$lang->action->label->unlinkparentstory   = "unlink from parent story";
+$lang->action->label->deletechildrenstory = "delete children story";
 
 /* 动态信息按照对象分组 */
 $lang->action->dynamicAction = new stdclass;
@@ -220,7 +234,6 @@ $lang->action->dynamicAction->todo['erased']               = 'Delete Todo';
 $lang->action->dynamicAction->todo['finished']             = 'Finish Todo';
 $lang->action->dynamicAction->todo['activated']            = 'Activate Todo';
 $lang->action->dynamicAction->todo['closed']               = 'Close Todo';
-$lang->action->dynamicAction->todo['deleted']              = 'Delete Todo';
 $lang->action->dynamicAction->todo['assigned']             = 'Assign Todo';
 $lang->action->dynamicAction->todo['undeleted']            = 'Restore Todo';
 $lang->action->dynamicAction->todo['hidden']               = 'Hide Todo';
@@ -286,6 +299,11 @@ $lang->action->dynamicAction->task['unlinkparenttask']     = 'Unlink Parent Task
 $lang->action->dynamicAction->task['deletechildrentask']   = 'Delete children task';
 $lang->action->dynamicAction->task['linkparenttask']       = 'Link Parent Task';
 $lang->action->dynamicAction->task['linkchildtask']        = 'Link Child Task';
+$lang->action->dynamicAction->task['createchildrenstory']  = 'Create Child Story';
+$lang->action->dynamicAction->task['unlinkparentstory']    = 'Unlink Parent Story';
+$lang->action->dynamicAction->task['deletechildrenstory']  = 'Delete children story';
+$lang->action->dynamicAction->task['linkparentstory']      = 'Link Parent Story';
+$lang->action->dynamicAction->task['linkchildstory']       = 'Link Child Story';
 $lang->action->dynamicAction->task['undeleted']            = 'Restore Task';
 $lang->action->dynamicAction->task['hidden']               = 'Hide Task';
 $lang->action->dynamicAction->task['svncommited']          = 'SVN Commit';
@@ -302,6 +320,7 @@ $lang->action->dynamicAction->bug['bugconfirmed']          = 'Confirm Bug';
 $lang->action->dynamicAction->bug['resolved']              = 'Resolve Bug';
 $lang->action->dynamicAction->bug['undeleted']             = 'Restore Bug';
 $lang->action->dynamicAction->bug['hidden']                = 'Hide Bug';
+$lang->action->dynamicAction->bug['deleted']               = 'Delete Bug';
 $lang->action->dynamicAction->bug['confirmed']             = 'Confirm Story Change';
 $lang->action->dynamicAction->bug['tostory']               = 'Convert to Story';
 $lang->action->dynamicAction->bug['totask']                = 'Convert to Task';

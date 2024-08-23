@@ -4,13 +4,6 @@ include 'header.lite.html.php';
 include 'chosen.html.php';
 //include 'validation.html.php';
 ?>
-<?php
-/* Load hook files for current page. */
-$extPath      = $this->app->getModuleRoot() . '/common/ext/view/';
-$extHookRule  = $extPath . 'header.*.hook.php';
-$extHookFiles = glob($extHookRule);
-if($extHookFiles) foreach($extHookFiles as $extHookFile) include $extHookFile;
-?>
 <?php if(empty($_GET['onlybody']) or $_GET['onlybody'] != 'yes'):?>
 <?php $this->app->loadConfig('sso');?>
 <?php if(!empty($config->sso->redirect)) js::set('ssoRedirect', $config->sso->redirect);?>
@@ -36,7 +29,7 @@ if($extHookFiles) foreach($extHookFiles as $extHookFile) include $extHookFile;
     <div class='container'>
       <div id="pageNav" class='btn-toolbar'><?php if(isset($lang->modulePageNav)) echo $lang->modulePageNav;?></div>
       <nav id='subNavbar'><?php common::printModuleMenu($this->moduleName);?></nav>
-      <div id="pageActions"><div class='btn-toolbar'><?php if(isset($lang->modulePageActions)) echo $lang->modulePageActions;?></div></div>
+      <div id="pageActions"><div class='btn-toolbar'><?php if(isset($lang->TRActions)) echo $lang->TRActions;?></div></div>
     </div>
   </div>
   <?php

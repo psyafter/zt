@@ -42,7 +42,7 @@ $lang->user->join             = '入职日期';
 $lang->user->visits           = '访问次数';
 $lang->user->ip               = '最后IP';
 $lang->user->last             = '最后登录';
-$lang->user->ranzhi           = '然之帐号';
+$lang->user->ranzhi           = 'ZDOO帐号';
 $lang->user->ditto            = '同上';
 $lang->user->originalPassword = '原密码';
 $lang->user->newPassword      = '新密码';
@@ -61,14 +61,16 @@ $lang->user->edit          = "编辑用户";
 $lang->user->batchEdit     = "批量编辑";
 $lang->user->unlock        = "解锁用户";
 $lang->user->delete        = "删除用户";
-$lang->user->unbind        = "解除然之绑定";
+$lang->user->unbind        = "解除ZDOO绑定";
 $lang->user->login         = "用户登录";
+$lang->user->bind          = "绑定已有账户";
+$lang->user->oauthRegister = "注册新账号";
 $lang->user->mobileLogin   = "手机访问";
 $lang->user->editProfile   = "修改档案";
 $lang->user->deny          = "访问受限";
 $lang->user->confirmDelete = "您确定删除该用户吗？";
 $lang->user->confirmUnlock = "您确定解除该用户的锁定状态吗？";
-$lang->user->confirmUnbind = "您确定解除该用户跟然之的绑定吗？";
+$lang->user->confirmUnbind = "您确定解除该用户跟ZDOO的绑定吗？";
 $lang->user->relogin       = "重新登录";
 $lang->user->asGuest       = "游客访问";
 $lang->user->goback        = "返回前一页";
@@ -214,3 +216,6 @@ $lang->user->noticeResetFile = "<h5>普通用户请联系管理员重置密码</
     <li>文件内容为空。</li>
     <li>如果之前文件存在，删除之后重新创建。</li>
     </ol>"; 
+$lang->user->notice4Safe = "警告：检测到一键安装包密码口令弱";
+$lang->user->process4DIR = "检测到您可能在使用一键安装包环境，该环境中其他站点还在用简单密码，安全起见，如果不使用其他站点，请及时处理。将 %s 目录删除或改名。详情查看：<a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";
+$lang->user->process4DB  = "检测到您可能在使用一键安装包环境，该环境中其他站点还在用简单密码，安全起见，如果不使用其他站点，请及时处理。请登录数据库，修改 %s 数据库的zt_user表的password字段。详情查看：<a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";

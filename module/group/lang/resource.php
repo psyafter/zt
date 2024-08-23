@@ -100,8 +100,8 @@ $lang->my->methodOrder[50] = 'editProfile';
 $lang->my->methodOrder[55] = 'changePassword';
 $lang->my->methodOrder[60] = 'unbind';
 $lang->my->methodOrder[65] = 'manageContacts';
-$lang->my->methodOrder[75] = 'deleteContacts';
-$lang->my->methodOrder[80] = 'score';
+$lang->my->methodOrder[70] = 'deleteContacts';
+$lang->my->methodOrder[74] = 'score';
 
 /* Todo. */
 $lang->resource->todo = new stdclass();
@@ -113,6 +113,7 @@ $lang->resource->todo->batchEdit    = 'batchEdit';
 $lang->resource->todo->view         = 'view';
 $lang->resource->todo->delete       = 'delete';
 $lang->resource->todo->export       = 'export';
+$lang->resource->todo->start        = 'start';
 $lang->resource->todo->finish       = 'finish';
 $lang->resource->todo->batchFinish  = 'batchFinish';
 $lang->resource->todo->import2Today = 'import2Today';
@@ -129,13 +130,14 @@ $lang->todo->methodOrder[25] = 'batchEdit';
 $lang->todo->methodOrder[30] = 'view';
 $lang->todo->methodOrder[35] = 'delete';
 $lang->todo->methodOrder[40] = 'export';
-$lang->todo->methodOrder[45] = 'finish';
-$lang->todo->methodOrder[50] = 'batchFinish';
-$lang->todo->methodOrder[55] = 'import2Today';
-$lang->todo->methodOrder[60] = 'assignTo';
-$lang->todo->methodOrder[65] = 'activate';
-$lang->todo->methodOrder[70] = 'close';
-$lang->todo->methodOrder[75] = 'batchClose';
+$lang->todo->methodOrder[45] = 'start';
+$lang->todo->methodOrder[50] = 'finish';
+$lang->todo->methodOrder[55] = 'batchFinish';
+$lang->todo->methodOrder[60] = 'import2Today';
+$lang->todo->methodOrder[65] = 'assignTo';
+$lang->todo->methodOrder[70] = 'activate';
+$lang->todo->methodOrder[75] = 'close';
+$lang->todo->methodOrder[80] = 'batchClose';
 
 /* Product. */
 $lang->resource->product = new stdclass();
@@ -185,31 +187,32 @@ $lang->branch->methodOrder[10] = 'delete';
 
 /* Story. */
 $lang->resource->story = new stdclass();
-$lang->resource->story->create      = 'create';
-$lang->resource->story->batchCreate = 'batchCreate';
-$lang->resource->story->edit        = 'edit';
-$lang->resource->story->linkStory   = 'linkStory';
-$lang->resource->story->batchEdit   = 'batchEdit';
-$lang->resource->story->export      = 'exportAction';
-$lang->resource->story->delete      = 'deleteAction';
-$lang->resource->story->view        = 'view';
-$lang->resource->story->change      = 'changeAction';
-$lang->resource->story->review      = 'reviewAction';
-$lang->resource->story->batchReview = 'batchReview';
-$lang->resource->story->assignTo    = 'assignAction';
-$lang->resource->story->close       = 'closeAction';
-$lang->resource->story->batchClose  = 'batchClose';
-$lang->resource->story->activate    = 'activateAction';
-$lang->resource->story->tasks       = 'tasks';
-$lang->resource->story->bugs        = 'bugs';
-$lang->resource->story->cases       = 'cases';
-$lang->resource->story->zeroCase    = 'zeroCase';
-$lang->resource->story->report      = 'reportAction';
+$lang->resource->story->create            = 'create';
+$lang->resource->story->batchCreate       = 'batchCreate';
+$lang->resource->story->edit              = 'edit';
+$lang->resource->story->linkStory         = 'linkStory';
+$lang->resource->story->batchEdit         = 'batchEdit';
+$lang->resource->story->export            = 'exportAction';
+$lang->resource->story->delete            = 'deleteAction';
+$lang->resource->story->view              = 'view';
+$lang->resource->story->change            = 'changeAction';
+$lang->resource->story->review            = 'reviewAction';
+$lang->resource->story->batchReview       = 'batchReview';
+$lang->resource->story->assignTo          = 'assignAction';
+$lang->resource->story->close             = 'closeAction';
+$lang->resource->story->batchClose        = 'batchClose';
+$lang->resource->story->activate          = 'activateAction';
+$lang->resource->story->tasks             = 'tasks';
+$lang->resource->story->bugs              = 'bugs';
+$lang->resource->story->cases             = 'cases';
+$lang->resource->story->zeroCase          = 'zeroCase';
+$lang->resource->story->report            = 'reportAction';
 $lang->resource->story->batchChangePlan   = 'batchChangePlan';
 $lang->resource->story->batchChangeBranch = 'batchChangeBranch';
 $lang->resource->story->batchChangeStage  = 'batchChangeStage';
 $lang->resource->story->batchAssignTo     = 'batchAssignTo';
 $lang->resource->story->batchChangeModule = 'batchChangeModule';
+$lang->resource->story->batchToTask       = 'batchToTask';
 
 $lang->story->methodOrder[5]   = 'create';
 $lang->story->methodOrder[10]  = 'batchCreate';
@@ -235,6 +238,7 @@ $lang->story->methodOrder[105] = 'report';
 $lang->story->methodOrder[110] = 'linkStory';
 $lang->story->methodOrder[115] = 'batchChangeBranch';
 $lang->story->methodOrder[120] = 'batchChangeModule';
+$lang->story->methodOrder[125] = 'batchToTask';
 
 /* Product plan. */
 $lang->resource->productplan = new stdclass();
@@ -601,26 +605,32 @@ $lang->resource->testtask->batchRun         = 'batchRun';
 $lang->resource->testtask->activate         = 'activateAction';
 $lang->resource->testtask->block            = 'blockAction';
 $lang->resource->testtask->report           = 'reportAction';
+$lang->resource->testtask->browseUnits      = 'browseUnits';
+$lang->resource->testtask->unitCases        = 'unitCases';
+$lang->resource->testtask->importUnitResult = 'importUnitResult';
 
-$lang->testtask->methodOrder[0]  = 'index';
-$lang->testtask->methodOrder[5]  = 'create';
-$lang->testtask->methodOrder[10] = 'browse';
-$lang->testtask->methodOrder[15] = 'view';
-$lang->testtask->methodOrder[20] = 'cases';
-$lang->testtask->methodOrder[25] = 'groupCase';
-$lang->testtask->methodOrder[30] = 'edit';
-$lang->testtask->methodOrder[35] = 'start';
-$lang->testtask->methodOrder[40] = 'activate';
-$lang->testtask->methodOrder[45] = 'block';
-$lang->testtask->methodOrder[50] = 'close';
-$lang->testtask->methodOrder[55] = 'delete';
-$lang->testtask->methodOrder[60] = 'batchAssign';
-$lang->testtask->methodOrder[65] = 'linkcase';
-$lang->testtask->methodOrder[70] = 'unlinkcase';
-$lang->testtask->methodOrder[75] = 'runcase';
-$lang->testtask->methodOrder[80] = 'results';
-$lang->testtask->methodOrder[85] = 'batchUnlinkCases';
-$lang->testtask->methodOrder[90] = 'report';
+$lang->testtask->methodOrder[0]   = 'index';
+$lang->testtask->methodOrder[5]   = 'create';
+$lang->testtask->methodOrder[10]  = 'browse';
+$lang->testtask->methodOrder[15]  = 'view';
+$lang->testtask->methodOrder[20]  = 'cases';
+$lang->testtask->methodOrder[25]  = 'groupCase';
+$lang->testtask->methodOrder[30]  = 'edit';
+$lang->testtask->methodOrder[35]  = 'start';
+$lang->testtask->methodOrder[40]  = 'activate';
+$lang->testtask->methodOrder[45]  = 'block';
+$lang->testtask->methodOrder[50]  = 'close';
+$lang->testtask->methodOrder[55]  = 'delete';
+$lang->testtask->methodOrder[60]  = 'batchAssign';
+$lang->testtask->methodOrder[65]  = 'linkcase';
+$lang->testtask->methodOrder[70]  = 'unlinkcase';
+$lang->testtask->methodOrder[75]  = 'runcase';
+$lang->testtask->methodOrder[80]  = 'results';
+$lang->testtask->methodOrder[85]  = 'batchUnlinkCases';
+$lang->testtask->methodOrder[90]  = 'report';
+$lang->testtask->methodOrder[95]  = 'browseUnits';
+$lang->testtask->methodOrder[100] = 'unitCases';
+$lang->testtask->methodOrder[105] = 'importUnitResult';
 
 $lang->resource->testreport = new stdclass();
 $lang->resource->testreport->browse     = 'browse';
@@ -681,17 +691,71 @@ $lang->caselib->methodOrder[40] = 'exportTemplet';
 $lang->caselib->methodOrder[45] = 'import';
 $lang->caselib->methodOrder[50] = 'showImport';
 
-$lang->resource->repo                  = new stdclass();
-$lang->resource->repo->browse          = 'browse';
-$lang->resource->repo->view            = 'view';
-$lang->resource->repo->log             = 'log';
-$lang->resource->repo->revision        = 'revisionAction';
-$lang->resource->repo->settings        = 'settings';
-$lang->resource->repo->create          = 'create';
-$lang->resource->repo->delete          = 'delete';
-$lang->resource->repo->showSyncComment = 'showSyncComment';
-$lang->resource->repo->diff            = 'diffAction';
-$lang->resource->repo->download        = 'download';
+$lang->resource->repo                 = new stdclass();
+$lang->resource->repo->browse         = 'browse';
+$lang->resource->repo->view           = 'view';
+$lang->resource->repo->log            = 'log';
+$lang->resource->repo->revision       = 'revisionAction';
+$lang->resource->repo->blame          = 'blameAction';
+$lang->resource->repo->create         = 'createAction';
+$lang->resource->repo->edit           = 'editAction';
+$lang->resource->repo->delete         = 'delete';
+$lang->resource->repo->showSyncCommit = 'showSyncCommit';
+$lang->resource->repo->diff           = 'diffAction';
+$lang->resource->repo->download       = 'download';
+$lang->resource->repo->maintain       = 'maintain';
+$lang->resource->repo->setRules       = 'setRules';
+
+$lang->repo->methodOrder[5]  = 'create';
+$lang->repo->methodOrder[10] = 'edit';
+$lang->repo->methodOrder[15] = 'delete';
+$lang->repo->methodOrder[20] = 'showSyncCommit';
+$lang->repo->methodOrder[25] = 'maintain';
+$lang->repo->methodOrder[30] = 'browse';
+$lang->repo->methodOrder[35] = 'view';
+$lang->repo->methodOrder[40] = 'diff';
+$lang->repo->methodOrder[45] = 'log';
+$lang->repo->methodOrder[50] = 'revision';
+$lang->repo->methodOrder[55] = 'blame';
+$lang->repo->methodOrder[60] = 'download';
+$lang->repo->methodOrder[65] = 'setRules';
+
+$lang->resource->ci = new stdclass();
+$lang->resource->ci->commitResult = 'commitResult';
+
+$lang->ci->methodOrder[5] = 'commitResult';
+
+$lang->resource->compile = new stdclass();
+$lang->resource->compile->browse = 'browse';
+$lang->resource->compile->logs   = 'logs';
+
+$lang->compile->methodOrder[5]  = 'browse';
+$lang->compile->methodOrder[10] = 'logs';
+
+$lang->resource->jenkins = new stdclass();
+$lang->resource->jenkins->browse = 'browse';
+$lang->resource->jenkins->create = 'create';
+$lang->resource->jenkins->edit   = 'edit';
+$lang->resource->jenkins->delete = 'delete';
+
+$lang->jenkins->methodOrder[5]  = 'browse';
+$lang->jenkins->methodOrder[10] = 'create';
+$lang->jenkins->methodOrder[15] = 'edit';
+$lang->jenkins->methodOrder[20] = 'delete';
+
+$lang->resource->job = new stdclass(); 
+$lang->resource->job->browse = 'browse'; 
+$lang->resource->job->create = 'create';
+$lang->resource->job->edit   = 'edit';
+$lang->resource->job->delete = 'delete';
+$lang->resource->job->exec   = 'exec';
+$lang->resource->job->view   = 'view';
+
+$lang->job->methodOrder[5]  = 'browse';
+$lang->job->methodOrder[10] = 'create';
+$lang->job->methodOrder[15] = 'edit';
+$lang->job->methodOrder[20] = 'delete';
+$lang->job->methodOrder[25] = 'exec';
 
 /* Doc. */
 $lang->resource->doc = new stdclass();
@@ -743,6 +807,7 @@ $lang->resource->mail->resend = 'resendAction';
 $lang->resource->mail->batchDelete   = 'batchDelete';
 $lang->resource->mail->sendCloud     = 'sendCloud';
 $lang->resource->mail->sendcloudUser = 'sendcloudUser';
+$lang->resource->mail->ztCloud       = 'ztCloud';
 
 $lang->mail->methodOrder[5]  = 'index';
 $lang->mail->methodOrder[10] = 'detect';
@@ -756,11 +821,14 @@ $lang->mail->methodOrder[45] = 'batchDelete';
 $lang->mail->methodOrder[50] = 'resend';
 $lang->mail->methodOrder[55] = 'sendCloud';
 $lang->mail->methodOrder[60] = 'sendcloudUser';
+$lang->mail->methodOrder[65] = 'ztCloud';
 
 /* custom. */
 $lang->resource->custom = new stdclass();
 $lang->resource->custom->index     = 'index';
 $lang->resource->custom->set       = 'set';
+$lang->resource->custom->project   = 'project';
+$lang->resource->custom->product   = 'product';
 $lang->resource->custom->restore   = 'restore';
 $lang->resource->custom->flow      = 'flow';
 $lang->resource->custom->working   = 'working';
@@ -769,11 +837,13 @@ $lang->resource->custom->timezone  = 'timezone';
 
 $lang->custom->methodOrder[5]  = 'index';
 $lang->custom->methodOrder[10] = 'set';
-$lang->custom->methodOrder[15] = 'restore';
-$lang->custom->methodOrder[20] = 'flow';
-$lang->custom->methodOrder[25] = 'working';
-$lang->custom->methodOrder[30] = 'setPublic';
-$lang->custom->methodOrder[35] = 'timezone';
+$lang->custom->methodOrder[15] = 'project';
+$lang->custom->methodOrder[10] = 'product';
+$lang->custom->methodOrder[25] = 'restore';
+$lang->custom->methodOrder[30] = 'flow';
+$lang->custom->methodOrder[35] = 'working';
+$lang->custom->methodOrder[40] = 'setPublic';
+$lang->custom->methodOrder[45] = 'timezone';
 
 $lang->resource->datatable = new stdclass();
 $lang->resource->datatable->setGlobal = 'setGlobal';
@@ -936,12 +1006,16 @@ $lang->resource->admin->checkDB   = 'checkDB';
 $lang->resource->admin->safe      = 'safeIndex';
 $lang->resource->admin->checkWeak = 'checkWeak';
 $lang->resource->admin->sso       = 'ssoAction';
+$lang->resource->admin->register  = 'register';
+$lang->resource->admin->ztCompany = 'ztCompany';
 
 $lang->admin->methodOrder[0]  = 'index';
 $lang->admin->methodOrder[5]  = 'checkDB';
 $lang->admin->methodOrder[10] = 'safeIndex';
 $lang->admin->methodOrder[15] = 'checkWeak';
 $lang->admin->methodOrder[20] = 'sso';
+$lang->admin->methodOrder[25] = 'register';
+$lang->admin->methodOrder[30] = 'ztCompany';
 
 /* Extension. */
 $lang->resource->extension = new stdclass();
@@ -966,6 +1040,24 @@ $lang->extension->methodOrder[35] = 'deactivate';
 $lang->extension->methodOrder[40] = 'upload';
 $lang->extension->methodOrder[45] = 'erase';
 $lang->extension->methodOrder[50] = 'upgrade';
+
+/* Webhook. */
+$lang->resource->webhook = new stdclass();
+$lang->resource->webhook->browse     = 'browse';
+$lang->resource->webhook->create     = 'create';
+$lang->resource->webhook->edit       = 'edit';
+$lang->resource->webhook->delete     = 'delete';
+$lang->resource->webhook->log        = 'log';
+$lang->resource->webhook->bind       = 'bind';
+$lang->resource->webhook->chooseDept = 'chooseDept';
+
+$lang->webhook->methodOrder[5]  = 'browse';
+$lang->webhook->methodOrder[10] = 'create';
+$lang->webhook->methodOrder[15] = 'edit';
+$lang->webhook->methodOrder[20] = 'delete';
+$lang->webhook->methodOrder[25] = 'log';
+$lang->webhook->methodOrder[30] = 'bind';
+$lang->webhook->methodOrder[35] = 'chooseDept';
 
 /* Others. */
 $lang->resource->api = new stdclass();
@@ -1384,6 +1476,16 @@ $lang->changelog['10.6'][] = 'backup-setting';
 $lang->changelog['10.6'][] = 'backup-rmPHPHeader';
 
 $lang->changelog['11.6.2'][] = 'message-browser';
+
+$lang->changelog['12.3'][] = 'testtask-browseUnits';
+$lang->changelog['12.3'][] = 'testtask-unitCases';
+$lang->changelog['12.3'][] = 'testtask-importUnitResult';
+$lang->changelog['12.3'][] = 'job-view';
+$lang->changelog['12.3'][] = 'ci-commitResult';
+
+$lang->changelog['12.5'][] = 'story-batchToTask';
+$lang->changelog['12.5'][] = 'custom-product';
+$lang->changelog['12.5'][] = 'custom-project';
 
 global $config;
 if($config->global->flow != 'full')

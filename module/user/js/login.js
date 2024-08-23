@@ -65,3 +65,14 @@ $(document).ready(function()
         return false;
     });
 });
+
+/**
+ * Show notice for one click package use weak password.
+ * 
+ * @access public
+ * @return void
+ */
+function showNotice()
+{
+    if(typeof(process4Safe) == 'string') bootbox.alert(process4Safe)
+}

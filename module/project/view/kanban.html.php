@@ -18,6 +18,7 @@
     $link = $this->createLink('task', 'export', "project=$projectID&orderBy=$orderBy&type=kanban");
     if(common::hasPriv('task', 'export')) echo html::a($link, "<i class='icon-export muted'></i> " . $lang->task->export, '', "class='btn btn-link iframe export' data-width='700'");
     ?>
+    <?php if($canBeChanged):?>
     <div class='btn-group'>
       <button type='button' class='btn btn-link dropdown-toggle' data-toggle='dropdown' id='importAction'>
         <i class='icon-import muted'></i> <?php echo $lang->import ?>
@@ -42,6 +43,7 @@
     $link = common::hasPriv('task', 'create', $checkObject) ?  $this->createLink('task', 'create', "project=$projectID" . (isset($moduleID) ? "&storyID=&moduleID=$moduleID" : ''), '', true) : '#';
     echo html::a($link, "<i class='icon icon-plus'></i>" . $lang->task->create, '', $misc);
     ?>
+    <?php endif;?>
   </div>
 </div>
 <style>
@@ -65,7 +67,7 @@
   <div class="table-empty-tip">
     <p>
       <span class="text-muted"><?php echo $lang->task->noTask;?></span>
-      <?php if(common::hasPriv('task', 'create', $checkObject)):?>
+      <?php if($canBeChanged and common::hasPriv('task', 'create', $checkObject)):?>
       <?php echo html::a($this->createLink('task', 'create', "project=$projectID" . (isset($moduleID) ? "&storyID=&moduleID=$moduleID" : '')), "<i class='icon icon-plus'></i> " . $lang->task->create, '', "class='btn btn-info'");?>
       <?php endif;?>
     </p>
@@ -74,8 +76,6 @@
   <table class="table no-margin table-grouped text-center">
     <thead>
       <tr>
-        <?php $hasGroupCol = (($type == 'story' and count($stories) > 0) or $type != 'story');?>
-        <?php if($hasGroupCol):?>
         <th class="c-board c-side has-btn">
           <div class="dropdown">
             <?php $dropTitle = $type == 'story' ? $lang->project->orderList[$storyOrder] : $lang->task->$type;?>
@@ -91,7 +91,6 @@
             </ul>
           </div>
         </th>
-        <?php endif;?>
         <?php foreach($kanbanColumns as $col):?>
         <th class='c-board s-<?php echo $col?>'><?php echo zget($statusList, $col);?></th>
         <?php endforeach;?>
@@ -102,7 +101,6 @@
       <?php foreach($kanbanGroup as $groupKey => $group):?>
       <?php if(count(get_object_vars($group)) == 0) continue;?>
       <tr data-id='<?php echo $rowIndex++?>'>
-        <?php if($hasGroupCol):?>
         <td class='c-side text-left'>
           <?php if($groupKey != 'nokey'):?>
           <?php if($type == 'story'):?>
@@ -119,6 +117,7 @@
                   echo "<span class='group-title' title='{$story->title}'>{$story->title}</span>";
               }
               ?>
+              <?php if($canBeChanged):?>
               <nav class='board-actions nav nav-default'>
                 <li class='dropdown'>
                   <a href='javascript:;' data-toggle='dropdown' class='panel-action'><i class='icon icon-ellipsis-v'></i></a>
@@ -134,6 +133,7 @@
                   </ul>
                 </li>
               </nav>
+              <?php endif;?>
             </div>
             <div class="small group-info">
               <span class='story-id board-id' title='<?php echo $lang->story->id?>'>#<?php echo $story->id?></span>
@@ -147,7 +147,6 @@
           <?php endif;?>
           <?php endif;?>
         </td>
-        <?php endif;?>
         <td class="c-boards no-padding text-left" colspan="<?php echo count($kanbanColumns);?>">
           <div class="boards-wrapper">
             <div class="boards">

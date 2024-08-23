@@ -24,6 +24,12 @@
         <?php include '../../common/view/customfield.html.php';?>
       </div>
     </div>
+    <?php
+    foreach(explode(',', $config->story->create->requiredFields) as $field)
+    {
+        if($field and strpos($showFields, $field) === false) $showFields .= ',' . $field;
+    }
+    ?>
     <form class="load-indicator main-form form-ajax" method='post' enctype='multipart/form-data' id='dataform'>
       <table class="table table-form">
         <tbody>
@@ -58,7 +64,7 @@
             </td>
           </tr>
           <tr>
-            <th><?php echo $lang->story->planAB;?></th>
+            <th class='planTh'><?php echo $lang->story->planAB;?></th>
             <td colspan="2">
               <div class='input-group' id='planIdBox'>
                 <?php
@@ -117,7 +123,7 @@
                   </div>
                 </div>
                 <?php if(strpos(",$showFields,", ',pri,') !== false): // begin print pri selector?>
-                <div class='table-col w-150px'>
+                <div class='table-col w-120px'>
                   <div class="input-group">
                     <span class="input-group-addon fix-border br-0"><?php echo $lang->story->pri;?></span>
                     <?php
@@ -133,6 +139,11 @@
 
                     $priList = $lang->story->priList;
                     if(end($priList)) unset($priList[0]);
+                    if(!isset($priList[$pri]))
+                    {
+                        reset($priList);
+                        $pri = key($priList);
+                    }
                     ?>
                     <?php if($hasCustomPri):?>
                     <?php echo html::select('pri', (array)$priList, $pri, "class='form-control'");?>
@@ -177,7 +188,7 @@
             <th><?php echo $lang->story->status;?></th>
             <td><?php echo html::hidden('status', 'draft');?></td>
           </tr>
-          <?php $this->printExtendFields('', 'table');?>
+          <?php $this->printExtendFields('', 'table', 'columns=4');?>
           <tr>
             <th><?php echo $lang->story->legendAttatch;?></th>
             <td colspan='4'><?php echo $this->fetch('file', 'buildform');?></td>
@@ -205,7 +216,7 @@
         <tfoot>
           <tr>
             <td colspan="5" class="text-center form-actions">
-              <?php echo html::submitButton();?>
+              <?php echo html::hidden('type', $type) . html::submitButton();?>
               <?php echo html::backButton();?>
             </td>
           </tr>
@@ -216,4 +227,5 @@
 </div>
 <?php js::set('projectID', $projectID);?>
 <?php js::set('storyModule', $lang->story->module);?>
+<?php js::set('storyType', $type);?>
 <?php include '../../common/view/footer.html.php';?>

@@ -220,6 +220,7 @@ class baseHelper
             return "IN ('" . join("','", $idList) . "')";
         }
 
+        if(!is_string($idList)) $idList = json_encode($idList);
         if(!function_exists('get_magic_quotes_gpc') or !get_magic_quotes_gpc()) $idList = addslashes($idList);
         return "IN ('" . str_replace(',', "','", str_replace(' ', '', $idList)) . "')";
     }
@@ -264,6 +265,75 @@ class baseHelper
     static public function jsonEncode($data)
     {
         return (function_exists('get_magic_quotes_gpc') and get_magic_quotes_gpc()) ? addslashes(json_encode($data)) : json_encode($data);
+    }
+
+    /**
+     * Encrypt password.
+     * 
+     * @param  string    $password 
+     * @static
+     * @access public
+     * @return string
+     */
+    public static function encryptPassword($password)
+    {
+        global $config;
+
+        $encrypted = '';
+        if(!empty($config->encryptSecret) and $password)
+        {
+            $secret = $config->encryptSecret;
+            if(function_exists('mcrypt_encrypt'))
+            {
+                $encrypted = base64_encode(@mcrypt_encrypt(MCRYPT_DES, $secret, $password, MCRYPT_MODE_CBC));
+            }
+            elseif(function_exists('openssl_encrypt'))
+            {
+                /* Set password length to multiple of 8. For compatible mcrypt_encrypt function. */
+                $oversize = strlen($password) % 8;
+                if($oversize != 0) $password .= str_repeat("\0", 8 - $oversize);
+
+                $encrypted = @openssl_encrypt($password, 'DES-CBC', $secret, OPENSSL_ZERO_PADDING);
+            }
+        }
+        if(empty($encrypted)) $encrypted = $password;
+
+        return $encrypted;
+    }
+
+    /**
+     * Decrypt password.
+     * 
+     * @param  string $password 
+     * @static
+     * @access public
+     * @return string
+     */
+    public static function decryptPassword($password)
+    {
+        global $config;
+
+        $decryptedPassword = '';
+        if(!empty($config->encryptSecret) and $password)
+        {
+            $secret = $config->encryptSecret;
+            if(function_exists('mcrypt_decrypt'))
+            {
+                $decryptedPassword = @mcrypt_decrypt(MCRYPT_DES, $secret, base64_decode($password), MCRYPT_MODE_CBC);
+            }
+            elseif(function_exists('openssl_decrypt'))
+            {
+                $decryptedPassword = openssl_decrypt($password, 'DES-CBC', $secret, OPENSSL_ZERO_PADDING);
+            }
+
+            /* Check decrypted password. Judge whether there is garbled code. */
+            $jsoned = json_encode($decryptedPassword);
+            if($jsoned === 'null' or empty($jsoned)) $decryptedPassword = '';
+        }
+        if(empty($decryptedPassword)) $decryptedPassword = $password;
+
+        $decryptedPassword = trim($decryptedPassword);
+        return $decryptedPassword;
     }
 
     /**
@@ -596,15 +666,20 @@ class baseHelper
      * 获取远程IP。
      * Get remote ip. 
      * 
+     * @param  bool  $proxy 
      * @access public
      * @return string
      */
-    public static function getRemoteIp()
+    public static function getRemoteIp($proxy = false)
     {
         $ip = '';
-        if(!empty($_SERVER["REMOTE_ADDR"]))          $ip = $_SERVER["REMOTE_ADDR"];
-        if(!empty($_SERVER["HTTP_X_FORWARDED_FOR"])) $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-        if(!empty($_SERVER['HTTP_CLIENT_IP']))       $ip = $_SERVER['HTTP_CLIENT_IP'];
+        if(!empty($_SERVER["REMOTE_ADDR"])) $ip = $_SERVER["REMOTE_ADDR"];
+
+        if($proxy)
+        {
+            if(!empty($_SERVER["HTTP_X_FORWARDED_FOR"])) $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+            if(!empty($_SERVER['HTTP_CLIENT_IP']))       $ip = $_SERVER['HTTP_CLIENT_IP'];
+        }
 
         return $ip;
     }
@@ -624,6 +699,37 @@ class baseHelper
         session_write_close();
         session_id($sessionID);
         session_start();
+    }
+
+    /**
+     * Check DB to repair table.
+     * 
+     * @param  object  $exception 
+     * @static
+     * @access public
+     * @return string
+     */
+    public static function checkDB2Repair($exception)
+    {
+        global $config, $lang;
+
+        $repairCode = '|1034|1035|1194|1195|1459|';
+        $errorInfo  = $exception->errorInfo;
+        $errorCode  = $errorInfo[1];
+        $errorMsg   = $errorInfo[2];
+        $message    = $exception->getMessage();
+
+        if(strpos($repairCode, "|$errorCode|") !== false or ($errorCode == '1016' and strpos($errorMsg, 'errno: 145') !== false) or strpos($message, 'repair') !== false)
+        {
+            if(isset($config->framework->autoRepairTable) and $config->framework->autoRepairTable)
+            {
+                header("location: " . $config->webRoot . 'checktable.php');
+                exit;
+            }
+            return $lang->repairTable;
+        }
+
+        return null;
     }
 }
 

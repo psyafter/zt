@@ -23,7 +23,7 @@ $(document).ready(function()
                     }
                 }
             }
-            var link = createLink('story', 'ajaxGetProductStories', 'productID=' + productID + '&branch=' + branch + '&moduleID=' + moduleID + '&storyID='+ ($(select).val() || '0') + '&onlyOption=true&status=noclosed&limit=0&type=null');
+            var link = createLink('story', 'ajaxGetProductStories', 'productID=' + productID + '&branch=' + branch + '&moduleID=' + moduleID + '&storyID='+ ($(select).val() || '0') + '&onlyOption=true&status=noclosed&limit=0&type=null&hasParent=0');
             var $story = $('#story' + index);
             if($story.data('loadLink') !== link)
             {
@@ -105,6 +105,7 @@ function setModules(branchID, productID, num)
         if(!modules) modules = '<select id="module' + num + '" name="module[' + num + ']" class="form-control"></select>';
         $('#module' + num).replaceWith(modules);
         $("#module" + num + "_chosen").remove();
+        $("#module" + num).next('.picker').remove();
         $("#module" + num).chosen();
     });
 }
