@@ -14,6 +14,7 @@ $lang->testreport->product     = $lang->productCommon;
 $lang->testreport->bugTitle    = 'Bug';
 $lang->testreport->storyTitle  = 'Câu chuyện';
 $lang->testreport->project     = 'Dự án';
+$lang->testreport->execution   = 'Execution';
 $lang->testreport->testtask    = 'Test bản dựng';
 $lang->testreport->tasks       = $lang->testreport->testtask;
 $lang->testreport->startEnd    = 'Bắt đầu & Kết thúc';
@@ -48,6 +49,7 @@ $lang->testreport->legendLegacyBugs  = 'Bug còn lại';
 $lang->testreport->legendReport      = 'Báo cáo';
 $lang->testreport->legendComment     = 'Tóm tắt';
 $lang->testreport->legendMore        = 'Thêm';
+$lang->testreport->date              = 'Date';
 
 $lang->testreport->bugSeverityGroups   = 'Phân chia mức độ Bug';
 $lang->testreport->bugTypeGroups       = 'Phân chia loại Bug';
@@ -56,9 +58,16 @@ $lang->testreport->bugOpenedByGroups   = 'Phân chia người báo cáo Bug';
 $lang->testreport->bugResolvedByGroups = 'Phân chia người giải quyết Bug';
 $lang->testreport->bugResolutionGroups = 'Phân chia giải pháp Bug';
 $lang->testreport->bugModuleGroups     = 'Phân chia Module Bug';
+$lang->testreport->bugStageGroups      = 'Bug importance stage distribution';
+$lang->testreport->bugHandleGroups     = 'Distribution of daily bug processing';
 $lang->testreport->legacyBugs          = 'Bug còn lại';
 $lang->testreport->bugConfirmedRate    = 'Đánh giá Bug đã xác nhận (Nghị quyết đã ban hành hoặc tạm hoãn / tình trạng được giải quyết hoặc đóng)';
 $lang->testreport->bugCreateByCaseRate = 'Đánh giá Bug được báo cáo trong Tình huống (Bug được báo cáo trong tình huống /Thêm mới Bugs)';
+
+$lang->testreport->bugStageList = array();
+$lang->testreport->bugStageList['generated'] = 'Generated Bugs';
+$lang->testreport->bugStageList['legacy']    = 'Legacy Bugs';
+$lang->testreport->bugStageList['resolved']  = 'Resolved Bugs';
 
 $lang->testreport->caseSummary    = 'Tổng <strong>%s</strong> tình huống. <strong>%s</strong> tình huống đang chạy. <strong>%s</strong> kết quả được tạo. <strong>%s</strong> cases thất bại';
 $lang->testreport->buildSummary   = 'Đã test <strong>%s</strong> bản dựng.';
@@ -71,9 +80,10 @@ $lang->testreport->legacyBugTip   = "Bug kích hoạt, hoặc Bug không đượ
 $lang->testreport->fromCaseBugTip = "Lỗi được tìm thấy từ việc chạy các trường hợp trong giai đoạn thử nghiệm.";
 $lang->testreport->errorTrunk     = "Bạn không thể tạo một báo cáo thử nghiệm cho trunk. Vui lòng sửa đổi bản dựng liên kết!";
 $lang->testreport->noTestTask     = "Không có yêu cầu thử nghiệm {$lang->productCommon} này, so no reports can be generated. Vui lòng go to {$lang->productCommon} which has test requests and then generate the report.";
-$lang->testreport->noObjectID     = "Không có yêu cầu test hoặc {$lang->projectCommon} được chọn, bởi vậy không có báo cáo có thể được tạo.";
+$lang->testreport->noObjectID     = "Không có yêu cầu test hoặc {$lang->executionCommon} được chọn, bởi vậy không có báo cáo có thể được tạo.";
 $lang->testreport->moreProduct    = "Báo cáo Test chỉ có thể được tạo cho cùng {$lang->productCommon}.";
 $lang->testreport->hiddenCase     = "Hide %s use cases";
+$lang->testreport->goalTip        = "Descriptive information about the {$lang->execution->common} of this build";
 
 $lang->testreport->bugSummary = <<<EOD
 Total <strong>%s</strong> Bugs reported <a data-toggle='tooltip' class='text-warning' title='{$lang->testreport->foundBugTip}'><i class='icon-help'></i></a>,

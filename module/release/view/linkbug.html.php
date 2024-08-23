@@ -25,7 +25,7 @@ $formID      = $type == 'leftBug' ? 'unlinkedLeftBugsForm' : 'unlinkedBugsForm';
         <tr class='text-center'>
           <th class='c-id text-left'>
             <?php if($allBugs):?>
-            <div class="checkbox-primary check-all" title="<?php echo $lang->selectAll?>">
+            <div class="checkbox-primary check-all tablesorter-noSort" title="<?php echo $lang->selectAll?>">
               <label></label>
             </div>
             <?php endif;?>
@@ -35,7 +35,7 @@ $formID      = $type == 'leftBug' ? 'unlinkedLeftBugsForm' : 'unlinkedBugsForm';
           <th class='text-left'><?php echo $lang->bug->title;?></th>
           <th class='c-user'><?php echo $lang->openedByAB;?></th>
           <th class='c-user'><?php echo $lang->bug->resolvedBy;?></th>
-          <th class='w-80px'><?php echo $lang->statusAB;?></th>
+          <th class='c-status'><?php echo $lang->statusAB;?></th>
         </tr>
       </thead>
       <tbody class='text-center'>

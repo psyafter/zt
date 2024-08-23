@@ -12,24 +12,25 @@
 class branch extends control
 {
     /**
-     * Manage branch 
-     * 
-     * @param  int    $productID 
+     * Manage branch
+     *
+     * @param  int    $productID
      * @access public
      * @return void
      */
     public function manage($productID)
     {
+        $this->loadModel('product')->setMenu($productID);
+
         if($_POST)
         {
-            $this->branch->manage($productID);
+            $newBranches = $this->branch->manage($productID);
+            if($this->viewType == 'json') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'idList' => $newBranches));
             die(js::reload('parent'));
         }
 
         $products = $this->loadModel('product')->getPairs('nocode');
-        $this->product->setMenu($products, $productID);
-
-        $position[] = html::a($this->createLink('product', 'browse', "productID=$productID"), $products[$productID]);
+        $position[] = html::a($this->createLink('product', 'browse', "productID=$productID"), zget($products, $productID));
         $position[] = $this->lang->branch->manage;
 
         $this->view->title    = $this->lang->branch->manage;
@@ -40,7 +41,7 @@ class branch extends control
 
     /**
      * Sort branch.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -51,33 +52,36 @@ class branch extends control
 
     /**
      * Ajax get drop menu.
-     * 
-     * @param  int    $productID 
-     * @param  string $module 
-     * @param  string $method 
-     * @param  string $extra 
+     *
+     * @param  int    $productID
+     * @param  int    $branch
+     * @param  string $module
+     * @param  string $method
+     * @param  string $extra
      * @access public
      * @return void
      */
-    public function ajaxGetDropMenu($productID, $module, $method, $extra)
+    public function ajaxGetDropMenu($productID, $branch = 0, $module, $method, $extra = '')
     {
         $this->view->link      = $this->loadModel('product')->getProductLink($module, $method, $extra, true);
         $this->view->productID = $productID;
+        $this->view->projectID = $this->session->project;
         $this->view->module    = $module;
         $this->view->method    = $method;
         $this->view->extra     = $extra;
 
         $branches = $this->branch->getPairs($productID);
-        $this->view->branches       = $branches;
-        $this->view->branchesPinyin = common::convert2Pinyin($branches);
+        $this->view->branches        = $branches;
+        $this->view->currentBranchID = $branch;
+        $this->view->branchesPinyin  = common::convert2Pinyin($branches);
         $this->display();
     }
 
     /**
-     * Delete branch 
-     * 
-     * @param  int    $branchID 
-     * @param  string $confirm 
+     * Delete branch
+     *
+     * @param  int    $branchID
+     * @param  string $confirm
      * @access public
      * @return void
      */
@@ -97,9 +101,9 @@ class branch extends control
 
     /**
      * Ajax get branches.
-     * 
-     * @param  int    $productID 
-     * @param  int    $oldBranch 
+     *
+     * @param  int    $productID
+     * @param  int    $oldBranch
      * @access public
      * @return void
      */

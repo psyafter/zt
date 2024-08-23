@@ -47,7 +47,9 @@
           <td></td>
         </tr>
         <tr>
-          <td colspan='2' class='text-center'><?php echo html::submitButton();?> </td><td></td>
+          <td></td>
+          <td class='form-actions'><?php echo html::submitButton() . html::backButton();?>
+          </td>
         </tr>
       </table>
     </form>

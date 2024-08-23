@@ -15,14 +15,14 @@ class messageModel extends model
     {
         return $this->dao->select('*')->from(TABLE_NOTIFY)
             ->where('objectType')->eq('message')
-            ->andWhere('toList')->eq($this->app->user->account)
+            ->andWhere('toList')->like("%,{$this->app->user->account},%")
             ->beginIF($status)->andWhere('status')->eq($status)->fi()
             ->fetchAll('id');
     }
 
     /**
-     * Get objectTypes 
-     * 
+     * Get objectTypes
+     *
      * @access public
      * @return array
      */
@@ -37,8 +37,8 @@ class messageModel extends model
     }
 
     /**
-     * Get object actions. 
-     * 
+     * Get object actions.
+     *
      * @access public
      * @return array
      */
@@ -49,7 +49,7 @@ class messageModel extends model
         {
             foreach($actions as $action)
             {
-                $objectActions[$objectType][$action] = str_replace($this->lang->webhook->trimWords, '', $this->lang->action->label->$action);
+                $objectActions[$objectType][$action] = $this->lang->message->label->$action;
             }
         }
         return $objectActions;
@@ -57,11 +57,11 @@ class messageModel extends model
 
     /**
      * Check send.
-     * 
-     * @param  string $objectType 
-     * @param  int    $objectID 
-     * @param  string $actionType 
-     * @param  int    $actionID 
+     *
+     * @param  string $objectType
+     * @param  int    $objectID
+     * @param  string $actionType
+     * @param  int    $actionID
      * @access public
      * @return void
      */
@@ -76,8 +76,7 @@ class messageModel extends model
             if(isset($actions[$objectType]) and in_array($actionType, $actions[$objectType]))
             {
                 $moduleName = $objectType == 'case' ? 'testcase' : $objectType;
-                $this->loadModel($moduleName);
-                if(method_exists($this->$moduleName, 'sendmail')) $this->$moduleName->sendmail($objectID, $actionID);
+                $this->loadModel('mail')->sendmail($objectID, $actionID);
             }
         }
 
@@ -102,11 +101,11 @@ class messageModel extends model
 
     /**
      * Save notice.
-     * 
-     * @param  string $objectType 
-     * @param  int    $objectID 
-     * @param  string $actionType 
-     * @param  int    $actionID 
+     *
+     * @param  string $objectType
+     * @param  int    $objectID
+     * @param  string $actionType
+     * @param  int    $actionID
      * @access public
      * @return void
      */
@@ -127,15 +126,20 @@ class messageModel extends model
         $this->app->loadConfig('mail');
         $sysURL = zget($this->config->mail, 'domain', common::getSysURL());
 
+        $isonlybody = isonlybody();
+        if($isonlybody) unset($_GET['onlybody']);
+
         $moduleName = $objectType == 'case' ? 'testcase' : $objectType;
         $space = common::checkNotCN() ? ' ' : '';
         $data  = $user->realname . $space . $this->lang->action->label->$actionType . $space . $this->lang->action->objectTypes[$objectType];
         $data .= ' ' . html::a($sysURL . helper::createLink($moduleName, 'view', "id=$objectID"), "[#{$objectID}::{$object->$field}]");
 
+        if($isonlybody) $_GET['onlybody'] = 'yes';
+
         $notify = new stdclass();
         $notify->objectType  = 'message';
         $notify->action      = $actionID;
-        $notify->toList      = $toList;
+        $notify->toList      = str_replace(",{$actor},", '', ",$toList,");
         $notify->data        = $data;
         $notify->status      = 'wait';
         $notify->createdBy   = $actor;
@@ -146,9 +150,9 @@ class messageModel extends model
 
     /**
      * Get toList.
-     * 
-     * @param  object    $object 
-     * @param  string    $objectType 
+     *
+     * @param  object    $object
+     * @param  string    $objectType
      * @access public
      * @return string
      */
@@ -158,6 +162,15 @@ class messageModel extends model
         if(!empty($object->assignedTo)) $toList = $object->assignedTo;
         if(empty($toList) and $objectType == 'todo') $toList = $object->account;
         if(empty($toList) and $objectType == 'testtask') $toList = $object->owner;
+        if(empty($toList) and $objectType == 'meeting') $toList = $object->host . $object->participant;
+        if(empty($toList) and $objectType == 'release')
+        {
+            /* Get notifiy persons. */
+            $notifyPersons = array();
+            if(!empty($object->notify)) $notifyPersons = $this->loadModel('release')->getNotifyPersons($object->notify, $object->product, $object->build, $object->id);
+
+            if(!empty($notifyPersons)) $toList = implode(',', $notifyPersons);
+        }
 
         if($toList == 'closed') $toList = '';
         return $toList;
@@ -165,7 +178,7 @@ class messageModel extends model
 
     /**
      * Get notice todos.
-     * 
+     *
      * @access public
      * @return array
      */

@@ -16,9 +16,9 @@
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
     <?php
-    echo html::a($this->inlink('browse', "productID={$product->id}&branch=$branch&type=all"), "<span class='text'>{$lang->release->all}</span>" . ($type == 'all' ? ' <span class="label label-light label-badge">' . count($releases) . '</span>' : ''), '', "id='allTab' class='btn btn-link" . ('all' == $type ? ' btn-active-text' : '') . "'");
-    echo html::a($this->inlink('browse', "productID={$product->id}&branch=$branch&type=normal"), "<span class='text'>{$lang->release->statusList['normal']}</span>" . ($type == 'normal' ? ' <span class="label label-light label-badge">' . count($releases) . '</span>' : ''), '', "id='normalTab' class='btn btn-link" . ('normal' == $type ? ' btn-active-text' : '') . "'");
-    echo html::a($this->inlink('browse', "productID={$product->id}&branch=$branch&type=terminate"), "<span class='text'>{$lang->release->statusList['terminate']}</span>" . ($type == 'terminate' ? ' <span class="label label-light label-badge">' . count($releases) . '</span>' : ''), '', "id='terminateTab' class='btn btn-link" . ('terminate' == $type ? ' btn-active-text' : '') . "'");
+    echo html::a(inlink('browse', "productID={$product->id}&branch=$branch&type=all"), "<span class='text'>{$lang->release->all}</span>" . ($type == 'all' ? ' <span class="label label-light label-badge">' . count($releases) . '</span>' : ''), '', "id='allTab' class='btn btn-link" . ('all' == $type ? ' btn-active-text' : '') . "'");
+    echo html::a(inlink('browse', "productID={$product->id}&branch=$branch&type=normal"), "<span class='text'>{$lang->release->statusList['normal']}</span>" . ($type == 'normal' ? ' <span class="label label-light label-badge">' . count($releases) . '</span>' : ''), '', "id='normalTab' class='btn btn-link" . ('normal' == $type ? ' btn-active-text' : '') . "'");
+    echo html::a(inlink('browse', "productID={$product->id}&branch=$branch&type=terminate"), "<span class='text'>{$lang->release->statusList['terminate']}</span>" . ($type == 'terminate' ? ' <span class="label label-light label-badge">' . count($releases) . '</span>' : ''), '', "id='terminateTab' class='btn btn-link" . ('terminate' == $type ? ' btn-active-text' : '') . "'");
     ?>
   </div>
   <div class="btn-toolbar pull-right">
@@ -41,14 +41,15 @@
   <table class="table" id='releaseList'>
     <thead>
       <tr>
-        <th class='w-id'><?php echo $lang->release->id;?></th>
-        <th><?php echo $lang->release->name;?></th>
-        <th><?php echo $lang->release->build;?></th>
+        <th class='c-id'><?php echo $lang->release->id;?></th>
+        <th class="c-name"><?php echo $lang->release->name;?></th>
+        <th class="c-project"><?php echo $lang->release->project;?></th>
+        <th class="c-build"><?php echo $lang->release->build;?></th>
         <?php if($product->type != 'normal'):?>
-        <th class='text-center w-100px'><?php echo $lang->product->branch;?></th>
+        <th class='text-center c-branch'><?php echo $lang->product->branch;?></th>
         <?php endif;?>
         <th class='c-date text-center'><?php echo $lang->release->date;?></th>
-        <th class='text-center w-90px'><?php echo $lang->release->status;?></th>
+        <th class='text-center c-status'><?php echo $lang->release->status;?></th>
         <?php
         $extendFields = $this->release->getFlowExtendFields();
         foreach($extendFields as $extendField) echo "<th>{$extendField->name}</th>";
@@ -60,14 +61,15 @@
       <?php foreach($releases as $release):?>
       <?php $canBeChanged = common::canBeChanged('release', $release);?>
       <tr>
-        <td><?php echo html::a(helper::createLink('release', 'view', "releaseID=$release->id"), sprintf('%03d', $release->id));?></td>
+        <td><?php echo html::a(inlink('view', "releaseID=$release->id"), sprintf('%03d', $release->id));?></td>
         <td>
-          <?php 
-          $flagIcon = $release->marker ? "<icon class='icon icon-flag-alt' title='{$lang->release->marker}'></icon> " : '';
-          echo html::a(inlink('view', "release=$release->id"), $release->name) . $flagIcon;
+          <?php
+          $flagIcon = $release->marker ? "<icon class='icon icon-flag red' title='{$lang->release->marker}'></icon> " : '';
+          echo html::a(inlink('view', "release=$release->id"), $release->name, '', "title='$release->name'") . $flagIcon;
           ?>
         </td>
-        <td title='<?php echo $release->buildName?>'><?php echo empty($release->project) ? $release->buildName : html::a($this->createLink('build', 'view', "buildID=$release->buildID"), $release->buildName);?></td>
+        <td title='<?php echo $release->projectName?>'><?php echo $release->projectName;?></td>
+        <td title='<?php echo $release->buildName?>'><?php echo empty($release->execution) ? $release->buildName : html::a($this->createLink('build', 'view', "buildID=$release->buildID"), $release->buildName);?></td>
         <?php if($product->type != 'normal'):?>
         <td class='text-center' title='<?php echo zget($branches, $release->branch, '');?>'><?php echo $branches[$release->branch];?></td>
         <?php endif;?>
@@ -82,11 +84,11 @@
           if($canBeChanged)
           {
               if(common::hasPriv('release', 'linkStory')) echo html::a(inlink('view', "releaseID=$release->id&type=story&link=true"), '<i class="icon-link"></i> ', '', "class='btn' title='{$lang->release->linkStory}'");
-              if(common::hasPriv('release', 'linkBug') and $config->global->flow != 'onlyStory') echo html::a(inlink('view', "releaseID=$release->id&type=bug&link=true"), '<i class="icon-bug"></i> ', '', "class='btn' title='{$lang->release->linkBug}'");
+              if(common::hasPriv('release', 'linkBug')) echo html::a(inlink('view', "releaseID=$release->id&type=bug&link=true"), '<i class="icon-bug"></i> ', '', "class='btn' title='{$lang->release->linkBug}'");
               if(common::hasPriv('release', 'changeStatus', $release))
               {
                   $changedStatus = $release->status == 'normal' ? 'terminate' : 'normal';
-                  echo html::a(inlink('changeStatus', "releaseID=$release->id&status=$changedStatus"), '<i class="icon-' . ($release->status == 'normal' ? 'pause' : 'play') . '"></i> ', 'hiddenwin', "class='btn' title='{$lang->release->changeStatusList[$changedStatus]}'");
+                  echo html::a($this->createLink('release', 'changeStatus', "releaseID=$release->id&status=$changedStatus"), '<i class="icon-' . ($release->status == 'normal' ? 'pause' : 'play') . '"></i> ', 'hiddenwin', "class='btn' title='{$lang->release->changeStatusList[$changedStatus]}'");
               }
               common::printIcon('release', 'edit',   "release=$release->id", $release, 'list');
               if(common::hasPriv('release', 'delete', $release))

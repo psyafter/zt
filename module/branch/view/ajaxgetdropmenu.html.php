@@ -6,7 +6,9 @@
   <?php
   foreach($branches as $branchID => $branch)
   {
-      echo html::a(sprintf($link, $productID, $branchID), "<i class='icon-cube'></i> " . $branch, '', "data-key='{$branchesPinyin[$branch]}'");
+      $selected = $branchID == $currentBranchID ? 'selected' : '';
+      $linkHtml = $this->branch->setParamsForLink($module, $link, $projectID, $productID, $branchID);
+      echo html::a($linkHtml, $branch, '', "class='$selected' data-key='{$branchesPinyin[$branch]}'");
   }
   ?>
 </div>

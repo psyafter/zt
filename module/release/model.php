@@ -15,8 +15,8 @@ class releaseModel extends model
 {
     /**
      * Get release by id.
-     * 
-     * @param  int    $releaseID 
+     *
+     * @param  int    $releaseID
      * @param  bool   $setImgSize
      * @access public
      * @return object
@@ -42,19 +42,20 @@ class releaseModel extends model
 
     /**
      * Get list of releases.
-     * 
-     * @param  int    $productID 
-     * @param  int    $branch 
-     * @param  string $type 
+     *
+     * @param  int    $productID
+     * @param  int    $branch
+     * @param  string $type
      * @access public
      * @return array
      */
     public function getList($productID, $branch = 0, $type = 'all')
     {
-        return $this->dao->select('t1.*, t2.name as productName, t3.id as buildID, t3.name as buildName, t3.project')
+        return $this->dao->select('t1.*, t2.name as productName, t3.id as buildID, t3.name as buildName, t3.project, t4.name as projectName')
             ->from(TABLE_RELEASE)->alias('t1')
             ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id')
             ->leftJoin(TABLE_BUILD)->alias('t3')->on('t1.build = t3.id')
+            ->leftJoin(TABLE_PROJECT)->alias('t4')->on('t1.project = t4.id')
             ->where('t1.product')->eq((int)$productID)
             ->beginIF($branch)->andWhere('t1.branch')->eq($branch)->fi()
             ->beginIF($type != 'all')->andWhere('t1.status')->eq($type)->fi()
@@ -65,11 +66,11 @@ class releaseModel extends model
 
     /**
      * Get last release.
-     * 
-     * @param  int    $productID 
-     * @param  int    $branch 
+     *
+     * @param  int    $productID
+     * @param  int    $branch
      * @access public
-     * @return bool | object 
+     * @return bool | object
      */
     public function getLast($productID, $branch = 0)
     {
@@ -82,14 +83,14 @@ class releaseModel extends model
     }
 
     /**
-     * Get release builds from product.
-     * 
-     * @param  int    $productID 
-     * @param  int    $branch 
+     * Get released builds from product.
+     *
+     * @param  int    $productID
+     * @param  int    $branch
      * @access public
      * @return void
      */
-    public function getReleaseBuilds($productID, $branch = 0)
+    public function getReleasedBuilds($productID, $branch = 0)
     {
         $releases = $this->dao->select('build')->from(TABLE_RELEASE)
             ->where('deleted')->eq(0)
@@ -101,14 +102,15 @@ class releaseModel extends model
 
     /**
      * Create a release.
-     * 
-     * @param  int    $productID 
-     * @param  int    $branch 
+     *
+     * @param  int    $productID
+     * @param  int    $branch
      * @access public
      * @return int
      */
     public function create($productID, $branch = 0)
     {
+        /* Init vars. */
         $productID = (int)$productID;
         $branch    = (int)$branch;
         $buildID   = 0;
@@ -123,9 +125,11 @@ class releaseModel extends model
             ->add('product', (int)$productID)
             ->add('branch',  (int)$branch)
             ->setDefault('stories', '')
-            ->cleanInt('build')
             ->join('stories', ',')
             ->join('bugs', ',')
+            ->join('mailto', ',')
+            ->join('notify', ',')
+            ->setIF($this->post->build == false, 'build', $buildID)
             ->stripTags($this->config->release->editor->create['id'], $this->config->allowedTags)
             ->remove('allchecker,files,labels,uid')
             ->get();
@@ -146,15 +150,16 @@ class releaseModel extends model
             else
             {
                 $build = new stdclass();
-                $build->product = (int)$productID;
-                $build->branch  = (int)$branch;
-                $build->name    = $release->name;
-                $build->date    = $release->date;
-                $build->builder = $this->app->user->account;
-                $build->desc    = $release->desc;
-                $build->project = 0;
+                $build->product   = (int)$productID;
+                $build->branch    = (int)$branch;
+                $build->name      = $release->name;
+                $build->date      = $release->date;
+                $build->builder   = $this->app->user->account;
+                $build->desc      = $release->desc;
+                $build->execution = 0;
 
                 $build = $this->loadModel('file')->processImgURL($build, $this->config->release->editor->create['id']);
+                $this->app->loadLang('build');
                 $this->dao->insert(TABLE_BUILD)->data($build)
                     ->autoCheck()
                     ->check('name', 'unique', "product = {$productID} AND branch = {$branch} AND deleted = '0'")
@@ -167,13 +172,18 @@ class releaseModel extends model
             }
         }
 
-        if($release->build) $release->branch = $this->dao->select('branch')->from(TABLE_BUILD)->where('id')->eq($release->build)->fetch('branch');
-        
+        if($release->build)
+        {
+            $buildInfo = $this->dao->select('project, branch')->from(TABLE_BUILD)->where('id')->eq($release->build)->fetch();
+            $release->branch  = $buildInfo->branch;
+            $release->project = $buildInfo->project;
+        }
+
         $release = $this->loadModel('file')->processImgURL($release, $this->config->release->editor->create['id'], $this->post->uid);
         $this->dao->insert(TABLE_RELEASE)->data($release)
             ->autoCheck()
             ->batchCheck($this->config->release->create->requiredFields, 'notempty')
-            ->check('name', 'unique', "product = {$release->product} AND branch = {$release->branch} AND deleted = '0'");
+            ->check('name', 'unique', "product = '{$release->product}' AND branch = '{$release->branch}' AND deleted = '0'");
 
         if(dao::isError())
         {
@@ -202,24 +212,38 @@ class releaseModel extends model
 
     /**
      * Update a release.
-     * 
-     * @param  int    $releaseID 
+     *
+     * @param  int    $releaseID
      * @access public
      * @return void
      */
     public function update($releaseID)
     {
+        /* Init vars. */
         $releaseID  = (int)$releaseID;
         $oldRelease = $this->dao->select('*')->from(TABLE_RELEASE)->where('id')->eq($releaseID)->fetch();
         $branch     = $this->dao->select('branch')->from(TABLE_BUILD)->where('id')->eq((int)$this->post->build)->fetch('branch');
 
         $release = fixer::input('post')->stripTags($this->config->release->editor->edit['id'], $this->config->allowedTags)
             ->add('branch',  (int)$branch)
+            ->join('mailto', ',')
+            ->join('notify', ',')
             ->setIF(!$this->post->marker, 'marker', 0)
+            ->setIF(!$this->post->notify, 'notify', '')
             ->cleanInt('product')
             ->remove('files,labels,allchecker,uid')
             ->get();
+
         $release = $this->loadModel('file')->processImgURL($release, $this->config->release->editor->edit['id'], $this->post->uid);
+
+        /* update release project and branch */
+        if($release->build)
+        {
+            $buildInfo = $this->dao->select('project, branch')->from(TABLE_BUILD)->where('id')->eq($release->build)->fetch();
+            $release->branch  = $buildInfo->branch;
+            $release->project = $buildInfo->project;
+        }
+
         $this->dao->update(TABLE_RELEASE)->data($release)
             ->autoCheck()
             ->batchCheck($this->config->release->edit->requiredFields, 'notempty')
@@ -234,9 +258,72 @@ class releaseModel extends model
     }
 
     /**
+     * Get notify persons.
+     *
+     * @param  string $notfiyList
+     * @param  int    $productID
+     * @param  int    $buildID
+     * @param  int    $releaseID
+     * @access public
+     * @return array
+     */
+    public function getNotifyPersons($notifyList = '', $productID = 0, $buildID = 0, $releaseID = 0)
+    {
+        if(empty($notifyList)) return array();
+
+        /* Init vars. */
+        $notifyPersons = array();
+        $managerFields = '';
+        $notifyList    = explode(',', $notifyList);
+
+        foreach($notifyList as $notify)
+        {
+            if($notify == 'PO' or $notify == 'QD' or $notify == 'feedback')
+            {
+                $managerFields .= $notify . ',';
+            }
+            elseif($notify == 'SC' and !empty($buildID))
+            {
+                $stories  = $this->dao->select('stories')->from(TABLE_BUILD)->where('id')->eq($buildID)->fetch('stories');
+                $stories .= $this->dao->select('stories')->from(TABLE_RELEASE)->where('id')->eq($releaseID)->fetch('stories');
+                $stories  = trim($stories, ',');
+
+                if(empty($stories)) continue;
+
+                $openedByList   = $this->dao->select('openedBy')->from(TABLE_STORY)->where('id')->in($stories)->fetchPairs();
+                $notifyPersons += $openedByList;
+            }
+            elseif(($notify == 'ET' or $notify == 'PT') and !empty($buildID))
+            {
+                $type    = $notify == 'ET' ? 'execution' : 'project';
+                $members = $this->dao->select('t2.account')->from(TABLE_BUILD)->alias('t1')
+                    ->leftJoin(TABLE_TEAM)->alias('t2')->on('t1.' . $type . '=t2.root')
+                    ->where('t2.type')->eq($type)
+                    ->fetchPairs();
+
+                if(empty($members)) continue;
+
+                $notifyPersons += $members;
+            }
+        }
+
+        if(!empty($managerFields))
+        {
+            $managerFields = trim($managerFields, ',');
+            $managerUsers  = $this->dao->select($managerFields)->from(TABLE_PRODUCT)->where('id')->eq($productID)->fetch();
+            foreach($managerUsers as $account)
+            {
+                if(!isset($notifyPersons[$account])) $notifyPersons[$account] = $account;
+            }
+        }
+
+        return $notifyPersons;
+    }
+
+    /**
      * Link stories
-     * 
-     * @param  int    $releaseID 
+     *
+     * @param  int    $releaseID
      * @access public
      * @return void
      */
@@ -271,10 +358,10 @@ class releaseModel extends model
     }
 
     /**
-     * Unlink story 
-     * 
-     * @param  int    $releaseID 
-     * @param  int    $storyID 
+     * Unlink story
+     *
+     * @param  int    $releaseID
+     * @param  int    $storyID
      * @access public
      * @return void
      */
@@ -288,8 +375,8 @@ class releaseModel extends model
 
     /**
      * Batch unlink story.
-     * 
-     * @param  int    $releaseID 
+     *
+     * @param  int    $releaseID
      * @access public
      * @return void
      */
@@ -310,9 +397,9 @@ class releaseModel extends model
 
     /**
      * Link bugs.
-     * 
-     * @param  int    $releaseID 
-     * @param  string $type 
+     *
+     * @param  int    $releaseID
+     * @param  string $type
      * @access public
      * @return void
      */
@@ -335,11 +422,11 @@ class releaseModel extends model
     }
 
     /**
-     * Unlink bug. 
-     * 
-     * @param  int    $releaseID 
-     * @param  int    $bugID 
-     * @param  string $type 
+     * Unlink bug.
+     *
+     * @param  int    $releaseID
+     * @param  int    $bugID
+     * @param  string $type
      * @access public
      * @return void
      */
@@ -354,15 +441,14 @@ class releaseModel extends model
 
     /**
      * Batch unlink bug.
-     * 
-     * @param  int    $releaseID 
-     * @param  string $type 
+     *
+     * @param  int    $releaseID
+     * @param  string $type
      * @access public
      * @return void
      */
     public function batchUnlinkBug($releaseID, $type = 'bug')
     {
-
         $bugList = $this->post->unlinkBugs;
         if(empty($bugList)) return true;
 
@@ -379,15 +465,58 @@ class releaseModel extends model
 
     /**
      * Change status.
-     * 
-     * @param  int    $releaseID 
-     * @param  string $status 
+     *
+     * @param  int    $releaseID
+     * @param  string $status
      * @access public
      * @return bool
      */
     public function changeStatus($releaseID, $status)
     {
         $this->dao->update(TABLE_RELEASE)->set('status')->eq($status)->where('id')->eq($releaseID)->exec();
-        return dao::isError();
+        return !dao::isError();
+    }
+
+    /**
+     * Get toList and ccList.
+     *
+     * @param  object    $release
+     * @access public
+     * @return bool|array
+     */
+    public function getToAndCcList($release)
+    {
+        /* Set toList and ccList. */
+        $toList = $this->app->user->account;
+        $ccList = $release->mailto . ',';
+
+        /* Get notifiy persons. */
+        $notifyPersons = array();
+        if(!empty($release->notify)) $notifyPersons = $this->getNotifyPersons($release->notify, $release->product, $release->build, $release->id);
+
+        foreach($notifyPersons as $account)
+        {
+            if(strpos($ccList, ",{$account},") === false) $ccList .= ",$account,";
+        }
+
+        $ccList = trim($ccList, ',');
+
+        if(empty($toList))
+        {
+            if(empty($ccList)) return false;
+            if(strpos($ccList, ',') === false)
+            {
+                $toList = $ccList;
+                $ccList = '';
+            }
+            else
+            {
+                $commaPos = strpos($ccList, ',');
+                $toList   = substr($ccList, 0, $commaPos);
+                $ccList   = substr($ccList, $commaPos + 1);
+            }
+        }
+
+        return array($toList, $ccList);
     }
 }

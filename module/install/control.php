@@ -13,7 +13,7 @@ class install extends control
 {
     /**
      * Construct function.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -28,7 +28,7 @@ class install extends control
 
     /**
      * Index page of install module.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -37,12 +37,13 @@ class install extends control
         if(!isset($this->config->installed) or !$this->config->installed) $this->session->set('installing', true);
 
         $this->view->title = $this->lang->install->welcome;
+        if(!isset($this->view->versionName)) $this->view->versionName = $this->config->version; // If the versionName variable has been defined in the max version, it cannot be defined here to avoid being overwritten.
         $this->display();
     }
 
     /**
-     * Checking agree license. 
-     * 
+     * Checking agree license.
+     *
      * @access public
      * @return void
      */
@@ -55,7 +56,7 @@ class install extends control
 
     /**
      * Check the system.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -97,7 +98,7 @@ class install extends control
 
     /**
      * Set configs.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -109,7 +110,7 @@ class install extends control
 
     /**
      * Create the config file.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -167,12 +168,32 @@ class install extends control
     }
 
     /**
-     * Create company, admin.
-     * 
+     * Set system mode.
+     *
      * @access public
      * @return void
      */
     public function step4()
+    {
+        if(!empty($_POST))
+        {
+            $this->loadModel('setting')->setItem('system.common.global.mode', $this->post->mode); // Update mode.
+            die(js::locate(inlink('step5'), 'parent'));
+        }
+
+        $this->app->loadLang('upgrade');
+
+        $this->view->title = $this->lang->install->introduction;
+        $this->display();
+    }
+
+    /**
+     * Create company, admin.
+     *
+     * @access public
+     * @return void
+     */
+    public function step5()
     {
         if(!empty($_POST))
         {
@@ -187,8 +208,10 @@ class install extends control
             $this->loadModel('setting')->setItem('system.common.safe.mode', '1');
             $this->loadModel('setting')->setItem('system.common.safe.changeWeak', '1');
             $this->loadModel('setting')->setItem('system.common.global.cron', 1);
-            die(js::locate(inlink('step5'), 'parent'));
+            die(js::locate(inlink('step6'), 'parent'));
         }
+
+        $this->app->loadLang('upgrade');
 
         $this->view->title = $this->lang->install->getPriv;
         if(!isset($this->config->installed) or !$this->config->installed)
@@ -204,16 +227,17 @@ class install extends control
 
     /**
      * Join zentao community or login pms.
-     * 
+     *
      * @access public
      * @return void
      */
-    public function step5()
+    public function step6()
     {
-        $this->view->title = $this->lang->install->success;
+        $installFileDeleted = unlink($this->app->getAppRoot() . 'www/install.php');
+        $this->view->installFileDeleted = $installFileDeleted;
+        $this->view->title              = $this->lang->install->success;
         $this->display();
 
-        unlink($this->app->getAppRoot() . 'www/install.php');
         unlink($this->app->getAppRoot() . 'www/upgrade.php');
         unset($_SESSION['installing']);
         session_destroy();

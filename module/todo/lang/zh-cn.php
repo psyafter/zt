@@ -33,8 +33,11 @@ $lang->todo->import       = "导入";
 $lang->todo->legendBasic  = "基本信息";
 $lang->todo->cycle        = "周期";
 $lang->todo->cycleConfig  = "周期设置";
+$lang->todo->project      = "所属项目";
+$lang->todo->product      = "所属产品";
+$lang->todo->execution    = "所属{$lang->execution->common}";
 
-$lang->todo->reasonList['story'] = "转{$lang->storyCommon}";
+$lang->todo->reasonList['story'] = "转{$lang->SRCommon}";
 $lang->todo->reasonList['task']  = "转任务";
 $lang->todo->reasonList['bug']   = "转Bug";
 $lang->todo->reasonList['done']  = "完成";
@@ -53,6 +56,7 @@ $lang->todo->pri          = '优先级';
 $lang->todo->name         = '待办名称';
 $lang->todo->status       = '状态';
 $lang->todo->desc         = '描述';
+$lang->todo->config       = '配置';
 $lang->todo->private      = '私人事务';
 $lang->todo->cycleDay     = '天';
 $lang->todo->cycleWeek    = '周';
@@ -65,6 +69,10 @@ $lang->todo->finishedDate = '完成时间';
 $lang->todo->closedBy     = '由谁关闭';
 $lang->todo->closedDate   = '关闭时间';
 $lang->todo->deadline     = '过期时间';
+$lang->todo->deleted      = '已删除';
+
+$lang->todo->cycleDaysLabel  = '间隔天数';
+$lang->todo->beforeDaysLabel = '提前天数';
 
 $lang->todo->every        = '间隔';
 $lang->todo->specify      = '指定';
@@ -84,21 +92,17 @@ $lang->todo->statusList['closed'] = '已关闭';
 //$lang->todo->statusList['cancel']   = '已取消';
 //$lang->todo->statusList['postpone'] = '已延期';
 
-$lang->todo->priList[0] = '';
-$lang->todo->priList[3] = '一般';
-$lang->todo->priList[1] = '最高';
-$lang->todo->priList[2] = '较高';
-$lang->todo->priList[4] = '最低';
+$lang->todo->priList[1] = 1;
+$lang->todo->priList[2] = 2;
+$lang->todo->priList[3] = 3;
+$lang->todo->priList[4] = 4;
 
-$lang->todo->typeList['custom']   = '自定义';
-$lang->todo->typeList['cycle']    = '周期';
-$lang->todo->typeList['bug']      = 'Bug';
-$lang->todo->typeList['task']     = $lang->projectCommon . '任务';
-$lang->todo->typeList['story']    = $lang->projectCommon . $lang->storyCommon;
-
-global $config;
-if($config->global->flow == 'onlyTest' or $config->global->flow == 'onlyStory') unset($lang->todo->typeList['task']);
-if($config->global->flow == 'onlyTask' or $config->global->flow == 'onlyStory') unset($lang->todo->typeList['bug']);
+$lang->todo->typeList['custom']    = '自定义';
+$lang->todo->typeList['cycle']     = '周期';
+$lang->todo->typeList['bug']       = 'Bug';
+$lang->todo->typeList['task']      = '任务';
+$lang->todo->typeList['story']     = $lang->SRCommon;
+$lang->todo->typeList['testtask']  = '测试单';
 
 $lang->todo->confirmDelete  = "您确定要删除这条待办吗？";
 $lang->todo->thisIsPrivate  = '这是一条私人事务。:)';
@@ -109,11 +113,14 @@ $lang->todo->noTodo         = '该类型没有待办事务';
 $lang->todo->noAssignedTo   = '被指派人不能为空';
 $lang->todo->unfinishedTodo = '待办ID %s 不是完成状态，不能关闭。';
 
-$lang->todo->periods['all']        = '所有待办';
-$lang->todo->periods['thisYear']   = '本年';
-$lang->todo->periods['future']     = '待定';
-$lang->todo->periods['before']     = '未完';
-$lang->todo->periods['cycle']      = '周期';
+$lang->todo->periods['all']             = '所有';
+$lang->todo->periods['before']          = '未完';
+$lang->todo->periods['future']          = '待定';
+$lang->todo->periods['thisWeek']        = '本周';
+$lang->todo->periods['thisMonth']       = '本月';
+$lang->todo->periods['thisYear']        = '本年';
+$lang->todo->periods['assignedToOther'] = '指派他人';
+$lang->todo->periods['cycle']           = '周期';
 
 $lang->todo->action = new stdclass();
 $lang->todo->action->finished = array('main' => '$date, 由 <strong>$actor</strong> $extra。$appendLink', 'extra' => 'reasonList');

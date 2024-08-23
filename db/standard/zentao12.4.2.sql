@@ -170,7 +170,7 @@ CREATE TABLE `zt_case` (
   `linkCase` varchar(255) NOT NULL,
   `fromBug` mediumint(8) unsigned NOT NULL,
   `fromCaseID` mediumint(8) unsigned NOT NULL,
-  `fromCaseVersion` mediumint(8) unsigned NOT NULL,
+  `fromCaseVersion` mediumint(8) unsigned NOT NULL default '1',
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   `lastRunner` varchar(30) NOT NULL,
   `lastRunDate` datetime NOT NULL,
@@ -517,6 +517,12 @@ CREATE TABLE IF NOT EXISTS `zt_oauth` (
   KEY `account` (`account`),
   KEY `providerType` (`providerType`),
   KEY `providerID` (`providerID`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+CREATE TABLE IF NOT EXISTS `zt_planstory` (
+  `plan` mediumint(8) unsigned NOT NULL,
+  `story` mediumint(8) unsigned NOT NULL,
+  `order` mediumint(9) NOT NULL,
+  UNIQUE KEY `plan_story` (`plan`,`story`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 CREATE TABLE `zt_product` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,

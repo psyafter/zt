@@ -11,15 +11,6 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
-<?php if($config->global->flow == 'onlyTest'):?>
-<style>
-.nav > li > .btn-group > a, .nav > li > .btn-group > a:hover, .nav > li > .btn-group > a:focus{background: #1a4f85; border-color: #164270;}
-.outer.with-side #featurebar {background: none; border: none; line-height: 0; margin: 0; min-height: 0; padding: 0; }
-#querybox #searchform{border-bottom: 1px solid #ddd; margin-bottom: 20px;}
-#subNavbar .nav{left: -70px !important;}
-#subNavbar .nav > li > a{padding: 8px 8px;}
-</style>
-<?php endif;?>
 <?php
 include '../../common/view/datatable.fix.html.php';
 js::set('browseType',    $browseType);
@@ -102,6 +93,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
     ?>
     <a class="btn btn-link querybox-toggle" id='bysearchTab'><i class="icon icon-search muted"></i> <?php echo $lang->bug->byQuery;?></a>
   </div>
+  <?php if(!isonlybody()):?>
   <div class="btn-toolbar pull-right">
     <?php common::printIcon('bug', 'report', "productID=$productID&browseType=$browseType&branchID=$branch&moduleID=$moduleID", '', 'button', 'bar-chart muted');?>
     <div class='btn-group'>
@@ -120,17 +112,43 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
     <?php if(common::canModify('product', $product)):?>
     <?php if(!common::checkNotCN()):?>
     <?php
-    common::printLink('bug', 'batchCreate', "productID=$productID&branch=$branch&projectID=0&moduleID=$moduleID", "<i class='icon icon-plus'></i>" . $lang->bug->batchCreate, '', "class='btn btn-secondary'");
-    if(commonModel::isTutorialMode())
-    {
-        $wizardParams = helper::safe64Encode("productID=$productID&branch=$branch&extra=moduleID=$moduleID");
-        echo html::a($this->createLink('tutorial', 'wizard', "module=bug&method=create&params=$wizardParams"), "<i class='icon-plus'></i>" . $lang->bug->create, '', "class='btn btn-primary btn-bug-create'");
-    }
-    else
-    {
-        common::printLink('bug', 'create', "productID=$productID&branch=$branch&extra=moduleID=$moduleID", "<i class='icon icon-plus'></i>" . $lang->bug->create, '', "class='btn btn-primary'");
-    }
+      $createBugLink   = '';
+      $batchCreateLink = '';
+      if(commonModel::isTutorialMode())
+      {
+          $wizardParams  = helper::safe64Encode("productID=$productID&branch=$branch&extra=moduleID=$moduleID");
+          $createBugLink = $this->createLink('tutorial', 'wizard', "module=bug&method=create&params=$wizardParams");
+      }
+      else
+      {
+          $createBugLink = $this->createLink('bug', 'create', "productID=$productID&branch=$branch&extra=moduleID=$moduleID");
+      }
+      $batchCreateLink = $this->createLink('bug', 'batchCreate', "productID=$productID&branch=$branch&executionID=0&moduleID=$moduleID");
+
+      $buttonLink  = '';
+      $buttonTitle = '';
+      if(common::hasPriv('bug', 'batchCreate'))
+      {
+          $buttonLink = $batchCreateLink;
+          $buttonTitle = $lang->bug->batchCreate;
+      }
+      if(common::hasPriv('bug', 'create'))
+      {
+          $buttonLink = $createBugLink;
+          $buttonTitle = $lang->bug->create;
+      }
+      $hidden = empty($buttonLink) ? 'hidden' : '';
     ?>
+    <div class='btn-group dropdown'>
+      <?php echo html::a($buttonLink, "<i class='icon-plus'></i> $buttonTitle", '', "class='btn btn-primary create-bug-btn $hidden'");?>
+      <?php if(common::hasPriv('bug', 'batchCreate') and common::hasPriv('bug', 'create')):?>
+      <button type='button' class='btn btn-primary dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>
+      <ul class='dropdown-menu'>
+        <li><?php echo html::a($createBugLink, $lang->bug->create);?></li>
+        <li><?php echo html::a($batchCreateLink, $lang->bug->batchCreate);?></li>
+      </ul>
+      <?php endif;?>
+    </div>
     <?php else:?>
     <div class='btn-group dropdown-hover'>
       <?php
@@ -156,8 +174,8 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
         <?php $disabled = common::hasPriv('bug', 'batchCreate') ? '' : "class='disabled'";?>
         <li <?php echo $disabled?>>
         <?php
-          $batchLink = $this->createLink('bug', 'batchCreate', "productID=$productID&branch=$branch&projectID=0&moduleID=$moduleID");
-          echo "<li>" . html::a($batchLink, "<i class='icon icon-plus'></i>" . $lang->bug->batchCreate) . "</li>";
+          $batchLink = $this->createLink('bug', 'batchCreate', "productID=$productID&branch=$branch&executionID=0&moduleID=$moduleID");
+          echo "<li>" . html::a($batchLink, "<i class='icon icon-plus'></i> " . $lang->bug->batchCreate) . "</li>";
         ?>
         </li>
       </ul>
@@ -165,6 +183,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
     <?php endif;?>
     <?php endif;?>
   </div>
+  <?php endif;?>
 </div>
 <?php endif;?>
 <div id="mainContent" class="main-row fade">
@@ -178,7 +197,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
       <?php endif;?>
       <?php echo $moduleTree;?>
       <div class="text-center">
-        <?php common::printLink('tree', 'browse', "productID=$productID&view=bug", $lang->tree->manage, '', "class='btn btn-info btn-wide'");?>
+        <?php if($productID) common::printLink('tree', 'browse', "productID=$productID&view=bug&currentModuleID=0&branch=0&from={$this->lang->navGroup->bug}", $lang->tree->manage, '', "class='btn btn-info btn-wide'");?>
         <hr class="space-sm" />
       </div>
     </div>
@@ -245,7 +264,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
         <tbody>
           <?php foreach($bugs as $bug):?>
           <tr data-id='<?php echo $bug->id?>'>
-            <?php foreach($setting as $value) $this->bug->printCell($value, $bug, $users, $builds, $branches, $modulePairs, $projects, $plans, $stories, $tasks, $useDatatable ? 'datatable' : 'table');?>
+            <?php foreach($setting as $value) $this->bug->printCell($value, $bug, $users, $builds, $branches, $modulePairs, $executions, $plans, $stories, $tasks, $useDatatable ? 'datatable' : 'table');?>
           </tr>
           <?php endforeach;?>
         </tbody>

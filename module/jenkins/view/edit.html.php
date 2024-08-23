@@ -20,10 +20,6 @@
       <form id='jenkinsForm' method='post' class='form-ajax'>
         <table class='table table-form'>
           <tr>
-            <th class='thWidth'></th>
-            <td colspan="2"><?php echo $lang->jenkins->tips; ?></td>
-          </tr>
-          <tr>
             <th><?php echo $lang->jenkins->name; ?></th>
             <td class='required'><?php echo html::input('name', $jenkins->name, "class='form-control'"); ?></td>
             <td></td>
@@ -51,7 +47,7 @@
             <th></th>
             <td class='text-center form-actions'>
               <?php echo html::submitButton(); ?>
-              <?php echo html::backButton() ?>
+              <?php if(!isonlybody()) echo html::a(inlink('browse', ""), $lang->goback, '', 'class="btn btn-wide"');?>
             </td>
           </tr>
         </table>

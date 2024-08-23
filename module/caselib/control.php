@@ -11,8 +11,6 @@
  */
 class caselib extends control
 {
-    public $products = array();
-
     /**
      * Index page, header to browse.
      *
@@ -41,11 +39,19 @@ class caselib extends control
             {
                 $response['result']  = 'fail';
                 $response['message'] = dao::getError();
-                $this->send($response);
+                return $this->send($response);
             }
             $this->loadModel('action')->create('caselib', $libID, 'opened');
+
+            /* Return lib id when call the API. */
+            if($this->viewType == 'json')
+            {
+                $response['id'] = $libID;
+                return $this->send($response);
+            }
+
             $response['locate']  = $this->createLink('caselib', 'browse', "libID=$libID");
-            $this->send($response);
+            return $this->send($response);
         }
 
         /* Set menu. */
@@ -78,7 +84,7 @@ class caselib extends control
             {
                 $response['result']  = 'fail';
                 $response['message'] = dao::getError();
-                $this->send($response);
+                return $this->send($response);
             }
             if($changes)
             {
@@ -89,7 +95,7 @@ class caselib extends control
             $this->executeHooks($libID);
 
             $response['locate']  = inlink('view', "libID=$libID");
-            $this->send($response);
+            return $this->send($response);
         }
 
         /* Set lib menu. */
@@ -139,7 +145,7 @@ class caselib extends control
                     $response['result']  = 'success';
                     $response['message'] = '';
                 }
-                $this->send($response);
+                return $this->send($response);
             }
             die(js::reload('parent'));
         }
@@ -167,24 +173,25 @@ class caselib extends control
         if(empty($libraries)) $this->locate(inlink('create'));
 
         /* Save session. */
-        $this->session->set('caseList', $this->app->getURI(true));
+        $this->session->set('caseList', $this->app->getURI(true), 'qa');
+        $this->session->set('caselibList', $this->app->getURI(true), 'qa');
 
         /* Set menu. */
         $libID = $this->caselib->saveLibState($libID, $libraries);
-        setcookie('preCaseLibID', $libID, $this->config->cookieLife, $this->config->webRoot, '', false, true);
+        setcookie('preCaseLibID', $libID, $this->config->cookieLife, $this->config->webRoot, '', $this->config->cookieSecure, true);
         if($this->cookie->preCaseLibID != $libID)
         {
             $_COOKIE['libCaseModule'] = 0;
-            setcookie('libCaseModule', 0, 0, $this->config->webRoot, '', false, true);
+            setcookie('libCaseModule', 0, 0, $this->config->webRoot, '', $this->config->cookieSecure, true);
         }
 
-        if($browseType == 'bymodule') setcookie('libCaseModule', (int)$param, 0, $this->config->webRoot, '', false, true);
+        if($browseType == 'bymodule') setcookie('libCaseModule', (int)$param, 0, $this->config->webRoot, '', $this->config->cookieSecure, true);
         if($browseType != 'bymodule') $this->session->set('libBrowseType', $browseType);
         $moduleID = ($browseType == 'bymodule') ? (int)$param : ($browseType == 'bysearch' ? 0 : ($this->cookie->libCaseModule ? $this->cookie->libCaseModule : 0));
         $queryID  = ($browseType == 'bysearch') ? (int)$param : 0;
 
         /* Set lib menu. */
-        $this->caselib->setLibMenu($libraries, $libID, $moduleID);
+        $this->caselib->setLibMenu($libraries, $libID);
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
@@ -242,7 +249,7 @@ class caselib extends control
         {
             $this->loadModel('testcase');
             $this->config->testcase->create->requiredFields = $this->config->caselib->createcase->requiredFields;
-            setcookie('lastLibCaseModule', (int)$this->post->module, $this->config->cookieLife, $this->config->webRoot, '', false, false);
+            setcookie('lastLibCaseModule', (int)$this->post->module, $this->config->cookieLife, $this->config->webRoot, '', $this->config->cookieSecure, false);
             $caseResult = $this->testcase->create($bugID = 0);
             if(!$caseResult or dao::isError()) die(js::error(dao::getError()));
 
@@ -368,7 +375,9 @@ class caselib extends control
      */
     public function view($libID)
     {
-        $lib = $this->caselib->getById($libID, true);
+        $libID = (int)$libID;
+        $lib   = $this->caselib->getById($libID, true);
+        if(!isset($lib->id)) die(js::error($this->lang->notFound) . js::locate($this->createLink('qa', 'index')));
 
         /* Set lib menu. */
         $libraries = $this->caselib->getLibraries();
@@ -431,7 +440,7 @@ class caselib extends control
     }
 
     /**
-     * Export templet.
+     * Export template.
      *
      * @param  int    $libID
      * @access public
@@ -481,7 +490,7 @@ class caselib extends control
             $this->post->set('kind', 'testcase');
             $this->post->set('rows', $rows);
             $this->post->set('extraNum', $num);
-            $this->post->set('fileName', 'templet');
+            $this->post->set('fileName', 'template');
             $this->fetch('file', 'export2csv', $_POST);
         }
 
@@ -558,9 +567,9 @@ class caselib extends control
     /**
      * Show import case.
      *
-     * @param  int        $libID 
-     * @param  int        $pagerID 
-     * @param  int        $maxImport 
+     * @param  int        $libID
+     * @param  int        $pagerID
+     * @param  int        $maxImport
      * @param  string|int $insert  0 is covered old, 1 is insert new.
      * @access public
      * @return void

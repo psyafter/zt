@@ -18,27 +18,27 @@
     </div>
     <table class='table tablesorter'>
       <thead>
-        <tr class='text-center'>
+        <tr>
           <th class='c-id text-left'>
             <?php if($allStories):?>
-            <div class="checkbox-primary check-all" title="<?php echo $lang->selectAll?>">
+            <div class="checkbox-primary check-all tablesorter-noSort" title="<?php echo $lang->selectAll?>">
               <label></label>
             </div>
             <?php endif;?>
             <?php echo $lang->idAB;?>
           </th>
           <th class='c-pri'><?php echo $lang->priAB;?></th>
-          <th class='w-150px'><?php echo $lang->story->plan;?></th>
-          <th class='w-150px'><?php echo $lang->story->module;?></th>
+          <th class='c-plan'><?php echo $lang->story->plan;?></th>
+          <th class='c-module'><?php echo $lang->story->module;?></th>
           <th class='text-left'><?php echo $lang->story->title;?></th>
           <th class='c-user'><?php echo $lang->openedByAB;?></th>
           <th class='c-user'><?php echo $lang->assignedToAB;?></th>
-          <th class='w-50px'><?php echo $lang->story->estimateAB;?></th>
-          <th class='w-80px'><?php echo $lang->statusAB;?></th>
-          <th class='w-80px'><?php echo $lang->story->stageAB;?></th>
+          <th class='c-number text-right'><?php echo $lang->story->estimateAB;?></th>
+          <th class='c-status'><?php echo $lang->statusAB;?></th>
+          <th class='c-stage'><?php echo $lang->story->stageAB;?></th>
         </tr>
       </thead>
-      <tbody class='text-center'>
+      <tbody>
         <?php $unlinkedCount = 0;?>
         <?php foreach($allStories as $story):?>
         <tr>
@@ -50,13 +50,13 @@
           <td title='<?php echo $modules[$story->module]?>' class='text-left'><?php echo $modules[$story->module];?></td>
           <td class='text-left nobr' title='<?php echo $story->title?>'>
             <?php
-            if($story->parent > 0) echo "<span class='label'>{$lang->story->childrenAB}</span>";
+            if($story->parent > 0) echo "<span class='label label-badge label-light' title={$lang->story->children}>{$lang->story->childrenAB}</span>";
             echo html::a($this->createLink('story', 'view', "storyID=$story->id", '', true), $story->title, '', "data-toggle='modal' data-type='iframe' data-width='90%'");
             ?>
           </td>
           <td><?php echo zget($users, $story->openedBy);?></td>
           <td><?php echo zget($users, $story->assignedTo);?></td>
-          <td><?php echo $story->estimate;?></td>
+          <td class='text-right'title="<?php echo $story->estimate . ' ' . $lang->hourCommon;?>"><?php echo $story->estimate . $config->hourUnit;?></td>
           <td>
             <span class='status-story status-<?php echo $story->status?>'>
               <?php echo $this->processStatus('story', $story);?>
@@ -72,7 +72,7 @@
       <?php if($unlinkedCount):?>
       <div class="checkbox-primary check-all"><label><?php echo $lang->selectAll?></label></div>
       <div class="table-actions btn-toolbar">
-        <?php echo html::submitButton($lang->productplan->linkStory, '', 'btn btn-secondary');?>
+        <?php echo html::submitButton($lang->productplan->linkStory, '', 'btn');?>
       </div>
       <?php endif;?>
       <div class="btn-toolbar">

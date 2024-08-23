@@ -19,31 +19,35 @@
     ?>
   </div>
 </div>
-
+<?php if(empty($buildList)):?>
+<div class="table-empty-tip">
+  <p><span class="text-muted"><?php echo $lang->noData;?></span></p>
+</div>
+<?php else:?>
 <div id='mainContent'>
   <form class='main-table' id='ajaxForm' method='post'>
     <table id='buildList' class='table has-sort-head table-fixed'>
       <thead>
         <tr class='text-center'>
           <?php $vars = "jobID={$jobID}&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}&pageID={$pager->pageID}";?>
-          <th class='w-60px'><?php common::printOrderLink('id', $orderBy, $vars, $lang->compile->id);?></th>
+          <th class='c-id'><?php common::printOrderLink('id', $orderBy, $vars, $lang->compile->id);?></th>
           <th class='text-left'><?php common::printOrderLink('name', $orderBy, $vars, $lang->compile->name);?></th>
-          <th class='w-150px text-left'><?php echo $lang->job->repo;?></th>
-          <th class='w-250px text-left'><?php echo $lang->job->jenkins;?></th>
+          <th class='c-build-type text-left'><?php echo $lang->compile->buildType;?></th>
+          <th class='c-repo text-left'><?php echo $lang->job->repo;?></th>
           <th class='text-left'><?php echo $lang->job->triggerType;?></th>
-          <th class='w-80px text-center'><?php common::printOrderLink('status', $orderBy, $vars, $lang->compile->status);?></th>
-          <th class='w-130px text-center'><?php common::printOrderLink('createdDate', $orderBy, $vars, $lang->compile->time);?></th>
-          <th class='w-120px'><?php echo $lang->actions;?></th>
+          <th class='c-status text-center'><?php common::printOrderLink('status', $orderBy, $vars, $lang->compile->status);?></th>
+          <th class='c-date text-center'><?php common::printOrderLink('createdDate', $orderBy, $vars, $lang->compile->time);?></th>
+          <th class='c-actions'><?php echo $lang->actions;?></th>
         </tr>
       </thead>
       <tbody class='text-left'>
         <?php foreach($buildList as $id => $build):?>
         <tr>
           <td class='text-center'><?php echo $id;?></td>
-          <td title='<?php echo $build->name;?>'><?php echo common::hasPriv('job', 'view') ? html::a($this->createLink('job', 'view', "jobID={$build->job}&compileID={$build->id}", 'html', true), $build->name, '', "class='iframe' data-width='90%'") : $build->name;?></td>
+          <td class='c-name' title='<?php echo $build->name;?>'><?php echo common::hasPriv('job', 'view') ? html::a($this->createLink('job', 'view', "jobID={$build->job}&compileID={$build->id}", 'html', true), $build->name, '', "class='iframe' data-width='90%'") : $build->name;?></td>
+          <td title='<?php echo $build->engine;?>'><?php echo $build->engine;?></td>
           <td title='<?php echo $build->repoName;?>'><?php echo $build->repoName;?></td>
-          <?php $jenkins = urldecode($build->jkJob) . '@' . $build->jenkinsName;?>
-          <td title='<?php echo $jenkins; ?>'><?php echo $jenkins; ?></td>
+          <?php $jenkins = urldecode($build->pipeline) . '@' . $build->jenkinsName;?>
           <?php $triggerConfig = $this->loadModel('job')->getTriggerConfig($build);?>
           <td title='<?php echo $triggerConfig;?>'><?php echo $triggerConfig;?></td>
           <?php $buildStatus = zget($lang->compile->statusList, $build->status);?>
@@ -67,4 +71,5 @@
     <?php endif; ?>
   </form>
 </div>
+<?php endif;?>
 <?php include '../../common/view/footer.html.php';?>

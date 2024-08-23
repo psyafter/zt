@@ -1,6 +1,12 @@
 $(document).ready(function()
 {
     initChart();
+
+    $('.icon-exclamation-sign').hover(function(){
+        $('#desc').removeClass('hidden');
+    }, function(){
+        $('#desc').addClass('hidden');
+    });
 });
 
 function changeDate(begin, end)
@@ -11,7 +17,7 @@ function changeDate(begin, end)
         var begin = '';
         for(i=0 ; i < beginarray.length ; i++)
         {
-            begin = begin + beginarray[i]; 
+            begin = begin + beginarray[i];
         }
     }
     if(end.indexOf('-') != -1)
@@ -20,7 +26,7 @@ function changeDate(begin, end)
         var end = '';
         for(i=0 ; i < endarray.length ; i++)
         {
-            end = end + endarray[i]; 
+            end = end + endarray[i];
         }
     }
     link = createLink('report', 'projectdeviation', 'begin=' + begin + '&end=' + end);

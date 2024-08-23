@@ -9,7 +9,7 @@
  * @version  $Id: vi.php 4129 2013-01-18 01:58:14Z wwccss $
  * @link  https://www.zentao.pm
  */
-$lang->release->common           = 'Phát hành';
+$lang->release->common           = 'Product Release';
 $lang->release->create           = "Tạo phát hành";
 $lang->release->edit             = "Sửa phát hành";
 $lang->release->linkStory        = "Liên kết câu chuyện";
@@ -35,6 +35,7 @@ $lang->release->basicInfo = 'Thông tin cơ bản';
 $lang->release->id            = 'ID';
 $lang->release->product       = $lang->productCommon;
 $lang->release->branch        = 'Platform/Branch';
+$lang->release->project       = 'Project';
 $lang->release->build         = 'Bản dựng';
 $lang->release->name          = 'Tên';
 $lang->release->marker        = 'Cột mốc';
@@ -55,6 +56,8 @@ $lang->release->createdBugs   = 'Bug %s chưa được giải quyết';
 $lang->release->export        = 'Xuất ra HTML';
 $lang->release->yesterday     = 'Phát hành hôm qua';
 $lang->release->all           = 'Tất cả';
+$lang->release->notify        = 'Notify';
+$lang->release->mailto        = 'Mailto';
 
 $lang->release->filePath = 'Tải về : ';
 $lang->release->scmPath  = 'SCM Path : ';
@@ -73,3 +76,9 @@ $lang->release->changeStatusList['terminate'] = 'Hoàn thành';
 
 $lang->release->action = new stdclass();
 $lang->release->action->changestatus = array('main' => '$date,  $extra bởi  <strong>$actor</strong>', 'extra' => 'changeStatusList');
+
+$lang->release->notifyList['PO'] = "{$lang->productCommon} Owner";
+$lang->release->notifyList['QD'] = 'QA Manager';
+$lang->release->notifyList['SC'] = 'Story Creator';
+$lang->release->notifyList['ET'] = "{$lang->execution->common} Team Members";
+$lang->release->notifyList['PT'] = "Project Team Members";

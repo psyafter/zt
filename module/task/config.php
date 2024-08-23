@@ -8,9 +8,9 @@ $config->task->start    = new stdclass();
 $config->task->finish   = new stdclass();
 $config->task->activate = new stdclass();
 
-$config->task->create->requiredFields      = 'project,name,type';
+$config->task->create->requiredFields      = 'execution,name,type';
 $config->task->edit->requiredFields        = $config->task->create->requiredFields;
-$config->task->finish->requiredFields      = 'currentConsumed';
+$config->task->finish->requiredFields      = 'realStarted,finishedDate,currentConsumed';
 $config->task->activate->requiredFields    = 'left';
 
 $config->task->editor = new stdclass();
@@ -26,33 +26,26 @@ $config->task->editor->activate = array('id' => 'comment', 'tools' => 'simpleToo
 $config->task->editor->cancel   = array('id' => 'comment', 'tools' => 'simpleTools');
 $config->task->editor->pause    = array('id' => 'comment', 'tools' => 'simpleTools');
 
+$config->task->removeFields = 'objectTypeList,productList,executionList,gitlabID,gitlabProjectID,product';
 $config->task->exportFields = '
-    id, project, module, story,
+    id, execution, module, story,
     name, desc,
     type, pri,estStarted, realStarted, deadline, status,estimate, consumed, left,
     mailto, progress,
-    openedBy, openedDate, assignedTo, assignedDate, 
+    openedBy, openedDate, assignedTo, assignedDate,
     finishedBy, finishedDate, canceledBy, canceledDate,
     closedBy, closedDate, closedReason,
     lastEditedBy, lastEditedDate,files
     ';
-if($config->global->flow == 'onlyTask') $config->task->exportFields = str_replace(array(' story,'), '', $config->task->exportFields);
 
-$config->task->customCreateFields      = 'story,estStarted,deadline,mailto,pri,estimate'; 
-$config->task->customBatchCreateFields = 'module,story,assignedTo,estimate,estStarted,deadline,desc,pri'; 
+$config->task->customCreateFields      = 'story,estStarted,deadline,mailto,pri,estimate';
+$config->task->customBatchCreateFields = 'module,story,assignedTo,estimate,estStarted,deadline,desc,pri';
 $config->task->customBatchEditFields   = 'module,assignedTo,status,pri,estimate,record,left,estStarted,deadline,finishedBy,canceledBy,closedBy,closedReason';
 
 $config->task->custom = new stdclass();
 $config->task->custom->createFields      = $config->task->customCreateFields;
 $config->task->custom->batchCreateFields = 'module,story,assignedTo,estimate,desc,pri';
-$config->task->custom->batchEditFields   = 'module,assignedTo,status,pri,estimate,record,left,finishedBy,closedBy,closedReason';
-
-if($config->global->flow == 'onlyTask')
-{
-    $config->task->customCreateFields        = str_replace(array('story,'), '', $config->task->customCreateFields);
-    $config->task->customBatchCreateFields   = str_replace(array('story,'), '', $config->task->customBatchCreateFields);
-    $config->task->custom->batchCreateFields = str_replace(array('story,'), '', $config->task->custom->batchCreateFields);
-}
+$config->task->custom->batchEditFields   = 'module,assignedTo,status,pri,estimate,record,left';
 
 $config->task->datatable = new stdclass();
 $config->task->datatable->defaultField = array('id', 'pri', 'name', 'status', 'assignedTo', 'finishedBy', 'estimate', 'consumed', 'left', 'progress', 'deadline', 'actions');
@@ -73,29 +66,29 @@ $config->task->datatable->fieldList['name']['fixed']    = 'left';
 $config->task->datatable->fieldList['name']['width']    = 'auto';
 $config->task->datatable->fieldList['name']['required'] = 'yes';
 
-$config->task->datatable->fieldList['type']['title']    = 'type';
+$config->task->datatable->fieldList['type']['title']    = 'typeAB';
 $config->task->datatable->fieldList['type']['fixed']    = 'no';
 $config->task->datatable->fieldList['type']['width']    = '80';
 $config->task->datatable->fieldList['type']['required'] = 'no';
 
 $config->task->datatable->fieldList['status']['title']    = 'statusAB';
 $config->task->datatable->fieldList['status']['fixed']    = 'no';
-$config->task->datatable->fieldList['status']['width']    = '80';
+$config->task->datatable->fieldList['status']['width']    = '60';
 $config->task->datatable->fieldList['status']['required'] = 'no';
 
 $config->task->datatable->fieldList['estimate']['title']    = 'estimateAB';
-$config->task->datatable->fieldList['estimate']['fixed']    = 'no';
-$config->task->datatable->fieldList['estimate']['width']    = '80';
+$config->task->datatable->fieldList['estimate']['fixed']    = 'right';
+$config->task->datatable->fieldList['estimate']['width']    = '60';
 $config->task->datatable->fieldList['estimate']['required'] = 'no';
 
 $config->task->datatable->fieldList['consumed']['title']    = 'consumedAB';
 $config->task->datatable->fieldList['consumed']['fixed']    = 'no';
-$config->task->datatable->fieldList['consumed']['width']    = '80';
+$config->task->datatable->fieldList['consumed']['width']    = '60';
 $config->task->datatable->fieldList['consumed']['required'] = 'no';
 
 $config->task->datatable->fieldList['left']['title']    = 'leftAB';
 $config->task->datatable->fieldList['left']['fixed']    = 'no';
-$config->task->datatable->fieldList['left']['width']    = '70';
+$config->task->datatable->fieldList['left']['width']    = '60';
 $config->task->datatable->fieldList['left']['required'] = 'no';
 
 $config->task->datatable->fieldList['progress']['title']    = 'progressAB';
@@ -107,7 +100,7 @@ $config->task->datatable->fieldList['progress']['name']     = $lang->task->progr
 
 $config->task->datatable->fieldList['deadline']['title']    = 'deadlineAB';
 $config->task->datatable->fieldList['deadline']['fixed']    = 'no';
-$config->task->datatable->fieldList['deadline']['width']    = '100';
+$config->task->datatable->fieldList['deadline']['width']    = '60';
 $config->task->datatable->fieldList['deadline']['required'] = 'no';
 
 $config->task->datatable->fieldList['openedBy']['title']    = 'openedByAB';

@@ -15,6 +15,7 @@
 <?php js::set('lblDelete', $lang->testcase->deleteStep);?>
 <?php js::set('lblBefore', $lang->testcase->insertBefore);?>
 <?php js::set('lblAfter', $lang->testcase->insertAfter);?>
+<?php js::set('isonlybody', isonlybody());?>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
     <div class='main-header'>
@@ -70,7 +71,7 @@
             </td>
             <?php endif;?>
           </tr>
-          <?php if(strpos(",$showFields,", ',story,') !== false and $config->global->flow != 'onlyTest'):?>
+          <?php if(strpos(",$showFields,", ',story,') !== false):?>
           <tr>
             <th><?php echo $lang->testcase->lblStory;?></th>
             <td colspan='2'>
@@ -80,7 +81,8 @@
                 <?php if($storyID == 0): ?>
                   <a href='' id='preview' class='btn hidden'><?php echo $lang->preview;?></a>
                 <?php else:?>
-                  <?php echo html::a($this->createLink('story', 'view', "storyID=$storyID", '', true), $lang->preview, '', "class='btn' id='preview'");?>
+                  <?php $class = isonlybody() ? "showinonlybody" : "iframe";?>
+                  <?php echo html::a($this->createLink('story', 'view', "storyID=$storyID", '', true), $lang->preview, '', "class='btn $class' id='preview'");?>
                 <?php endif;?>
                 </span>
               </div>
@@ -96,7 +98,7 @@
                   <div class="colorpicker">
                     <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown"><span class="cp-title"></span><span class="color-bar"></span><i class="ic"></i></button>
                     <ul class="dropdown-menu clearfix">
-                    <li class="heading"><?php echo $lang->testcase->colorTag;?><i class="icon icon-close"></i></li>
+                      <li class="heading"><?php echo $lang->testcase->colorTag;?><i class="icon icon-close"></i></li>
                     </ul>
                     <input type="hidden" class="colorpicker" id="color" name="color" value="" data-icon="color" data-wrapper="input-control-icon-right" data-update-color="#title"  data-provide="colorpicker">
                   </div>
@@ -136,7 +138,7 @@
                 <?php endif; ?>
                 <?php endif; // end print pri selector ?>
                 <?php if(!$this->testcase->forceNotReview()):?>
-                    <span class="input-group-addon"><?php echo html::checkbox('forceNotReview', $lang->testcase->forceNotReview, '', "id='forceNotReview0'");?></span>
+                <span class="input-group-addon"><?php echo html::checkbox('forceNotReview', $lang->testcase->forceNotReview, '', "id='forceNotReview0'");?></span>
                 <?php endif;?>
               </div>
             </td>
@@ -233,7 +235,7 @@
           <tr>
             <td colspan='3' class='text-center form-actions'>
               <?php echo html::submitButton();?>
-              <?php echo html::backButton();?>
+              <?php echo $gobackLink ? html::a($gobackLink, $lang->goback, '', 'class="btn btn-wide"') : html::backButton();?>
             </td>
           </tr>
         </tfoot>

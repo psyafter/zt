@@ -2,14 +2,16 @@
 $config->product = new stdclass();
 $config->product->orderBy = 'isClosed,order_desc';
 
-$config->product->customBatchEditFields = 'line,PO,QD,RD,status,type,desc';
+$config->product->customBatchEditFields = 'line,PO,QD,RD,status,type,acl';
+if($config->systemMode == 'new') $config->product->customBatchEditFields = 'program,' . $config->product->customBatchEditFields;
 
 $config->product->browse = new stdclass();
 $config->product->custom = new stdclass();
-$config->product->custom->batchEditFields = 'line,PO,QD,RD,status';
+$config->product->custom->batchEditFields = 'line,PO,QD,RD';
+if($config->systemMode == 'new') $config->product->custom->batchEditFields .= ',program';
 
 $config->product->list = new stdclass();
-$config->product->list->exportFields = 'id,name,line,activeStories,changedStories,draftStories,closedStories,plans,releases,bugs,unResolvedBugs,assignToNullBugs';
+$config->product->list->exportFields = 'id,program,line,name,activeRequirements,changedRequirements,draftRequirements,closedRequirements,requireCompleteRate,activeStories,changedStories,draftStories,closedStories,storyCompleteRate,plans,releases,bugs,unResolvedBugs,assignToNullBugs,closedBugs,bugFixedRate';
 
 global $lang, $app;
 $app->loadLang('story');
@@ -83,8 +85,8 @@ $config->product->search['params']['lastEditedDate'] = array('operator' => '=', 
 
 $config->product->create = new stdclass();
 $config->product->edit   = new stdclass();
-$config->product->create->requiredFields = 'name';
-$config->product->edit->requiredFields   = 'name';
+$config->product->create->requiredFields = 'name,code';
+$config->product->edit->requiredFields   = 'name,code';
 
 $config->product->editor = new stdclass();
 $config->product->editor->create = array('id' => 'desc', 'tools' => 'simpleTools');
@@ -106,3 +108,10 @@ $config->product->report->projectLabels[] = '';
 
 $config->product->report->planLabels   = array();
 $config->product->report->planLabels[] = '';
+
+$config->product->statisticFields = array();
+$config->product->statisticFields['requirements'] = array('draftRequirements', 'activeRequirements', 'changedRequirements', 'closedRequirements');
+$config->product->statisticFields['stories']      = array('draftStories', 'activeStories', 'changedStories', 'closedStories');
+$config->product->statisticFields['bugs']         = array('unResolvedBugs', 'closedBugs', 'fixedBugs');
+$config->product->statisticFields['plans']        = array('plans');
+$config->product->statisticFields['releases']     = array('releases');

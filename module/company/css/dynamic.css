@@ -16,4 +16,7 @@
 .dynamic.active .dynamic-date:before {background-color: #00a9fc;}
 .dynamic.collapsed .timeline {max-height: 58px;}
 .dynamic.collapsed .timeline > li + li {display: none;}
-.dynamic.collapsed .dynamic-btn > .icon:before {content: '\f0d8'; }
+.dynamic.collapsed .dynamic-btn > .icon:before {content: '\f0d8';}
+
+.c-user, .c-project, .c-product, .c-execution {width: 150px !important; overflow: unset;}
+.c-date {width: 200px;}

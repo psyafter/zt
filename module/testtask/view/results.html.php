@@ -11,6 +11,7 @@
  */
 ?>
 <?php include '../../common/view/header.lite.html.php';?>
+<?php js::set('tab', $app->tab);?>
 <div id='mainContent' class='main-content'>
   <div class='main-header'>
     <h2>
@@ -50,10 +51,15 @@
           <td class='w-60px'><?php if(!empty($result->files)) echo html::a("#caseResult{$result->id}", $lang->files . $fileCount, '', "data-toggle='modal' data-type='iframe'")?></td>
           <td class='w-50px text-center'><i class='collapse-handle icon-angle-down text-muted'></i></td>
         </tr>
-        <?php $params = isset($testtask) ? ",testtask=$testtask->id,projectID=$testtask->project,buildID=$testtask->build" : '';?>
+        <?php $executionParam = $this->app->tab == 'execution' ? "executionID={$this->session->execution}" : "";?>
+        <?php $executionParam = isset($testtask) ? "executionID=$testtask->execution" : $executionParam;?>
+        <?php $params = isset($testtask) ? ",testtask=$testtask->id" : "";?>
+        <?php $params = $params . ",buildID=" . (isset($testtask->build) ? $testtask->build : $result->build);?>
+        <?php if($executionParam) $params .= ',' . $executionParam;?>
         <tr class='result-detail hide' id='tr-detail_<?php echo $trCount++; ?>'>
           <td colspan='7' class='pd-0'>
-            <form data-params='<?php echo "product=$case->product&branch=$case->branch&extras=caseID=$case->id,version=$case->version,resultID=$result->id,runID=$runID" . $params?>' method='post'>
+            <?php $projectParam = $this->app->tab == 'project' ? "projectID={$this->session->project}," : ''?>
+            <form data-params='<?php echo "product=$case->product&branch=$case->branch&extras={$projectParam}caseID=$case->id,version=$case->version,resultID=$result->id,runID=$result->run" . $params?>' method='post'>
               <table class='table table-condensed resultSteps'>
                 <thead>
                   <tr>
@@ -67,7 +73,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <?php 
+                  <?php
                   $stepId = $childId = 0;
                   foreach($result->stepResults as $key => $stepResult):
                   ?>

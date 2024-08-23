@@ -11,6 +11,8 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
+<?php js::set('storyType', $storyType);?>
+<?php js::set('app', $app->tab);?>
 <div class='main-content' id='mainContent'>
   <div class='main-header'>
     <h2><?php echo $lang->story->common . $lang->colon . $lang->story->batchClose;?></h2>
@@ -22,11 +24,11 @@
     <table class='table table-fixed table-form with-border'>
     <thead>
       <tr class='text-center'>
-        <th class='w-50px'> <?php echo $lang->idAB;?></th> 
+        <th class='c-id'><?php echo $lang->idAB;?></th>
         <th class='text-left'><?php echo $lang->story->title;?></th>
-        <th class='w-80px'> <?php echo $lang->story->status;?></th>
-        <th class='w-150px'><?php echo $lang->story->closedReason;?></th>
-        <th class='w-p40 '> <?php echo $lang->story->comment;?></th>
+        <th class='c-status'><?php echo $lang->story->status;?></th>
+        <th class='c-reason'><?php echo $lang->story->closedReason;?></th>
+        <th class='w-p40'><?php echo $lang->story->comment;?></th>
       </tr>
     </thead>
       <?php foreach($stories as $storyID => $story):?>
@@ -51,7 +53,7 @@
           </table>
         </td>
         <td><?php echo html::input("comments[$storyID]", '', "class='form-control'");?></td>
-      </tr>  
+      </tr>
       <?php endforeach;?>
       <tr>
         <td colspan='5' class='text-center form-actions'>

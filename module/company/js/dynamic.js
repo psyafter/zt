@@ -1,22 +1,11 @@
-function changeUser(account)
+$('#account, #product, #project, #execution').change(function()
 {
-    if(account == '')
-    {
-        link = createLink('company', 'dynamic', 'type=all');
-    }
-    else
-    {
-        link = createLink('company', 'dynamic', 'type=account&param=' + account);
-    }
+    var userID      = $('#account').val();
+    var productID   = $('#product').val();
+    var projectID   = systemMode == 'new' ? $('#project').val() : 0;
+    var executionID = $('#execution').val();
+
+    browseType = browseType == 'bysearch' ? 'all' : browseType;
+    link = createLink('company', 'dynamic', 'browseType=' + browseType + '&param=&recTotal=0&date=&direction=next&userID=' + userID + '&productID=' + productID + '&projectID=' + projectID + '&executionID=' + executionID);
     location.href = link;
-}
-function changeProject(project)
-{
-    link = createLink('company', 'dynamic', 'type=project&param=' + project);
-    location.href = link;
-}
-function changeProduct(product)
-{
-    link = createLink('company', 'dynamic', 'type=product&param=' + product);
-    location.href = link;
-}
+})

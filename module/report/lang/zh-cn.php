@@ -7,9 +7,8 @@
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     report
  * @version     $Id: zh-cn.php 5080 2013-07-10 00:46:59Z wyd621@gmail.com $
- * @link        http://www.zentao.net
+ * @link        https://www.zentao.pm
  */
-$lang->report->common     = '统计视图';
 $lang->report->index      = '统计首页';
 $lang->report->list       = '统计报表';
 $lang->report->item       = '条目';
@@ -18,6 +17,7 @@ $lang->report->percent    = '百分比';
 $lang->report->undefined  = '未设定';
 $lang->report->query      = '查询';
 $lang->report->annual     = '年度总结';
+$lang->report->project    = '项目';
 
 $lang->report->colors[]   = 'AFD8F8';
 $lang->report->colors[]   = 'F6BD0F';
@@ -37,7 +37,7 @@ $lang->report->assign['assign']   = '已指派';
 
 $lang->report->singleColor[] = 'F6BD0F';
 
-$lang->report->projectDeviation = $lang->projectCommon . '偏差报表';
+$lang->report->projectDeviation = "{$lang->execution->common}偏差报表";
 $lang->report->productSummary   = $lang->productCommon . '汇总表';
 $lang->report->bugCreate        = 'Bug创建表';
 $lang->report->bugAssign        = 'Bug指派表';
@@ -45,17 +45,25 @@ $lang->report->workload         = '员工负载表';
 $lang->report->workloadAB       = '工作负载';
 $lang->report->bugOpenedDate    = 'Bug创建时间';
 $lang->report->beginAndEnd      = '起止时间';
+$lang->report->begin            = '起始日期';
+$lang->report->end              = '结束日期';
 $lang->report->dept             = '部门';
-$lang->report->deviationChart   = $lang->projectCommon . '偏差曲线';
+$lang->report->deviationChart   = "{$lang->execution->common}偏差曲线";
 
-$lang->reportList->project->lists[10] = $lang->projectCommon . '偏差报表|report|projectdeviation';
+$lang->reportList = new stdclass();
+$lang->reportList->project = new stdclass();
+$lang->reportList->product = new stdclass();
+$lang->reportList->test    = new stdclass();
+$lang->reportList->staff   = new stdclass();
+
+$lang->reportList->project->lists[10] = "{$lang->execution->common}偏差报表|report|projectdeviation";
 $lang->reportList->product->lists[10] = $lang->productCommon . '汇总表|report|productsummary';
 $lang->reportList->test->lists[10]    = 'Bug创建表|report|bugcreate';
 $lang->reportList->test->lists[13]    = 'Bug指派表|report|bugassign';
 $lang->reportList->staff->lists[10]   = '员工负载表|report|workload';
 
 $lang->report->id            = '编号';
-$lang->report->project       = $lang->projectCommon;
+$lang->report->execution     = $lang->execution->common;
 $lang->report->product       = $lang->productCommon;
 $lang->report->user          = '姓名';
 $lang->report->bugTotal      = 'Bug';
@@ -71,7 +79,7 @@ $lang->report->taskTotal     = "总任务数";
 $lang->report->manhourTotal  = "总工时";
 $lang->report->validRate     = "有效率";
 $lang->report->validRateTips = "方案为已解决或延期/状态为已解决或已关闭";
-$lang->report->unplanned     = '未计划';
+$lang->report->unplanned     = "未计划";
 $lang->report->workday       = '每天工时';
 $lang->report->diffDays      = '工作日天数';
 
@@ -82,7 +90,7 @@ $lang->report->typeList['line']    = '折线图';
 
 $lang->report->conditions    = '筛选条件：';
 $lang->report->closedProduct = '关闭' . $lang->productCommon;
-$lang->report->overduePlan   = '过期计划';
+$lang->report->overduePlan   = "过期计划";
 
 /* daily reminder. */
 $lang->report->idAB         = 'ID';
@@ -99,8 +107,9 @@ $lang->report->mailTitle->task     = " 任务(%s),";
 $lang->report->mailTitle->todo     = " 待办(%s),";
 $lang->report->mailTitle->testTask = " 测试版本(%s),";
 
-$lang->report->proVersion   = '<a href="https://api.zentao.net/goto.php?item=proversion&from=reportpage" target="_blank">更多精彩，尽在专业版！</a>';
-$lang->report->proVersionEn = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';
+$lang->report->deviationDesc = '按照已关闭执行统计偏差率（偏差率 = (总消耗 - 总预计) / 总预计），总预计为0时偏差率为n/a。';
+$lang->report->proVersion    = '<a href="https://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">更多精彩，尽在专业版！</a>';
+$lang->report->proVersionEn  = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Try ZenTao Pro for more!</a>';
 
 $lang->report->annualData = new stdclass();
 $lang->report->annualData->title            = "%s %s年工作汇总";
@@ -113,13 +122,13 @@ $lang->report->annualData->baseInfo         = "基本数据";
 $lang->report->annualData->actionData       = "操作数据";
 $lang->report->annualData->contributionData = "贡献数据";
 $lang->report->annualData->radar            = "能力雷达图";
-$lang->report->annualData->projects         = "{$lang->projectCommon}数据";
+$lang->report->annualData->executions       = "{$lang->executionCommon}数据";
 $lang->report->annualData->products         = "{$lang->productCommon}数据";
 $lang->report->annualData->stories          = "需求数据";
 $lang->report->annualData->tasks            = "任务数据";
 $lang->report->annualData->bugs             = "Bug数据";
 $lang->report->annualData->cases            = "用例数据";
-$lang->report->annualData->statusStat       = "{$lang->storyCommon}/任务/Bug状态分布（截止今日）";
+$lang->report->annualData->statusStat       = "{$lang->SRCommon}/任务/Bug状态分布（截止今日）";
 
 $lang->report->annualData->companyUsers     = "公司总人数";
 $lang->report->annualData->deptUsers        = "部门人数";
@@ -144,10 +153,10 @@ $lang->report->annualData->taskMonthActions  = "每月任务操作情况";
 $lang->report->annualData->bugMonthActions   = "每月Bug操作情况";
 $lang->report->annualData->caseMonthActions  = "每月用例操作情况";
 
-$lang->report->annualData->projectFields['name']  = "{$lang->projectCommon}名称";
-$lang->report->annualData->projectFields['story'] = "完成{$lang->storyCommon}数";
-$lang->report->annualData->projectFields['task']  = "完成任务数";
-$lang->report->annualData->projectFields['bug']   = "解决Bug数";
+$lang->report->annualData->executionFields['name']  = "{$lang->executionCommon}名称";
+$lang->report->annualData->executionFields['story'] = "完成{$lang->SRCommon}数";
+$lang->report->annualData->executionFields['task']  = "完成任务数";
+$lang->report->annualData->executionFields['bug']   = "解决Bug数";
 
 $lang->report->annualData->productFields['name'] = "{$lang->productCommon}名称";
 $lang->report->annualData->productFields['plan'] = "计划数";
@@ -156,14 +165,14 @@ if(!empty($config->URAndSR))
 {
     $lang->report->annualData->productFields['requirement'] = "创建{$lang->URCommon}数";
 }
-$lang->report->annualData->productFields['story']    = "创建{$lang->storyCommon}数";
-$lang->report->annualData->productFields['finished'] = "完成需求数";
+$lang->report->annualData->productFields['story']  = "创建{$lang->SRCommon}数";
+$lang->report->annualData->productFields['closed'] = "关闭需求数";
 
 $lang->report->annualData->objectTypeList['product']     = $lang->productCommon;
 $lang->report->annualData->objectTypeList['story']       = "需求";
 $lang->report->annualData->objectTypeList['productplan'] = "计划";
 $lang->report->annualData->objectTypeList['release']     = "发布";
-$lang->report->annualData->objectTypeList['project']     = $lang->projectCommon;
+$lang->report->annualData->objectTypeList['execution']   = $lang->executionCommon;
 $lang->report->annualData->objectTypeList['task']        = '任务';
 $lang->report->annualData->objectTypeList['repo']        = '代码';
 $lang->report->annualData->objectTypeList['bug']         = 'Bug';
@@ -194,8 +203,8 @@ $lang->report->annualData->todoStatus['all']    = '所有待办';
 $lang->report->annualData->todoStatus['undone'] = '未完成';
 $lang->report->annualData->todoStatus['done']   = '已完成';
 
-$lang->report->annualData->radarItems['product'] = '产品';
-$lang->report->annualData->radarItems['project'] = '项目';
-$lang->report->annualData->radarItems['devel']   = "研发";
-$lang->report->annualData->radarItems['qa']      = "测试";
-$lang->report->annualData->radarItems['other']   = "其他";
+$lang->report->annualData->radarItems['product']   = '产品';
+$lang->report->annualData->radarItems['execution'] = $lang->executionCommon;
+$lang->report->annualData->radarItems['devel']     = "研发";
+$lang->report->annualData->radarItems['qa']        = "测试";
+$lang->report->annualData->radarItems['other']     = "其他";

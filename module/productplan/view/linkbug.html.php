@@ -21,7 +21,7 @@
         <tr class='text-center'>
           <th class='c-id text-left'>
             <?php if($allBugs):?>
-            <div class="checkbox-primary check-all" title="<?php echo $lang->selectAll?>">
+            <div class="checkbox-primary check-all tablesorter-noSort" title="<?php echo $lang->selectAll?>">
               <label></label>
             </div>
             <?php endif;?>
@@ -31,7 +31,7 @@
           <th class='text-left'><?php echo $lang->bug->title;?></th>
           <th class='c-user'><?php echo $lang->openedByAB;?></th>
           <th class='c-user'><?php echo $lang->bug->assignedToAB;?></th>
-          <th class='w-80px'><?php echo $lang->bug->status;?></th>
+          <th class='c-status'><?php echo $lang->bug->status;?></th>
         </tr>
       </thead>
       <tbody class='text-center'>
@@ -59,7 +59,7 @@
       <?php if($unlinkedCount):?>
       <div class="checkbox-primary check-all"><label><?php echo $lang->selectAll?></label></div>
       <div class="table-actions btn-toolbar">
-        <?php echo html::submitButton($lang->productplan->linkBug, '', 'btn btn-secondary');?>
+        <?php echo html::submitButton($lang->productplan->linkBug, '', 'btn');?>
       </div>
       <?php endif;?>
       <div class="btn-toolbar">

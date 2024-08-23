@@ -11,6 +11,7 @@
  */
 $lang->company->common   = 'Doanh nghiệp';
 $lang->company->index    = "Trang doanh nghiệp";
+$lang->company->create   = "Add Company";
 $lang->company->edit     = "Sửa doanh nghiệp";
 $lang->company->view     = "Thông tin doanh nghiệp";
 $lang->company->browse   = "Danh sách người dùng";
@@ -27,9 +28,10 @@ $lang->company->backyard = 'Intranet';
 $lang->company->guest    = 'Khách truy cập';
 $lang->company->admins   = 'Quản trị viên';
 
-$lang->company->product = $lang->productCommon;
-$lang->company->project = $lang->projectCommon;
-$lang->company->user    = 'Người dùng';
+$lang->company->product   = $lang->productCommon;
+$lang->company->project   = 'Project';
+$lang->company->execution = 'Execution';
+$lang->company->user      = 'Người dùng';
 
 $lang->company->guestOptions[0] = 'Từ chối';
 $lang->company->guestOptions[1] = 'Cho phép';

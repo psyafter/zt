@@ -11,6 +11,8 @@
  */
 $lang->user->common           = 'Người dùng';
 $lang->user->id               = 'ID';
+$lang->user->inside           = 'Inside Members';
+$lang->user->outside          = 'Outside Members';
 $lang->user->company          = 'Doanh nghiệp';
 $lang->user->dept             = 'Phòng/Ban';
 $lang->user->account          = 'Tài khoản';
@@ -49,6 +51,11 @@ $lang->user->newPassword      = 'Mật khẩu mới';
 $lang->user->verifyPassword   = 'Mật khẩu';
 $lang->user->resetPassword    = 'Quên mật khẩu?';
 $lang->user->score            = 'Điểm';
+$lang->user->name             = 'Name';
+$lang->user->type             = 'User Type';
+$lang->user->cropAvatar       = 'Crop Avatar';
+$lang->user->cropAvatarTip    = 'Drag and drop the box to select the image clipping range.';
+$lang->user->cropImageTip     = 'The image used is too small, the recommended image size is at least 48x48, the current image size is %s';
 
 $lang->user->legendBasic        = 'Thông tin cơ bản';
 $lang->user->legendContribution = 'Đóng góp';
@@ -76,6 +83,7 @@ $lang->user->asGuest       = "Khách vãng lai";
 $lang->user->goback        = "Trở lại";
 $lang->user->deleted       = '(Xóa)';
 $lang->user->search        = 'Tìm kiếm';
+$lang->user->else          = 'Else';
 
 $lang->user->saveTemplate          = 'Lưu thành mẫu';
 $lang->user->setPublic             = 'Thiết lập thành mẫu công khai';
@@ -86,17 +94,20 @@ $lang->user->confirmDeleteTemplate = 'Bạn có muốn xóa mẫu này?';
 $lang->user->setPublicTemplate     = 'Thiết lập thành mẫu công khai';
 $lang->user->tplContentNotEmpty    = 'Nội dung mẫu này không thể để trống!';
 
-$lang->user->profile  = 'Hồ sơ';
-$lang->user->project  = $lang->projectCommon;
-$lang->user->task     = 'Nhiệm vụ';
-$lang->user->bug      = 'Bugs';
-$lang->user->test     = 'Test';
-$lang->user->testTask = 'Yêu cầu';
-$lang->user->testCase = 'Tình huống';
-$lang->user->schedule = 'Lịch trình';
-$lang->user->todo     = 'Việc làm';
-$lang->user->story    = 'Câu chuyện';
-$lang->user->dynamic  = 'Lịch sử';
+$lang->user->profile   = 'Hồ sơ';
+$lang->user->project   = $lang->executionCommon;
+$lang->user->execution = 'Execution';
+$lang->user->task      = 'Nhiệm vụ';
+$lang->user->bug       = 'Bugs';
+$lang->user->test      = 'Test';
+$lang->user->testTask  = 'Yêu cầu';
+$lang->user->testCase  = 'Tình huống';
+$lang->user->issue     = 'Issue';
+$lang->user->risk      = 'Risk';
+$lang->user->schedule  = 'Lịch trình';
+$lang->user->todo      = 'Việc làm';
+$lang->user->story     = 'Câu chuyện';
+$lang->user->dynamic   = 'Lịch sử';
 
 $lang->user->openedBy   = 'Đã tạo';
 $lang->user->assignedTo = 'Đã nhận';
@@ -110,8 +121,8 @@ $lang->user->testTask2Him = 'Nhận yêu cầu';
 $lang->user->case2Him     = 'Nhận tình huống';
 $lang->user->caseByHim    = 'Tạo tình huống';
 
-$lang->user->errorDeny    = "Xin lỗi, truy cập của bạn tới <b>%s</b> of <b>%s</b> bị từ chối. Vui lòng liên lạc quản trị của bạn để nhận quyền. Click Trở lại.";
-$lang->user->errorView    = "Xin lỗi, truy cập của bạn xem <b>%s</b> bị từ chối. Vui lòng liên lạc quản trị của bạn để nhận quyền. Click Trở lại.";
+$lang->user->errorDeny    = "Sorry, your access to <b>%2\$s</b> of <b>%1\$s</b> is denied. Please contact your Admin to get privileges. Return to home page or login again.";
+$lang->user->errorView    = "Sorry, your access view <b>%s</b> is denied. Please contact your Admin to get privileges. Return to home page or login again.";
 $lang->user->loginFailed  = "Đăng nhập thất bại. Vui lòng kiểm tra tài khoản và mật khẩu của bạn.";
 $lang->user->lockWarning  = "Bạn có thể thử %s lần.";
 $lang->user->loginLocked  = "Vui lòng liên hệ với quản trị viên để mở khóa tài khoản của bạn hoặc thử lại %s phút sau.";
@@ -135,6 +146,9 @@ $lang->user->genderList['f'] = 'Nữ';
 $lang->user->thirdPerson['m'] = 'anh ấy';
 $lang->user->thirdPerson['f'] = 'cô ấy';
 
+$lang->user->typeList['inside']  = $lang->user->inside;
+$lang->user->typeList['outside'] = $lang->user->outside;
+
 $lang->user->passwordStrengthList[0] = "<span style='color:red'>Yếu</span>";
 $lang->user->passwordStrengthList[1] = "<span style='color:#000'>Tốt</span>";
 $lang->user->passwordStrengthList[2] = "<span style='color:green'>Mạnh</span>";
@@ -142,11 +156,18 @@ $lang->user->passwordStrengthList[2] = "<span style='color:green'>Mạnh</span>"
 $lang->user->statusList['active'] = 'Kích hoạt';
 $lang->user->statusList['delete'] = 'Đã xóa';
 
-$lang->user->personalData['createdTodo']  = 'Việc đã tạo';
-$lang->user->personalData['createdStory'] = 'Chuyện đã tạo';
-$lang->user->personalData['finishedTask'] = 'Nhiệm vụ đã kết thúc';
-$lang->user->personalData['resolvedBug']  = 'Bugs đã giải quyết';
-$lang->user->personalData['createdCase']  = 'Tình huống đã tạo';
+$lang->user->personalData['createdTodos']        = 'Todos Created';
+$lang->user->personalData['createdRequirements'] = "Requirements Created";
+$lang->user->personalData['createdStories']      = "Stories Created";
+$lang->user->personalData['finishedTasks']       = 'Tasks Finished';
+$lang->user->personalData['createdBugs']         = 'Bugs Created';
+$lang->user->personalData['resolvedBugs']        = 'Bugs Resolved';
+$lang->user->personalData['createdCases']        = 'Cases Created';
+$lang->user->personalData['createdRisks']        = 'Risks Created';
+$lang->user->personalData['resolvedRisks']       = 'Risks Resolved';
+$lang->user->personalData['createdIssues']       = 'Issues Created';
+$lang->user->personalData['resolvedIssues']      = 'Issues Resolved';
+$lang->user->personalData['createdDocs']         = 'Docs Created';
 
 $lang->user->keepLogin['on']   = 'Duy trì đăng nhập';
 $lang->user->loginWithDemoUser = 'Đăng nhập Demo:';
@@ -183,6 +204,7 @@ $lang->user->error->dangerPassword = "ID %s，Mật khẩu không thể được
 
 $lang->user->error->verifyPassword   = "Xác thực thất bại. Vui lòng nhập mạt khẩu đăng nhập của bạn.";
 $lang->user->error->originalPassword = "Old password is incorrect.";
+$lang->user->error->noAccess         = "This user is not from your department. You have no access to this user information.";
 
 $lang->user->contactFieldList['phone']    = $lang->user->phone;
 $lang->user->contactFieldList['mobile']   = $lang->user->mobile;
@@ -192,6 +214,9 @@ $lang->user->contactFieldList['weixin']   = $lang->user->weixin;
 $lang->user->contactFieldList['skype']    = $lang->user->skype;
 $lang->user->contactFieldList['slack']    = $lang->user->slack;
 $lang->user->contactFieldList['whatsapp'] = $lang->user->whatsapp;
+
+$lang->user->executionTypeList['stage']  = 'Stage';
+$lang->user->executionTypeList['sprint'] = $lang->iterationCommon;
 
 $lang->user->contacts = new stdclass();
 $lang->user->contacts->common   = 'Liên lạc';
@@ -207,9 +232,11 @@ $lang->user->contacts->noListYet     = 'Không có danh sách liên hệ tồn t
 $lang->user->contacts->confirmDelete = 'Bạn có muốn xóa danh sách này?';
 $lang->user->contacts->or            = ' or ';
 
-$lang->user->resetFail       = "Thất bại. Vui lòng kiểm tra tài khoản.";
-$lang->user->resetSuccess    = "Reset! Vui lòng sử dụng mật khẩu mới của bạn để đăng nhập.";
-$lang->user->noticeResetFile = "<h5>Liên hệ quản trị viên để thiết lập lại mật khẩu của bạn.</h5>
+$lang->user->resetFail        = "Thất bại. Vui lòng kiểm tra tài khoản.";
+$lang->user->resetSuccess     = "Reset! Vui lòng sử dụng mật khẩu mới của bạn để đăng nhập.";
+$lang->user->noticeDelete     = 'Do you want to delete "%s" from ZenTao?';
+$lang->user->noticeHasDeleted = "This user has been deleted. If you want to view it, please go to the Admin-System-Data-Recycle to restore it.";
+$lang->user->noticeResetFile  = "<h5>Liên hệ quản trị viên để thiết lập lại mật khẩu của bạn.</h5>
  <h5>Nếu là bạn, vui lòng đăng nhập host ZenTao của bạn và tạo một tập tin tên  <span> '%s' </span>.</h5>
  <p>Chú ý:</p>
  <ol>
@@ -217,5 +244,21 @@ $lang->user->noticeResetFile = "<h5>Liên hệ quản trị viên để thiết 
  <li>Nếu tập tin đã tồn tại, xóa và tạo lại.</li>
  </ol>";
 $lang->user->notice4Safe = "Warning: Weak password of one click package detected";
-$lang->user->process4DIR = "It is detected that you may be using the one click installation package environment. Other sites in the environment are still using simple passwords. For security reasons, if you do not use other sites, please handle them in time. Delete or rename the %s directory. Visit: <a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";
-$lang->user->process4DB  = "It is detected that you may be using the one click installation package environment. Other sites in the environment are still using simple passwords. For security reasons, if you do not use other sites, please handle them in time. Please login database and modify password field of zt_user table of %s database. Visit: <a href='https://www.zentao.pm/book/zentaopmshelp/467.html' target='_blank'>https://www.zentao.pm/book/zentaopmshelp/467.html</a>";
+$lang->user->process4DIR = "It is detected that you may be using the one click installation package environment. Other sites in the environment are still using simple passwords. For security reasons, if you do not use other sites, please handle them in time. Delete or rename the %s directory. Visit: <a href='https://www.zentao.pm/book/zentaomanual/fix-weak-password-564.html' target='_blank'>https://www.zentao.pm/book/zentaomanual/fix-weak-password-564.html</a>";
+$lang->user->process4DB  = "It is detected that you may be using the one click installation package environment. Other sites in the environment are still using simple passwords. For security reasons, if you do not use other sites, please handle them in time. Please login database and modify password field of zt_user table of %s database. Visit: <a href='https://www.zentao.pm/book/zentaomanual/fix-weak-password-564.html' target='_blank'>https://www.zentao.pm/book/zentaomanual/fix-weak-password-564.html</a>";
+$lang->user->mkdirWin = <<<EOT
+    <html><head><meta charset='utf-8'></head>
+    <body><table align='center' style='width:700px; margin-top:100px; border:1px solid gray; font-size:14px;'><tr><td style='padding:8px'>
+    <div style='margin-bottom:8px;'>不能创建临时目录，请确认目录<strong style='color:#ed980f'>%s</strong>是否存在并有操作权限。</div>
+    <div>Can't create tmp directory, make sure the directory <strong style='color:#ed980f'>%s</strong> exists and has permission to operate.</div>
+    </td></tr></table></body></html>
+EOT;
+$lang->user->mkdirLinux = <<<EOT
+    <html><head><meta charset='utf-8'></head>
+    <body><table align='center' style='width:700px; margin-top:100px; border:1px solid gray; font-size:14px;'><tr><td style='padding:8px'>
+    <div style='margin-bottom:8px;'>不能创建临时目录，请确认目录<strong style='color:#ed980f'>%s</strong>是否存在并有操作权限。</div>
+    <div style='margin-bottom:8px;'>命令为：<strong style='color:#ed980f'>chmod o=rwx -R %s</strong>。</div>
+    <div>Can't create tmp directory, make sure the directory <strong style='color:#ed980f'>%s</strong> exists and has permission to operate.</div>
+    <div style='margin-bottom:8px;'>Commond: <strong style='color:#ed980f'>chmod o=rwx -R %s</strong>.</div>
+    </td></tr></table></body></html>
+EOT;

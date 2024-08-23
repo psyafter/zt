@@ -33,7 +33,7 @@ $lang->install->links = <<<EOT
 ZenTao ALM est développé par <strong><a href='https://en.easysoft.ltd' target='_blank' class='text-danger'>Nature Easy Soft Co., LTD</a></strong>.
 Site Officiel : <a href='https://www.zentao.pm' target='_blank'>https://www.zentao.pm</a>
 Support Technique: <a href='https://www.zentao.pm/forum/' target='_blank'>https://www.zentao.pm/forum/</a>
-LinkedIn: <a href='https://www.linkedin.com/company/1156596/' target='_blank'>Nature Easy Soft</a> 
+LinkedIn: <a href='https://www.linkedin.com/company/1156596/' target='_blank'>Nature Easy Soft</a>
 Facebook: <a href='https://www.facebook.com/natureeasysoft' target='_blank'>Nature Easy Soft</a>
 Twitter: <a href='https://twitter.com/ZentaoA' target='_blank'>ZenTao ALM</a>
 
@@ -107,15 +107,13 @@ $lang->install->requestTypes['GET']       = 'GET';
 $lang->install->requestTypes['PATH_INFO'] = 'PATH_INFO';
 
 $lang->install->workingList['full']      = 'Application Lifecycle Management';
-$lang->install->workingList['onlyTest']  = 'Seulement Test Management';
-$lang->install->workingList['onlyStory'] = 'Seulement Story Management';
-$lang->install->workingList['onlyTask']  = 'Seulement Task Management';
 
 $lang->install->errorConnectDB      = 'Echec de connexion à la base. ';
 $lang->install->errorDBName         = 'Le nom de la base ne doit pas contenir de “.” ';
 $lang->install->errorCreateDB       = 'Echec de création de la base.';
 $lang->install->errorTableExists    = "La base existe. Si ZenTao a été installé précédemment, revenez à l'étape précédente et supprimez les données. Ensuite continuez l'installation.";
 $lang->install->errorCreateTable    = 'Echec en création de la base.';
+$lang->install->errorEngineInnodb   = 'Your MySQL does not support InnoDB data table engine. Please modify it to MyISAM and try again.';
 $lang->install->errorImportDemoData = "Echec de l'importation des données de démo.";
 
 $lang->install->setConfig          = 'Créer fichier de configuration';
@@ -131,6 +129,9 @@ $lang->install->company            = 'Nom Entreprise';
 $lang->install->account            = 'Compte Admin';
 $lang->install->password           = 'Mot de Passe Admin';
 $lang->install->errorEmptyPassword = 'Password ne doit pas être vide.';
+
+$lang->install->selectedMode     = 'Selection mode';
+$lang->install->selectedModeTips = 'You can go to the Admin - Custom - Mode to set it later.';
 
 $lang->install->groupList['ADMIN']['name']   = 'Admin';
 $lang->install->groupList['ADMIN']['desc']   = 'Administrateur';
@@ -156,7 +157,7 @@ $lang->install->groupList['LIMITED']['name'] = 'Utilisateur restreint';
 $lang->install->groupList['LIMITED']['desc'] = 'Les utilisateurs peuvent seulement éditer ce qui les concernent.';
 
 $lang->install->cronList[''] = 'Moniteur Cron';
-$lang->install->cronList['moduleName=project&methodName=computeburn']   = 'Mise à jour Graphe Burndown';
+$lang->install->cronList['moduleName=execution&methodName=computeBurn'] = 'Mise à jour Graphe Burndown';
 $lang->install->cronList['moduleName=report&methodName=remind']         = 'Rappel Tâches quotidiennes';
 $lang->install->cronList['moduleName=svn&methodName=run']               = 'Synchroniser SVN';
 $lang->install->cronList['moduleName=git&methodName=run']               = 'Synchroniser GIT';
@@ -173,8 +174,10 @@ $lang->install->success  = "Installé !";
 $lang->install->login    = 'Login ZenTao';
 $lang->install->register = "S'enregistrer sur la Communauté ZenTao";
 
-$lang->install->joinZentao = <<<EOT
-<p>Vous avez installé ZenTao %s.<strong class='text-danger'> Supprimez install.php asap</strong>.</p><p>Note : Afin d'obtenir les dernières infos de ZenTao, enregistrz-vous chez ZenTao(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>).</p>
+$lang->install->successLabel       = "<p>Vous avez installé ZenTao %s.</p>";
+$lang->install->successNoticeLabel = "<p>Vous avez installé ZenTao %s.<strong class='text-danger'> Supprimez install.php asap</strong>.</p>";
+$lang->install->joinZentao         = <<<EOT
+<p>Note : Afin d'obtenir les dernières infos de ZenTao, enregistrz-vous chez ZenTao(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>).</p>
 EOT;
 
 $lang->install->product = array('chanzhi', 'zdoo');

@@ -61,9 +61,10 @@ class jenkins extends control
     {
         if($_POST)
         {
-            $this->jenkins->create();
-            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
+            $jenkinsID = $this->jenkins->create();
+            if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
+            if($this->viewType == 'json') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'id' => $jenkinsID));
+            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
         }
 
         $this->view->title      = $this->lang->jenkins->common . $this->lang->colon . $this->lang->jenkins->create;
@@ -86,8 +87,8 @@ class jenkins extends control
         if($_POST)
         {
             $this->jenkins->update($id);
-            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
+            if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
+            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
         }
 
         $this->view->title      = $this->lang->jenkins->common . $this->lang->colon . $this->lang->jenkins->edit;
@@ -110,18 +111,21 @@ class jenkins extends control
     {
         if($confim != 'yes') die(js::confirm($this->lang->jenkins->confirmDelete, inlink('delete', "id=$id&confirm=yes")));
 
-        $this->jenkins->delete(TABLE_JENKINS, $id);
+        $jobs = $this->dao->select('*')->from(TABLE_JOB)->where('server')->eq($id)->andWhere('engine')->eq('jenkins')->andWhere('deleted')->eq('0')->fetchAll();
+        if($jobs) die(js::alert($this->lang->jenkins->error->linkedJob));
+
+        $this->jenkins->delete(TABLE_PIPELINE, $id);
         die(js::reload('parent'));
     }
 
     /**
-     * Ajax get tasks.
-     * 
-     * @param  int    $id 
+     * AJAX: Get jenkins tasks.
+     *
+     * @param  int    $id
      * @access public
      * @return void
      */
-    public function ajaxGetTasks($id)
+    public function ajaxGetJenkinsTasks($id)
     {
         if(empty($id)) die(json_encode(array('' => '')));
 

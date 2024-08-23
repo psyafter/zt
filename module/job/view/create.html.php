@@ -31,12 +31,29 @@
             <td colspan="2" ></td>
           </tr>
           <tr>
+            <th><?php echo $lang->job->engine; ?></th>
+            <td>
+              <div class='table-row'>
+                <div class='table-col'><?php echo html::select('engine', $lang->job->engineList, '', "class='form-control chosen'"); ?></div>
+                </div>
+              </div>
+            </td>
+            <td colspan='2'>
+              <span id="gitlabServerTR"><?php echo $lang->job->engineTips->success;?></span>
+            </td>
+          </tr>
+          <tr class='commonRepo'>
             <th><?php echo $lang->job->repo; ?></th>
-            <td><?php echo html::select('repo', $repoPairs, '', "class='form-control chosen'"); ?></td>
+            <td><?php echo html::select('repo', $repoPairs, '', "class='form-control'"); ?></td>
+          </tr>
+          <tr class='gitlabRepo hide'>
+            <th><?php echo $lang->job->repo; ?></th>
+            <td> <?php echo html::select('gitlabRepo', $gitlabRepos, '', "class='chosen form-control'");?> </td>
+            <td> <?php echo html::select('reference', array(), '', "class='chosen form-control'");?> </td>
           </tr>
           <tr>
             <th><?php echo $lang->job->product; ?></th>
-            <td><?php echo html::select('product', $products, '', "class='form-control chosen'"); ?></td>
+            <td><?php echo html::select('product', '', '', "class='form-control chosen'"); ?></td>
           </tr>
           <tr>
             <th><?php echo $lang->job->frame; ?></th>
@@ -44,7 +61,7 @@
           </tr>
           <tr>
             <th><?php echo $lang->job->triggerType; ?></th>
-            <td><?php echo html::select('triggerType', $lang->job->triggerTypeList, '', "class='form-control chosen'");?></td>
+            <td><?php echo html::select('triggerType', $lang->job->triggerTypeList, '', "class='form-control'");?></td>
             <td colspan="2"></td>
           </tr>
           <tr id='svnDirBox' class='svn-fields'>
@@ -72,15 +89,15 @@
               </div>
             </td>
           </tr>
-          <tr>
+          <tr id="jenkinsServerTR">
             <th><?php echo $lang->job->jkHost; ?></th>
-            <td colspan='2'>
+            <td colspan='2' class='required'>
               <div class='table-row'>
-                <div class='table-col'><?php echo html::select('jkHost', $jkHostList, '', "class='form-control chosen'"); ?></div>
-                <div id='jkJobBox' class='table-col'>
+                <div class='table-col'><?php echo html::select('jkServer', $jenkinsServerList, '', "class='form-control chosen'"); ?></div>
+                <div class='table-col'>
                   <div class='input-group'>
-                    <span class='input-group-addon'><?php echo $lang->job->jkJob; ?></span>
-                    <?php echo html::select('jkJob', array('' => ''), '', "class='form-control chosen'"); ?>
+                    <span class='input-group-addon'><?php echo $lang->job->pipeline;?></span>
+                    <?php echo html::select('jkTask', array('' => ''), '', "class='form-control chosen'"); ?>
                   </div>
                 </div>
               </div>
@@ -110,7 +127,7 @@
             <th></th>
             <td class='text-center form-actions'>
               <?php echo html::submitButton(); ?>
-              <?php echo html::backButton(); ?>
+              <?php if(!isonlybody()) echo html::a(inlink('browse', ""), $lang->goback, '', 'class="btn btn-wide"');?>
               <?php echo html::hidden('repoType');?>
             </td>
           </tr>

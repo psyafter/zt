@@ -11,16 +11,31 @@
  */
 ?>
 <?php include '../../common/view/header.html.php'; ?>
+<div id="mainMenu" class="clearfix">
+  <div class="btn-toolbar pull-right">
+    <?php if(common::hasPriv('jenkins', 'create')) common::printLink('jenkins', 'create', "", "<i class='icon icon-plus'></i> " . $lang->jenkins->create, '', "class='btn btn-primary'");?>
+  </div>
+<?php if(empty($jenkinsList)):?>
+<div class="table-empty-tip">
+  <p>
+    <span class="text-muted"><?php echo $lang->noData;?></span>
+    <?php if(common::hasPriv('jenkins', 'create')):?>
+    <?php echo html::a($this->createLink('jenkins', 'create'), "<i class='icon icon-plus'></i> " . $lang->jenkins->create, '', "class='btn btn-info'");?>
+    <?php endif;?>
+  </p>
+</div>
+</div>
+<?php else:?>
 <div id='mainContent' class='main-row'>
   <form class='main-table' id='ajaxForm' method='post'>
     <table id='jenkinsList' class='table has-sort-head table-fixed'>
       <thead>
         <tr>
           <?php $vars = "orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}&pageID={$pager->pageID}"; ?>
-          <th class='w-60px'><?php common::printOrderLink('id', $orderBy, $vars, $lang->jenkins->id); ?></th>
-          <th class='w-200px text-left'><?php common::printOrderLink('name', $orderBy, $vars, $lang->jenkins->name); ?></th>
+          <th class='c-id'><?php common::printOrderLink('id', $orderBy, $vars, $lang->jenkins->id); ?></th>
+          <th class='c-name text-left'><?php common::printOrderLink('name', $orderBy, $vars, $lang->jenkins->name); ?></th>
           <th class='text-left'><?php common::printOrderLink('url', $orderBy, $vars, $lang->jenkins->url); ?></th>
-          <th class='w-100px c-actions-4'><?php echo $lang->actions; ?></th>
+          <th class='c-actions-2'><?php echo $lang->actions; ?></th>
         </tr>
       </thead>
       <tbody>
@@ -44,4 +59,5 @@
     <?php endif; ?>
   </form>
 </div>
+<?php endif;?>
 <?php include '../../common/view/footer.html.php'; ?>

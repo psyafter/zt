@@ -1,4 +1,6 @@
 update zt_story set `plan`='' where `plan`=0;
+
+ALTER TABLE `zt_compile` ADD `times` tinyint unsigned NOT NULL DEFAULT '0' AFTER `tag`;
 CREATE TABLE IF NOT EXISTS `zt_planstory` (
   `plan` mediumint(8) unsigned NOT NULL,
   `story` mediumint(8) unsigned NOT NULL,

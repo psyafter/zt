@@ -23,38 +23,23 @@ class qaModel extends model
      */
     public function setMenu($products, $productID, $branch = 0, $extra = '')
     {
-        $this->loadModel('product')->setMenu($products, $productID, $branch);
-        $selectHtml = $this->product->select($products, $productID, 'qa', 'index', $extra, $branch);
-
-        $productIndex  = '';
-        $isMobile      = $this->app->viewType == 'mhtml';
-        if($isMobile)
+        if(!$this->app->user->admin and strpos(",{$this->app->user->view->products},", ",$productID,") === false and $productID != 0 and !defined('TUTORIAL'))
         {
-            $productIndex  = html::a(helper::createLink('qa', 'index'), $this->lang->qa->index) . $this->lang->colon;
-            $productIndex .= $selectHtml;
-        }
-        else
-        {
-            $currentMethod = $this->app->getMethodName();
-            $productIndex  = '<div class="btn-group angle-btn' . ($currentMethod == 'index' ? ' active' : '') . '"><div class="btn-group">' . html::a(helper::createLink('qa', 'index', 'locate=no'), $this->lang->qa->index, '', "class='btn'") . '</div></div>';
-            $productIndex .= $selectHtml;
+            $this->app->loadLang('product');
+            die(js::error($this->lang->product->accessDenied) . js::locate('back'));
         }
 
-        $this->lang->modulePageNav = $productIndex;
-        foreach($this->lang->qa->menu as $key => $menu)
-        {
-            if($this->config->global->flow == 'full') $this->setSubMenu('qa', $key, $productID);
-            $replace = $productID;
-            common::setMenuVars($this->lang->qa->menu, $key, $replace);
-        }
+        if(!in_array($this->app->rawModule, $this->config->qa->noDropMenuModule)) $this->lang->switcherMenu = $this->loadModel('product')->getSwitcher($productID, $extra, $branch);
+        if($this->app->rawModule == 'product' and $this->app->rawMethod == 'showerrornone') $this->lang->switcherMenu = '';
+        common::setMenuVars('qa', $productID);
     }
 
     /**
      * Set qa subMenu.
-     * 
-     * @param  string $module 
-     * @param  string $key 
-     * @param  int    $id 
+     *
+     * @param  string $module
+     * @param  string $key
+     * @param  int    $id
      * @access public
      * @return void
      */
@@ -73,7 +58,7 @@ class qaModel extends model
             {
                 $itemMenu = zget($moduleSubMenu, $menuKey, '');
                 $isActive['method']    = ($moduleName == strtolower($menu->link['module']) and $methodName == strtolower($menu->link['method']));
-                $isActive['alias']     = ($moduleName == strtolower($menu->link['module']) and (is_array($itemMenu) and isset($itemMenu['alias']) and strpos($itemMenu['alias'], $methodName) !== false));
+                $isActive['alias']     = ($moduleName == strtolower($menu->link['module']) and (is_array($itemMenu) and isset($itemMenu['alias']) and strpos(',' . $itemMenu['alias'] . ',', ",$methodName,") !== false));
                 $isActive['subModule'] = (is_array($itemMenu) and isset($itemMenu['subModule']) and strpos($itemMenu['subModule'], $moduleName) !== false);
                 if($isActive['method'] or $isActive['alias'] or $isActive['subModule'])
                 {

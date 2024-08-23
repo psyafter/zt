@@ -41,10 +41,10 @@
             if(count($moduleOptionMenu) == 1)
             {
                 echo "<span class='input-group-btn'>";
-                echo html::a($this->createLink('tree', 'browse', "rootID=$libID&view=caselib&currentModuleID=0"), "<i class='icon icon-cog'></i>", '_blank', "data-toggle='tooltip' class='btn' title='{$lang->tree->manage}'");
+                echo html::a($this->createLink('tree', 'browse', "rootID=$libID&view=caselib&currentModuleID=0", 'html', true), "<i class='icon icon-cog'></i>", '', "data-toggle='tooltip' class='btn iframe' title='{$lang->tree->manage}'");
                 echo '</span>';
                 echo "<span class='input-group-btn'>";
-                echo html::a("javascript:loadLibModules($libID)", "<i class='icon icon-refresh'></i>", '', "data-toggle='tooltip' class='btn' title='{$lang->refresh}'");
+                echo html::a("javascript:void(0)", "<i class='icon icon-refresh'></i>", '', "class='btn refresh' title='{$lang->refresh}' onclick='loadLibModules($libID)'");
                 echo '</span>';
             }
             ?>
@@ -124,7 +124,7 @@
             <table class='table table-form mg-0 table-bordered' style='border: 1px solid #ddd'>
               <thead>
                 <tr>
-                  <th class='w-50px text-right'><?php echo $lang->testcase->stepID;?></th>
+                  <th class='c-id text-center'><?php echo $lang->testcase->stepID;?></th>
                   <th width="45%"><?php echo $lang->testcase->stepDesc;?></th>
                   <th><?php echo $lang->testcase->stepExpect;?></th>
                   <th class='step-actions'><?php echo $lang->actions;?></th>

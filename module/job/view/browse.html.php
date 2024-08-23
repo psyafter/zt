@@ -20,41 +20,61 @@
     <?php if(common::hasPriv('job', 'create')) common::printLink('job', 'create', "", "<i class='icon icon-plus'></i> " . $lang->job->create, '', "class='btn btn-primary'");?>
   </div>
 </div>
+<?php if(empty($jobList)):?>
+<div class="table-empty-tip">
+  <p>
+    <span class="text-muted"><?php echo $lang->noData;?></span>
+    <?php if(common::hasPriv('job', 'create')):?>
+    <?php echo html::a($this->createLink('job', 'create'), "<i class='icon icon-plus'></i> " . $lang->job->create, '', "class='btn btn-info'");?>
+    <?php endif;?>
+  </p>
+</div>
+<?php else:?>
 <div id='mainContent'>
   <form class='main-table' id='ajaxForm' method='post'>
     <table id='jobList' class='table has-sort-head table-fixed'>
       <thead>
-        <tr class='text-center'>
+        <tr class='text-left'>
           <?php $vars = "orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}&pageID={$pager->pageID}";?>
-          <th class='w-60px'><?php common::printOrderLink('id', $orderBy, $vars, $lang->job->id);?></th>
-          <th class='text-left'><?php common::printOrderLink('name', $orderBy, $vars, $lang->job->name);?></th>
-          <th class='w-150px text-left'><?php common::printOrderLink('repo', $orderBy, $vars, $lang->job->repo);?></th>
-          <th class='w-80px'><?php common::printOrderLink('frame', $orderBy, $vars, $lang->job->frame);?></th>
-          <th class='w-250px text-left'><?php common::printOrderLink('jkHost', $orderBy, $vars, $lang->job->jenkins);?></th>
+          <th class='c-id text-center'><?php common::printOrderLink('id', $orderBy, $vars, $lang->job->id);?></th>
+          <th><?php common::printOrderLink('name', $orderBy, $vars, $lang->job->name);?></th>
+          <th class='c-repo'><?php common::printOrderLink('repo', $orderBy, $vars, $lang->job->repo);?></th>
+          <th class='c-engine'><?php common::printOrderLink('engine', $orderBy, $vars, $lang->job->engine);?></th>
+          <th class='c-frame'><?php common::printOrderLink('frame', $orderBy, $vars, $lang->job->frame);?></th>
+          <th class='c-server'><?php common::printOrderLink('server', $orderBy, $vars, $lang->job->buildSpec);?></th>
           <th class='text-left'><?php echo $lang->job->triggerType;?></th>
-          <th class='w-100px text-center'><?php common::printOrderLink('lastStatus', $orderBy, $vars, $lang->job->lastStatus);?></th>
-          <th class='w-130px text-left'><?php common::printOrderLink('lastExec', $orderBy, $vars, $lang->job->lastExec);?></th>
-          <th class='w-120px c-actions-3'><?php echo $lang->actions;?></th>
+          <th class='c-status text-center'><?php common::printOrderLink('lastStatus', $orderBy, $vars, $lang->job->lastStatus);?></th>
+          <th class='c-exec'><?php common::printOrderLink('lastExec', $orderBy, $vars, $lang->job->lastExec);?></th>
+          <th class='c-actions-4'><?php echo $lang->actions;?></th>
         </tr>
       </thead>
-      <tbody class='text-left'>
+      <tbody>
         <?php foreach($jobList as $id => $job):?>
-        <tr>
-          <td class='text-center'><?php echo $id; ?></td>
-          <td title='<?php echo $job->name; ?>'><?php echo common::hasPriv('job', 'view') ? html::a($this->createLink('job', 'view', "jobID={$job->id}", 'html', true), $job->name, '', "class='iframe' data-width='90%'") : $job->name;?></td>
-          <td title='<?php echo $job->repoName; ?>'><?php echo $job->repoName; ?></td>
+        <?php
+        if(strtolower($job->engine) == 'gitlab')
+        {
+            $pipeline = json_decode($job->pipeline);
+            if(is_numeric($job->pipeline)) $job->pipeline = $this->loadModel('gitlab')->getProjectName($job->server, $job->pipeline);
+            if(isset($pipeline->reference))  $job->pipeline = $this->loadModel('gitlab')->getProjectName($job->server, $pipeline->project);
+        }
+        ?>
+        <tr class='text-left'>
+          <td class='text-center'><?php echo $id;?></td>
+          <td class='text-left c-name' title='<?php echo $job->name;?>'><?php echo common::hasPriv('job', 'view') ? html::a($this->createLink('job', 'view', "jobID={$job->id}", 'html', true), $job->name, '', "class='iframe' data-width='90%'") : $job->name;?></td>
+          <td title='<?php echo $job->repoName;?>'><?php echo $job->repoName;?></td>
+          <td><?php echo zget($lang->job->engineList, $job->engine);?></td>
           <td><?php echo zget($lang->job->frameList, $job->frame);?></td>
-          <?php $jenkins = urldecode($job->jkJob) . '@' . $job->jenkinsName;?>
-          <td title='<?php echo $jenkins; ?>'><?php echo $jenkins; ?></td>
+          <?php $jenkins = urldecode($job->pipeline) . '@' . $job->jenkinsName;?>
+          <td class='c-name' title='<?php echo $jenkins;?>'><?php echo $jenkins;?></td>
           <?php $triggerConfig = $this->job->getTriggerConfig($job);?>
-          <td title='<?php echo $triggerConfig;?>'><?php echo $triggerConfig;?></td>
+          <td class='c-name' title='<?php echo $triggerConfig;?>'><?php echo $triggerConfig;?></td>
           <td class='text-center'><?php if($job->lastStatus) echo zget($lang->compile->statusList, $job->lastStatus);?></td>
           <td><?php if($job->lastStatus) echo $job->lastExec;?></td>
           <td class='c-actions text-center'>
             <?php
             common::printIcon('compile', 'browse', "jobID=$id", '', 'list', 'history');
             common::printIcon('job', 'edit', "jobID=$id", '', 'list',  'edit');
-            common::printIcon('job', 'exec', "jobID=$id", '', 'list',  'play', 'hiddenwin');
+            common::printIcon('job', 'exec', "jobID=$id", '', 'list',  'play');
             if(common::hasPriv('job', 'delete')) echo html::a($this->createLink('job', 'delete', "jobID=$id"), '<i class="icon-trash"></i>', 'hiddenwin', "title='{$lang->job->delete}' class='btn'");
             ?>
           </td>
@@ -67,4 +87,5 @@
     <?php endif;?>
   </form>
 </div>
-<?php include '../../common/view/footer.html.php'; ?>
+<?php endif;?>
+<?php include '../../common/view/footer.html.php';?>

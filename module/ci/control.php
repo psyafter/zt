@@ -24,7 +24,7 @@ class ci extends control
 
     /**
      * Init compile queue.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -43,7 +43,7 @@ class ci extends control
 
     /**
      * Exec compile.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -52,34 +52,35 @@ class ci extends control
         $compiles = $this->loadModel('compile')->getUnexecutedList();
         foreach($compiles as $compile)
         {
-            if($compile->atTime and date('H:i') < $compile->atTime) continue; 
+            if($compile->atTime and date('H:i') < $compile->atTime) continue;
             $this->compile->exec($compile);
         }
         echo 'success';
     }
 
     /**
-     * Send a request to jenkins to check build status.
+     * Send a request to jenkins or gitlab to check build status.
      *
+     * @param  int    $compileID
      * @access public
      * @return void
      */
-    public function checkCompileStatus()
+    public function checkCompileStatus($compileID = 0)
     {
-        $this->ci->checkCompileStatus();
+        $this->ci->checkCompileStatus($compileID);
+
         if(dao::isError())
         {
             echo json_encode(dao::getError());
+            return true;
         }
-        else
-        {
-            echo 'success';
-        }
+
+        echo 'success';
     }
 
     /**
      * Commit result from ztf.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -102,9 +103,9 @@ class ci extends control
         $jobID     = 0;
         if($compileID)
         {
-            $compile = $this->dao->select('t1.*, t2.jkJob,t2.product,t2.frame,t3.name as jenkinsName,t3.url,t3.account,t3.token,t3.password')->from(TABLE_COMPILE)->alias('t1')
+            $compile = $this->dao->select('t1.*, t2.pipeline,t2.product,t2.frame,t3.name as jenkinsName,t3.url,t3.account,t3.token,t3.password')->from(TABLE_COMPILE)->alias('t1')
                 ->leftJoin(TABLE_JOB)->alias('t2')->on('t1.job=t2.id')
-                ->leftJoin(TABLE_JENKINS)->alias('t3')->on('t2.jkHost=t3.id')
+                ->leftJoin(TABLE_PIPELINE)->alias('t3')->on('t2.server=t3.id')
                 ->where('t1.id')->eq($compileID)
                 ->fetch();
 
@@ -122,6 +123,10 @@ class ci extends control
             $caseResult = $post->funcResult;
             $firstCase  = array_shift($caseResult);
             $productID  = $firstCase->productId;
+            if(empty($productID) and !empty($firstCase->id))
+            {
+                $productID = $this->dao->findById($firstCase->id)->from(TABLE_CASE)->fetch('product');
+            }
         }
         if(empty($productID)) die(json_encode(array('result' => 'fail', 'message' => 'productID is not found')));
 
@@ -134,24 +139,26 @@ class ci extends control
         }
         else
         {
-            $lastProject = $this->dao->select('t1.*')->from(TABLE_PROJECTPRODUCT)->alias('t1')
+            $lastProject = $this->dao->select('t2.id,t2.project')->from(TABLE_PROJECTPRODUCT)->alias('t1')
                 ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project=t2.id')
                 ->where('t1.product')->eq($productID)
                 ->andWhere('t2.deleted')->eq(0)
-                ->orderBy('project desc')
+                ->andWhere('t2.project')->ne('0')
+                ->orderBy('t2.id desc')
                 ->limit(1)
-                ->fetch('project');
+                ->fetch();
 
             $testtask = new stdclass();
-            $testtask->product = $productID;
-            $testtask->name    = sprintf($this->lang->testtask->titleOfAuto, date('Y-m-d H:i:s'));
-            $testtask->owner   = $this->app->user->account;
-            $testtask->project = $lastProject;
-            $testtask->build   = 'trunk';
-            $testtask->auto    = strtolower($testType);
-            $testtask->begin   = date('Y-m-d');
-            $testtask->end     = date('Y-m-d', time() + 24 * 3600);
-            $testtask->status  = 'done';
+            $testtask->product   = $productID;
+            $testtask->name      = sprintf($this->lang->testtask->titleOfAuto, date('Y-m-d H:i:s'));
+            $testtask->owner     = $this->app->user->account;
+            $testtask->project   = $lastProject->project;
+            $testtask->execution = $lastProject->id;
+            $testtask->build     = 'trunk';
+            $testtask->auto      = strtolower($testType);
+            $testtask->begin     = date('Y-m-d');
+            $testtask->end       = date('Y-m-d', time() + 24 * 3600);
+            $testtask->status    = 'done';
 
             $this->dao->insert(TABLE_TESTTASK)->data($testtask)->exec();
             $taskID = $this->dao->lastInsertId();

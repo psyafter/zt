@@ -13,7 +13,7 @@
 <?php include '../../common/view/header.html.php';?>
 <div id="mainContent" class="main-content">
   <div class='cell'>
-    <div class='alert with-icon'>  
+    <div class='alert with-icon'>
       <i class="icon-check-sign"></i>
       <div class='content'>
         <h3><?php echo $lang->repo->notice->syncing;?></h3>
@@ -37,7 +37,7 @@ $(function(){
             if(data == 'finish')
             {
                 $('#caption').text('<?php echo $lang->repo->notice->syncComplete?>');
-                return self.location = createLink('repo', 'browse', "repoID=<?php echo $repoID;?>");
+                return self.location = '<?php echo $browseLink;?>';
             }
             $('#commits').html(parseInt($('#commits').html()) + parseInt(data));
             setTimeout(syncComments, 10);

@@ -13,8 +13,11 @@
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/kindeditor.html.php';?>
 <?php include '../../common/view/sortable.html.php';?>
-<?php js::set('toTaskList', $config->global->flow == 'onlyTask' || !empty($task->id));?>
-<style>.title-group .has-icon-right{min-width:700px}</style>
+<?php js::set('toTaskList', !empty($task->id));?>
+<?php js::set('blockID', $blockID);?>
+<?php if(!empty($storyID)):?>
+<style> .title-group.required > .required:after {right: 110px;}</style>
+<?php endif;?>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
     <div class='main-header'>
@@ -33,8 +36,8 @@
     <form class='main-form form-ajax' method='post' enctype='multipart/form-data' id='dataform'>
       <table class='table table-form'>
         <tr>
-          <th><?php echo $lang->task->project;?></th>
-          <td><?php echo html::select('project', $projects, $project->id, "class='form-control chosen' onchange='loadAll(this.value)' required");?></td><td></td><td></td>
+          <th><?php echo $lang->task->execution;?></th>
+          <td><?php echo html::select('execution', $executions, $execution->id, "class='form-control chosen' onchange='loadAll(this.value)' required");?></td><td></td><td></td>
         </tr>
         <tr>
           <th><?php echo $lang->task->type;?></th>
@@ -47,7 +50,7 @@
         </tr>
         <tr>
           <th><?php echo $lang->task->module;?></th>
-          <td id='moduleIdBox'><?php echo html::select('module', $moduleOptionMenu, $task->module, "class='form-control chosen' onchange='setStories(this.value, $project->id)'");?></td>
+          <td id='moduleIdBox'><?php echo html::select('module', $moduleOptionMenu, $task->module, "class='form-control chosen' onchange='setStories(this.value, $execution->id)'");?></td>
           <td>
             <div class="checkbox-primary">
               <input type="checkbox" id="showAllModule" <?php if($showAllModule) echo 'checked';?>><label for="showAllModule" class="no-margin"><?php echo $lang->task->allModule;?></label>
@@ -76,30 +79,27 @@
           <td><?php echo html::hidden('status', 'wait');?></td>
         </tr>
         <?php $this->printExtendFields('', 'table', 'columns=3');?>
-        <?php if(strpos(",$showFields,", ',story,') !== false and $config->global->flow != 'onlyTask' and $project->type != 'ops'):?>
+        <?php if(strpos(",$showFields,", ',story,') !== false and $execution->type != 'ops'):?>
         <tr>
           <th><?php echo $lang->task->story;?></th>
           <td colspan='3'>
-            <?php if(empty($stories)):?>
-            <span id='storyBox'><?php printf($lang->task->noticeLinkStory, html::a($this->createLink('project', 'linkStory', "projectID=$project->id"), $lang->project->linkStory, '_blank', 'class="text-primary"'), html::a("javascript:loadStories($project->id)", $lang->refresh, '', 'class="text-primary"'));?></span>
-            <?php else:?>
-            <div class='input-group'>
-              <?php echo html::select('story', array($task->story => $stories[$task->story]), $task->story, "class='form-control chosen' onchange='setStoryRelated();'");?>
+            <span id='storyBox' class="<?php if(!empty($stories)) echo 'hidden';?> "><?php printf($lang->task->noticeLinkStory, html::a($this->createLink('execution', 'linkStory', "executionID=$execution->id"), $lang->execution->linkStory, '_blank', 'class="text-primary"'), html::a("javascript:loadStories($execution->id)", $lang->refresh, '', 'class="text-primary"'));?></span>
+            <div class='input-group <?php if(empty($stories)) echo "hidden";?>'>
+              <?php echo html::select('story', array($task->story => empty($stories) ? '': $stories[$task->story]), $task->story, "class='form-control chosen' onchange='setStoryRelated();'");?>
               <span class='input-group-btn' id='preview'><a href='#' class='btn iframe'><?php echo $lang->preview;?></a></span>
             </div>
-            <?php endif;?>
           </td>
         </tr>
         <?php endif;?>
-        <?php if($stories and $config->global->flow != 'onlyTask' and $project->type != 'ops'):?>
+        <?php if($execution->type != 'ops'):?>
         <tr id='testStoryBox' class='hidden'>
           <th><?php echo $lang->task->selectTestStory;?></th>
           <td colspan='3'>
             <table class='table table-form mg-0 table-bordered'>
               <thead>
                 <tr>
-                  <th><?php echo $lang->task->storyAB;?></th>
-                  <th class='w-100px'><?php echo $lang->task->pri;?></th>
+                  <th class='w-150px'><?php echo $lang->task->storyAB;?></th>
+                  <th class='w-80px'><?php echo $lang->task->pri;?></th>
                   <th class='w-300px'><?php echo $lang->task->datePlan;?></th>
                   <th class='w-150px'><?php echo $lang->task->assignedTo;?></th>
                   <th class='w-80px'><?php echo $lang->task->estimate;?></th>
@@ -150,10 +150,8 @@
                   <input type="hidden" class="colorpicker" id="color" name="color" value="" data-icon="color" data-wrapper="input-control-icon-right" data-update-color="#name"  data-provide="colorpicker">
                 </div>
                 <?php echo html::input('name', $task->name, "class='form-control' required");?>
-                <?php if($config->global->flow != 'onlyTask'):?>
                 <a href='javascript:copyStoryTitle();' id='copyButton' class='input-control-icon-right'><?php echo $lang->task->copyStoryTitle;?></a>
                 <?php echo html::hidden("storyEstimate") . html::hidden("storyDesc") . html::hidden("storyPri");?>
-                <?php endif;?>
               </div>
               <?php if(strpos(",$showFields,", ',pri,') !== false): // begin print pri selector?>
               <span class="input-group-addon fix-border br-0"><?php echo $lang->task->pri;?></span>
@@ -237,20 +235,20 @@
           <th><?php echo $lang->story->mailto;?></th>
           <td colspan='3'>
             <div class="input-group">
-              <?php echo html::select('mailto[]', $project->acl == 'private' ? $members : $users, str_replace(' ', '', $task->mailto), "class='form-control chosen' data-placeholder='{$lang->chooseUsersToMail}' multiple");?>
-              <?php echo $this->fetch('my', 'buildContactLists');?>
+              <?php echo html::select('mailto[]', $execution->acl == 'private' ? $members : $users, str_replace(' ', '', $task->mailto), "class='form-control chosen' data-placeholder='{$lang->chooseUsersToMail}' multiple");?>
+              <?php if($execution->acl != 'private') echo $this->fetch('my', 'buildContactLists');?>
             </div>
           </td>
         </tr>
         <?php endif;?>
-        <tr <?php echo $config->global->flow == 'onlyTask' ? "class='hidden'" : '';?> id='after-tr'>
+        <tr id='after-tr'>
           <th><?php echo $lang->task->afterSubmit;?></th>
-          <td colspan='3'><?php echo html::radio('after', $lang->task->afterChoices, $config->global->flow == 'onlyTask' || !empty($task->id) ? 'toTaskList' : 'continueAdding');?></td>
+          <td colspan='3'><?php echo html::radio('after', $lang->task->afterChoices, !empty($task->id) ? 'toTaskList' : 'continueAdding');?></td>
         </tr>
         <tr>
           <td colspan='4' class='text-center form-actions'>
             <?php echo html::submitButton();?>
-            <?php echo html::backButton();?>
+            <?php echo $gobackLink ? html::a($gobackLink, $lang->goback, '', 'class="btn btn-wide"') : html::backButton();?>
           </td>
         </tr>
       </table>
@@ -295,8 +293,32 @@
     </form>
   </div>
 </div>
+<table class='hidden' id='testStoryTemplate'>
+  <tr>
+    <td><?php echo html::select("testStory[]", array(0 => ''), 0, "class='form-control chosen'");?></td>
+    <td><?php echo html::select("testPri[]", $lang->task->priList, '', "class='form-control chosen'");?></td>
+    <td>
+      <div class='input-group'>
+        <?php echo html::input("testEstStarted[]", '', "class='form-control form-date' placeholder='{$lang->task->estStarted}'");?>
+        <span class='input-group-addon fix-border'>~</span>
+        <?php echo html::input("testDeadline[]", '', "class='form-control form-date' placeholder='{$lang->task->deadline}'");?>
+      </div>
+    </td>
+    <td><?php echo html::select("testAssignedTo[]", array('' => ''), '', "class='form-control chosen'");?></td>
+    <td><?php echo html::input("testEstimate[]", '', "class='form-control'");?></td>
+    <td class='text-center'>
+      <div class="btn-group">
+        <button type="button" class="btn btn-sm" tabindex="-1" onclick='addItem(this)'><i class="icon icon-plus"></i></button>
+        <button type="button" class="btn btn-sm" tabindex="-1" onclick='removeItem(this)'><i class="icon icon-close"></i></button>
+      </div>
+    </td>
+  </tr>
+</table>
 <?php js::set('stories', $stories);?>
 <?php js::set('storyPinYin', (empty($config->isINT) and class_exists('common')) ? common::convert2Pinyin($stories) : array());?>
 <?php js::set('testStoryIdList', $testStoryIdList);?>
-<?php js::set('projectID', $project->id);?>
+<?php js::set('executionID', $execution->id);?>
+<script>
+$(function(){parent.$('body.hide-modal-close').removeClass('hide-modal-close');})
+</script>
 <?php include '../../common/view/footer.html.php';?>

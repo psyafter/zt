@@ -552,6 +552,10 @@ function checkTutorial()
                 window.location.reload();
             }).error(function(){alert(lang.timeout)});
         }
+        else
+        {
+            window.location.href = createLink('tutorial', 'index');
+        }
     }
 }
 
@@ -670,7 +674,7 @@ function notifyMessage(data)
         }
         else if(Notification.permission != "denied")
         {
-            Notification.requestPermission(function(permission)
+            Notification.requestPermission().then(function(permission)
             {
                 notify = new Notification("", {body:message, tag:'zentao', data:data});
             });
@@ -796,6 +800,64 @@ function toggleFold(form, unfoldIdList, objectID, objectType)
     });
 }
 
+/**
+ * Adjust menu width.
+ *
+ * @access public
+ * @return void
+ */
+function adjustMenuWidth()
+{
+    var $mainHeader = $('#mainHeader .container');
+    if($mainHeader.length == 0) return false;
+
+    var $navbar = $mainHeader.find('#navbar .nav');
+
+    var mainHeaderWidth = $mainHeader.width() - 10;
+    var headingWidth    = $mainHeader.find('#heading').width() + 30;
+    var navbarWidth     = $navbar.width();
+    var toolbarWidth    = $mainHeader.find('#toolbar').width() + 20;
+
+    if(mainHeaderWidth < headingWidth + navbarWidth + toolbarWidth)
+    {
+        var delta = (headingWidth + navbarWidth + toolbarWidth) - mainHeaderWidth;
+        delta = Math.ceil(delta / $navbar.children('li').length / 2);
+
+        var aTagPadding   = $navbar.find('a:first').css('padding-left').replace('px', '');
+        var dividerMargin = $navbar.find('.divider').css('margin-left').replace('px', '');
+
+        var newPadding = aTagPadding - delta;
+        var newMargin  = dividerMargin - delta - 1;
+        if(newPadding < 0) newPadding = 0;
+        if(newMargin < 0)  newMargin  = 0;
+
+        $navbar.children('li').find('a').css('padding-left', newPadding).css('padding-right', newPadding);
+        $navbar.find('.divider').css('margin-left', newMargin).css('margin-right', newMargin);
+    }
+}
+
+/**
+ * Scroll to selected item in drop menu.
+ *
+ * @param  string $id
+ * @access public
+ * @return void
+ */
+function scrollToSelected(id)
+{
+    if(typeof(id) == 'undefined') id = '#dropMenu .table-col .list-group'
+
+    $id = $(id);
+    $selected = $id.find('.selected');
+
+    $id.mouseout(function(){$(this).find('a.active:not(.not-list-item)').removeClass('active')});
+    if($selected.length > 0)
+    {
+        var offsetHeight = 75;
+        $id.scrollTop($selected.position().top - offsetHeight);
+    }
+}
+
 /* Ping the server every some minutes to keep the session. */
 needPing = true;
 
@@ -808,4 +870,24 @@ $(document).ready(function()
     revertModuleCookie();
 
     $(document).on('click', '#helpMenuItem .close-help-tab', function(){$('#helpMenuItem').prev().remove();$('#helpMenuItem').remove();});
+
+    $(document).keydown(function(event)
+    {
+        if(event.ctrlKey) $('a').attr('target', '_blank');
+    }).keyup(function()
+    {
+        $('a').attr('target', '');
+    });
+
+    /* Hide the global create drop-down when hovering over the avatar. */
+    $('.has-avatar').hover(function()
+    {
+        $(this).next().removeClass('open');
+    });
+
+    /* Hide the avatar drop-down when hovering over the global create button. */
+    $('#globalCreate').hover(function()
+    {
+        $(this).prev().removeClass('open');
+    });
 });

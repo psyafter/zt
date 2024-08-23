@@ -107,15 +107,13 @@ $lang->install->requestTypes['GET']       = 'GET';
 $lang->install->requestTypes['PATH_INFO'] = 'PATH_INFO';
 
 $lang->install->workingList['full']      = 'Quản lý vòng đời ứng dụng';
-$lang->install->workingList['onlyTest']  = 'Chỉ Test Management';
-$lang->install->workingList['onlyStory'] = 'Chỉ Story Management';
-$lang->install->workingList['onlyTask']  = 'Chỉ Task Management';
 
 $lang->install->errorConnectDB      = 'Connection to the database Failed. ';
 $lang->install->errorDBName         = 'Database name should exclude “.” ';
 $lang->install->errorCreateDB       = 'Tạo thất bại the database.';
 $lang->install->errorTableExists    = 'The data table has existed. If ZenTao has been installed before, please return to the previous step and clear data, then continue the installation.';
 $lang->install->errorCreateTable    = 'Tạo thất bại the table.';
+$lang->install->errorEngineInnodb   = 'Your MySQL does not support InnoDB data table engine. Please modify it to MyISAM and try again.';
 $lang->install->errorImportDemoData = 'Thất bại nhập dữ liệu demo.';
 
 $lang->install->setConfig          = 'Tạo tập tin cấu hình';
@@ -131,6 +129,9 @@ $lang->install->company            = 'Tên doanh nghiệp';
 $lang->install->account            = 'Tài khoản quản trị';
 $lang->install->password           = 'Mật khẩu quản trị';
 $lang->install->errorEmptyPassword = 'Mật khẩu không nên là blank.';
+
+$lang->install->selectedMode     = 'Selection mode';
+$lang->install->selectedModeTips = 'You can go to the Admin - Custom - Mode to set it later.';
 
 $lang->install->groupList['ADMIN']['name']   = 'Quản trị';
 $lang->install->groupList['ADMIN']['desc']   = 'Quản trị hệ thống';
@@ -156,7 +157,7 @@ $lang->install->groupList['LIMITED']['name'] = 'Người dùng hạn chế';
 $lang->install->groupList['LIMITED']['desc'] = 'Người dùng chỉ có thể chỉnh sửa nội dung được liên kết tới của họ.';
 
 $lang->install->cronList[''] = 'Monitor Cron';
-$lang->install->cronList['moduleName=project&methodName=computeburn']   = 'Cập nhật biểu đồ Burndown';
+$lang->install->cronList['moduleName=execution&methodName=computeBurn'] = 'Cập nhật biểu đồ Burndown';
 $lang->install->cronList['moduleName=report&methodName=remind']         = 'Nhắc nhở nhiệm vụ hàng ngày';
 $lang->install->cronList['moduleName=svn&methodName=run']               = 'Đồng bộ SVN';
 $lang->install->cronList['moduleName=git&methodName=run']               = 'Đồng bộ GIT';
@@ -173,8 +174,10 @@ $lang->install->success  = "Đã được cài đặt!";
 $lang->install->login    = 'Đăng nhập ZenTao';
 $lang->install->register = 'Đăng ký cộng đồng ZenTao';
 
-$lang->install->joinZentao = <<<EOT
-<p>Bạn đã cài đặt ZenTao %s.<strong class='text-danger'> Vui lòng xóa install.php</strong>.</p><p>Chú ý: Để nhận tin tức mới nhất về ZenTao, vui lòng đăng ký trên Cộng đồng ZenTao(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>).</p>
+$lang->install->successLabel       = "<p>Bạn đã cài đặt ZenTao %s.</p>";
+$lang->install->successNoticeLabel = "<p>Bạn đã cài đặt ZenTao %s.<strong class='text-danger'> Vui lòng xóa install.php</strong>.</p>";
+$lang->install->joinZentao         = <<<EOT
+<p>Chú ý: Để nhận tin tức mới nhất về ZenTao, vui lòng đăng ký trên Cộng đồng ZenTao(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>).</p>
 EOT;
 
 $lang->install->product = array('chanzhi', 'zdoo', 'ydisk', 'meshiot');

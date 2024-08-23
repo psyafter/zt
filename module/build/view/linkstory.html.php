@@ -21,23 +21,24 @@
         <tr class='text-center'>
           <th class='c-id text-left'>
             <?php if($allStories):?>
-            <div class="checkbox-primary check-all" title="<?php echo $lang->selectAll?>">
+            <div class="checkbox-primary check-all tablesorter-noSort" title="<?php echo $lang->selectAll?>">
               <label></label>
             </div>
             <?php endif;?>
             <?php echo $lang->idAB;?>
           </th>
-          <th class='c-pri'>   <?php echo $lang->priAB;?></th>
+          <th class='c-pri'>    <?php echo $lang->priAB;?></th>
           <th class="text-left"><?php echo $lang->story->title;?></th>
-          <th class='c-user'>  <?php echo $lang->openedByAB;?></th>
-          <th class='c-user'>  <?php echo $lang->assignedToAB;?></th>
-          <th class='w-60px'>  <?php echo $lang->story->estimateAB;?></th>
+          <th class='c-user'>   <?php echo $lang->openedByAB;?></th>
+          <th class='c-user'>   <?php echo $lang->assignedToAB;?></th>
+          <th class='c-id text-right'><?php echo $lang->story->estimateAB;?></th>
           <th class='c-status'><?php echo $lang->statusAB;?></th>
-          <th class='w-80px'>  <?php echo $lang->story->stageAB;?></th>
+          <th class='c-status'><?php echo $lang->story->stageAB;?></th>
         </tr>
       </thead>
       <tbody class='text-center'>
         <?php $unlinkedCount = 0;?>
+        <?php $objectID = $this->app->tab == 'execution' ? $build->execution : $build->project;?>
         <?php foreach($allStories as $story):?>
         <tr>
           <td class='c-id text-left'>
@@ -47,12 +48,12 @@
           <td class='text-left nobr' title='<?php echo $story->title?>'>
             <?php
             if($story->parent > 0) echo "<span class='label'>{$lang->story->childrenAB}</span>";
-            echo html::a($this->createLink('story', 'view', "storyID=$story->id", '', true), $story->title, '', "data-toggle='modal' data-type='iframe' data-width='90%'");
+            echo html::a($this->createLink('story', 'view', "storyID=$story->id&version=0&param=$objectID", '', true), $story->title, '', "data-toggle='modal' data-type='iframe' data-width='90%'");
             ?>
           </td>
           <td><?php echo zget($users, $story->openedBy);?></td>
           <td><?php echo zget($users, $story->assignedTo);?></td>
-          <td><?php echo $story->estimate;?></td>
+          <td class='w-right' title="<?php echo $story->estimate . ' ' . $lang->hourCommon;?>"><?php echo $story->estimate . $config->hourUnit;?></td>
           <td>
             <span class='status-story status-<?php echo $story->status?>'>
               <?php echo $this->processStatus('story', $story);?>

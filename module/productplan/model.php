@@ -80,15 +80,13 @@ class productplanModel extends model
     public function getList($product = 0, $branch = 0, $browseType = 'all', $pager = null, $orderBy = 'begin_desc')
     {
         $date  = date('Y-m-d');
-        $plans = $this->dao->select('t1.*,t2.project')->from(TABLE_PRODUCTPLAN)->alias('t1')
-            ->leftJoin(TABLE_PROJECTPRODUCT)->alias('t2')->on("t2.plan = t1.id and t2.product = '$product'")
-            ->where('t1.product')->eq($product)
-            ->andWhere('t1.deleted')->eq(0)
-            ->beginIF(!empty($branch))->andWhere('t1.branch')->eq($branch)->fi()
-            ->beginIF($browseType == 'unexpired')->andWhere('t1.end')->ge($date)->fi()
-            ->beginIF($browseType == 'overdue')->andWhere('t1.end')->lt($date)->fi()
+        $plans = $this->dao->select('*')->from(TABLE_PRODUCTPLAN)->where('product')->eq($product)
+            ->andWhere('deleted')->eq(0)
+            ->beginIF(!empty($branch))->andWhere('branch')->eq($branch)->fi()
+            ->beginIF($browseType == 'unexpired')->andWhere('end')->ge($date)->fi()
+            ->beginIF($browseType == 'overdue')->andWhere('end')->lt($date)->fi()
             ->orderBy($orderBy)
-            ->page($pager, 't1.id')
+            ->page($pager)
             ->fetchAll('id');
 
         if(!empty($plans))
@@ -96,6 +94,8 @@ class productplanModel extends model
             $plans      = $this->reorder4Children($plans);
             $planIdList = array_keys($plans);
 
+            $planProjects      = $this->dao->select('*')->from(TABLE_PROJECTPRODUCT)->where('product')->eq($product)->andWhere('plan')->in(array_keys($plans))->fetchPairs('plan', 'project');
+            $storyCountInTable = $this->dao->select('plan,count(story) as count')->from(TABLE_PLANSTORY)->where('plan')->in($planIdList)->groupBy('plan')->fetchPairs('plan', 'count');
             $product = $this->loadModel('product')->getById($product);
             if($product->type == 'normal')
             {
@@ -125,7 +125,24 @@ class productplanModel extends model
                 $plan->stories   = count($storyPairs);
                 $plan->bugs      = isset($bugs[$plan->id]) ? count($bugs[$plan->id]) : 0;
                 $plan->hour      = array_sum($storyPairs);
+                $plan->project   = zget($planProjects, $plan->id, '');
                 $plan->projectID = $plan->project;
+
+                /* Sync linked stories. */
+                if(!isset($storyCountInTable[$plan->id]) or $storyCountInTable[$plan->id] != $plan->stories)
+                {
+                    $this->dao->delete()->from(TABLE_PLANSTORY)->where('plan')->eq($plan->id)->exec();
+
+                    $order = 1;
+                    foreach($storyPairs as $storyID => $estimate)
+                    {
+                        $planStory = new stdclass();
+                        $planStory->plan = $plan->id;
+                        $planStory->story = $storyID;
+                        $planStory->order = $order ++;
+                        $this->dao->replace(TABLE_PLANSTORY)->data($planStory)->exec();
+                    }
+                }
 
                 if(!isset($parentStories[$plan->parent])) $parentStories[$plan->parent] = 0;
                 if(!isset($parentBugs[$plan->parent]))    $parentBugs[$plan->parent]    = 0;
@@ -292,8 +309,8 @@ class productplanModel extends model
 
     /**
      * Get Children plan.
-     * 
-     * @param  int    $planID 
+     *
+     * @param  int    $planID
      * @access public
      * @return array
      */
@@ -315,6 +332,18 @@ class productplanModel extends model
             ->setIF($this->post->future || empty($_POST['end']), 'end', '2030-01-01')
             ->remove('delta,uid,future')
             ->get();
+
+        if(!empty($plan->parentBegin))
+        {
+            if($plan->begin < $plan->parentBegin) dao::$errors['begin'] = sprintf($this->lang->productplan->beginLetterParent, $plan->parentBegin);
+        }
+        if(!empty($plan->parentEnd))
+        {
+            if($plan->end !=='2030-01-01' and $plan->end > $plan->parentEnd) dao::$errors['end'] = sprintf($this->lang->productplan->endGreaterParent, $plan->parentEnd);
+        }
+        unset($plan->parentBegin);
+        unset($plan->parentEnd);
+
         if(!$this->post->future and strpos($this->config->productplan->create->requiredFields, 'begin') !== false and empty($_POST['begin']))
         {
             dao::$errors['begin'] = sprintf($this->lang->error->notempty, $this->lang->productplan->begin);
@@ -330,7 +359,7 @@ class productplanModel extends model
             ->data($plan)
             ->autoCheck()
             ->batchCheck($this->config->productplan->create->requiredFields, 'notempty')
-            ->checkIF(!$this->post->future && !empty($_POST['begin']) && !empty($_POST['end']), 'end', 'gt', $plan->begin)
+            ->checkIF(!$this->post->future && !empty($_POST['begin']) && !empty($_POST['end']), 'end', 'ge', $plan->begin)
             ->exec();
         if(!dao::isError())
         {
@@ -372,7 +401,7 @@ class productplanModel extends model
             ->data($plan)
             ->autoCheck()
             ->batchCheck($this->config->productplan->edit->requiredFields, 'notempty')
-            ->checkIF(!$this->post->future && !empty($_POST['begin']) && !empty($_POST['end']), 'end', 'gt', $plan->begin)
+            ->checkIF(!$this->post->future && !empty($_POST['begin']) && !empty($_POST['end']), 'end', 'ge', $plan->begin)
             ->where('id')->eq((int)$planID)
             ->exec();
         if(!dao::isError())
@@ -433,8 +462,8 @@ class productplanModel extends model
 
     /**
      * Change parent field by planID.
-     * 
-     * @param  int    $planID 
+     *
+     * @param  int    $planID
      * @access public
      * @return void
      */
@@ -561,9 +590,41 @@ class productplanModel extends model
     }
 
     /**
+     * Link project.
+     *
+     * @param  int    $projectID
+     * @param  array  $newPlans
+     * @access public
+     * @return void
+     */
+    public function linkProject($projectID, $newPlans)
+    {
+        $this->loadModel('execution');
+        foreach($newPlans as $planID)
+        {
+            $planStories = $planProducts = array();
+            $planStory   = $this->loadModel('story')->getPlanStories($planID);
+            if(!empty($planStory))
+            {
+                foreach($planStory as $id => $story)
+                {
+                    if($story->status == 'draft')
+                    {
+                        unset($planStory[$id]);
+                        continue;
+                    }
+                    $planProducts[$story->id] = $story->product;
+                }
+                $planStories = array_keys($planStory);
+                $this->execution->linkStory($projectID, $planStories, $planProducts);
+            }
+        }
+    }
+
+    /**
      * Reorder for children plans.
-     * 
-     * @param  array    $plans 
+     *
+     * @param  array    $plans
      * @access public
      * @return array
      */

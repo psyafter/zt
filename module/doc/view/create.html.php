@@ -18,7 +18,9 @@
       <h2><?php echo $lang->doc->create;?></h2>
     </div>
     <?php if(isset($this->config->bizVersion)):?>
-    <div class='alert alert-warning strong'><?php printf($lang->doc->notSetOffice, zget($lang->doc->typeList, $docType), common::hasPriv('custom', 'libreoffice') ? $this->createLink('custom', 'libreoffice') : '###');?></div>
+    <div class='alert alert-warning strong'>
+      <?php printf($lang->doc->notSetOffice, zget($lang->doc->typeList, $docType), common::hasPriv('custom', 'libreoffice') ? $this->createLink('custom', 'libreoffice') : '###');?>
+    </div>
     <?php else:?>
     <div class='alert alert-warning strong'><?php printf($lang->doc->cannotCreateOffice, zget($lang->doc->typeList, $docType));?></div>
     <?php endif;?>
@@ -38,26 +40,26 @@
       <h2><?php echo $lang->doc->create;?></h2>
     </div>
     <form class="load-indicator main-form form-ajax" id="dataform" method='post' enctype='multipart/form-data'>
-      <table class='table table-form'> 
+      <table class='table table-form'>
         <tbody>
           <tr>
             <th class='w-110px'><?php echo $lang->doc->lib;?></th>
             <td> <?php echo html::select('lib', $libs, $libID, "class='form-control chosen' onchange=loadDocModule(this.value)");?> </td><td></td>
-          </tr>  
+          </tr>
           <tr>
             <th><?php echo $lang->doc->module;?></th>
             <td>
               <span id='moduleBox'><?php echo html::select('module', $moduleOptionMenu, $moduleID, "class='form-control chosen'");?></span>
             </td><td></td>
-          </tr>  
+          </tr>
           <tr>
             <th><?php echo $lang->doc->title;?></th>
             <td colspan='2'><?php echo html::input('title', '', "class='form-control' required");?></td>
-          </tr> 
+          </tr>
           <tr>
             <th><?php echo $lang->doc->keywords;?></th>
-            <td colspan='2'><?php echo html::input('keywords', '', "class='form-control'");?></td>
-          </tr>  
+            <td colspan='2'><?php echo html::input('keywords', '', "class='form-control' placeholder='{$lang->doc->keywordsTips}'");?></td>
+          </tr>
           <tr>
             <th><?php echo $lang->doc->type;?></th>
             <?php
@@ -65,7 +67,7 @@
             foreach($lang->doc->types as $typeKey => $typeName) $typeKeyList[$typeKey] = $typeKey;
             ?>
             <td><?php echo html::radio('type', $lang->doc->types, zget($typeKeyList, $docType, 'text'));?></td>
-          </tr> 
+          </tr>
           <tr id='contentBox'>
             <th><?php echo $lang->doc->content;?></th>
             <td colspan='2'>
@@ -115,7 +117,9 @@
           </tr>
           <tr>
             <td colspan='3' class='text-center form-actions'>
-              <?php echo html::submitButton() . ' ' . html::backButton();?>
+              <?php echo html::submitButton();?>
+              <?php if(empty($gobackLink)) echo html::backButton($lang->goback, "data-app='{$app->tab}'");?>
+              <?php if(!empty($gobackLink)) echo html::a($gobackLink, $lang->goback, '', "class='btn btn-back btn-wide'");?>
             </td>
           </tr>
         </tbody>

@@ -1,23 +1,19 @@
+/**
+ * Access rights are equal to private, and the white list settings are displayed.
+ *
+ * @param  string acl
+ * @access public
+ * @return void
+ */
 function setWhite(acl)
 {
-    acl == 'custom' ? $('#whitelistBox').removeClass('hidden') : $('#whitelistBox').addClass('hidden');
-}
-
-function switchStatus(projectID, status)
-{
-  if(status) location.href = createLink('project', 'task', 'project=' + projectID + '&type=' + status);
-}
-
-function switchGroup(projectID, groupBy)
-{
-    link = createLink('project', 'groupTask', 'project=' + projectID + '&groupBy=' + groupBy);
-    location.href=link;
+    acl != 'open' ? $('#whitelistBox').removeClass('hidden') : $('#whitelistBox').addClass('hidden');
 }
 
 /**
  * Convert a date string like 2011-11-11 to date object in js.
  *
- * @param  string $date
+ * @param  string dateString
  * @access public
  * @return date
  */
@@ -30,8 +26,8 @@ function convertStringToDate(dateString)
 /**
  * Compute delta of two days.
  *
- * @param  string $date1
- * @param  string $date1
+ * @param  string date1
+ * @param  string date2
  * @access public
  * @return int
  */
@@ -40,6 +36,8 @@ function computeDaysDelta(date1, date2)
     date1 = convertStringToDate(date1);
     date2 = convertStringToDate(date2);
     delta = (date2 - date1) / (1000 * 60 * 60 * 24) + 1;
+
+    if(isNaN(delta)) return;
 
     weekEnds = 0;
     for(i = 0; i < delta; i++)
@@ -55,6 +53,7 @@ function computeDaysDelta(date1, date2)
 /**
  * Compute work days.
  *
+ * @param  string currentID
  * @access public
  * @return void
  */
@@ -78,6 +77,13 @@ function computeWorkDays(currentID)
     {
         beginDate = $('#begin').val();
         endDate   = $('#end').val();
+
+        var begin = new Date(beginDate.replace(/-/g,"/"));
+        var end   = new Date(endDate.replace(/-/g,"/"));
+        var time  = end.getTime() - begin.getTime();
+        var days  = parseInt(time / (1000 * 60 * 60 * 24)) + 1;
+        if(days != $("input:radio[name='delta']:checked").val()) $("input:radio[name='delta']:checked").attr('checked', false);
+        if(endDate == longTime) $("#delta999").prop('checked', true);
     }
 
     if(beginDate && endDate)
@@ -104,13 +110,19 @@ function computeEndDate(delta)
     if(!beginDate) return;
 
     delta     = parseInt(delta);
+    if(delta == 999)
+    {
+        $('#end').val(longTime);
+        return false;
+    }
+
     beginDate = convertStringToDate(beginDate);
     if((delta == 7 || delta == 14) && (beginDate.getDay() == 1))
     {
         delta = (weekend == 2) ? (delta - 2) : (delta - 1);
     }
 
-    endDate = beginDate.addDays(delta - 1).toString('yyyy-MM-dd');
+    endDate = $.zui.formatDate(beginDate.addDays(delta - 1), 'yyyy-MM-dd');
     $('#end').val(endDate).datetimepicker('update');
     computeWorkDays();
 }
@@ -118,12 +130,15 @@ function computeEndDate(delta)
 /**
  * Load branches.
  *
- * @param  int $product
+ * @param  object   product
  * @access public
  * @return void
  */
 function loadBranches(product)
 {
+    /* When selecting a product, delete a plan that is empty by default. */
+    $("#planDefault").remove();
+
     $('#productsBox select').each(function()
     {
         var $product = $(product);
@@ -190,7 +205,12 @@ function loadPlans(product, branchID)
     }
 }
 
-
+/**
+ * Adjust the layout of product selection.
+ *
+ * @access public
+ * @return void
+ */
 function adjustProductBoxMargin()
 {
     var productRows = Math.ceil($('#productsBox > .row > .col-sm-4').length / 3);
@@ -203,6 +223,12 @@ function adjustProductBoxMargin()
     }
 }
 
+/**
+ * Adjust the layout of the plan selection.
+ *
+ * @access public
+ * @return void
+ */
 function adjustPlanBoxMargin()
 {
     var planRows = Math.ceil($('#plansBox > .row > .col-sm-4').length / 3);
@@ -215,30 +241,76 @@ function adjustPlanBoxMargin()
     }
 }
 
-function loadBranch(){}
-
-/* Auto compute the work days. */
+/**
+ * Initialization operation.
+ *
+ * @access public
+ * @return void
+ */
 $(function()
 {
-    $(".date").bind('dateSelected', function()
+    $('#privList > tbody > tr > th input[type=checkbox]').change(function()
     {
-        computeWorkDays(this.id);
-    })
-});
+        var id      = $(this).attr('id');
+        var checked = $(this).prop('checked');
 
-$(function()
-{
-    $(document).on('click', '.task-toggle', function(e)
-    {
-        var $toggle = $(this);
-        var id = $(this).data('id');
-        var isCollapsed = $toggle.toggleClass('collapsed').hasClass('collapsed');
-        $toggle.closest('[data-ride="table"]').find('tr.parent-' + id).toggle(!isCollapsed);
-
-        e.stopPropagation();
-        e.preventDefault();
+        if(id == 'allChecker')
+        {
+            $('input[type=checkbox]').prop('checked', checked);
+        }
+        else
+        {
+            $(this).parents('tr').find('input[type=checkbox]').prop('checked', checked);
+        }
     });
+})
 
-    adjustProductBoxMargin();
-    adjustPlanBoxMargin();
-});
+/**
+ * Change budget input.
+ *
+ * @access public
+ * @return void
+ */
+$(function()
+{
+    $('#future').on('change', function()
+    {
+        if($(this).prop('checked'))
+        {
+            $('#budget').val('').attr('disabled', 'disabled');
+        }
+        else
+        {
+            $('#budget').removeAttr('disabled');
+        }
+    });
+})
+
+/**
+ * Set budget tips and acl list.
+ *
+ * @param  int    $parentProgramID
+ * @access public
+ * @return void
+ */
+function setBudgetTipsAndAclList(programID)
+{
+    if(programID != 0)
+    {
+        $.get(createLink('project', 'ajaxGetBudgetLeft', "programID=" + programID), function(budgetLeft)
+        {
+            parentProgram = PGMList[programID];
+            projectBudget = parentProgram.budget;
+            PGMBudgetUnit = currencySymbol[parentProgram.budgetUnit];
+
+            budgetNotes = projectBudget != 0 ? (PGMParentBudget + PGMBudgetUnit + budgetLeft) : '';
+            $('#budget').attr('placeholder', budgetNotes);
+        });
+        $('.aclBox').html($('#subPGMAcl').html());
+    }
+    else
+    {
+        $('#budget').removeAttr('placeholder');
+        $('.aclBox').html($('#PGMAcl').html());
+    }
+}

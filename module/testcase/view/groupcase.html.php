@@ -30,21 +30,21 @@
       <tr class="divider">
         <th class="c-side text-left has-btn group-menu">
           <div class="table-group-btns">
-            <button type="button" class="btn btn-block btn-link group-collapse-all"><?php echo $lang->project->treeLevel['root'];?> <i class="icon-caret-down"></i></button>
-            <button type="button" class="btn btn-block btn-link group-expand-all"><?php echo $lang->project->treeLevel['all'];?> <i class="icon-caret-up"></i></button>
+            <button type="button" class="btn btn-block btn-link group-collapse-all"><?php echo $lang->execution->treeLevel['root'];?> <i class="icon-caret-down"></i></button>
+            <button type="button" class="btn btn-block btn-link group-expand-all"><?php echo $lang->execution->treeLevel['all'];?> <i class="icon-caret-up"></i></button>
           </div>
         </th>
         <th class='c-id-sm'><?php echo $lang->idAB;?></th>
-        <th class='w-pri'>  <?php echo $lang->priAB;?></th>
+        <th class='c-pri'>  <?php echo $lang->priAB;?></th>
         <th><?php echo $lang->testcase->title;?></th>
-        <th class='w-80px'> <?php echo $lang->typeAB;?></th>
-        <th class='w-80px'> <?php echo $lang->testtask->lastRunAccount;?></th>
-        <th class='w-120px'><?php echo $lang->testtask->lastRunTime;?></th>
-        <th class='w-80px'> <?php echo $lang->testtask->lastRunResult;?></th>
-        <th class='w-80px'> <?php echo $lang->testcase->status;?></th>
-        <th class='w-30px' title='<?php echo $lang->testcase->bugs?>'><?php echo $lang->testcase->bugsAB;?></th>
-        <th class='w-30px' title='<?php echo $lang->testcase->results?>'><?php echo $lang->testcase->resultsAB;?></th>
-        <th class='w-30px' title='<?php echo $lang->testcase->stepNumber?>'><?php echo $lang->testcase->stepNumberAB;?></th>
+        <th class='c-type'> <?php echo $lang->typeAB;?></th>
+        <th class='c-user'> <?php echo $lang->testtask->lastRunAccount;?></th>
+        <th class='c-date'><?php echo $lang->testtask->lastRunTime;?></th>
+        <th class='c-result'> <?php echo $lang->testtask->lastRunResult;?></th>
+        <th class='c-status'> <?php echo $lang->testcase->status;?></th>
+        <th class='c-bugs' title='<?php echo $lang->testcase->bugs?>'><?php echo $lang->testcase->bugsAB;?></th>
+        <th class='c-results' title='<?php echo $lang->testcase->results?>'><?php echo $lang->testcase->resultsAB;?></th>
+        <th class='c-steps' title='<?php echo $lang->testcase->stepNumber?>'><?php echo $lang->testcase->stepNumberAB;?></th>
         <th class='c-actions-2'> <?php echo $lang->actions;?></th>
       </tr>
     </thead>
@@ -92,7 +92,7 @@
         <td><?php echo $case->stepNumber;?></td>
         <td class='c-actions'>
           <?php common::printIcon('testcase', 'edit', "caseID=$case->id", $case, 'list');?>
-          <?php common::printIcon('testcase', 'delete', "caseID=$case->id", $case, 'list', '', 'hiddenwin');?>
+          <?php common::printIcon('testcase', 'delete', "caseID=$case->id", $case, 'list', 'trash', 'hiddenwin');?>
         </td>
       </tr>
       <?php $i++;?>

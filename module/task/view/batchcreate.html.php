@@ -18,13 +18,13 @@
   <div class="main-header clearfix">
     <h2 class="pull-left">
       <?php if($parent):?>
-      <span class='pull-left'><?php echo $parentTitle . $this->lang->colon;?></span> 
+      <span class='pull-left'><?php echo $parentTitle . $this->lang->colon;?></span>
       <?php echo $lang->task->batchCreateChildren;?>
       <?php else:?>
       <?php echo $lang->task->batchCreate;?>
       <?php endif;?>
     </h2>
-    <?php if($project->type != 'ops' && $config->global->flow != 'onlyTask'):?>
+    <?php if($execution->type != 'ops'):?>
     <a class="checkbox-primary pull-left" id='zeroTaskStory' href='javascript:toggleZeroTaskStory();'>
       <label><?php echo $lang->story->zeroTask;?></label>
     </a>
@@ -51,27 +51,25 @@
       }
   }
   $colspan     = count($visibleFields) + 3;
-  $hiddenStory = ((isonlybody() and $storyID) || $config->global->flow == 'onlyTask') ? ' hidden' : '';
-  if($hiddenStory and isset($visibleFields['story'])) $colspan -= 1;
   ?>
   <form method='post' class='load-indicator batch-actions-form form-ajax' enctype='multipart/form-data' id="batchCreateForm">
     <div class="table-responsive">
       <table class="table table-form" id="tableBody">
         <thead>
           <tr>
-            <th class='w-30px'><?php echo $lang->idAB;?></th>
-            <th class='w-150px<?php echo zget($visibleFields, 'module', ' hidden') . zget($requiredFields, 'module', '', ' required');?>'><?php echo $lang->task->module?></th>
-            <?php if($project->type != 'ops'):?>
-            <th class='w-200px<?php echo zget($visibleFields, 'story', ' hidden') . zget($requiredFields, 'story', '', ' required'); echo $hiddenStory;?>'><?php echo $lang->task->story;?></th>
+            <th class='c-id'><?php echo $lang->idAB;?></th>
+            <th class='c-module<?php echo zget($visibleFields, 'module', ' hidden') . zget($requiredFields, 'module', '', ' required');?>'><?php echo $lang->task->module?></th>
+            <?php if($execution->type != 'ops'):?>
+            <th class='c-story<?php echo zget($visibleFields, 'story', ' hidden') . zget($requiredFields, 'story', '', ' required');?>'><?php echo $lang->task->story;?></th>
             <?php endif;?>
             <th class='c-name required has-btn'><?php echo $lang->task->name;?></span></th>
-            <th class='w-80px required'><?php echo $lang->typeAB;?></span></th>
-            <th class='w-130px<?php echo zget($visibleFields, 'assignedTo', ' hidden') . zget($requiredFields, 'assignedTo', '', ' required');?>'><?php echo $lang->task->assignedTo;?></th>
-            <th class='w-60px<?php  echo zget($visibleFields, 'estimate',   ' hidden') . zget($requiredFields, 'estimate',   '', ' required');?>'><?php echo $lang->task->estimateAB;?></th>
-            <th class='w-100px<?php echo zget($visibleFields, 'estStarted', ' hidden') . zget($requiredFields, 'estStarted', '', ' required');?>'><?php echo $lang->task->estStarted;?></th>
-            <th class='w-100px<?php echo zget($visibleFields, 'deadline',   ' hidden') . zget($requiredFields, 'deadline',   '', ' required');?>'><?php echo $lang->task->deadline;?></th>
-            <th class='w-150px<?php echo zget($visibleFields, 'desc',       ' hidden') . zget($requiredFields, 'desc',       '', ' required');?>'><?php echo $lang->task->desc;?></th>
-            <th class='w-80px<?php  echo zget($visibleFields, 'pri',        ' hidden') . zget($requiredFields, 'pri',        '', ' required');?>'><?php echo $lang->task->pri;?></th>
+            <th class='c-type required'><?php echo $lang->typeAB;?></span></th>
+            <th class='c-assigned<?php echo zget($visibleFields, 'assignedTo', ' hidden') . zget($requiredFields, 'assignedTo', '', ' required');?>'><?php echo $lang->task->assignedTo;?></th>
+            <th class='c-estimate<?php  echo zget($visibleFields, 'estimate', ' hidden') . zget($requiredFields, 'estimate', '', ' required');?>'><?php echo $lang->task->estimateAB;?></th>
+            <th class='c-date<?php echo zget($visibleFields, 'estStarted', ' hidden') . zget($requiredFields, 'estStarted', '', ' required');?>'><?php echo $lang->task->estStarted;?></th>
+            <th class='c-date<?php echo zget($visibleFields, 'deadline', ' hidden') . zget($requiredFields, 'deadline',   '', ' required');?>'><?php echo $lang->task->deadline;?></th>
+            <th class='c-desc<?php echo zget($visibleFields, 'desc', ' hidden') . zget($requiredFields, 'desc', '', ' required');?>'><?php echo $lang->task->desc;?></th>
+            <th class='c-pri<?php  echo zget($visibleFields, 'pri', ' hidden') . zget($requiredFields, 'pri', '', ' required');?>'><?php echo $lang->task->pri;?></th>
             <?php
             $extendFields = $this->task->getFlowExtendFields();
             foreach($extendFields as $extendField) echo "<th class='w-100px'>{$extendField->name}</th>";
@@ -84,7 +82,7 @@
           $lang->task->typeList['ditto'] = $lang->task->ditto;
           $members['ditto'] = $lang->task->ditto;
           $modules['ditto'] = $lang->task->ditto;
-          if($project->type == 'ops') $colspan = $colspan - 1;
+          if($execution->type == 'ops') $colspan = $colspan - 1;
           ?>
           <?php for($i = 0; $i < $config->task->batchCreate; $i++):?>
           <?php
@@ -104,11 +102,11 @@
           <tr>
             <td class='text-center'><?php echo $i + 1;?></td>
             <td <?php echo zget($visibleFields, 'module', "class='hidden'")?> style='overflow:visible'>
-              <?php echo html::select("module[$i]", $modules, $module, "class='form-control chosen' onchange='setStories(this.value, $project->id, $i)'")?>
+              <?php echo html::select("module[$i]", $modules, $module, "class='form-control chosen' onchange='setStories(this.value, $execution->id, $i)'")?>
               <?php echo html::hidden("parent[$i]", $parent);?>
             </td>
-            <?php if($project->type != 'ops'):?>
-            <td <?php echo zget($visibleFields, 'story', "class='hidden'"); echo $hiddenStory;?> style='overflow: visible'>
+            <?php if($execution->type != 'ops'):?>
+            <td <?php echo zget($visibleFields, 'story', "class='hidden'");?> style='overflow: visible'>
               <div class='input-group'>
                 <?php echo html::select("story[$i]", $stories, $currentStory, "class='form-control chosen' onchange='setStoryRelated($i)'");?>
                 <span class='input-group-btn'>
@@ -134,8 +132,22 @@
             <td><?php echo html::select("type[$i]", $lang->task->typeList, $type, 'class=form-control');?></td>
             <td <?php echo zget($visibleFields, 'assignedTo', "class='hidden'")?> style='overflow:visible'><?php echo html::select("assignedTo[$i]", $members, $member, "class='form-control chosen'");?></td>
             <td <?php echo zget($visibleFields, 'estimate', "class='hidden'")?>><?php echo html::input("estimate[$i]", '', "class='form-control text-center'");?></td>
-            <td <?php echo zget($visibleFields, 'estStarted', "class='hidden'")?>><?php echo html::input("estStarted[$i]", '', "class='form-control text-center form-date'");?></td>
-            <td <?php echo zget($visibleFields, 'deadline', "class='hidden'")?>><?php echo html::input("deadline[$i]", '', "class='form-control text-center form-date'");?></td>
+            <td <?php echo zget($visibleFields, 'estStarted', "class='hidden'")?>>
+              <div class='input-group'>
+                <?php
+                echo html::input("estStarted[$i]", '', "class='form-control text-center form-date' onkeyup='toggleCheck(this)'");
+                if($i != 0) echo "<span class='input-group-addon estStartedBox'><input type='checkbox' name='estStartedDitto[$i]' id='estStartedDitto$i' " . ($i> 0 ? "checked" : '') . " /> {$lang->task->ditto}</span>";
+                ?>
+              </div>
+            </td>
+            <td <?php echo zget($visibleFields, 'deadline', "class='hidden'")?>>
+              <div class='input-group'>
+                <?php
+                echo html::input("deadline[$i]", '', "class='form-control text-center form-date' onkeyup='toggleCheck(this)'");
+                if($i != 0) echo "<span class='input-group-addon deadlineBox'><input type='checkbox' name='deadlineDitto[$i]' id='deadlineDitto$i' " . ($i> 0 ? "checked" : '') . " /> {$lang->task->ditto}</span>";
+                ?>
+              </div>
+            </td>
             <td <?php echo zget($visibleFields, 'desc', "class='hidden'")?>><?php echo html::textarea("desc[$i]", '', "rows='1' class='form-control autosize'");?></td>
             <td <?php echo zget($visibleFields, 'pri', "class='hidden'")?>><?php echo html::select("pri[$i]", (array)$lang->task->priList, $pri, 'class=form-control');?></td>
             <?php foreach($extendFields as $extendField) echo "<td" . (($extendField->control == 'select' or $extendField->control == 'multi-select') ? " style='overflow:visible'" : '') . ">" . $this->loadModel('flow')->getFieldControl($extendField, '', $extendField->field . "[$i]") . "</td>";?>
@@ -159,10 +171,10 @@
     <tr>
       <td class='text-center'>%s</td>
       <td <?php echo zget($visibleFields, 'module', "class='hidden'")?> style='overflow:visible'>
-        <?php echo html::select("module[%s]", $modules, $module, "class='form-control chosen' onchange='setStories(this.value, $project->id, \"%s\")'")?>
+        <?php echo html::select("module[%s]", $modules, $module, "class='form-control chosen' onchange='setStories(this.value, $execution->id, \"%s\")'")?>
         <?php echo html::hidden("parent[%s]", $parent);?>
       </td>
-      <td <?php echo zget($visibleFields, 'story', "class='hidden'"); echo $hiddenStory;?> style='overflow: visible'>
+      <td <?php echo zget($visibleFields, 'story', "class='hidden'");?> style='overflow: visible'>
         <div class='input-group'>
           <?php echo html::select("story[%s]", $stories, $currentStory, "class='form-control chosen' onchange='setStoryRelated(\"%s\")'");?>
           <span class='input-group-btn'>
@@ -187,15 +199,28 @@
       <td><?php echo html::select("type[%s]", $lang->task->typeList, $type, 'class="form-control"');?></td>
       <td <?php echo zget($visibleFields, 'assignedTo', "class='hidden'")?> style='overflow:visible'><?php echo html::select("assignedTo[%s]", $members, $member, "class='form-control chosen'");?></td>
       <td <?php echo zget($visibleFields, 'estimate', "class='hidden'")?>><?php echo html::input("estimate[%s]", '', "class='form-control text-center'");?></td>
-      <td <?php echo zget($visibleFields, 'estStarted', "class='hidden'")?>><?php echo html::input("estStarted[%s]", '', "class='form-control text-center form-date'");?></td>
-      <td <?php echo zget($visibleFields, 'deadline', "class='hidden'")?>><?php echo html::input("deadline[%s]", '', "class='form-control text-center form-date'");?></td>
+      <td <?php echo zget($visibleFields, 'estStarted', "class='hidden'")?>>
+        <div class='input-group'>
+          <?php
+          echo html::input("estStarted[%s]", '', "class='form-control text-center form-date' onkeyup='toggleCheck(this)'");
+          echo "<span class='input-group-addon estStartedBox'><input type='checkbox' name='estStartedDitto[%s]' id='estStartedDitto%s' checked/>{$lang->task->ditto}</span>";
+          ?>
+        </div>
+      </td>
+      <td <?php echo zget($visibleFields, 'deadline', "class='hidden'")?>>
+        <div class='input-group'>
+          <?php
+          echo html::input("deadline[%s]", '', "class='form-control text-center form-date' onkeyup='toggleCheck(this)'");
+          echo "<span class='input-group-addon deadlineBox'><input type='checkbox' name='deadlineDitto[%s]' id='deadlineDitto%s' checked/>{$lang->task->ditto}</span>";
+          ?>
+        </div>
       <td <?php echo zget($visibleFields, 'desc', "class='hidden'")?>><?php echo html::textarea("desc[%s]", '', "rows='1' class='form-control autosize'");?></td>
       <td <?php echo zget($visibleFields, 'pri', "class='hidden'")?>><?php echo html::select("pri[%s]", (array)$lang->task->priList, $pri, 'class=form-control');?></td>
       <?php foreach($extendFields as $extendField) echo "<td" . (($extendField->control == 'select' or $extendField->control == 'multi-select') ? " style='overflow:visible'" : '') . ">" . $this->loadModel('flow')->getFieldControl($extendField, '', $extendField->field . "[%s]") . "</td>";?>
     </tr>
   </tbody>
 </table>
-<?php js::set('projectType', $project->type);?>
+<?php js::set('executionType', $execution->type);?>
 <?php js::set('storyTasks', $storyTasks);?>
 <?php js::set('mainField', 'name');?>
 <?php js::set('ditto', $lang->task->ditto);?>

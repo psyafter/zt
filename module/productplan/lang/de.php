@@ -19,6 +19,7 @@ $lang->productplan->view       = "Details";
 $lang->productplan->bugSummary = "<strong>%s</strong> Bugs auf dieser Seite";
 $lang->productplan->basicInfo  = 'Basis Info';
 $lang->productplan->batchEdit  = 'Mehrere bearbeiten';
+$lang->productplan->project    = 'Project';
 
 $lang->productplan->batchUnlink      = "Mehere Verknüpfungen aufheben";
 $lang->productplan->linkStory        = "Story verknüpfen";
@@ -29,6 +30,7 @@ $lang->productplan->linkedStories    = 'Verknüpfte Storys';
 $lang->productplan->unlinkedStories  = 'Unverknüpfte Storys';
 $lang->productplan->updateOrder      = 'Sortierung';
 $lang->productplan->createChildren   = "Create Child Plans";
+$lang->productplan->createExecution  = "Create {$lang->execution->common}";
 
 $lang->productplan->linkBug          = "Bug Verknüpfen";
 $lang->productplan->unlinkBug        = "Bug Verknpfung aufheben";
@@ -43,6 +45,9 @@ $lang->productplan->confirmUnlinkStory = "Möchten Sie diese Story löschen?";
 $lang->productplan->confirmUnlinkBug   = "Möchten Sie diesen Bug löschen?";
 $lang->productplan->noPlan             = 'Kein Plan. ';
 $lang->productplan->cannotDeleteParent = 'Cannot delete parent plan';
+$lang->productplan->selectProjects     = "Please select the project";
+$lang->productplan->projectNotEmpty    = 'Project cannot be empty.';
+$lang->productplan->nextStep           = "Next step";
 
 $lang->productplan->id         = 'ID';
 $lang->productplan->product    = $lang->productCommon;
@@ -56,7 +61,7 @@ $lang->productplan->future     = 'Wartend';
 $lang->productplan->stories    = 'Storys';
 $lang->productplan->bugs       = 'Bugs';
 $lang->productplan->hour       = $lang->hourCommon;
-$lang->productplan->project    = $lang->projectCommon;
+$lang->productplan->execution  = $lang->execution->common;
 $lang->productplan->parent     = "Parent Plan";
 $lang->productplan->parentAB   = "Parent";
 $lang->productplan->children   = "Child Plan";
@@ -72,10 +77,12 @@ $lang->productplan->endList[93]   = '3 Monate';
 $lang->productplan->endList[186]  = '6 Monate';
 $lang->productplan->endList[365]  = '1 Jahr';
 
-$lang->productplan->errorNoTitle = 'ID %s Titel darf nicht leer sein.';
-$lang->productplan->errorNoBegin = 'ID %s Start darf nicht leer sein.';
-$lang->productplan->errorNoEnd   = 'ID %s Ende darf nicht leer sein.';
-$lang->productplan->beginGeEnd   = 'ID %s Start darf nicht größer als Ende sein.';
+$lang->productplan->errorNoTitle      = 'ID %s Titel darf nicht leer sein.';
+$lang->productplan->errorNoBegin      = 'ID %s Start darf nicht leer sein.';
+$lang->productplan->errorNoEnd        = 'ID %s Ende darf nicht leer sein.';
+$lang->productplan->beginGeEnd        = 'ID %s Start darf nicht größer als Ende sein.';
+$lang->productplan->beginLetterParent = "Parent begin date: %s, begin date should be >= parent begin date.";
+$lang->productplan->endGreaterParent  = "Parent end date: %s, end date should be <= parent end date.";
 
 $lang->productplan->featureBar['browse']['all']       = 'Alle';
 $lang->productplan->featureBar['browse']['unexpired'] = 'Nicht abgelaufen';

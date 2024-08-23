@@ -22,7 +22,7 @@
       </h2>
     </div>
     <form class='load-indicator main-form form-ajax' method='post' id='dataform' enctype='multipart/form-data'>
-      <table class='table table-form'> 
+      <table class='table table-form'>
         <tr>
           <th><?php echo $lang->build->product;?></th>
           <td>
@@ -43,14 +43,12 @@
           </td>
           <td><?php if($disabled) echo $lang->build->notice->changeProduct;?></td>
         </tr>
-        <?php if($this->config->global->flow != 'onlyTest'):?>
         <tr>
           <?php $disabled = $testtaskID ? 'disabled' : '';?>
-          <th><?php echo $lang->build->project;?></th>
-          <td id='projectsBox'><?php echo html::select('project', $projects, $build->project, "class='form-control chosen' required $disabled");?></td>
-          <td><?php if($disabled) echo $lang->build->notice->changeProject;?></td>
+          <th><?php echo $lang->build->execution;?></th>
+          <td id='executionsBox'><?php echo html::select('execution', $executions, $build->execution, "class='form-control chosen' required $disabled");?></td>
+          <td><?php if($disabled) echo $lang->build->notice->changeExecution;?></td>
         </tr>
-        <?php endif;?>
         <tr>
           <th><?php echo $lang->build->name;?></th>
           <td><?php echo html::input('name', $build->name, "class='form-control' required");?></td>
@@ -91,4 +89,5 @@
   </div>
 </div>
 <?php js::set('productGroups', $productGroups)?>
+<?php js::set('projectID', $build->project)?>
 <?php include '../../common/view/footer.html.php';?>

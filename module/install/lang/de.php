@@ -107,15 +107,13 @@ $lang->install->requestTypes['GET']       = 'GET';
 $lang->install->requestTypes['PATH_INFO'] = 'PATH_INFO';
 
 $lang->install->workingList['full']      = 'Volles Development Management';
-$lang->install->workingList['onlyTest']  = 'Nur Test Management';
-$lang->install->workingList['onlyStory'] = 'Nur Story Management';
-$lang->install->workingList['onlyTask']  = 'Nur Task Management';
 
 $lang->install->errorConnectDB      = 'Verbindung zur Datenbank fehlgeschlagen. ';
 $lang->install->errorDBName         = 'Datenbankname darf keinen Punkt enthalten';
 $lang->install->errorCreateDB       = 'Erstellung der Datenbank fehlgeschlagen.';
 $lang->install->errorTableExists    = 'Die Tabellen existieren bereits. Wenn ZenTao bereits installiert war, kehren Sie zum letzen Schritt zurück und wählen Sie den Punkt Tabellen leeren. Dann fahren Sie fort.';
 $lang->install->errorCreateTable    = 'Erstellung der Tabellen fehlgeschlagen.';
+$lang->install->errorEngineInnodb   = 'Your MySQL does not support InnoDB data table engine. Please modify it to MyISAM and try again.';
 $lang->install->errorImportDemoData = 'Import der Demodaten fehlgeschlagen.';
 
 $lang->install->setConfig          = 'Konfigurationsdatei erstellen';
@@ -131,6 +129,9 @@ $lang->install->company            = 'Firmenname';
 $lang->install->account            = 'Admin Konto';
 $lang->install->password           = 'Admin Passwort';
 $lang->install->errorEmptyPassword = 'Passwort sollte nicht leer sein.';
+
+$lang->install->selectedMode     = 'Selection mode';
+$lang->install->selectedModeTips = 'You can go to the Admin - Custom - Mode to set it later.';
 
 $lang->install->groupList['ADMIN']['name']   = 'Admin';
 $lang->install->groupList['ADMIN']['desc']   = 'System Administrator';
@@ -156,7 +157,7 @@ $lang->install->groupList['LIMITED']['name'] = 'Eingeschränkte Benutzer';
 $lang->install->groupList['LIMITED']['desc'] = 'Können nur Inhalte bearbeiten, die sie selbst betreffen';
 
 $lang->install->cronList[''] = 'Cron Anzeigen';
-$lang->install->cronList['moduleName=project&methodName=computeburn']   = 'Update Burndown Chart';
+$lang->install->cronList['moduleName=execution&methodName=computeBurn'] = 'Update Burndown Chart';
 $lang->install->cronList['moduleName=report&methodName=remind']         = 'Täglicher Aufgaben reminder';
 $lang->install->cronList['moduleName=svn&methodName=run']               = 'Synchronisiere SVN';
 $lang->install->cronList['moduleName=git&methodName=run']               = 'Synchronisiere GIT';
@@ -173,8 +174,10 @@ $lang->install->success  = "Installiert!";
 $lang->install->login    = 'Login ZenTao';
 $lang->install->register = 'Bei ZenTao registieren';
 
-$lang->install->joinZentao = <<<EOT
-<p>Sie haben ZenTao %s installiert.<strong class='text-danger'> Bitte löschen Sie die install.php schnellstmöglich</strong>.</p><p>Hinweis: Wenn Sie über ZenTao informiert bleiben möchten, registieren Sie sich bitte unter (<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>).</p>
+$lang->install->successLabel       = "<p>Sie haben ZenTao %s installiert.</p>";
+$lang->install->successNoticeLabel = "<p>Sie haben ZenTao %s installiert.<strong class='text-danger'> Bitte löschen Sie die install.php schnellstmöglich</strong>.</p>";
+$lang->install->joinZentao         = <<<EOT
+<p>Hinweis: Wenn Sie über ZenTao informiert bleiben möchten, registieren Sie sich bitte unter (<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>).</p>
 EOT;
 
 $lang->install->product = array('chanzhi', 'zdoo');

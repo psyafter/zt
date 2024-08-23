@@ -2,6 +2,8 @@
 $lang->repo->common          = 'Référentiel';
 $lang->repo->browse          = 'Aff';
 $lang->repo->viewRevision    = 'Aff Modifs';
+$lang->repo->product         = 'Product';
+$lang->repo->execution       = $lang->execution->common;
 $lang->repo->create          = 'Créer';
 $lang->repo->createAction    = 'Créer Ref';
 $lang->repo->maintain        = 'Liste Ref';
@@ -27,9 +29,7 @@ $lang->repo->submit     = 'Soumettre';
 $lang->repo->cancel     = 'Annuler';
 $lang->repo->addComment = 'Ajout Comment';
 
-$lang->repo->product  = $lang->productCommon;
 $lang->repo->module   = 'Module';
-$lang->repo->project  = $lang->projectCommon;
 $lang->repo->type     = 'Type';
 $lang->repo->assign   = 'Assigner à';
 $lang->repo->title    = 'Titre';
@@ -159,6 +159,7 @@ $lang->repo->error->noPriv        = "Le programme n'a pas les privilèges pour b
 $lang->repo->error->output        = "La commande est: %s\nL'erreur est (%s): %s\n";
 $lang->repo->error->clientVersion = "La version du client est trop ancienne, veuillez mettre à niveau ou changer le client SVN";
 $lang->repo->error->encoding      = "L'encodage est peut-être erroné. Veuillez modifier l'encodage et réessayer.";
+$lang->repo->error->deleted       = "Deletion of the repository failed. The current repository has a commit record associated with the design.";
 $lang->repo->error->clientPath    = "The client installation directory cannot have spaces!";
 
 $lang->repo->syncTips      = '<strong>Vous pouvez trouver la référence sur la façon de définir la synchronisation Git à partir de la page se trouvant <a target="_blank" href="https://www.zentao.pm/book/zentaomanual/free-open-source-project-management-software-git-105.html">ici</a>.</strong>';

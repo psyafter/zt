@@ -10,6 +10,7 @@
  * @link        https://www.zentao.pm
  */
 $lang->extension->common           = 'Extension';
+$lang->extension->id               = 'ID';
 $lang->extension->browse           = 'Extensions';
 $lang->extension->install          = 'Install Extension';
 $lang->extension->installAuto      = 'Auto Installation';
@@ -28,6 +29,8 @@ $lang->extension->erase            = 'Erase';
 $lang->extension->eraseAction      = 'Erase Extension';
 $lang->extension->upgrade          = 'Upgrade Extension';
 $lang->extension->agreeLicense     = 'I agree to the license.';
+
+$lang->extension->browseAction = 'Extension List';
 
 $lang->extension->structure        = 'Structure';
 $lang->extension->structureAction  = 'Extension Structure';

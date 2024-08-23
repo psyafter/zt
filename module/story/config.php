@@ -4,10 +4,10 @@ $config->story = new stdclass();
 $config->story->batchCreate      = 10;
 $config->story->affectedFixedNum = 7;
 $config->story->needReview       = 1;
+$config->story->removeFields     = 'objectTypeList,productList,executionList,execution';
 
 $config->story->batchClose = new stdclass();
 $config->story->batchClose->columns = 10;
-
 $config->story->create = new stdclass();
 $config->story->edit   = new stdclass();
 $config->story->change = new stdclass();
@@ -16,7 +16,7 @@ $config->story->review = new stdclass();
 $config->story->create->requiredFields = 'title';
 $config->story->change->requiredFields = 'title';
 $config->story->close->requiredFields  = 'closedReason';
-$config->story->review->requiredFields = 'assignedTo,reviewedBy';
+$config->story->review->requiredFields = '';
 
 $config->story->editor = new stdclass();
 $config->story->editor->create   = array('id' => 'spec,verify', 'tools' => 'simpleTools');
@@ -90,24 +90,29 @@ $config->story->datatable->fieldList['sourceNote']['fixed']    = 'no';
 $config->story->datatable->fieldList['sourceNote']['width']    = '90';
 $config->story->datatable->fieldList['sourceNote']['required'] = 'no';
 
+$config->story->datatable->fieldList['category']['title']    = 'category';
+$config->story->datatable->fieldList['category']['fixed']    = 'no';
+$config->story->datatable->fieldList['category']['width']    = '60';
+$config->story->datatable->fieldList['category']['required'] = 'no';
+
 $config->story->datatable->fieldList['status']['title']    = 'statusAB';
 $config->story->datatable->fieldList['status']['fixed']    = 'no';
-$config->story->datatable->fieldList['status']['width']    = '80';
+$config->story->datatable->fieldList['status']['width']    = '60';
 $config->story->datatable->fieldList['status']['required'] = 'no';
 
 $config->story->datatable->fieldList['estimate']['title']    = 'estimateAB';
 $config->story->datatable->fieldList['estimate']['fixed']    = 'no';
-$config->story->datatable->fieldList['estimate']['width']    = '65';
+$config->story->datatable->fieldList['estimate']['width']    = '50';
 $config->story->datatable->fieldList['estimate']['required'] = 'no';
 
 $config->story->datatable->fieldList['stage']['title']    = 'stageAB';
 $config->story->datatable->fieldList['stage']['fixed']    = 'no';
-$config->story->datatable->fieldList['stage']['width']    = '95';
+$config->story->datatable->fieldList['stage']['width']    = '70';
 $config->story->datatable->fieldList['stage']['required'] = 'no';
 
 $config->story->datatable->fieldList['openedBy']['title']    = 'openedByAB';
 $config->story->datatable->fieldList['openedBy']['fixed']    = 'no';
-$config->story->datatable->fieldList['openedBy']['width']    = '90';
+$config->story->datatable->fieldList['openedBy']['width']    = '60';
 $config->story->datatable->fieldList['openedBy']['required'] = 'no';
 
 $config->story->datatable->fieldList['openedDate']['title']    = 'openedDate';
@@ -117,7 +122,7 @@ $config->story->datatable->fieldList['openedDate']['required'] = 'no';
 
 $config->story->datatable->fieldList['assignedTo']['title']    = 'assignedToAB';
 $config->story->datatable->fieldList['assignedTo']['fixed']    = 'no';
-$config->story->datatable->fieldList['assignedTo']['width']    = '120';
+$config->story->datatable->fieldList['assignedTo']['width']    = '86';
 $config->story->datatable->fieldList['assignedTo']['required'] = 'no';
 
 $config->story->datatable->fieldList['assignedDate']['title']    = 'assignedDate';
@@ -170,7 +175,7 @@ $config->story->datatable->fieldList['version']['fixed']    = 'no';
 $config->story->datatable->fieldList['version']['width']    = '60';
 $config->story->datatable->fieldList['version']['required'] = 'no';
 
-global $lang;
+global $lang, $app;
 $config->story->datatable->fieldList['taskCount']['title']    = 'T';
 $config->story->datatable->fieldList['taskCount']['fixed']    = 'no';
 $config->story->datatable->fieldList['taskCount']['width']    = '30';
@@ -194,5 +199,5 @@ $config->story->datatable->fieldList['caseCount']['name']     = $lang->story->ca
 
 $config->story->datatable->fieldList['actions']['title']    = 'actions';
 $config->story->datatable->fieldList['actions']['fixed']    = 'right';
-$config->story->datatable->fieldList['actions']['width']    = '180';
+$config->story->datatable->fieldList['actions']['width']    = $app->tab == 'project' ? '220' : '200';
 $config->story->datatable->fieldList['actions']['required'] = 'yes';

@@ -40,6 +40,35 @@ Twitter: <a href='https://twitter.com/ZentaoA' target='_blank'>ZenTao ALM</a>
 You are installing ZenTao <strong class='text-danger'>%s</strong>.
 EOT;
 
+$lang->install->introduction        = "ZenTao 15.0+ Feature Introduction";
+$lang->install->howToUse            = "How do you like to use ZenTao?";
+$lang->install->guideVideo          = 'https://dl.cnezsoft.com/vedio/zentaoconcepteng0716.mp4';
+$lang->install->introductionContent = <<<EOT
+<div>
+  <h4>Dear users, welcome to ZenTao project management system.</h4>
+  <p>ZenTao has two managment modes in version 15.0 and up. One is the classic management mode, providing two core features, Product and Project; the other is a new project management mode, with Program and Execution added. The following is an introduction to the new mode:</p>
+  <div class='block-content'>
+    <div class='block-details'><p class='block-title'><i class='icon icon-program'></i><strong>Program</strong></p><p>Program is used to manage a group of products and projects, and the company executives or PMO can use it for strategic planning.</p></div>
+    <div class='block-details block-right'>
+      <p class='block-title'><i class='icon icon-product'></i><strong>Product</strong></p>
+      <p>Product is used to subdivide the company's strategy into requirements that can be developed, and the product manager can use it to make release plans.<p>
+    </div>
+    <div class='block-details'>
+      <p class='block-title'><i class='icon icon-project'></i><strong>Project</strong></p>
+      <p>Project is used to organize the manpower for development, track and manage the project process, and complete the project in a faster, better, and less costly way.</p>
+    </div>
+    <div class='block-details block-right'>
+      <p class='block-title'><i class='icon icon-run'></i><strong>Execution</strong></p>
+      <p>Execution is used to decompose, assign, and track tasks to ensure that project goals can be implemented by manpower.<p>
+    </div>
+  </div>
+  <div class='text-center introduction-link'>
+    <a href='https://dl.cnezsoft.com/zentao/zentaoconcept.pdf' target='_blank' class='btn btn-wide btn-info'><i class='icon icon-p-square'></i> Document of introduction</a>
+    <a href='javascript:showVideo()' class='btn btn-wide btn-info'><i class='icon icon-video-play'></i> Video of introduction</a>
+  </div>
+</div>
+EOT;
+
 $lang->install->newReleased = "<strong class='text-danger'>Notice</strong>: Official Website has the latest version<strong class='text-danger'>%s</strong>, released on %s.";
 $lang->install->or          = 'Or';
 $lang->install->checking    = 'System Checkup';
@@ -107,15 +136,13 @@ $lang->install->requestTypes['GET']       = 'GET';
 $lang->install->requestTypes['PATH_INFO'] = 'PATH_INFO';
 
 $lang->install->workingList['full']      = 'Application Lifecycle Management';
-$lang->install->workingList['onlyTest']  = 'Only Test Management';
-$lang->install->workingList['onlyStory'] = 'Only Story Management';
-$lang->install->workingList['onlyTask']  = 'Only Task Management';
 
 $lang->install->errorConnectDB      = 'Connection to the database Failed. ';
 $lang->install->errorDBName         = 'Database name should exclude “.” ';
 $lang->install->errorCreateDB       = 'Failed to create the database.';
 $lang->install->errorTableExists    = 'The data table has existed. If ZenTao has been installed before, please return to the previous step and clear data, then continue the installation.';
 $lang->install->errorCreateTable    = 'Failed to create the table.';
+$lang->install->errorEngineInnodb   = 'Your MySQL does not support InnoDB data table engine. Please modify it to MyISAM and try again.';
 $lang->install->errorImportDemoData = 'Failed to import the demo data.';
 
 $lang->install->setConfig          = 'Create config file';
@@ -132,31 +159,36 @@ $lang->install->account            = 'Admin Account';
 $lang->install->password           = 'Admin Password';
 $lang->install->errorEmptyPassword = 'Password should not be blank.';
 
-$lang->install->groupList['ADMIN']['name']   = 'Admin';
-$lang->install->groupList['ADMIN']['desc']   = 'System Admin';
-$lang->install->groupList['DEV']['name']     = 'Dev';
-$lang->install->groupList['DEV']['desc']     = 'Developer';
-$lang->install->groupList['QA']['name']      = 'Test';
-$lang->install->groupList['QA']['desc']      = 'Tester';
-$lang->install->groupList['PM']['name']      = 'PM';
-$lang->install->groupList['PM']['desc']      = 'Project Manager';
-$lang->install->groupList['PO']['name']      = 'PO';
-$lang->install->groupList['PO']['desc']      = 'Product Owner';
-$lang->install->groupList['TD']['name']      = 'Dev Manager';
-$lang->install->groupList['TD']['desc']      = 'Development Manager';
-$lang->install->groupList['PD']['name']      = 'PD';
-$lang->install->groupList['PD']['desc']      = 'Product Director';
-$lang->install->groupList['QD']['name']      = 'QD';
-$lang->install->groupList['QD']['desc']      = 'Test Director';
-$lang->install->groupList['TOP']['name']     = 'Senior';
-$lang->install->groupList['TOP']['desc']     = 'Senior Manager';
-$lang->install->groupList['OTHERS']['name']  = 'Others';
-$lang->install->groupList['OTHERS']['desc']  = 'other users';
-$lang->install->groupList['LIMITED']['name'] = 'Limited User';
-$lang->install->groupList['LIMITED']['desc'] = 'Users can only edit contents related to themselves.';
+$lang->install->selectedMode     = 'Selection mode';
+$lang->install->selectedModeTips = 'You can go to the Admin - Custom - Mode to set it later.';
+
+$lang->install->groupList['ADMIN']['name']        = 'Admin';
+$lang->install->groupList['ADMIN']['desc']        = 'System Admin';
+$lang->install->groupList['DEV']['name']          = 'Dev';
+$lang->install->groupList['DEV']['desc']          = 'Developer';
+$lang->install->groupList['QA']['name']           = 'Test';
+$lang->install->groupList['QA']['desc']           = 'Tester';
+$lang->install->groupList['PM']['name']           = 'PM';
+$lang->install->groupList['PM']['desc']           = 'Project Manager';
+$lang->install->groupList['PO']['name']           = 'PO';
+$lang->install->groupList['PO']['desc']           = 'Product Owner';
+$lang->install->groupList['TD']['name']           = 'Dev Manager';
+$lang->install->groupList['TD']['desc']           = 'Development Manager';
+$lang->install->groupList['PD']['name']           = 'PD';
+$lang->install->groupList['PD']['desc']           = 'Product Director';
+$lang->install->groupList['QD']['name']           = 'QD';
+$lang->install->groupList['QD']['desc']           = 'Test Director';
+$lang->install->groupList['TOP']['name']          = 'Senior';
+$lang->install->groupList['TOP']['desc']          = 'Senior Manager';
+$lang->install->groupList['OTHERS']['name']       = 'Others';
+$lang->install->groupList['OTHERS']['desc']       = 'other users';
+$lang->install->groupList['LIMITED']['name']      = 'Limited User';
+$lang->install->groupList['LIMITED']['desc']      = 'Users can only edit contents related to themselves.';
+$lang->install->groupList['PROJECTADMIN']['name'] = 'Project Admin';
+$lang->install->groupList['PROJECTADMIN']['desc'] = 'Project Admins manage project privileges';
 
 $lang->install->cronList[''] = 'Monitor Cron';
-$lang->install->cronList['moduleName=project&methodName=computeburn']   = 'Update Burndown Chart';
+$lang->install->cronList['moduleName=execution&methodName=computeBurn'] = 'Update Burndown Chart';
 $lang->install->cronList['moduleName=report&methodName=remind']         = 'Daily Task Reminder';
 $lang->install->cronList['moduleName=svn&methodName=run']               = 'Synchronize SVN';
 $lang->install->cronList['moduleName=git&methodName=run']               = 'Synchronize GIT';
@@ -168,16 +200,22 @@ $lang->install->cronList['moduleName=todo&methodName=createCycle']      = 'Creat
 $lang->install->cronList['moduleName=ci&methodName=initQueue']          = 'Create recurring tasks';
 $lang->install->cronList['moduleName=ci&methodName=checkCompileStatus'] = 'Synchronize Jenkins Status';
 $lang->install->cronList['moduleName=ci&methodName=exec']               = 'Execute Jenkins';
+$lang->install->cronList['moduleName=mr&methodName=syncMR']             = 'Synchronize GitLab merge request';
 
 $lang->install->success  = "Installed!";
 $lang->install->login    = 'ZenTao Login';
 $lang->install->register = 'ZenTao Community Signup';
 
-$lang->install->joinZentao = <<<EOT
-<p>You have installed ZenTao %s.<strong class='text-danger'> Please delete install.php</strong>.</p><p>Note: In order to get the latest news of ZenTao, please sign up on ZenTao Community(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>).</p>
+$lang->install->successLabel       = "<p>You have installed ZenTao %s.</p>";
+$lang->install->successNoticeLabel = "<p>You have installed ZenTao %s.<strong class='text-danger'> Please delete install.php</strong>.</p>";
+$lang->install->joinZentao         = <<<EOT
+<p>Note: In order to get the latest news of ZenTao, please sign up on ZenTao Community(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>).</p>
 EOT;
 
 $lang->install->product = array('chanzhi', 'zdoo', 'ydisk', 'meshiot');
+
+$lang->install->modeList['classic'] = 'Classic mode';
+$lang->install->modeList['new']     = 'Program mode';
 
 $lang->install->promotion = "Products also from EasyCorp:";
 

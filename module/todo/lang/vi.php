@@ -33,6 +33,9 @@ $lang->todo->import       = "Nhập";
 $lang->todo->legendBasic  = "Thông tin cơ bản";
 $lang->todo->cycle        = "Lặp lại";
 $lang->todo->cycleConfig  = "Cấu hình lặp lại";
+$lang->todo->project      = "Project";
+$lang->todo->product      = "Product";
+$lang->todo->execution    = $lang->executionCommon;
 
 $lang->todo->reasonList['story'] = "Chuyển thành câu chuyện";
 $lang->todo->reasonList['task']  = "Chuyển thành nhiệm vụ";
@@ -66,6 +69,9 @@ $lang->todo->closedBy     = 'Người đóng';
 $lang->todo->closedDate   = 'Ngày đóng';
 $lang->todo->deadline     = 'Quá hạn';
 
+$lang->todo->cycleDaysLabel  = 'Interval days';
+$lang->todo->beforeDaysLabel = 'Days in advance';
+
 $lang->todo->every        = 'Mọi';
 $lang->todo->specify      = 'bổ nhiệm';
 $lang->todo->everyYear    = 'mỗi năm';
@@ -84,21 +90,17 @@ $lang->todo->statusList['closed']     = 'Đã đóng';
 //$lang->todo->statusList['cancel']   = 'Đã hủy';
 //$lang->todo->statusList['postpone'] = 'Tạm ngưng';
 
-$lang->todo->priList[0] = '';
-$lang->todo->priList[3] = 'Bình thường';
 $lang->todo->priList[1] = 'Khẩn cấp';
 $lang->todo->priList[2] = 'Quan trọng';
+$lang->todo->priList[3] = 'Bình thường';
 $lang->todo->priList[4] = 'Thấp';
 
-$lang->todo->typeList['custom'] = 'Tùy biến';
-$lang->todo->typeList['cycle']  = 'Lặp lại';
-$lang->todo->typeList['bug']    = 'Bug';
-$lang->todo->typeList['task']   = 'Nhiệm vụ';
-$lang->todo->typeList['story']  = 'Câu chuyện';
-
-global $config;
-if($config->global->flow == 'onlyTest' or $config->global->flow == 'onlyStory') unset($lang->todo->typeList['task']);
-if($config->global->flow == 'onlyTask' or $config->global->flow == 'onlyStory') unset($lang->todo->typeList['bug']);
+$lang->todo->typeList['custom']   = 'Tùy biến';
+$lang->todo->typeList['cycle']    = 'Lặp lại';
+$lang->todo->typeList['bug']      = 'Bug';
+$lang->todo->typeList['task']     = 'Nhiệm vụ';
+$lang->todo->typeList['story']    = 'Câu chuyện';
+$lang->todo->typeList['testtask'] = 'Testtask';
 
 $lang->todo->confirmDelete  = "Bạn có muốn xóa việc này?";
 $lang->todo->thisIsPrivate  = 'Đây là một việc riêng tư';
@@ -109,11 +111,14 @@ $lang->todo->noTodo         = 'Không có việc của loại này.';
 $lang->todo->noAssignedTo   = "Người được giao không nên trống.";
 $lang->todo->unfinishedTodo = 'The todos of ID %s are not finished, and can not close.';
 
-$lang->todo->periods['all']      = 'Tất cả việc';
-$lang->todo->periods['thisYear'] = 'Năm nay';
-$lang->todo->periods['future']   = 'TBD';
-$lang->todo->periods['before']   = 'Chưa kết thúc';
-$lang->todo->periods['cycle']    = 'Lặp lại';
+$lang->todo->periods['all']             = 'Tất cả việc';
+$lang->todo->periods['before']          = 'Chưa kết thúc';
+$lang->todo->periods['future']          = 'TBD';
+$lang->todo->periods['thisWeek']        = 'This Week';
+$lang->todo->periods['thisMonth']       = 'This Month';
+$lang->todo->periods['thisYear']        = 'Năm nay';
+$lang->todo->periods['assignedToOther'] = 'Assigned To Other';
+$lang->todo->periods['cycle']           = 'Lặp lại';
 
 $lang->todo->action = new stdclass();
 $lang->todo->action->finished = array('main' => '$date, là $extra bởi <strong>$actor</strong>.', 'extra' => 'reasonList');

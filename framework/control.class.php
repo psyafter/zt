@@ -21,11 +21,11 @@ include dirname(__FILE__) . '/base/control.class.php';
 class control extends baseControl
 {
     /**
-     * Check requiredFields and set exportFields for workflow. 
-     * 
-     * @param  string $moduleName 
-     * @param  string $methodName 
-     * @param  string $appName 
+     * Check requiredFields and set exportFields for workflow.
+     *
+     * @param  string $moduleName
+     * @param  string $methodName
+     * @param  string $appName
      * @access public
      * @return void
      */
@@ -33,7 +33,9 @@ class control extends baseControl
     {
         parent::__construct($moduleName, $methodName, $appName);
 
-        if(defined('IN_USE') or (defined('RUN_MODE') and RUN_MODE == 'api')) $this->setConcept();
+        $this->app->setOpenApp();
+
+        if(defined('IN_USE') or (defined('RUN_MODE') and RUN_MODE != 'api')) $this->setPreference();
 
         if(!isset($this->config->bizVersion)) return false;
 
@@ -61,7 +63,7 @@ class control extends baseControl
             }
 
             /* Append editor field to this module config from workflow. */
-            $textareaFields = $this->dao->select('*')->from(TABLE_WORKFLOWFIELD)->where('module')->eq($this->moduleName)->andWhere('control')->eq('textarea')->andWhere('buildin')->eq('0')->fetchAll('field');
+            $textareaFields = $this->dao->select('*')->from(TABLE_WORKFLOWFIELD)->where('module')->eq($this->moduleName)->andWhere('control')->eq('richtext')->andWhere('buildin')->eq('0')->fetchAll('field');
             if($textareaFields)
             {
                 $editorIdList = array();
@@ -73,25 +75,51 @@ class control extends baseControl
                 $this->config->{$this->moduleName}->editor->{$this->methodName}['id'] .= ',' . join(',', $editorIdList);
                 trim($this->config->{$this->moduleName}->editor->{$this->methodName}['id'], ',');
             }
+
+            /* If workflow is created by a normal user, set priv. */
+            if(isset($this->app->user) and !$this->app->user->admin)
+            {
+                $actions = $this->dao->select('module, action')->from(TABLE_WORKFLOWACTION)->where('createdBy')->eq($this->app->user->account)->andWhere('buildin')->eq('0')->fetchGroup('module');
+                $labels  = $this->dao->select('module, code')->from(TABLE_WORKFLOWLABEL)->where('createdBy')->eq($this->app->user->account)->andWhere('buildin')->eq('0')->fetchGroup('module');
+                if(!empty($actions))
+                {
+                    foreach($actions as $module => $actionObj)
+                    {
+                        foreach($actionObj as $action) $this->app->user->rights['rights'][$module][$action->action] = 1;
+                    }
+                }
+
+                if(!empty($labels))
+                {
+                    foreach($labels as $module => $codeObj)
+                    {
+                        foreach($codeObj as $code)
+                        {
+                            $code = str_replace('browse', '', $code->code);
+                            $this->app->user->rights['rights'][$module][$code] = 1;
+                        }
+                    }
+                }
+            }
         }
     }
 
     /**
-     * Go to concept setting page if concept not setted.
-     * 
+     * Go to preference setting page if preference not setted.
+     *
      * @access public
      * @return void
      */
-    public function setConcept()
+    public function setPreference()
     {
-        if(empty($this->app->user->admin)) return true;
+        if(empty($this->app->user->account)) return true;
         if($this->app->getModuleName() == 'user' and strpos("login,logout", $this->app->getMethodName()) !== false) return true;
         if($this->app->getModuleName() == 'my' and $this->app->getMethodName() == 'changepassword') return true;
+        if($this->app->getModuleName() == 'my' and $this->app->getMethodName() == 'preference') return true;
 
-        if($this->app->getModuleName() == 'custom' and $this->app->getMethodName() == 'flow') return true;
-        if(!isset($this->config->conceptSetted)) 
+        if(!isset($this->config->preferenceSetted))
         {
-            $this->locate(helper::createLink('custom', 'flow'));
+            $this->locate(helper::createLink('my', 'preference'));
         }
     }
 
@@ -202,13 +230,13 @@ class control extends baseControl
 
         /**
          * 切换到视图文件所在的目录，以保证视图文件里面的include语句能够正常运行。
-         * Change the dir to the view file to keep the relative pathes work.
+         * Change the dir to the view file to keep the relative paths work.
          */
         $currentPWD = getcwd();
         chdir(dirname($viewFile));
 
         /**
-         * 使用extract安定ob方法渲染$viewFile里面的代码。
+         * 使用extract和ob方法渲染$viewFile里面的代码。
          * Use extract and ob functions to eval the codes in $viewFile.
          */
         extract((array)$this->view);
@@ -293,7 +321,7 @@ class control extends baseControl
 
     /**
      * Check require with flow field when post data.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -313,7 +341,9 @@ class control extends baseControl
         $message        = array();
         foreach($fields as $field)
         {
-            if($field->buildin or !$field->show or !isset($layouts[$field->field])) continue;
+            if(!empty($field->buildin)) continue;
+            if(empty($field->show)) continue;
+            if(!isset($layouts[$field->field])) continue;
 
             $fieldRules = explode(',', trim($field->rules, ','));
             $fieldRules = array_unique($fieldRules);

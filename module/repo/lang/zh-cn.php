@@ -2,34 +2,42 @@
 $lang->repo->common          = '代码';
 $lang->repo->browse          = '浏览';
 $lang->repo->viewRevision    = '查看修订';
+$lang->repo->product         = '所属产品';
+$lang->repo->execution       = '所属' . $lang->execution->common;
 $lang->repo->create          = '创建';
-$lang->repo->createAction    = '创建版本库';
 $lang->repo->maintain        = '版本库列表';
 $lang->repo->edit            = '编辑';
-$lang->repo->editAction      = '编辑版本库';
 $lang->repo->delete          = '删除版本库';
 $lang->repo->showSyncCommit  = '显示同步进度';
 $lang->repo->ajaxSyncCommit  = '接口：AJAX同步注释';
 $lang->repo->setRules        = '指令配置';
 $lang->repo->download        = '下载';
 $lang->repo->downloadDiff    = '下载Diff';
-$lang->repo->diffAction      = '版本对比';
-$lang->repo->revisionAction  = '版本详情';
-$lang->repo->blameAction     = '版本追溯';
 $lang->repo->addBug          = '添加评审';
 $lang->repo->editBug         = '编辑评审';
 $lang->repo->deleteBug       = '删除评审';
 $lang->repo->addComment      = '添加备注';
 $lang->repo->editComment     = '编辑备注';
 $lang->repo->deleteComment   = '删除备注';
+$lang->repo->encrypt         = '加密方式';
+$lang->repo->repo            = '代码库';
+$lang->repo->parent          = '父文件夹';
+$lang->repo->branch          = '分支';
+
+$lang->repo->browseAction    = '浏览版本库';
+$lang->repo->createAction    = '创建版本库';
+$lang->repo->editAction      = '编辑版本库';
+$lang->repo->diffAction      = '版本对比';
+$lang->repo->downloadAction  = '下载代码库文件';
+$lang->repo->revisionAction  = '版本详情';
+$lang->repo->blameAction     = '版本追溯';
+$lang->repo->reviewAction    = '评审列表';
 
 $lang->repo->submit     = '提交';
 $lang->repo->cancel     = '取消';
 $lang->repo->addComment = '添加评论';
 
-$lang->repo->product  = $lang->productCommon;
 $lang->repo->module   = '模块';
-$lang->repo->project  = $lang->projectCommon;
 $lang->repo->type     = '类型';
 $lang->repo->assign   = '指派';
 $lang->repo->title    = '标题';
@@ -39,7 +47,7 @@ $lang->repo->line     = '行';
 $lang->repo->expand   = '点击展开';
 $lang->repo->collapse = '点击折叠';
 
-$lang->repo->id        = '编号';
+$lang->repo->id        = 'ID';
 $lang->repo->SCM       = '类型';
 $lang->repo->name      = '名称';
 $lang->repo->path      = '地址';
@@ -119,8 +127,16 @@ $lang->repo->logStyles['D'] = '删除';
 $lang->repo->encodingList['utf_8'] = 'UTF-8';
 $lang->repo->encodingList['gbk']   = 'GBK';
 
-$lang->repo->scmList['Git']        = 'Git';
+$lang->repo->scmList['Gitlab']     = 'Gitlab';
+$lang->repo->scmList['Git']        = '本地 Git';
 $lang->repo->scmList['Subversion'] = 'Subversion';
+
+$lang->repo->gitlabHost    = 'GitLab Server';
+$lang->repo->gitlabToken   = 'GitLab Token';
+$lang->repo->gitlabProject = 'GitLab 项目';
+
+$lang->repo->placeholder = new stdclass;
+$lang->repo->placeholder->gitlabHost = '请填写GitLab访问地址';
 
 $lang->repo->notice                 = new stdclass();
 $lang->repo->notice->syncing        = '正在同步中, 请稍等...';
@@ -159,10 +175,13 @@ $lang->repo->error->noPriv        = '程序没有权限切换到目录 %s';
 $lang->repo->error->output        = "执行命令：%s\n错误结果(%s)： %s\n";
 $lang->repo->error->clientVersion = "客户端版本过低，请升级或更换SVN客户端";
 $lang->repo->error->encoding      = "编码可能错误，请更换编码重试。";
+$lang->repo->error->deleted       = "删除版本库失败，当前版本库有提交记录与设计关联";
+$lang->repo->error->linkedJob     = "删除版本库失败，当前版本库与构建有关联，请取消关联或删除构建。";
 $lang->repo->error->clientPath    = "客户端安装目录不能有空格！";
 
-$lang->repo->syncTips      = '请参照<a target="_blank" href="https://www.zentao.pm/book/zentaopmshelp/207.html">这里</a>，设置版本库定时同步。';
-$lang->repo->encodingsTips = "提交日志的编码，可以用逗号连接起来的多个，比如utf-8。";
+$lang->repo->syncTips          = '请参照<a target="_blank" href="https://www.zentao.pm/book/zentaopmshelp/207.html">这里</a>，设置版本库定时同步。';
+$lang->repo->encodingsTips     = "提交日志的编码，可以用逗号连接起来的多个，比如utf-8。";
+$lang->repo->pathTipsForGitlab = "GitLab 项目URL";
 
 $lang->repo->example              = new stdclass();
 $lang->repo->example->client      = new stdclass();

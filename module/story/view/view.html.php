@@ -12,7 +12,7 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/kindeditor.html.php';?>
-<?php $browseLink = $app->session->storyList != false ? $app->session->storyList : $this->createLink('product', 'browse', "productID=$story->product&branch=$story->branch&moduleID=$story->module");?>
+<?php $browseLink = $app->session->storyList ? $app->session->storyList : $this->createLink('product', 'browse', "productID=$story->product");?>
 <?php js::set('sysurl', common::getSysUrl());?>
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
@@ -33,8 +33,8 @@
         <?php
         for($i = $story->version; $i >= 1; $i --)
         {
-      	  $class = $i == $version ? " class='active'" : '';
-      	  echo '<li' . $class .'>' . html::a(inlink('view', "storyID=$story->id&version=$i"), '#' . $i) . '</li>';
+            $class = $i == $version ? " class='active'" : '';
+            echo '<li' . $class .'>' . html::a(inlink('view', "storyID=$story->id&version=$i"), '#' . $i) . '</li>';
         }
         ?>
         </ul>
@@ -48,7 +48,16 @@
   <?php if(!isonlybody()):?>
   <div class="btn-toolbar pull-right">
     <?php if(common::canModify('product', $product)): ?>
-    <?php common::printLink('story', 'create', "productID={$story->product}&branch={$story->branch}&moduleID={$story->module}", "<i class='icon icon-plus'></i>" . $lang->story->create, '', "class='btn btn-primary'"); ?>
+    <?php
+    $otherParam = 'storyID=&projectID=';
+    $tab        = 'product';
+    if($this->app->rawModule == 'projectstory')
+    {
+        $otherParam = "storyID=&projectID={$this->session->project}";
+        $openGroup  = 'project';
+    }
+    ?>
+    <?php common::printLink('story', 'create', "productID={$story->product}&branch={$story->branch}&moduleID={$story->module}&$otherParam&bugID=0&planID=0&todoID=0&extra=&type=$story->type", "<i class='icon icon-plus'></i> " . $lang->story->create, '', "class='btn btn-primary' data-app='$tab'"); ?>
     <?php endif;?>
   </div>
   <?php endif;?>
@@ -64,6 +73,58 @@
         <div class="detail-title"><?php echo $lang->story->legendVerify;?></div>
         <div class="detail-content article-content"><?php echo $story->verify;?></div>
       </div>
+      <!--
+      <?php if($execution->model == 'waterfall' and $story->type == 'requirement'):?>
+        <?php if(!empty($track)):?>
+        <div class="detail">
+          <div class="detail-title"><?php echo $lang->story->track;?></div>
+          <div class="detail-content article-content main-table">
+            <table class="table">
+              <thead>
+                  <tr>
+                    <th class="w-120px"><?php echo $lang->story->story;?></th>
+                    <th class="w-120px"><?php echo $lang->story->design;?></th>
+                    <th class="w-120px"><?php echo $lang->story->case;?></th>
+                    <th class="w-60px"><?php echo $lang->story->repoCommit;?></th>
+                    <th class="w-120px"><?php echo $lang->story->bug;?></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach($track as $storyID => $storyInfo):?>
+                  <tr>
+                     <td style='padding-left: 10px;'><?php echo html::a($this->createLink('story', 'view', "storyID=$storyID"), $storyInfo->title, '', "title='$storyInfo->title'");?>
+                     </td>
+                     <td>
+                      <?php foreach($storyInfo->design as $designID => $design):?>
+                      <?php echo html::a($this->createLink('design', 'view', "designID=$designID"), $design->name, '', "title='$design->name'") . '<br/>';?>
+                      <?php endforeach;?>
+                     </td>
+                     <td>
+                       <?php foreach($storyInfo->case as $caseID => $case):?>
+                       <?php echo html::a($this->createLink('testcase', 'view', "caseID=$caseID"), $case->title, '', "title='$case->title'") . '<br/>';?>
+                       <?php endforeach;?>
+                     </td>
+                     <td>
+                       <?php foreach($storyInfo->revision as $revision => $repoID):?>
+                       <?php
+                       echo html::a($this->createLink('design', 'revision', "repoID=$revision"), '#'. $revision) . '<br/>';
+                       ?>
+                       <?php endforeach;?>
+                     </td>
+                     <td>
+                       <?php foreach($storyInfo->bug as $bugID => $bug):?>
+                       <?php echo html::a($this->createLink('bug', 'view', "bugID=$bugID"), $bug->title, '', "title='$bug->title'") . '<br/>';?>
+                       <?php endforeach;?>
+                     </td>
+                  </tr>
+                  <?php endforeach;?>
+                </tbody>
+            </table>
+          </div>
+        </div>
+        <?php endif;?>
+      <?php endif;?>
+      -->
       <?php echo $this->fetch('file', 'printFiles', array('files' => $story->files, 'fieldset' => 'true', 'object' => $story));?>
       <?php
       $canBeChanged = common::canBeChanged('story', $story);
@@ -80,9 +141,9 @@
                 <th class='w-40px'> <?php echo $lang->priAB;?></th>
                 <th>                <?php echo $lang->story->title;?></th>
                 <th class='w-100px'><?php echo $lang->story->assignedTo;?></th>
-                <th class='w-80px'> <?php echo $lang->story->estimate;?></th>
+                <th class='w-90px'> <?php echo $lang->story->estimate;?></th>
                 <th class='w-80px'> <?php echo $lang->story->status;?></th>
-                <th class='w-200px'><?php echo $lang->actions;?></th>
+                <th class='w-230px'><?php echo $lang->actions;?></th>
               </tr>
             </thead>
             <tbody>
@@ -98,12 +159,12 @@
                 </td>
                 <td class='text-left' title='<?php echo $child->title;?>'><a class="iframe" data-width="90%" href="<?php echo $this->createLink('story', 'view', "storyID=$child->id", '', true); ?>"><?php echo $child->title;?></a></td>
                 <td><?php echo zget($users, $child->assignedTo);?></td>
-                <td><?php echo $child->estimate;?></td>
+                <td title="<?php echo $child->estimate . ' ' . $lang->hourCommon;?>"><?php echo $child->estimate . $config->hourUnit;?></td>
                 <td><?php echo $this->processStatus('story', $child);?></td>
                 <td class='c-actions'>
                   <?php
-                  common::printIcon('story', 'change', "storyID=$child->id", $child, 'list');
-                  common::printIcon('story', 'review', "storyID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
+                  common::printIcon('story', 'change', "storyID=$child->id", $child, 'list', 'alter');
+                  common::printIcon('story', 'review', "storyID=$child->id", $child, 'list', 'search', '', 'iframe showinonlybody', true);
                   common::printIcon('story', 'assignTo', "storyID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
                   common::printIcon('story', 'close',  "storyID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
                   common::printIcon('story', 'activate', "storyID=$child->id", $child, 'list', '', '', 'iframe showinonlybody', true);
@@ -127,21 +188,22 @@
         <?php if(!isonlybody()) echo "<div class='divider'></div>";?>
         <?php if(!$story->deleted):?>
         <?php
-        common::printIcon('story', 'change', "storyID=$story->id", $story, 'button', '', '', 'showinonlybody');
-        common::printIcon('story', 'review', "storyID=$story->id", $story, 'button', '', '', 'showinonlybody');
+        common::printIcon('story', 'change', "storyID=$story->id", $story, 'button', 'alter', '', 'showinonlybody');
+        common::printIcon('story', 'review', "storyID=$story->id", $story, 'button', 'search', '', 'showinonlybody');
         if($story->status == 'active' and $story->stage == 'wait' and $story->parent <= 0 and !isonlybody())
         {
-            $divideLang = ($story->type == 'story' || !$story->type) ? $lang->story->subdivide : $lang->story->splitRequirent; 
+            $divideLang = $lang->story->subdivide;
             $misc       = "class='btn divideStory' data-toggle='modal' data-type='iframe' data-width='95%'";
             $link       = $this->createLink('story', 'batchCreate', "productID=$story->product&branch=$story->branch&moduleID=$story->module&storyID=$story->id", '', true);
-            if(common::hasPriv('story', 'batchCreate', $story)) echo html::a($link, "<i class='icon icon-treemap-alt'></i> " . $divideLang, '', $misc);
+            if(common::hasPriv('story', 'batchCreate', $story)) echo html::a($link, "<i class='icon icon-split'></i> " . $divideLang, '', $misc);
         }
 
         common::printIcon('story', 'assignTo', "storyID=$story->id", $story, 'button', '', '', 'iframe showinonlybody', true);
         common::printIcon('story', 'close',    "storyID=$story->id", $story, 'button', '', '', 'iframe showinonlybody', true);
         common::printIcon('story', 'activate', "storyID=$story->id", $story, 'button', '', '', 'iframe showinonlybody', true);
+        if(isset($this->config->maxVersion) and $this->app->tab == 'project' and common::hasPriv('story', 'importToLib')) echo html::a('#importToLib', "<i class='icon icon-assets'></i> " . $this->lang->story->importToLib, '', 'class="btn" data-toggle="modal"');
 
-        if($config->global->flow != 'onlyStory' and $story->parent >= 0 and $story->type != 'requirement' and (common::hasPriv('testcase', 'create', $story) or common::hasPriv('testcase', 'batchCreate', $story)))
+        if($story->parent >= 0 and $story->type != 'requirement' and (common::hasPriv('testcase', 'create', $story) or common::hasPriv('testcase', 'batchCreate', $story)))
         {
             $this->app->loadLang('testcase');
             echo "<div class='btn-group dropup'>";
@@ -160,13 +222,13 @@
             echo "</div>";
         }
 
-        if($from == 'project') common::printIcon('task', 'create', "project=$param&storyID=$story->id&moduleID=$story->module", $story, 'button', 'plus', '', 'showinonlybody');
+        if($from == 'execution' and strpos('draft,closed', $story->status) === false) common::printIcon('task', 'create', "execution=$param&storyID=$story->id&moduleID=$story->module", $story, 'button', 'plus', '', 'showinonlybody');
 
         echo $this->buildOperateMenu($story, 'view');
 
         echo "<div class='divider'></div>";
         common::printIcon('story', 'edit', "storyID=$story->id", $story);
-        common::printIcon('story', 'create', "productID=$story->product&branch=$story->branch&moduleID=$story->module&storyID=$story->id&projectID=0&bugID=0&planID=0&todoID=0&extra=&type=$story->type", $story, 'button', 'copy', '', '', '', "data-width='1050'");
+        common::printIcon('story', 'create', "productID=$story->product&branch=$story->branch&moduleID=$story->module&storyID=$story->id&executionID=0&bugID=0&planID=0&todoID=0&extra=&type=$story->type", $story, 'button', 'copy', '', '', '', "data-width='1050'");
         common::printIcon('story', 'delete', "storyID=$story->id", $story, 'button', 'trash', 'hiddenwin');
         ?>
         <?php endif;?>
@@ -215,7 +277,7 @@
                       foreach($modulePath as $key => $module)
                       {
                           $moduleTitle .= $module->name;
-                          if(!common::printLink('product', 'browse', "productID=$story->product&branch=$story->branch&browseType=byModule&param=$module->id", $module->name)) echo $module->name;
+                          if(!common::printLink('product', 'browse', "productID=$story->product&branch=$story->branch&browseType=byModule&param=$module->id", $module->name, '', "data-app='product'")) echo $module->name;
                           if(isset($modulePath[$key + 1]))
                           {
                               $moduleTitle .= '/';
@@ -228,6 +290,7 @@
                   ?>
                   <td title='<?php echo $moduleTitle?>'><?php echo $printModule?></td>
                 </tr>
+                <?php if($story->type != 'requirement'):?>
                 <tr class='plan-line'>
                   <th><?php echo $lang->story->plan;?></th>
                   <td>
@@ -236,18 +299,19 @@
                   {
                       foreach($story->planTitle as $planID => $planTitle)
                       {
-                          if(!common::printLink('productplan', 'view', "planID=$planID", $planTitle)) echo $lanTitle;
+                          if(!common::printLink('productplan', 'view', "planID=$planID", $planTitle, '', "data-app='product'")) echo $lanTitle;
                           echo '<br />';
                       }
                   }
                   ?>
                   </td>
                 </tr>
+                <?php endif;?>
                 <tr>
                   <th><?php echo $lang->story->source;?></th>
                   <td id='source'><?php echo $lang->story->sourceList[$story->source];?></td>
                 </tr>
-                <tr>
+                <tr id='sourceNoteBox'>
                   <th><?php echo $lang->story->sourceNote;?></th>
                   <td><?php echo $story->sourceNote;?></td>
                 </tr>
@@ -255,6 +319,7 @@
                   <th><?php echo $lang->story->status;?></th>
                   <td><span class='status-story status-<?php echo $story->status?>'><span class="label label-dot"></span> <?php echo $this->processStatus('story', $story);?></span></td>
                 </tr>
+                <?php if($story->type != 'requirement'):?>
                 <tr class='stage-line'>
                   <th><?php echo $lang->story->stage;?></th>
                   <td>
@@ -270,13 +335,18 @@
                   ?>
                   </td>
                 </tr>
+                <?php endif;?>
+                <tr>
+                  <th><?php echo $lang->story->category;?></th>
+                  <td><?php echo $lang->story->categoryList[$story->category];?></td>
+                </tr>
                 <tr>
                   <th><?php echo $lang->story->pri;?></th>
                   <td><span class='label-pri <?php echo 'label-pri-' . $story->pri;?>' title='<?php echo zget($lang->story->priList, $story->pri)?>'><?php echo zget($lang->story->priList, $story->pri)?></span></td>
                 </tr>
                 <tr>
                   <th><?php echo $lang->story->estimate;?></th>
-                  <td><?php echo $story->estimate;?></td>
+                  <td title="<?php echo $story->estimate . ' ' . $lang->hourCommon;?>"><?php echo $story->estimate . $config->hourUnit;?></td>
                 </tr>
                 <tr>
                   <th><?php echo $lang->story->keywords;?></th>
@@ -301,8 +371,18 @@
                   <td><?php if($story->assignedTo) echo zget($users, $story->assignedTo) . $lang->at . $story->assignedDate;?></td>
                 </tr>
                 <tr>
-                  <th><?php echo $lang->story->reviewedBy;?></th>
-                  <td><?php $reviewedBy = explode(',', $story->reviewedBy); foreach($reviewedBy as $account) echo ' ' . zget($users, trim($account)); ?></td>
+                  <th><?php echo $lang->story->reviewers;?></th>
+                  <td>
+                    <?php
+                    if($reviewers)
+                    {
+                        foreach($reviewers as $reviewer => $result)
+                        {
+                            echo !empty($result) ? '<span style="color: #cbd0db" title="' . $lang->story->reviewed . '"> ' . zget($users, $reviewer) . '</span>' : '<span title="' . $lang->story->toBeReviewed .'"> ' . zget($users, $reviewer) . '</span>';
+                        }
+                    }
+                    ?>
+                  </td>
                 </tr>
                 <tr>
                   <th><?php echo $lang->story->reviewedDate;?></th>
@@ -337,46 +417,65 @@
     <div class="cell">
       <div class='tabs'>
         <ul class='nav nav-tabs'>
-          <?php if($config->global->flow == 'onlyStory'):?>
-          <li class='active'><a href='#legendRelated' data-toggle='tab'><?php echo $lang->story->legendRelated;?></a></li>
-          <?php else:?>
-          <li class='active'><a href='#legendProjectAndTask' data-toggle='tab'><?php echo $lang->story->legendProjectAndTask;?></a></li>
-          <li><a href='#legendRelated' data-toggle='tab'><?php echo $lang->story->legendRelated;?></a></li>
+          <?php if($this->config->URAndSR):?>
+          <li class='active'><a href='#legendStories' data-toggle='tab'><?php echo $story->type == 'story' ? $lang->story->requirement : $lang->story->story;?></a></li>
           <?php endif;?>
+          <?php if($story->type == 'story'):?>
+          <li class="<?php if(!$this->config->URAndSR) echo 'active';?>"><a href='#legendProjectAndTask' data-toggle='tab'><?php echo $lang->story->legendProjectAndTask;?></a></li>
+          <?php endif;?>
+          <li><a href='#legendRelated' data-toggle='tab'><?php echo $lang->story->legendRelated;?></a></li>
         </ul>
         <div class='tab-content'>
-          <?php if($config->global->flow != 'onlyStory'):?>
-          <div class='tab-pane active' id='legendProjectAndTask'>
+          <?php if($this->config->URAndSR):?>
+          <div class='tab-pane active' id='legendStories'>
             <ul class="list-unstyled">
               <?php
-              foreach($story->tasks as $projectTasks)
+              $relation = array();
+              foreach($relations as $item) $relation[$item->id] = $item->title;
+              foreach($relation as $id => $title)
               {
-                  foreach($projectTasks as $task)
+                  echo "<li title='$title'>" . html::a($this->createLink('story', 'view', "id=$id", '', true), "#$id $title", '', "class='iframe' data-width='80%'");
+                  echo html::a($this->createLink('story', 'linkStory', "storyID=$story->id&type=remove&linkedID=$id"), '<i class="icon icon-close"></i>', 'hiddenwin', "class='deleter hide removeButton'");
+              }
+              ?>
+              <?php $linkLang = ($story->type == 'story') ? $lang->story->requirement : $lang->story->story;?>
+              <li><?php echo html::a($this->createLink('story', 'linkStory', "storyID=$story->id", '', true), $lang->story->link . $linkLang, '', "class='btn btn-info iframe' data-width='95%' id='linkButton'");?>
+              <?php if(!empty($relations)) echo html::a('javascript:void(0)', $lang->story->unlink . $linkLang, '', "class='btn btn-info' id='unlinkStory'");?></li>
+            </ul>
+          </div>
+          <?php endif;?>
+
+          <?php if($story->type == 'story'):?>
+          <div class="tab-pane <?php if(!$this->config->URAndSR) echo 'active';?>" id='legendProjectAndTask'>
+            <ul class="list-unstyled">
+              <?php
+              foreach($story->tasks as $executionTasks)
+              {
+                  foreach($executionTasks as $task)
                   {
-                      if(!isset($projects[$task->project])) continue;
-                      $projectName = $projects[$task->project];
+                      if(!isset($executions[$task->execution])) continue;
+                      $executionName = $executions[$task->execution];
                       $class = isonlybody() ? 'showinonlybody' : 'iframe';
                       echo "<li title='$task->name'>" . html::a($this->createLink('task', 'view', "taskID=$task->id", '', true), "[T]$task->id $task->name", '', "class=$class data-width='80%'");
-                      echo html::a($this->createLink('project', 'browse', "projectID=$task->project"), $projectName, '', "class='text-muted'") . '</li>';
+                      echo html::a($this->createLink('execution', 'browse', "executionID=$task->execution"), $executionName, '', "class='text-muted'") . '</li>';
                   }
               }
               if(count($story->tasks) == 0)
               {
-                  foreach($story->projects as $projectID => $project)
+                  foreach($story->executions as $executionID => $execution)
                   {
-                      echo "<li title='$project->name'>" . html::a($this->createLink('project', 'browse', "projectID=$projectID"), $project->name, '', "class='text-muted'") . '</li>';
+                      echo "<li title='$execution->name'>" . html::a($this->createLink('execution', 'browse', "executionID=$executionID"), $execution->name, '', "class='text-muted'") . '</li>';
                   }
               }
               ?>
             </ul>
           </div>
           <?php endif;?>
-          <div class="tab-pane <?php if($config->global->flow == 'onlyStory') echo 'active';?>" id='legendRelated'>
+          <div class="tab-pane" id='legendRelated'>
             <table class="table table-data">
               <tbody>
-                <?php if($config->global->flow != 'onlyStory'):?>
                 <?php if(!empty($fromBug)):?>
-                <tr class='text-top'>
+                <tr>
                   <th class='thWidth'><?php echo $lang->story->legendFromBug;?></th>
                   <td class='pd-0'>
                     <ul class='list-unstyled'>
@@ -386,7 +485,7 @@
                 </tr>
                 <?php endif;?>
                 <tr>
-                  <th class='text-top thWidth'><?php echo $lang->story->legendBugs;?></th>
+                  <th class='thWidth'><?php echo $lang->story->legendBugs;?></th>
                   <td class='pd-0'>
                     <ul class='list-unstyled'>
                     <?php
@@ -399,44 +498,17 @@
                   </td>
                 </tr>
                 <tr>
-                  <th class='text-top'><?php echo $lang->story->legendCases;?></th>
+                  <th><?php echo $lang->story->legendCases;?></th>
                   <td class='pd-0'>
                     <ul class='list-unstyled'>
                     <?php
+                    $misc = isonlybody() ? "showinonlybody" : "class='iframe' data-width='80%'";
+
                     foreach($cases as $case)
                     {
-                        echo "<li title='[C]$case->id $case->title'>" . html::a($this->createLink('testcase', 'view', "caseID=$case->id", '', true), "[C] #$case->id $case->title", '', "class='iframe' data-width='80%'") . '</li>';
+                        echo "<li title='[C]$case->id $case->title'>" . html::a($this->createLink('testcase', 'view', "caseID=$case->id", '', true), "[C] #$case->id $case->title", '', $misc) . '</li>';
                     }
                     ?>
-                    </ul>
-                  </td>
-                </tr>
-                <?php endif;?>
-                <tr>
-                  <th class='text-top thWidth'><?php echo $lang->story->legendLinkStories;?></th>
-                  <td class='pd-0'>
-                    <ul class='list-unstyled'>
-                      <?php
-                      $linkStories = explode(',', $story->linkStories) ;
-                      foreach($linkStories as $linkStoryID)
-                      {
-                          if(isset($story->extraStories[$linkStoryID])) echo '<li>' . html::a($this->createLink('story', 'view', "storyID=$linkStoryID", '', true), "[S] #$linkStoryID " . $story->extraStories[$linkStoryID], '', "class='iframe' data-width='80%'") . '</li>';
-                      }
-                      ?>
-                    </ul>
-                  </td>
-                </tr>
-                <tr>
-                  <th class='text-top'><?php echo $lang->story->legendChildStories;?></th>
-                  <td class='pd-0'>
-                    <ul class='list-unstyled'>
-                      <?php
-                      $childStories = explode(',', $story->childStories) ;
-                      foreach($childStories as $childStoryID)
-                      {
-                        if(isset($story->extraStories[$childStoryID])) echo '<li>' . html::a($this->createLink('story', 'view', "storyID=$childStoryID", '', true), "#$childStoryID " . $story->extraStories[$childStoryID], '', "class='iframe' data-width='80%'") . '</li>';
-                      }
-                      ?>
                     </ul>
                   </td>
                 </tr>
@@ -450,6 +522,42 @@
   </div>
 </div>
 
+<div class="modal fade" id="importToLib">
+  <div class="modal-dialog mw-500px">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="icon icon-close"></i></button>
+        <h4 class="modal-title"><?php echo $lang->story->importToLib;?></h4>
+      </div>
+      <div class="modal-body">
+        <form method='post' class='form-ajax' action='<?php echo $this->createLink('story', 'importToLib', "storyID=$story->id");?>'>
+          <table class='table table-form'>
+            <tr>
+              <th><?php echo $lang->story->lib;?></th>
+              <td>
+                <?php echo html::select('lib', $libs, '', "class='form-control chosen' required");?>
+              </td>
+            </tr>
+            <?php if(!common::hasPriv('assetlib', 'approveStory') and !common::hasPriv('assetlib', 'batchApproveStory')):?>
+            <tr>
+              <th><?php echo $lang->story->approver;?></th>
+              <td>
+                <?php echo html::select('assignedTo', $approvers, '', "class='form-control chosen'");?>
+              </td>
+            </tr>
+            <?php endif;?>
+            <tr>
+              <td colspan='2' class='text-center'>
+                <?php echo html::submitButton($lang->import, '', 'btn btn-primary');?>
+              </td>
+            </tr>
+          </table>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="mainActions" class='main-actions'>
   <?php common::printPreAndNext($preAndNext);?>
 </div>
@@ -460,6 +568,9 @@ js::set('productID', $story->product);
 js::set('branch', $story->branch);
 js::set('moduleID', $story->module);
 js::set('storyType', $story->type);
+js::set('unlink', $lang->story->unlink);
+js::set('cancel', $lang->cancel);
+js::set('rawModule', $this->app->rawModule);
 ?>
 <?php include '../../common/view/syntaxhighlighter.html.php';?>
 <?php include '../../common/view/footer.html.php';?>

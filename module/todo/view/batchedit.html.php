@@ -12,6 +12,8 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/datepicker.html.php';?>
+<?php js::set('moduleList', $config->todo->moduleList)?>
+<?php js::set('objectsMethod', $config->todo->getUserObjectsMethod)?>
 <div id="mainContent" class="main-content">
   <div class="main-header">
     <h2><?php echo $lang->todo->common . $lang->colon . $lang->todo->batchEdit;?></h2>
@@ -34,14 +36,14 @@
     <table class='table table-form'>
       <thead>
         <tr class='text-center'>
-          <th class='w-40px'>   <?php echo $lang->idAB;?></th>
-          <th class='w-100px'>  <?php echo $lang->todo->date;?></th>
-          <th class='w-110px'>  <?php echo $lang->todo->type;?></th>
-          <th class='w-100px<?php echo zget($visibleFields, 'pri', ' hidden')?>'>   <?php echo $lang->todo->pri;?></th>
+          <th class='c-id'>   <?php echo $lang->idAB;?></th>
+          <th class='c-date'>  <?php echo $lang->todo->date;?></th>
+          <th class='c-type'>  <?php echo $lang->todo->type;?></th>
+          <th class='c-pri<?php echo zget($visibleFields, 'pri', ' hidden')?>'>   <?php echo $lang->todo->pri;?></th>
           <th><?php echo $lang->todo->name;?></th>
           <th <?php echo zget($visibleFields, 'desc', "class='hidden'")?>><?php echo $lang->todo->desc;?></th>
-          <th class='w-300px<?php echo zget($visibleFields, 'beginAndEnd', ' hidden')?>'><?php echo $lang->todo->beginAndEnd;?></th>
-          <th class='w-120px<?php echo zget($visibleFields, 'status', ' hidden')?>'>   <?php echo $lang->todo->status;?></th>
+          <th class='c-date<?php echo zget($visibleFields, 'beginAndEnd', ' hidden')?>'><?php echo $lang->todo->beginAndEnd;?></th>
+          <th class='c-status<?php echo zget($visibleFields, 'status', ' hidden')?>'>   <?php echo $lang->todo->status;?></th>
         </tr>
       </thead>
       <tbody>
@@ -53,7 +55,7 @@
           <?php
           if($todo->type == 'cycle')
           {
-              echo html::hidden("types[$todo->id]", $todo->type); 
+              echo html::hidden("types[$todo->id]", $todo->type);
               echo $lang->todo->cycle;
           }
           else
@@ -69,7 +71,7 @@
           <?php
           if($todo->type == 'custom' or $todo->type == 'cycle')
           {
-              echo html::input("names[$todo->id]", $todo->name, "class='form-control'"); ;
+              echo html::input("names[$todo->id]", $todo->name, "class='form-control'");
           }
           elseif($todo->type == 'task')
           {
@@ -81,7 +83,31 @@
           }
           elseif($todo->type == 'story')
           {
-              echo html::select("storys[$todo->id]", $storys, $todo->idvalue, 'class="form-control chosen"');
+              echo html::select("stories[$todo->id]", $storys, $todo->idvalue, 'class="form-control chosen"');
+          }
+          elseif($todo->type == 'issue')
+          {
+              echo html::select("issues[$todo->id]", $issues, $todo->idvalue, 'class="form-control chosen"');
+          }
+          elseif($todo->type == 'risk')
+          {
+              echo html::select("risks[$todo->id]", $risks, $todo->idvalue, 'class="form-control chosen"');
+          }
+          elseif($todo->type == 'review')
+          {
+              echo html::select("reviews[$todo->id]", $reviews, $todo->idvalue, 'class="form-control chosen"');
+          }
+          elseif($todo->type == 'testtask')
+          {
+              echo html::select("testtasks[$todo->id]", $testtasks, $todo->idvalue, 'class="form-control chosen"');
+          }
+          elseif($todo->type == 'opportunity')
+          {
+              echo html::select("opportunities[$todo->id]", $opportunities, $todo->idvalue, 'class="form-control chosen"');
+          }
+          elseif($todo->type == 'feedback')
+          {
+              echo html::select("feedbacks[$todo->id]", $feedbacks, $todo->idvalue, 'class="form-control chosen"');
           }
           ?>
           </div>
@@ -90,13 +116,13 @@
         <td <?php echo zget($visibleFields, 'beginAndEnd', "class='hidden'")?> style='overflow:visible'>
           <div class='input-group'>
             <?php
-            echo html::select("begins[$todo->id]", $times, $todo->begin, "onchange=\"setBeginsAndEnds($todo->id, 'begin');\" class='form-control chosen control-time-begin'" . ((isset($visibleFields['beginAndEnd']) && $todo->begin != '2400') ? '' : " disabled"));
+            echo html::select("begins[$todo->id]", $times, substr($todo->begin, 0, 2) . substr($todo->begin, 3, 2), "onchange=\"setBeginsAndEnds($todo->id, 'begin');\" class='form-control chosen control-time-begin'" . ((isset($visibleFields['beginAndEnd']) && $todo->begin != '') ? '' : " disabled"));
             echo '<span class="input-group-addon fix-border fix-padding"></span>';
-            echo html::select("ends[$todo->id]", $times, $todo->end, "onchange=\"setBeginsAndEnds($todo->id, 'end');\" class='form-control chosen control-time-end'" . ((isset($visibleFields['beginAndEnd']) && $todo->begin != '2400') ? '' : " disabled"));
+            echo html::select("ends[$todo->id]", $times, substr($todo->end, 0, 2) . substr($todo->end, 3, 2), "onchange=\"setBeginsAndEnds($todo->id, 'end');\" class='form-control chosen control-time-end'" . ((isset($visibleFields['beginAndEnd']) && $todo->begin != '') ? '' : " disabled"));
             ?>
             <span class="input-group-addon">
               <div class='checkbox-primary dateSwitcher'>
-                <input type='checkbox' name="switchTime[<?php echo $todo->id;?>]" id="switchTime<?php echo $todo->id;?>" data-key="<?php echo $todo->id;?>" onclick='switchTimeList(<?php echo $todo->id?>);' <?php if($todo->begin == '2400') echo "checked='checked'";?>>
+                <input type='checkbox' name="switchTime[<?php echo $todo->id;?>]" id="switchTime<?php echo $todo->id;?>" data-key="<?php echo $todo->id;?>" onclick='switchTimeList(<?php echo $todo->id?>);' <?php if($todo->begin == '') echo "checked='checked'";?>>
                 <label for='switchTime'><?php echo $lang->todo->periods['future'];?></label>
               </div>
             </span>

@@ -15,9 +15,17 @@ $(function()
         if($btnToolbar.length > 0)
         {
             <?php $mode = isset($config->datatable->$datatableId->mode) ? $config->datatable->$datatableId->mode : 'table';?>
-            var $dropdown = $('<div class="dropdown"><button id="tableCustomBtn" type="button" class="btn btn-link" data-toggle="dropdown"><i class="icon-cog"></i></button></div>');
+            var $dropdown = $('<div class="dropdown"><button id="tableCustomBtn" type="button" class="btn btn-link" data-toggle="dropdown"><i class="icon-cog-outline"></i></button></div>');
             var $dropmenu = $('<ul class="dropdown-menu pull-right"></ul>');
-            $dropmenu.append("<li><a href='<?php echo $this->createLink('datatable', 'ajaxCustom', 'id=' . $this->moduleName . '&method=' . $this->methodName)?>' data-toggle='modal' data-type='ajax'><?php echo $lang->datatable->custom?></a></li>");
+            if(typeof(storyType) != 'undefined' && storyType == 'requirement')
+            {
+                $dropmenu.append("<li><a href='<?php echo $this->createLink('datatable', 'ajaxCustom', 'id=' . $this->moduleName . '&method=' . $this->methodName . '&extra=requirement')?>' data-toggle='modal' data-type='ajax'><?php echo $lang->datatable->custom?></a></li>");
+            }
+            else
+            {
+                $dropmenu.append("<li><a href='<?php echo $this->createLink('datatable', 'ajaxCustom', 'id=' . $this->moduleName . '&method=' . $this->methodName)?>' data-toggle='modal' data-type='ajax'><?php echo $lang->datatable->custom?></a></li>");
+
+            }
             $dropmenu.append("<li><a href='javascript:saveDatatableConfig(\"mode\", \"<?php echo $mode == 'table' ? 'datatable' : 'table';?>\", true);' id='switchToDatatable'><?php echo $mode == 'table' ? $lang->datatable->switchToDatatable : $lang->datatable->switchToTable;?></a></li>");
             $dropdown.append($dropmenu).appendTo($btnToolbar);
         }
@@ -72,7 +80,7 @@ $(function()
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal"><i class="icon icon-close"></i></button>
-        <h4 class="modal-title"><i class="icon-cog"></i> <?php echo $lang->datatable->moduleSetting;?></h4>
+        <h4 class="modal-title"><i class="icon-cog-outline"></i> <?php echo $lang->datatable->moduleSetting;?></h4>
       </div>
       <div class="modal-body">
         <form class='form-condensed' method='post' target='hiddenwin' action='<?php echo $this->createLink('datatable', 'ajaxSave')?>'>
@@ -81,10 +89,10 @@ $(function()
               <td class='w-150px'><?php echo $lang->datatable->showModule;?></td>
               <td><?php echo html::radio('showModule', $lang->datatable->showModuleList, isset($config->datatable->$datatableId->showModule) ? $config->datatable->$datatableId->showModule : '');?></td>
             </tr>
-            <?php if($app->moduleName == 'project' && $app->methodName == 'task'):?>
+            <?php if($app->moduleName == 'execution' && $app->methodName == 'task'):?>
             <tr>
               <td><?php echo $lang->datatable->showAllModule;?></td>
-              <td><?php echo html::radio('showAllModule', $lang->datatable->showAllModuleList, isset($config->project->task->allModule) ? $config->project->task->allModule : 0);?></td>
+              <td><?php echo html::radio('showAllModule', $lang->datatable->showAllModuleList, isset($config->execution->task->allModule) ? $config->execution->task->allModule : 0);?></td>
             </tr>
             <?php endif;?>
             <tr>

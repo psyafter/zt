@@ -10,6 +10,7 @@
  * @link        https://www.zentao.pm
  */
 $lang->extension->common           = '插件管理';
+$lang->extension->id               = '編號';
 $lang->extension->browse           = '瀏覽插件';
 $lang->extension->install          = '安裝插件';
 $lang->extension->installAuto      = '自動安裝';
@@ -28,6 +29,8 @@ $lang->extension->erase            = '清除';
 $lang->extension->eraseAction      = '清除插件';
 $lang->extension->upgrade          = '升級插件';
 $lang->extension->agreeLicense     = '我同意該授權';
+
+$lang->extension->browseAction = '插件列表';
 
 $lang->extension->structure       = '目錄結構';
 $lang->extension->structureAction = '目錄結構';
@@ -95,7 +98,7 @@ $lang->extension->noticeOkFile             = '<h5>為了安全起見，系統需
     <ol>
     <li>檔案內容為空。</li>
     <li>如果之前檔案存在，刪除之後重新創建。</li>
-    </ol>'; 
+    </ol>';
 
 $lang->extension->upgradeExt     = '升級';
 $lang->extension->installExt     = '安裝';

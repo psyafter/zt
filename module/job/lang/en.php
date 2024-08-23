@@ -4,11 +4,15 @@ $lang->job->browse        = 'Browse Job';
 $lang->job->create        = 'Create Job';
 $lang->job->edit          = 'Edit Job';
 $lang->job->exec          = 'Execute Job';
+$lang->job->runPipeline   = 'Run pipeline';
 $lang->job->view          = 'Execute Details';
 $lang->job->delete        = 'Delete Job';
 $lang->job->confirmDelete = 'Do you want to delete this job?';
 $lang->job->dirChange     = 'Directory Changed';
 $lang->job->buildTag      = 'Build Tag';
+$lang->job->execSuccess   = 'Build success';
+
+$lang->job->browseAction = 'Job List';
 
 $lang->job->id          = 'ID';
 $lang->job->name        = 'Name';
@@ -17,8 +21,12 @@ $lang->job->product     = $lang->productCommon;
 $lang->job->svnDir      = 'SVN Tag Watch Path';
 $lang->job->jenkins     = 'Jenkins';
 $lang->job->jkHost      = 'Jenkins Server';
-$lang->job->buildType   = 'Build Type';
 $lang->job->jkJob       = 'Jenkins Task';
+$lang->job->buildSpec   = 'Build Target'; // 'pipeline@server'
+$lang->job->engine      = 'Engine';
+$lang->job->server      = 'Server';
+$lang->job->pipeline    = 'Pipeline';
+$lang->job->buildType   = 'Build Type';
 $lang->job->frame       = 'Frame';
 $lang->job->triggerType = 'Trigger';
 $lang->job->atDay       = 'Custom Days';
@@ -30,6 +38,12 @@ $lang->job->customParam = 'Custom build parameters';
 $lang->job->paramName   = 'Name';
 $lang->job->paramValue  = 'Value';
 $lang->job->custom      = 'Custom';
+$lang->job->createdBy   = 'Created By';
+$lang->job->createdDate = 'Created Date';
+$lang->job->editedBy    = 'Edited By';
+$lang->job->editedDate  = 'Edited Date';
+$lang->job->lastTag     = 'Last Tag';
+$lang->job->deleted     = 'Deleted';
 
 $lang->job->lblBasic = 'Basic Info';
 
@@ -63,3 +77,18 @@ $lang->job->paramValueList['$zentao_version']  = 'Current version';
 $lang->job->paramValueList['$zentao_account']  = 'Current user';
 $lang->job->paramValueList['$zentao_product']  = 'Current product ID';
 $lang->job->paramValueList['$zentao_repopath'] = 'Current version library path';
+
+$lang->job->engineList = array();
+$lang->job->engineList['']        = '';
+$lang->job->engineList['gitlab']  = 'GitLab';
+$lang->job->engineList['jenkins'] = 'Jenkins';
+
+$lang->job->engineTips = new stdclass;
+$lang->job->engineTips->success = 'Build engine will use the built pipeline in GitLab.';
+$lang->job->engineTips->error   = 'No pipeline is currently available in the GitLab project, please go to GitLab configuration first.  ';
+
+$lang->job->pipelineTips                      = "Run for branch name or tag";
+$lang->job->pipelineVariables                 = "Variables";
+$lang->job->pipelineVariablesKeyPlaceHolder   = "Input variable key";
+$lang->job->pipelineVariablesValuePlaceHolder = "Input variable value";
+$lang->job->pipelineVariablesTips             = "Specify variable values to be used in this run. The values specified in CI/CD settings will be used by default.";

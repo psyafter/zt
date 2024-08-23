@@ -29,7 +29,7 @@ $lang->convert->convertBugFree = 'Convert BugFree';
 $lang->convert->selectSource     = 'Chọn hệ thống nguồn và phiên bản của nó';
 $lang->convert->mustSelectSource = "Bạn phải chọn một hệ thống nguồn.";
 
-$lang->convert->direction             = "{$lang->projectCommon} converted to";
+$lang->convert->direction             = "{$lang->executionCommon} converted to";
 $lang->convert->questionTypeOfRedmine = 'Type in Redmine';
 $lang->convert->aimTypeOfZentao       = 'Chuyển thành Type in ZenTao';
 
@@ -65,20 +65,20 @@ $lang->convert->count   = 'STT';
 $lang->convert->info    = 'Thông tin';
 
 $lang->convert->bugfree = new stdclass();
-$lang->convert->bugfree->users    = 'Người dùng';
-$lang->convert->bugfree->projects = $lang->projectCommon;
-$lang->convert->bugfree->modules  = 'Module';
-$lang->convert->bugfree->bugs     = 'Bug';
-$lang->convert->bugfree->cases    = 'tình huống';
-$lang->convert->bugfree->results  = 'Kết quả';
-$lang->convert->bugfree->actions  = 'Lịch sử';
-$lang->convert->bugfree->files    = 'Files';
+$lang->convert->bugfree->users      = 'Người dùng';
+$lang->convert->bugfree->executions = $lang->executionCommon;
+$lang->convert->bugfree->modules    = 'Module';
+$lang->convert->bugfree->bugs       = 'Bug';
+$lang->convert->bugfree->cases      = 'tình huống';
+$lang->convert->bugfree->results    = 'Kết quả';
+$lang->convert->bugfree->actions    = 'Lịch sử';
+$lang->convert->bugfree->files      = 'Files';
 
 $lang->convert->redmine = new stdclass();
 $lang->convert->redmine->users        = 'Người dùng';
 $lang->convert->redmine->groups       = 'Nhóm';
 $lang->convert->redmine->products     = $lang->productCommon;
-$lang->convert->redmine->projects     = $lang->projectCommon;
+$lang->convert->redmine->executions   = $lang->executionCommon;
 $lang->convert->redmine->stories      = 'Câu chuyện';
 $lang->convert->redmine->tasks        = 'Nhiệm vụ';
 $lang->convert->redmine->bugs         = 'Bug';

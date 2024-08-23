@@ -10,10 +10,8 @@
  * @link        https://www.zentao.pm
  */
 $lang->misc = new stdclass();
-$lang->misc->common = 'Misc';
-$lang->misc->ping   = 'Ping';
-$lang->misc->api    = 'https://api.zentao.pm';
-$lang->misc->enApi  = 'https://api.zentao.pm';
+$lang->misc->common  = 'Misc';
+$lang->misc->ping    = 'Ping';
 
 $lang->misc->zentao = new stdclass();
 $lang->misc->zentao->version           = 'Version %s';
@@ -21,7 +19,7 @@ $lang->misc->zentao->labels['about']   = 'About ZenTao';
 $lang->misc->zentao->labels['support'] = 'Tech Support';
 $lang->misc->zentao->labels['cowin']   = 'Help Us';
 $lang->misc->zentao->labels['service'] = 'Service';
-$lang->misc->zentao->labels['others']  = 'EasyCorp Products';
+$lang->misc->zentao->labels['others']  = 'From EasyCorp';
 
 $lang->misc->zentao->icons['about']   = 'group';
 $lang->misc->zentao->icons['support'] = 'question-sign';
@@ -71,7 +69,7 @@ $lang->misc->tableName   = "Table Name";
 $lang->misc->tableStatus = "Status";
 $lang->misc->novice      = "New to ZenTao? Do you want to start ZenTao Tutorial?";
 $lang->misc->showAnnual  = 'Add Annual Summary';
-$lang->misc->annualDesc  = 'After version 12.0, the Annual Summary can be viewed on 『Report->Annual Summary』 page. <a href="%s" target="_blank" id="showAnnual" class="btn btn-mini btn-primary">See now</a>.';
+$lang->misc->annualDesc  = 'After version 12.0, Annual Summary can be viewed on 『Report->Annual Summary』 page. <a href="%s" target="_blank" id="showAnnual" class="btn btn-mini btn-primary">See now</a>.';
 $lang->misc->remind      = 'New feature reminders';
 
 $lang->misc->noticeRepair = "<h5>If you are not Administrator, contact your ZenTao Administrator to repair tables.</h5>
@@ -83,13 +81,36 @@ $lang->misc->noticeRepair = "<h5>If you are not Administrator, contact your ZenT
     </ol>";
 
 $lang->misc->feature = new stdclass();
-$lang->misc->feature->lastest  = 'Latest Version';
-$lang->misc->feature->detailed = 'Detail';
+$lang->misc->feature->lastest        = 'Latest Version';
+$lang->misc->feature->detailed       = 'Detail';
+$lang->misc->feature->introduction   = 'Features';
+$lang->misc->feature->tutorial       = 'Tutorial';
+$lang->misc->feature->youngBlueTheme = 'Young Blue Theme';
+$lang->misc->feature->nextStep       = 'Next step';
+$lang->misc->feature->close          = 'Close';
+$lang->misc->feature->downloadFile   = 'Download introduction';
+$lang->misc->feature->tutorialDesc   = '<p>ZenTao 15.0 has new functions, and you know how to use it through the "<strong>Tutorial</strong>".</p><p>Click your [<span style="color: #0c60e1">Avatar-Theme-Young Blue</span>] to set it.</p>';
+$lang->misc->feature->themeDesc      = '<p>ZenTao 15.0+ a new "Youth Blue" theme, the pages are more beautiful and the experience is more friendly.</p><p>Click your [<span style="color: #0c60e1">Avatar-Theme-Young Blue</span>] to set it.</p>';
 
+$lang->misc->releaseDate['15.7.1']      = '2021-11-02';
+$lang->misc->releaseDate['15.7']        = '2021-10-18';
+$lang->misc->releaseDate['15.6']        = '2021-10-12';
+$lang->misc->releaseDate['15.5']        = '2021-09-14';
+$lang->misc->releaseDate['15.4']        = '2021-08-23';
+$lang->misc->releaseDate['15.3']        = '2021-08-04';
+$lang->misc->releaseDate['15.2']        = '2021-07-20';
+$lang->misc->releaseDate['15.0.3']      = '2021-06-24';
+$lang->misc->releaseDate['15.0.2']      = '2021-06-12';
+$lang->misc->releaseDate['15.0.1']      = '2021-06-06';
+$lang->misc->releaseDate['15.0']        = '2021-04-30';
+$lang->misc->releaseDate['15.0.rc3']    = '2021-04-16';
+$lang->misc->releaseDate['15.0.rc2']    = '2021-04-09';
+$lang->misc->releaseDate['15.0.rc1']    = '2021-04-05';
 $lang->misc->releaseDate['12.5.3']      = '2021-01-06';
 $lang->misc->releaseDate['12.5.2']      = '2020-12-18';
 $lang->misc->releaseDate['12.5.1']      = '2020-11-30';
 $lang->misc->releaseDate['12.5.stable'] = '2020-11-19';
+$lang->misc->releaseDate['20.0.alpha1'] = '2020-10-30';
 $lang->misc->releaseDate['12.4.4']      = '2020-10-30';
 $lang->misc->releaseDate['12.4.3']      = '2020-10-13';
 $lang->misc->releaseDate['12.4.2']      = '2020-09-18';
@@ -139,6 +160,21 @@ $lang->misc->releaseDate['7.2.stable']  = '2015-05-22';
 $lang->misc->releaseDate['7.1.stable']  = '2015-03-07';
 $lang->misc->releaseDate['6.3.stable']  = '2014-11-07';
 
+$lang->misc->feature->all['15.7.1'][] = array('title' => 'Fix bug.', 'desc' => '');
+$lang->misc->feature->all['15.7'][]   = array('title' => 'Add API Lib. Fix bug.', 'desc' => '');
+$lang->misc->feature->all['15.6'][]   = array('title' => 'Fix bug.', 'desc' => '');
+$lang->misc->feature->all['15.5'][]   = array('title' => 'Add Program / Product / Project Kanban, global addition function and novice guidance. Fix bug.', 'desc' => '');
+$lang->misc->feature->all['15.4'][]   = array('title' => 'Fix bug', 'desc' => '');
+$lang->misc->feature->all['15.3'][]   = array('title' => 'Adjust interface style and document, fix bug', 'desc' => '');
+$lang->misc->feature->all['15.2'][]   = array('title' => 'Optimize the new version upgrade process, add execution kanban.', 'desc' => '');
+
+$lang->misc->feature->all['15.0.3'][]      = array('title' => 'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['15.0.2'][]      = array('title' => 'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['15.0.1'][]      = array('title' => 'Fix bug', 'desc' => '');
+$lang->misc->feature->all['15.0'][]        = array('title' => 'Fix bug', 'desc' => '');
+$lang->misc->feature->all['15.0.rc3'][]    = array('title' => 'Adjust details，Fix bug', 'desc' => '');
+$lang->misc->feature->all['15.0.rc2'][]    = array('title' => 'Fix Bug.', 'desc' => '');
+$lang->misc->feature->all['15.0.rc1'][]    = array('title' => 'Upgrade to 15,reframe menu, add program.', 'desc' => '');
 $lang->misc->feature->all['12.5.3'][]      = array('title' => 'Adjust annual data.', 'desc' => '');
 $lang->misc->feature->all['12.5.2'][]      = array('title' => 'Fix Bug', 'desc' => '');
 $lang->misc->feature->all['12.5.1'][]      = array('title' => 'Fix Bug', 'desc' => '');

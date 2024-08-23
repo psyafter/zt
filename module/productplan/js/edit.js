@@ -32,8 +32,8 @@ function computeEndDate(delta)
         delta = (weekend == 2) ? (delta - 2) : (delta - 1);
     }
 
-    currentBeginDate = beginDate.toString('yyyy-MM-dd');
-    endDate = beginDate.addDays(delta - 1).toString('yyyy-MM-dd');
+    currentBeginDate = $.zui.formatDate(beginDate, 'yyyy-MM-dd');
+    endDate = $.zui.formatDate(beginDate.addDays(delta - 1), 'yyyy-MM-dd');
 
     $('#begin').val(currentBeginDate);
     $('#end').val(endDate).datetimepicker('update');
@@ -43,11 +43,14 @@ $('#future').on('change', function()
 {
     if($(this).prop('checked'))
     {
-        $('#begin').val('').attr('disabled', 'disabled');
+        $('#begin').attr('disabled', 'disabled');
         $('#end').val('').parents('tr').hide();
     }
     else
     {
+        var begin = $('#begin').val();
+        if(begin == '') $('#begin').val(today);
+
         $('#begin').removeAttr('disabled');
         $('#end').parents('tr').show();
     }

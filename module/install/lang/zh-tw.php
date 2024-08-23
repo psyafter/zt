@@ -40,6 +40,35 @@ $lang->install->links = <<<EOT
 您現在正在安裝的版本是 <strong class='text-danger'>%s</strong>。
 EOT;
 
+$lang->install->introduction        = "禪道15系列功能介紹";
+$lang->install->howToUse            = "請問您計劃如何使用禪道的新版本呢";
+$lang->install->guideVideo          = 'https://dl.cnezsoft.com/vedio/program0716.mp4';
+$lang->install->introductionContent = <<<EOT
+<div>
+  <h4>尊敬的用戶您好，歡迎您使用禪道項目管理系統。</h4>
+  <p> 禪道自15系列開始提供了兩種使用模式，一種是經典管理模式，功能較為精簡，主要提供了產品和項目兩個核心功能；另一種是全新項目集管理模式，增加了項目集和執行的概念。下面是全新項目集管理模式的介紹：</p>
+  <div class='block-content'>
+    <div class='block-details'><p class='block-title'><i class='icon icon-program'></i><strong>項目集</strong></p><p>項目集用來管理一組相關的產品和項目，公司高層或者PMO可以用來做戰略規劃。</p></div>
+    <div class='block-details block-right'>
+      <p class='block-title'><i class='icon icon-product'></i><strong>產品</strong></p>
+      <p>產品用來將公司的戰略細分為可以進行研發的需求，產品經理可以用來做產品的發佈計劃。<p>
+    </div>
+    <div class='block-details'>
+      <p class='block-title'><i class='icon icon-project'></i><strong>項目</strong></p>
+      <p>項目用來組織相應的人力進行研發，做好項目過程的跟蹤管理，多快好省地完成項目。</p>
+    </div>
+    <div class='block-details block-right'>
+      <p class='block-title'><i class='icon icon-run'></i><strong>執行</strong></p>
+      <p>執行用來做任務的分解、指派和跟蹤，保證項目目標可以落實到人來執行。<p>
+    </div>
+  </div>
+  <div class='text-center introduction-link'>
+    <a href='https://dl.cnezsoft.com/zentao/zentaoconcept.pdf' target='_blank' class='btn btn-wide btn-info'><i class='icon icon-p-square'></i> 文檔介紹</a>
+    <a href='javascript:showVideo()' class='btn btn-wide btn-info'><i class='icon icon-video-play'></i> 視頻介紹</a>
+  </div>
+</div>
+EOT;
+
 $lang->install->newReleased = "<strong class='text-danger'>提示</strong>：官網網站已有最新版本<strong class='text-danger'>%s</strong>, 發佈日期于 %s。";
 $lang->install->or          = '或者';
 $lang->install->checking    = '系統檢查';
@@ -107,15 +136,13 @@ $lang->install->requestTypes['GET']       = '普通方式';
 $lang->install->requestTypes['PATH_INFO'] = '靜態友好方式';
 
 $lang->install->workingList['full']      = '完整研發管理工具';
-$lang->install->workingList['onlyTest']  = '測試管理工具';
-$lang->install->workingList['onlyStory'] = "需求管理工具";
-$lang->install->workingList['onlyTask']  = '任務管理工具';
 
 $lang->install->errorConnectDB      = '資料庫連接失敗 ';
 $lang->install->errorDBName         = '資料庫名不能含有 “.” ';
 $lang->install->errorCreateDB       = '資料庫創建失敗';
 $lang->install->errorTableExists    = '數據表已經存在，您之前應該有安裝過禪道，繼續安裝請返回前頁並選擇清空數據';
 $lang->install->errorCreateTable    = '創建表失敗';
+$lang->install->errorEngineInnodb   = '您當前的資料庫不支持使用InnoDB數據表引擎，請修改為MyISAM後重試。';
 $lang->install->errorImportDemoData = '導入demo數據失敗';
 
 $lang->install->setConfig          = '生成配置檔案';
@@ -126,37 +153,42 @@ $lang->install->save2File          = '<div class="alert alert-warning">拷貝上
 $lang->install->saved2File         = '配置信息已經成功保存到" <strong>%s</strong> "中。您後面還可繼續修改此檔案。';
 $lang->install->errorNotSaveConfig = '還沒有保存配置檔案';
 
-$lang->install->getPriv  = '設置帳號';
-$lang->install->company  = '公司名稱';
-$lang->install->account  = '管理員帳號';
-$lang->install->password = '管理員密碼';
+$lang->install->getPriv            = '設置帳號';
+$lang->install->company            = '公司名稱';
+$lang->install->account            = '管理員帳號';
+$lang->install->password           = '管理員密碼';
 $lang->install->errorEmptyPassword = '密碼不能為空';
 
-$lang->install->groupList['ADMIN']['name']   = '管理員';
-$lang->install->groupList['ADMIN']['desc']   = '系統管理員';
-$lang->install->groupList['DEV']['name']     = '研發';
-$lang->install->groupList['DEV']['desc']     = '研發人員';
-$lang->install->groupList['QA']['name']      = '測試';
-$lang->install->groupList['QA']['desc']      = '測試人員';
-$lang->install->groupList['PM']['name']      = '項目經理';
-$lang->install->groupList['PM']['desc']      = '項目經理';
-$lang->install->groupList['PO']['name']      = '產品經理';
-$lang->install->groupList['PO']['desc']      = '產品經理';
-$lang->install->groupList['TD']['name']      = '研發主管';
-$lang->install->groupList['TD']['desc']      = '研發主管';
-$lang->install->groupList['PD']['name']      = '產品主管';
-$lang->install->groupList['PD']['desc']      = '產品主管';
-$lang->install->groupList['QD']['name']      = '測試主管';
-$lang->install->groupList['QD']['desc']      = '測試主管';
-$lang->install->groupList['TOP']['name']     = '高層管理';
-$lang->install->groupList['TOP']['desc']     = '高層管理';
-$lang->install->groupList['OTHERS']['name']  = '其他';
-$lang->install->groupList['OTHERS']['desc']  = '其他';
-$lang->install->groupList['LIMITED']['name'] = '受限用戶';
-$lang->install->groupList['LIMITED']['desc'] = '受限用戶分組(只能編輯與自己相關的內容)';
+$lang->install->selectedMode     = '選擇模式';
+$lang->install->selectedModeTips = '後續您還可以去後台-自定義-模式中進行調整';
+
+$lang->install->groupList['ADMIN']['name']        = '管理員';
+$lang->install->groupList['ADMIN']['desc']        = '系統管理員';
+$lang->install->groupList['DEV']['name']          = '研發';
+$lang->install->groupList['DEV']['desc']          = '研發人員';
+$lang->install->groupList['QA']['name']           = '測試';
+$lang->install->groupList['QA']['desc']           = '測試人員';
+$lang->install->groupList['PM']['name']           = '項目經理';
+$lang->install->groupList['PM']['desc']           = '項目經理';
+$lang->install->groupList['PO']['name']           = '產品經理';
+$lang->install->groupList['PO']['desc']           = '產品經理';
+$lang->install->groupList['TD']['name']           = '研發主管';
+$lang->install->groupList['TD']['desc']           = '研發主管';
+$lang->install->groupList['PD']['name']           = '產品主管';
+$lang->install->groupList['PD']['desc']           = '產品主管';
+$lang->install->groupList['QD']['name']           = '測試主管';
+$lang->install->groupList['QD']['desc']           = '測試主管';
+$lang->install->groupList['TOP']['name']          = '高層管理';
+$lang->install->groupList['TOP']['desc']          = '高層管理';
+$lang->install->groupList['OTHERS']['name']       = '其他';
+$lang->install->groupList['OTHERS']['desc']       = '其他';
+$lang->install->groupList['LIMITED']['name']      = '受限用戶';
+$lang->install->groupList['LIMITED']['desc']      = '受限用戶分組(只能編輯與自己相關的內容)';
+$lang->install->groupList['PROJECTADMIN']['name'] = '項目管理員';
+$lang->install->groupList['PROJECTADMIN']['desc'] = '項目管理員可以維護項目的權限';
 
 $lang->install->cronList[''] = '監控定時任務';
-$lang->install->cronList['moduleName=project&methodName=computeburn']   = '更新燃盡圖';
+$lang->install->cronList['moduleName=execution&methodName=computeBurn'] = '更新燃盡圖';
 $lang->install->cronList['moduleName=report&methodName=remind']         = '每日任務提醒';
 $lang->install->cronList['moduleName=svn&methodName=run']               = '同步SVN';
 $lang->install->cronList['moduleName=git&methodName=run']               = '同步GIT';
@@ -168,16 +200,22 @@ $lang->install->cronList['moduleName=todo&methodName=createCycle']      = '生�
 $lang->install->cronList['moduleName=ci&methodName=initQueue']          = '創建周期性任務';
 $lang->install->cronList['moduleName=ci&methodName=checkCompileStatus'] = '同步Jenkins任務狀態';
 $lang->install->cronList['moduleName=ci&methodName=exec']               = '執行Jenkins任務';
+$lang->install->cronList['moduleName=mr&methodName=syncMR']             = '定時同步GitLabMR信息';
 
 $lang->install->success  = "安裝成功";
 $lang->install->login    = '登錄禪道管理系統';
 $lang->install->register = '禪道社區註冊';
 
-$lang->install->joinZentao = <<<EOT
-<p>您已經成功安裝禪道管理系統%s，<strong class='text-danger'>請及時刪除install.php</strong>。</p><p>友情提示：為了您及時獲得禪道的最新動態，請在禪道社區(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>)進行登記。</p>
+$lang->install->successLabel       = "<p>您已經成功安裝禪道管理系統%s。</p>";
+$lang->install->successNoticeLabel = "<p>您已經成功安裝禪道管理系統%s，<strong class='text-danger'>請及時刪除install.php</strong>。</p>";
+$lang->install->joinZentao         = <<<EOT
+<p>友情提示：為了您及時獲得禪道的最新動態，請在禪道社區(<a href='https://www.zentao.pm' class='alert-link' target='_blank'>www.zentao.pm</a>)進行登記。</p>
 EOT;
 
 $lang->install->product = array('chanzhi', 'zdoo', 'xuanxuan', 'ydisk', 'meshiot');
+
+$lang->install->modeList['classic'] = '經典管理模式';
+$lang->install->modeList['new']     = '全新項目集管理模式';
 
 $lang->install->promotion = "為您推薦易軟天創旗下其他產品：";
 

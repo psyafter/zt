@@ -38,7 +38,7 @@ $uid = uniqid('');
     'fullscreen', 'source', 'preview', 'about'];
     var editorToolsMap = {fullTools: fullTools, simpleTools: simpleTools, bugTools: bugTools};
 
-    // Kindeditor default options
+    /* Kindeditor default options. */
     var editorDefaults =
     {
         cssPath: [config.themeRoot + 'zui/css/min.css'],
@@ -54,12 +54,13 @@ $uid = uniqid('');
         placeholderStyle: {fontSize: '13px', color: '#888'},
         pasteImage: {postUrl: createLink('file', 'ajaxPasteImage', 'uid=' + kuid)},
         syncAfterBlur: true,
+        allowFileManager: false,
         spellcheck: false
     };
 
     window.editor = {};
 
-    // Init kindeditor
+    /* Init kindeditor. */
     var setKindeditor = function(element, options)
     {
         var $editor  = $(element);
@@ -102,7 +103,7 @@ $uid = uniqid('');
         catch(e){return false;}
     };
 
-    // Init kindeditor with jquery way
+    /* Init kindeditor with jquery way. */
     $.fn.kindeditor = function(options)
     {
         return this.each(function()
@@ -111,7 +112,7 @@ $uid = uniqid('');
         });
     };
 
-    // Init all kindeditor
+    /* Init all kindeditor. */
     var initKindeditor = function(afterInit)
     {
         var $submitBtn = $('form :input[type=submit]');
@@ -127,7 +128,7 @@ $uid = uniqid('');
         });
     };
 
-    // Init all kindeditors when document is ready
+    /* Init all kindeditors when document is ready. */
     $(initKindeditor);
 }(jQuery));
 </script>

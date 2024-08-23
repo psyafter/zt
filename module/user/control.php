@@ -25,6 +25,8 @@ class user extends control
         $this->loadModel('company')->setMenu();
         $this->loadModel('dept');
         $this->loadModel('todo');
+        $this->loadModel('execution');
+        $this->app->loadLang('project');
         $this->app->loadModuleConfig($this->moduleName);//Finish task #5118.(Fix bug #2271)
     }
 
@@ -37,10 +39,8 @@ class user extends control
      */
     public function view($userID)
     {
-        if($this->config->global->flow == 'onlyStory') $this->locate($this->createLink('user', 'dynamic', "period=today&userID=$userID"));
-        if($this->config->global->flow == 'onlyTask')  $this->locate($this->createLink('user', 'task', "userID=$userID"));
-        if($this->config->global->flow == 'onlyTest')  $this->locate($this->createLink('user', 'bug', "userID=$userID"));
-        $this->locate($this->createLink('user', 'todo', "userID=$userID"));
+        $userID = (int)$userID;
+        $this->locate($this->createLink('user', 'todo', "userID=$userID&type=all"));
     }
 
     /**
@@ -56,13 +56,18 @@ class user extends control
      * @access public
      * @return void
      */
-    public function todo($userID, $type = 'today', $status = 'all', $orderBy='date,status,begin', $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    public function todo($userID, $type = 'today', $status = 'all', $orderBy = 'date,status,begin', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
+        $userID = (int)$userID;
+        $user   = $this->user->getById($userID, 'id');
+        if(empty($user)) die(js::error($this->lang->notFound) . js::locate($this->createLink('my', 'team')));
+        if($user->deleted == 1) die(js::error($this->lang->user->noticeHasDeleted) . js::locate('back'));
+
         /* Set thie url to session. */
         $uri = $this->app->getURI(true);
-        $this->session->set('todoList', $uri);
-        $this->session->set('bugList',  $uri);
-        $this->session->set('taskList', $uri);
+        $this->session->set('todoList', $uri, 'my');
+        $this->session->set('bugList',  $uri, 'qa');
+        $this->session->set('taskList', $uri, 'execution');
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
@@ -72,14 +77,14 @@ class user extends control
         $sort = $this->loadModel('common')->appendOrder($orderBy);
 
         /* Get user, totos. */
-        $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
         $todos   = $this->todo->getList($type, $account, $status, 0, $pager, $sort);
         $date    = (int)$type == 0 ? helper::today() : $type;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
+        if(!isset($users[$userID])) die(js::error($this->lang->user->error->noAccess) . js::locate('back'));
 
         /* set menus. */
-        $this->lang->set('menugroup.user', 'company');
-        $this->view->userList = $this->user->setUserList($this->user->getPairs('noempty|noclosed|nodeleted|useid'), $userID);
+        $this->view->userList = $this->user->setUserList($users, $userID);
 
         $this->view->title      = $this->lang->user->common . $this->lang->colon . $this->lang->user->todo;
         $this->view->position[] = $this->lang->user->todo;
@@ -99,6 +104,7 @@ class user extends control
      * Story of a user.
      *
      * @param  int    $userID
+     * @param  string $storyType
      * @param  string $type
      * @param  int    $recTotal
      * @param  int    $recPerPage
@@ -106,10 +112,10 @@ class user extends control
      * @access public
      * @return void
      */
-    public function story($userID, $type = 'assignedTo', $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    public function story($userID, $storyType = 'story', $type = 'assignedTo', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Save session. */
-        $this->session->set('storyList', $this->app->getURI(true));
+        $this->session->set('storyList', $this->app->getURI(true), 'product');
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
@@ -117,19 +123,23 @@ class user extends control
 
         $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
 
-        /* Set menu. */
-        $this->lang->set('menugroup.user', 'company');
+        /* Modify story title. */
+        $this->loadModel('story');
+        if($storyType == 'requirement') $this->lang->story->title  = str_replace($this->lang->SRCommon, $this->lang->URCommon, $this->lang->story->title);
 
         /* Assign. */
         $this->view->title      = $this->lang->user->common . $this->lang->colon . $this->lang->user->story;
         $this->view->position[] = $this->lang->user->story;
-        $this->view->stories    = $this->loadModel('story')->getUserStories($account, $type, 'id_desc', $pager);
+        $this->view->stories    = $this->story->getUserStories($account, $type, $orderBy, $pager, $storyType);
         $this->view->users      = $this->user->getPairs('noletter');
+        $this->view->storyType  = $storyType;
+        $this->view->orderBy    = $orderBy;
         $this->view->type       = $type;
         $this->view->user       = $user;
         $this->view->pager      = $pager;
-        $this->view->userList   = $this->user->setUserList($this->user->getPairs('noempty|noclosed|nodeleted|useid'), $userID);
+        $this->view->userList   = $this->user->setUserList($users, $userID);
 
         $this->display();
     }
@@ -145,10 +155,10 @@ class user extends control
      * @access public
      * @return void
      */
-    public function task($userID, $type = 'assignedTo', $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    public function task($userID, $type = 'assignedTo', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Save the session. */
-        $this->session->set('taskList', $this->app->getURI(true));
+        $this->session->set('taskList', $this->app->getURI(true), 'execution');
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
@@ -156,17 +166,18 @@ class user extends control
 
         $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
 
         /* Set the menu. */
-        $this->lang->set('menugroup.user', 'company');
-        $this->view->userList = $this->user->setUserList($this->user->getPairs('noempty|noclosed|nodeleted|useid'), $userID);
+        $this->view->userList = $this->user->setUserList($users, $userID);
 
         /* Assign. */
         $this->view->title      = $this->lang->user->common . $this->lang->colon . $this->lang->user->task;
         $this->view->position[] = $this->lang->user->task;
         $this->view->tabID      = 'task';
-        $this->view->tasks      = $this->loadModel('task')->getUserTasks($account, $type, 0, $pager);
+        $this->view->tasks      = $this->loadModel('task')->getUserTasks($account, $type, 0, $pager, $orderBy);
         $this->view->type       = $type;
+        $this->view->orderBy    = $orderBy;
         $this->view->user       = $user;
         $this->view->pager      = $pager;
 
@@ -188,7 +199,7 @@ class user extends control
     public function bug($userID, $type = 'assignedTo', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Save the session. */
-        $this->session->set('bugList', $this->app->getURI(true));
+        $this->session->set('bugList', $this->app->getURI(true), 'qa');
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
@@ -196,10 +207,10 @@ class user extends control
 
         $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
 
         /* Set menu. */
-        $this->lang->set('menugroup.user', 'company');
-        $this->view->userList = $this->user->setUserList($this->user->getPairs('noempty|noclosed|nodeleted|useid'), $userID);
+        $this->view->userList = $this->user->setUserList($users, $userID);
 
         /* Load the lang of bug module. */
         $this->app->loadLang('bug');
@@ -210,6 +221,7 @@ class user extends control
         $this->view->bugs       = $this->loadModel('bug')->getUserBugs($account, $type, $orderBy, 0, $pager);
         $this->view->type       = $type;
         $this->view->user       = $user;
+        $this->view->orderBy    = $orderBy;
         $this->view->users      = $this->user->getPairs('noletter');
         $this->view->pager      = $pager;
 
@@ -235,13 +247,14 @@ class user extends control
 
         $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
 
         /* Set menu. */
-        $this->lang->set('menugroup.user', 'company');
-        $this->view->userList = $this->user->setUserList($this->user->getPairs('noempty|noclosed|nodeleted|useid'), $userID);
+        $this->view->userList = $this->user->setUserList($users, $userID);
 
         /* Save session. */
-        $this->session->set('testtaskList', $this->app->getURI(true));
+        $this->session->set('testtaskList', $this->app->getURI(true), 'qa');
+        $this->session->set('buildList', $this->app->getURI(true), 'execution');
 
         $this->app->loadLang('testcase');
 
@@ -276,7 +289,7 @@ class user extends control
     public function testcase($userID, $type = 'case2Him', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
         /* Save session, load lang. */
-        $this->session->set('caseList', $this->app->getURI(true));
+        $this->session->set('caseList', $this->app->getURI(true), 'qa');
         $this->app->loadLang('testcase');
 
         /* Load pager. */
@@ -285,12 +298,10 @@ class user extends control
 
         $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
 
         /* Append id for secend sort. */
         $sort = $this->loadModel('common')->appendOrder($orderBy);
-
-         /* Set menu. */
-        $this->lang->set('menugroup.user', 'company');
 
         $cases = array();
         if($type == 'case2Him')
@@ -316,33 +327,124 @@ class user extends control
         $this->view->pageID     = $pageID;
         $this->view->orderBy    = $orderBy;
         $this->view->pager      = $pager;
-        $this->view->userList   = $this->user->setUserList($this->user->getPairs('noempty|noclosed|nodeleted|useid'), $userID);
+        $this->view->userList   = $this->user->setUserList($users, $userID);
 
         $this->display();
     }
 
     /**
-     * User projects.
+     * User executions.
      *
      * @param  int    $userID
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
      * @access public
      * @return void
      */
-    public function project($userID)
+    public function execution($userID, $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
+        $uri = $this->app->getURI(true);
+        $this->session->set('executionList', $uri, 'execution');
+
         $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
+
+        /* Load pager. */
+        $this->app->loadClass('pager', $static = true);
+        $pager = pager::init($recTotal, $recPerPage, $pageID);
 
         /* Set the menus. */
         $this->loadModel('project');
-        $this->lang->set('menugroup.user', 'company');
-        $this->view->userList = $this->user->setUserList($this->user->getPairs('noempty|noclose|nodeleted|useid'), $userID);
+        $this->view->userList = $this->user->setUserList($users, $userID);
 
-        $this->view->title      = $this->lang->user->common . $this->lang->colon . $this->lang->user->project;
-        $this->view->position[] = $this->lang->user->project;
+        $this->view->title      = $this->lang->user->common . $this->lang->colon . $this->lang->user->execution;
+        $this->view->position[] = $this->lang->user->execution;
         $this->view->tabID      = 'project';
-        $this->view->projects   = $this->user->getProjects($account);
+        $this->view->executions = $this->user->getObjects($account, 'execution', 'all', $orderBy, $pager);
         $this->view->user       = $user;
+        $this->view->orderBy    = $orderBy;
+        $this->view->pager      = $pager;
+
+        $this->display();
+    }
+
+    /**
+     * User issues.
+     *
+     * @param  int    $userID
+     * @param  string $type
+     * @param  string $orderBy
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
+     * @access public
+     * @return void
+     */
+    public function issue($userID, $type = 'assignedTo', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    {
+        $uri = $this->app->getURI(true);
+        $this->session->set('issueList', $uri, 'project');
+
+        $user    = $this->user->getById($userID, 'id');
+        $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
+
+        /* Load pager. */
+        $this->app->loadClass('pager', $static = true);
+        $pager = pager::init($recTotal, $recPerPage, $pageID);
+
+        /* Set the menus. */
+        $this->view->userList = $this->user->setUserList($users, $userID);
+
+        $this->view->title      = $this->lang->user->common . $this->lang->colon . $this->lang->user->issue;
+        $this->view->position[] = $this->lang->user->issue;
+        $this->view->issues     = $this->loadModel('issue')->getUserIssues($type, $account, $orderBy, $pager);
+        $this->view->user       = $user;
+        $this->view->users      = $this->loadModel('user')->getPairs('noletter');
+        $this->view->type       = $type;
+        $this->view->orderBy    = $orderBy;
+        $this->view->pager      = $pager;
+
+        $this->display();
+    }
+
+    /**
+     * User risks.
+     *
+     * @param  int    $userID
+     * @param  string $type
+     * @param  string $orderBy
+     * @param  int    $recTotal
+     * @param  int    $recPerPage
+     * @param  int    $pageID
+     * @access public
+     * @return void
+     */
+    public function risk($userID, $type = 'assignedTo', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    {
+        $uri = $this->app->getURI(true);
+        $this->session->set('riskList', $uri, 'project');
+
+        $user    = $this->user->getById($userID, 'id');
+        $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
+
+        /* Load pager. */
+        $this->app->loadClass('pager', $static = true);
+        $pager = pager::init($recTotal, $recPerPage, $pageID);
+
+        /* Set the menus. */
+        $this->view->userList = $this->user->setUserList($users, $userID);
+
+        $this->view->title      = $this->lang->user->common . $this->lang->colon . $this->lang->user->risk;
+        $this->view->position[] = $this->lang->user->risk;
+        $this->view->risks      = $this->loadModel('risk')->getUserRisks($type, $account, $orderBy, $pager);
+        $this->view->user       = $user;
+        $this->view->type       = $type;
+        $this->view->orderBy    = $orderBy;
+        $this->view->pager      = $pager;
 
         $this->display();
     }
@@ -360,6 +462,7 @@ class user extends control
 
         $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
 
         $this->view->title        = "USER #$user->id $user->account/" . $this->lang->user->profile;
         $this->view->position[]   = $this->lang->user->common;
@@ -368,7 +471,7 @@ class user extends control
         $this->view->groups       = $this->loadModel('group')->getByAccount($account);
         $this->view->deptPath     = $this->dept->getParents($user->dept);
         $this->view->personalData = $this->user->getPersonalData($user->account);
-        $this->view->userList     = $this->user->setUserList($this->user->getPairs('noempty|noclose|nodeleted|useid'), $userID);
+        $this->view->userList     = $this->user->setUserList($users, $userID);
 
         $this->display();
     }
@@ -404,7 +507,6 @@ class user extends control
      */
     public function create($deptID = 0)
     {
-        $this->lang->set('menugroup.user', 'company');
         $this->lang->user->menu      = $this->lang->company->menu;
         $this->lang->user->menuOrder = $this->lang->company->menuOrder;
 
@@ -412,13 +514,14 @@ class user extends control
         {
             if(strtolower($_POST['account']) == 'guest')
             {
-                $this->send(array('result' => 'fail', 'message' => str_replace('ID ', '', sprintf($this->lang->user->error->reserved, $_POST['account']))));
+                return $this->send(array('result' => 'fail', 'message' => str_replace('ID ', '', sprintf($this->lang->user->error->reserved, $_POST['account']))));
             }
 
-            $this->user->create();
-            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
+            $userID = $this->user->create();
+            if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
-            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('company', 'browse')));
+            if($this->viewType == 'json') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'id' => $userID));
+            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('company', 'browse')));
         }
 
         $groups    = $this->dao->select('id, name, role')->from(TABLE_GROUP)->fetchAll();
@@ -439,6 +542,7 @@ class user extends control
         $this->view->roleGroup = $roleGroup;
         $this->view->deptID    = $deptID;
         $this->view->rand      = $this->user->updateSessionRandom();
+        $this->view->companies = $this->loadModel('company')->getOutsideCompanies();
 
         $this->display();
     }
@@ -461,13 +565,14 @@ class user extends control
             if($group->role) $roleGroup[$group->role] = $group->id;
         }
 
-        $this->lang->set('menugroup.user', 'company');
         $this->lang->user->menu      = $this->lang->company->menu;
         $this->lang->user->menuOrder = $this->lang->company->menuOrder;
 
         if(!empty($_POST))
         {
-            $this->user->batchCreate();
+            $userIDList = $this->user->batchCreate();
+
+            if($this->viewType == 'json') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'idList' => $userIDList));
             die(js::locate($this->createLink('company', 'browse'), 'parent'));
         }
 
@@ -505,16 +610,15 @@ class user extends control
      */
     public function edit($userID)
     {
-        $this->lang->set('menugroup.user', 'company');
         $this->lang->user->menu      = $this->lang->company->menu;
         $this->lang->user->menuOrder = $this->lang->company->menuOrder;
         if(!empty($_POST))
         {
             $this->user->update($userID);
-            if(dao::isError()) $this->send(array('result' => 'fail', 'message' => dao::getError()));
+            if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
             $link = $this->session->userList ? $this->session->userList : $this->createLink('company', 'browse');
-            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $link));
+            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $link));
         }
 
         $user       = $this->user->getById($userID, 'id');
@@ -527,6 +631,7 @@ class user extends control
         $this->view->user       = $user;
         $this->view->depts      = $this->dept->getOptionMenu();
         $this->view->userGroups = implode(',', array_keys($userGroups));
+        $this->view->companies  = $this->loadModel('company')->getOutsideCompanies();
         $this->view->groups     = $this->dao->select('id, name')->from(TABLE_GROUP)->fetchPairs('id', 'name');
 
         $this->view->rand = $this->user->updateSessionRandom();
@@ -551,7 +656,6 @@ class user extends control
             if($this->post->account) $this->user->batchEdit();
             die(js::locate($this->session->userList ? $this->session->userList : $this->createLink('company', 'browse', "deptID=$deptID"), 'parent'));
         }
-        $this->lang->set('menugroup.user', 'company');
         $this->lang->user->menu      = $this->lang->company->menu;
         $this->lang->user->menuOrder = $this->lang->company->menuOrder;
 
@@ -598,7 +702,7 @@ class user extends control
             }
 
             /* if ajax request, send result. */
-            if($this->server->ajax)
+            if($this->server->ajax or $this->viewType == 'json')
             {
                 if(dao::isError())
                 {
@@ -610,12 +714,13 @@ class user extends control
                     $response['result']  = 'success';
                     $response['message'] = '';
                 }
-                $this->send($response);
+                return $this->send($response);
             }
             die(js::locate($this->session->userList, 'parent.parent'));
         }
 
         $this->view->rand = $this->user->updateSessionRandom();
+        $this->view->user = $user;
         $this->display();
     }
 
@@ -637,7 +742,7 @@ class user extends control
     }
 
     /**
-     * Unbind  Ranzhi
+     * Unbind Ranzhi
      *
      * @param  string $userID
      * @param  string $confirm
@@ -665,14 +770,31 @@ class user extends control
      */
     public function login($referer = '', $from = '')
     {
+        /* Check if you can operating on the folder. */
+        $canModifyDIR = true;
         if($this->user->checkTmp() === false)
         {
-            echo "<html><head><meta charset='utf-8'></head>";
-            echo "<body><table align='center' style='width:700px; margin-top:100px; border:1px solid gray; font-size:14px;'><tr><td style='padding:8px'>";
-            echo "<div style='margin-bottom:8px;'>不能创建临时目录，请确认目录<strong style='color:#ed980f'>{$this->app->tmpRoot}</strong>是否存在并有操作权限。</div>";
-            echo "<div>Can't create tmp directory, make sure the directory <strong style='color:#ed980f'>{$this->app->tmpRoot}</strong> exists and has permission to operate.</div>";
-            die("</td></tr></table></body></html>");
+            $canModifyDIR = false;
+            $floderPath   = $this->app->tmpRoot;
         }
+        elseif(!is_dir($this->app->dataRoot) or substr(base_convert(@fileperms($this->app->dataRoot),10,8),-4) != '0777')
+        {
+            $canModifyDIR = false;
+            $floderPath   = $this->app->dataRoot;
+        }
+
+        if(!$canModifyDIR)
+        {
+            if(strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')
+            {
+                die(sprintf($this->lang->user->mkdirWin, $floderPath, $floderPath));
+            }
+            else
+            {
+                die(sprintf($this->lang->user->mkdirLinux, $floderPath, $floderPath, $floderPath, $floderPath));
+            }
+        }
+
         $this->setReferer($referer);
 
         $loginLink = $this->createLink('user', 'login');
@@ -701,12 +823,12 @@ class user extends control
             )
             {
                 $response['locate']  = $this->referer;
-                $this->send($response);
+                return $this->send($response);
             }
             else
             {
                 $response['locate']  = $this->config->webRoot;
-                $this->send($response);
+                return $this->send($response);
             }
         }
 
@@ -726,7 +848,14 @@ class user extends control
                 $response['result']  = 'fail';
                 $response['message'] = sprintf($this->lang->user->loginLocked, $this->config->user->lockMinutes);
                 if($this->app->getViewType() == 'json') die(helper::removeUTF8Bom(json_encode(array('status' => 'failed', 'reason' => $failReason))));
-                $this->send($response);
+                return $this->send($response);
+            }
+
+            if((!empty($this->config->safe->loginCaptcha) and strtolower($this->post->captcha) != strtolower($this->session->captcha) and $this->app->getViewType() != 'json'))
+            {
+                $response['result']  = 'fail';
+                $response['message'] = $this->lang->user->errorCaptcha;
+                return $this->send($response);
             }
 
             $user = $this->user->identify($account, $password);
@@ -769,12 +898,12 @@ class user extends control
                     if(common::hasPriv($module, $method))
                     {
                         $response['locate']  = $this->post->referer;
-                        $this->send($response);
+                        return $this->send($response);
                     }
                     else
                     {
                         $response['locate']  = $this->config->webRoot;
-                        $this->send($response);
+                        return $this->send($response);
                     }
                 }
                 else
@@ -787,7 +916,7 @@ class user extends control
 
                     $response['locate']  = $this->config->webRoot;
                     $response['result']  = 'success';
-                    $this->send($response);
+                    return $this->send($response);
                 }
             }
             else
@@ -799,28 +928,20 @@ class user extends control
                 if($remainTimes <= 0)
                 {
                     $response['message'] = sprintf($this->lang->user->loginLocked, $this->config->user->lockMinutes);
-                    $this->send($response);
+                    return $this->send($response);
                 }
                 else if($remainTimes <= 3)
                 {
                     $response['message'] = sprintf($this->lang->user->lockWarning, $remainTimes);
-                    $this->send($response);
+                    return $this->send($response);
                 }
 
                 $response['message'] = $this->lang->user->loginFailed;
-                $this->send($response);
+                return $this->send($response);
             }
         }
         else
         {
-            if(!empty($this->config->global->showDemoUsers))
-            {
-                $demoUsers = 'productManager,projectManager,dev1,dev2,dev3,tester1,tester2,tester3,testManager';
-                if($this->app->getClientLang() == 'en') $demoUsers = 'thePO,pm1,pm2,pg1,pg2,pg3,thePM,qa1,theQS';
-                $demoUsers = $this->dao->select('account,password,realname')->from(TABLE_USER)->where('account')->in($demoUsers)->andWhere('deleted')->eq(0)->fetchAll('account');
-                $this->view->demoUsers = $demoUsers;
-            }
-
             $this->loadModel('misc');
             $this->view->noGDLib     = sprintf($this->lang->misc->noGDLib, common::getSysURL() . $this->config->webRoot, '', false, true);
             $this->view->title       = $this->lang->user->login;
@@ -862,12 +983,13 @@ class user extends control
         $denyType = 'nopriv';
         if(isset($rights[$module][$method]))
         {
-            $menu = isset($this->lang->menugroup->$module) ? $this->lang->menugroup->$module : $module;
+            $menu = isset($lang->navGroup->$module) ? $lang->navGroup->$module : $module;
             $menu = strtolower($menu);
 
             if(!isset($acls['views'][$menu])) $denyType = 'noview';
             $this->view->menu = $menu;
         }
+
         $this->view->denyType = $denyType;
 
         die($this->display());
@@ -938,35 +1060,36 @@ class user extends control
     /**
      * User dynamic.
      *
-     * @param  string $period
      * @param  int    $userID
+     * @param  string $period
      * @param  int    $recTotal
      * @param  string $date
      * @param  string $direction     next|pre
      * @access public
      * @return void
      */
-    public function dynamic($period = 'today', $userID = '', $recTotal = 0, $date = '', $direction = 'next')
+    public function dynamic($userID = '', $period = 'today', $recTotal = 0, $date = '', $direction = 'next')
     {
         $user    = $this->user->getById($userID, 'id');
         $account = $user->account;
+        $users   = $this->loadModel('dept')->getDeptUserPairs($this->app->user->dept, 'id');
 
         /* set menus. */
-        $this->lang->set('menugroup.user', 'company');
-        $this->view->userList = $this->user->setUserList($this->user->getPairs('noempty|noclosed|nodeleted|useid'), $userID);
+        $this->view->userList = $this->user->setUserList($users, $userID);
 
         /* Save session. */
-        $uri   = $this->app->getURI(true);
-        $this->session->set('productList',     $uri);
-        $this->session->set('productPlanList', $uri);
-        $this->session->set('releaseList',     $uri);
-        $this->session->set('storyList',       $uri);
-        $this->session->set('projectList',     $uri);
-        $this->session->set('taskList',        $uri);
-        $this->session->set('buildList',       $uri);
-        $this->session->set('bugList',         $uri);
-        $this->session->set('caseList',        $uri);
-        $this->session->set('testtaskList',    $uri);
+        $uri = $this->app->getURI(true);
+        $this->session->set('productList',     $uri, 'product');
+        $this->session->set('productPlanList', $uri, 'product');
+        $this->session->set('releaseList',     $uri, 'product');
+        $this->session->set('storyList',       $uri, 'product');
+        $this->session->set('projectList',     $uri, 'project');
+        $this->session->set('executionList',   $uri, 'execution');
+        $this->session->set('taskList',        $uri, 'execution');
+        $this->session->set('buildList',       $uri, 'execution');
+        $this->session->set('bugList',         $uri, 'qa');
+        $this->session->set('caseList',        $uri, 'qa');
+        $this->session->set('testtaskList',    $uri, 'qa');
 
         /* Set the pager. */
         $this->app->loadClass('pager', $static = true);
@@ -977,7 +1100,7 @@ class user extends control
         $sort    = $this->loadModel('common')->appendOrder($orderBy);
         $date    = empty($date) ? '' : date('Y-m-d', $date);
 
-        $actions = $this->loadModel('action')->getDynamic($account, $period, $sort, $pager, 'all', 'all', $date, $direction);
+        $actions = $this->loadModel('action')->getDynamic($account, $period, $sort, $pager, 'all', 'all', 'all', $date, $direction);
 
         $this->view->title      = $this->lang->user->common . $this->lang->colon . $this->lang->user->dynamic;
         $this->view->position[] = $this->lang->user->dynamic;
@@ -989,6 +1112,34 @@ class user extends control
         $this->view->user       = $user;
         $this->view->dateGroups = $this->action->buildDateGroup($actions, $direction, $period);
         $this->view->direction  = $direction;
+        $this->display();
+    }
+
+	/**
+     * crop avatar
+     *
+     * @param  int    $image
+     * @access public
+     * @return void
+     */
+    public function cropAvatar($image)
+    {
+        $image = $this->loadModel('file')->getByID($image);
+
+        if(!empty($_POST))
+        {
+            $size = fixer::input('post')->get();
+            $this->file->cropImage($image->realPath, $image->realPath, $size->left, $size->top, $size->right - $size->left, $size->bottom - $size->top, $size->scaled ? $size->scaleWidth : 0, $size->scaled ? $size->scaleHeight : 0);
+
+            $this->app->user->avatar = $image->webPath;
+            $this->session->set('user', $this->app->user);
+            $this->dao->update(TABLE_USER)->set('avatar')->eq($image->webPath)->where('account')->eq($this->app->user->account)->exec();
+            exit('success');
+        }
+
+        $this->view->user  = $this->user->getById($this->app->user->account);
+        $this->view->title = $this->lang->user->cropAvatar;
+        $this->view->image = $image;
         $this->display();
     }
 
@@ -1044,9 +1195,9 @@ class user extends control
 
     /**
      * Ajax print templates.
-     * 
-     * @param  int    $type 
-     * @param  string $link 
+     *
+     * @param  int    $type
+     * @param  string $link
      * @access public
      * @return void
      */
@@ -1088,7 +1239,7 @@ class user extends control
 
     /**
      * Ajax get more user.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -1113,4 +1264,15 @@ class user extends control
         die(json_encode($newUsers));
     }
 
+    /**
+     * Refresh random for login
+     *
+     * @access public
+     * @return void
+     */
+    public function refreshRandom()
+    {
+        $rand = (string)$this->user->updateSessionRandom();
+        die($rand);
+    }
 }

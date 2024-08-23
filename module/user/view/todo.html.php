@@ -18,7 +18,7 @@
 <div id='mainContent'>
   <nav id='contentNav'>
     <ul class='nav nav-default'>
-      <?php 
+      <?php
       foreach($lang->todo->periods as $period => $label)
       {
           $active = $type == $period ? 'active' : '';
@@ -35,14 +35,14 @@
       <?php $vars = "userID={$user->id}&type=$type&status=$status&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}&pageID={$pager->pageID}"; ?>
       <thead>
       <tr class='colhead'>
-        <th class='w-id'>    <?php common::printOrderLink('id',     $orderBy, $vars, $lang->idAB);?></th>
-        <th class='w-date'>  <?php common::printOrderLink('date',   $orderBy, $vars, $lang->todo->date);?></th>
-        <th class='w-type'>  <?php common::printOrderLink('type',   $orderBy, $vars, $lang->todo->type);?></th>
-        <th class='w-70px'>  <?php common::printOrderLink('pri',    $orderBy, $vars, $lang->priAB);?></th>
+        <th class='c-id'>    <?php common::printOrderLink('id',     $orderBy, $vars, $lang->idAB);?></th>
+        <th class='c-date'>  <?php common::printOrderLink('date',   $orderBy, $vars, $lang->todo->date);?></th>
+        <th class='c-type'>  <?php common::printOrderLink('type',   $orderBy, $vars, $lang->todo->type);?></th>
+        <th class='c-pri'>   <?php common::printOrderLink('pri',    $orderBy, $vars, $lang->priAB);?></th>
         <th>                 <?php common::printOrderLink('name',   $orderBy, $vars, $lang->todo->name);?></th>
-        <th class='w-60px'>  <?php common::printOrderLink('begin',  $orderBy, $vars, $lang->todo->beginAB);?></th>
-        <th class='w-hour'>  <?php common::printOrderLink('end',    $orderBy, $vars, $lang->todo->endAB);?></th>
-        <th class='w-70px'>  <?php common::printOrderLink('status', $orderBy, $vars, $lang->todo->status);?></th>
+        <th class='c-date'>  <?php common::printOrderLink('begin',  $orderBy, $vars, $lang->todo->beginAB);?></th>
+        <th class='c-date'>  <?php common::printOrderLink('end',    $orderBy, $vars, $lang->todo->endAB);?></th>
+        <th class='c-status'><?php common::printOrderLink('status', $orderBy, $vars, $lang->todo->status);?></th>
       </tr>
       </thead>
       <tbody>
@@ -52,7 +52,7 @@
         <td><?php echo $todo->date == '2030-01-01' ? $lang->todo->periods['future'] : $todo->date;?></td>
         <td><?php echo $lang->todo->typeList[$todo->type];?></td>
         <td><span class='<?php echo 'pri' . zget($lang->todo->priList, $todo->pri, $todo->pri);?>'><?php echo zget($lang->todo->priList, $todo->pri, $todo->pri);?></span></td>
-        <td class='text-left'><?php echo html::a($this->createLink('todo', 'view', "id=$todo->id", '', true), $todo->name, '', "class='iframe'");?></td>
+        <td class='text-left'><?php echo html::a($this->createLink('todo', 'view', "id=$todo->id&from=company", '', true), $todo->name, '', "class='iframe'");?></td>
         <td><?php echo $todo->begin;?></td>
         <td><?php echo $todo->end;?></td>
         <td class='<?php echo $todo->status;?>'><?php echo $lang->todo->statusList[$todo->status];?></td>

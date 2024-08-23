@@ -10,10 +10,8 @@
  * @link        https://www.zentao.pm
  */
 $lang->misc = new stdclass();
-$lang->misc->common = 'Sonstiges';
-$lang->misc->ping   = 'Ping';
-$lang->misc->api    = 'https://api.zentao.pm';
-$lang->misc->enApi  = 'https://api.zentao.pm';
+$lang->misc->common  = 'Sonstiges';
+$lang->misc->ping    = 'Ping';
 
 $lang->misc->zentao = new stdclass();
 $lang->misc->zentao->version           = 'Version %s';
@@ -86,10 +84,16 @@ $lang->misc->feature = new stdclass();
 $lang->misc->feature->lastest  = 'Letzte Version';
 $lang->misc->feature->detailed = 'Details';
 
+$lang->misc->releaseDate['15.0.1']      = '2021-06-06';
+$lang->misc->releaseDate['15.0']        = '2021-04-30';
+$lang->misc->releaseDate['15.0.rc3']    = '2021-04-16';
+$lang->misc->releaseDate['15.0.rc2']    = '2021-04-09';
+$lang->misc->releaseDate['15.0.rc1']    = '2021-04-05';
 $lang->misc->releaseDate['12.5.3']      = '2021-01-06';
 $lang->misc->releaseDate['12.5.2']      = '2020-12-18';
 $lang->misc->releaseDate['12.5.1']      = '2020-11-30';
 $lang->misc->releaseDate['12.5.stable'] = '2020-11-19';
+$lang->misc->releaseDate['20.0.alpha1'] = '2020-10-30';
 $lang->misc->releaseDate['12.4.4']      = '2020-10-30';
 $lang->misc->releaseDate['12.4.3']      = '2020-10-13';
 $lang->misc->releaseDate['12.4.2']      = '2020-09-18';
@@ -139,6 +143,11 @@ $lang->misc->releaseDate['7.2.stable']  = '2015-05-22';
 $lang->misc->releaseDate['7.1.stable']  = '2015-03-07';
 $lang->misc->releaseDate['6.3.stable']  = '2014-11-07';
 
+$lang->misc->feature->all['15.0.1'][]      = array('title' => 'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['15.0'][]        = array('title' => 'Fix Bug', 'desc' => '');
+$lang->misc->feature->all['15.0.rc3'][]    = array('title' => 'Adjust details，Fix bug', 'desc' => '');
+$lang->misc->feature->all['15.0.rc2'][]    = array('title' => 'Fix Bug.', 'desc' => '');
+$lang->misc->feature->all['15.0.rc1'][]    = array('title' => 'Upgrade to 15,reframe menu, add program.', 'desc' => '');
 $lang->misc->feature->all['12.5.3'][]      = array('title' => 'Adjust annual data.', 'desc' => '');
 $lang->misc->feature->all['12.5.2'][]      = array('title' => 'Fix Bug', 'desc' => '');
 $lang->misc->feature->all['12.5.1'][]      = array('title' => 'Fix Bug', 'desc' => '');

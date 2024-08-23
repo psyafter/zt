@@ -2,6 +2,8 @@
 $lang->repo->common         = 'Repo';
 $lang->repo->browse         = 'Xem';
 $lang->repo->viewRevision   = 'Xem Revision';
+$lang->repo->product        = 'Product';
+$lang->repo->execution      = $lang->execution->common;
 $lang->repo->create         = 'Tạo';
 $lang->repo->createAction   = 'Tạo Repo';
 $lang->repo->maintain       = 'Repo danh sách';
@@ -27,9 +29,7 @@ $lang->repo->submit     = 'Gửi';
 $lang->repo->cancel     = 'Hủy';
 $lang->repo->addComment = 'Thêm nhận xét';
 
-$lang->repo->product  = $lang->productCommon;
 $lang->repo->module   = 'Module';
-$lang->repo->project  = $lang->projectCommon;
 $lang->repo->type     = 'Loại';
 $lang->repo->assign   = 'Giao cho';
 $lang->repo->title    = 'Tiêu đề';
@@ -159,6 +159,7 @@ $lang->repo->error->noPriv        = 'The program does not have the privilege  to
 $lang->repo->error->output        = "The command is: %s\nThe error is(%s): %s\n";
 $lang->repo->error->clientVersion = "Client version is too low, please upgrade or change SVN client";
 $lang->repo->error->encoding      = "The encoding maybe wrong. Vui lòng change the encoding and try again.";
+$lang->repo->error->deleted       = "Deletion of the repository failed. The current repository has a commit record associated with the design.";
 $lang->repo->error->clientPath    = "The client installation directory cannot have spaces!";
 
 $lang->repo->syncTips      = '<strong>Bạn có thể tìm tham khảo làm sao thiết lập đồng bộ Git từ <a target="_blank" href="https://www.zentao.pm/book/zentaomanual/free-open-source-project-management-software-git-105.html">here</a>.</strong>';

@@ -29,13 +29,13 @@ $lang->convert->convertBugFree = '轉換BugFree';
 $lang->convert->selectSource     = '選擇來源系統及版本';
 $lang->convert->mustSelectSource = "必須選擇一個來源。";
 
-$lang->convert->direction             = "請選擇{$lang->projectCommon}問題轉換方向";
+$lang->convert->direction             = "請選擇{$lang->executionCommon}問題轉換方向";
 $lang->convert->questionTypeOfRedmine = 'Redmine中問題類型';
 $lang->convert->aimTypeOfZentao       = '轉化為Zentao中的類型';
 
 $lang->convert->directionList['bug']   = 'Bug';
 $lang->convert->directionList['task']  = '任務';
-$lang->convert->directionList['story'] = $lang->storyCommon;
+$lang->convert->directionList['story'] = $lang->SRCommon;
 
 $lang->convert->sourceList['BugFree'] = array('bugfree_1' => '1.x', 'bugfree_2' => '2.x');
 $lang->convert->sourceList['Redmine'] = array('Redmine_1.1' => '1.1');
@@ -65,21 +65,21 @@ $lang->convert->count      = '轉換數量';
 $lang->convert->info       = '轉換信息';
 
 $lang->convert->bugfree = new stdclass();
-$lang->convert->bugfree->users    = '用戶';
-$lang->convert->bugfree->projects = $lang->projectCommon;
-$lang->convert->bugfree->modules  = '模組';
-$lang->convert->bugfree->bugs     = 'Bug';
-$lang->convert->bugfree->cases    = '測試用例';
-$lang->convert->bugfree->results  = '測試結果';
-$lang->convert->bugfree->actions  = '歷史記錄';
-$lang->convert->bugfree->files    = '附件';
+$lang->convert->bugfree->users      = '用戶';
+$lang->convert->bugfree->executions = $lang->executionCommon;
+$lang->convert->bugfree->modules    = '模組';
+$lang->convert->bugfree->bugs       = 'Bug';
+$lang->convert->bugfree->cases      = '測試用例';
+$lang->convert->bugfree->results    = '測試結果';
+$lang->convert->bugfree->actions    = '歷史記錄';
+$lang->convert->bugfree->files      = '附件';
 
 $lang->convert->redmine = new stdclass();
 $lang->convert->redmine->users        = '用戶';
 $lang->convert->redmine->groups       = '用戶分組';
 $lang->convert->redmine->products     = $lang->productCommon;
-$lang->convert->redmine->projects     = $lang->projectCommon;
-$lang->convert->redmine->stories      = $lang->storyCommon;
+$lang->convert->redmine->executions   = $lang->executionCommon;
+$lang->convert->redmine->stories      = $lang->SRCommon;
 $lang->convert->redmine->tasks        = '任務';
 $lang->convert->redmine->bugs         = 'Bug';
 $lang->convert->redmine->productPlans = $lang->productCommon . '計劃';

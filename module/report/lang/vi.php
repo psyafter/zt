@@ -7,9 +7,8 @@
  * @author   Nguyễn Quốc Nho <quocnho@gmail.com>
  * @package  report
  * @version  $Id: vi.php 5080 2013-07-10 00:46:59Z wyd621@gmail.com $
- * @link  http://www.zentao.net
+ * @link  https://www.zentao.pm
  */
-$lang->report->common     = 'Báo cáo';
 $lang->report->index      = 'Trang báo cáo';
 $lang->report->list       = 'Báo cáo';
 $lang->report->item       = 'Hạng mục';
@@ -18,6 +17,7 @@ $lang->report->percent    = '%';
 $lang->report->undefined  = 'Chưa định nghĩa';
 $lang->report->query      = 'Truy vấn';
 $lang->report->annual     = 'Tóm tắt theo năm';
+$lang->report->project    = 'Project';
 
 $lang->report->colors[]   = 'AFD8F8';
 $lang->report->colors[]   = 'F6BD0F';
@@ -37,7 +37,7 @@ $lang->report->assign['assign']   = 'Đã giao';
 
 $lang->report->singleColor[] = 'F6BD0F';
 
-$lang->report->projectDeviation = 'Độ lệch '.$lang->projectCommon;
+$lang->report->projectDeviation = 'Độ lệch thực hiện';
 $lang->report->productSummary   = 'Tóm tắt '.$lang->productCommon;
 $lang->report->bugCreate        = 'Báo cáo Bug';
 $lang->report->bugAssign        = 'Bàn giao Bug';
@@ -45,17 +45,25 @@ $lang->report->workload         = 'Lượng công việc đội nhóm';
 $lang->report->workloadAB       = 'Lượng công việc';
 $lang->report->bugOpenedDate    = 'Bug được báo cáo từ';
 $lang->report->beginAndEnd      = ' từ';
+$lang->report->begin            = 'Begin';
+$lang->report->end              = 'End';
 $lang->report->dept             = 'Phòng/Ban';
-$lang->report->deviationChart   = 'Biểu đồ chênh lệch '.$lang->projectCommon;
+$lang->report->deviationChart   = 'Biểu đồ chênh lệcthực hiệnh';
 
-$lang->reportList->project->lists[10] = 'Chênh lệch '.$lang->projectCommon . '|report|projectdeviation';
+$lang->reportList = new stdclass();
+$lang->reportList->project = new stdclass();
+$lang->reportList->product = new stdclass();
+$lang->reportList->test    = new stdclass();
+$lang->reportList->staff   = new stdclass();
+
+$lang->reportList->project->lists[10] = 'Chênh lệchthực hiện|reportprojectdeviation';
 $lang->reportList->product->lists[10] = 'Tóm tắt '.$lang->productCommon . '|report|productsummary';
 $lang->reportList->test->lists[10]    = 'Báo cáo Bug|report|bugcreate';
 $lang->reportList->test->lists[13]    = 'Bàn giao Bug|report|bugassign';
 $lang->reportList->staff->lists[10]   = 'Lượng công việc đội nhóm|report|workload';
 
 $lang->report->id            = 'ID';
-$lang->report->project       = $lang->projectCommon;
+$lang->report->execution     = $lang->executionCommon;
 $lang->report->product       = $lang->productCommon;
 $lang->report->user          = 'Người dùng';
 $lang->report->bugTotal      = 'Bug';
@@ -99,8 +107,9 @@ $lang->report->mailTitle->task     = " %s) nhiệm vụ,";
 $lang->report->mailTitle->todo     = " (%s) việc,";
 $lang->report->mailTitle->testTask = " (%s) yêu cầu,";
 
-$lang->report->proVersion   = '<a href="https://api.zentao.net/goto.php?item=proversion&from=reportpage" target="_blank">Hãy thử ZenTao Pro để biết thêm!</a>';
-$lang->report->proVersionEn = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Hãy thử ZenTao Pro để biết thêm!</a>';
+$lang->report->deviationDesc = 'According to the Closed Execution Deviation Rate = ((Total Cost - Total Estimate) / Total Estimate), the Deviation Rate is n/a when the Total Estimate is 0.';
+$lang->report->proVersion    = '<a href="https://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Hãy thử ZenTao Pro để biết thêm!</a>';
+$lang->report->proVersionEn  = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Hãy thử ZenTao Pro để biết thêm!</a>';
 
 $lang->report->annualData = new stdclass();
 $lang->report->annualData->title            = "%s work summary in %s";
@@ -113,13 +122,13 @@ $lang->report->annualData->baseInfo         = "Basic Data";
 $lang->report->annualData->actionData       = "Operation Data";
 $lang->report->annualData->contributionData = "Contribution Data";
 $lang->report->annualData->radar            = "Capability Radar Chart";
-$lang->report->annualData->projects         = "{$lang->projectCommon} Data";
+$lang->report->annualData->executions       = "{$lang->executionCommon} Data";
 $lang->report->annualData->products         = "{$lang->productCommon} Data";
 $lang->report->annualData->stories          = "Story Data";
 $lang->report->annualData->tasks            = "Task Data";
 $lang->report->annualData->bugs             = "Bug Data";
 $lang->report->annualData->cases            = "Case Data";
-$lang->report->annualData->statusStat       = "{$lang->storyCommon}/task/bug status distribution (as of today)";
+$lang->report->annualData->statusStat       = "{$lang->SRCommon}/task/bug status distribution (as of today)";
 
 $lang->report->annualData->companyUsers     = "Number of company";
 $lang->report->annualData->deptUsers        = "Number of departments";
@@ -144,10 +153,10 @@ $lang->report->annualData->taskMonthActions  = "Monthly task operation";
 $lang->report->annualData->bugMonthActions   = "Monthly bug operation";
 $lang->report->annualData->caseMonthActions  = "Monthly case operation";
 
-$lang->report->annualData->projectFields['name']  = "{$lang->projectCommon} name";
-$lang->report->annualData->projectFields['story'] = "Finished stories";
-$lang->report->annualData->projectFields['task']  = "Finished tasks";
-$lang->report->annualData->projectFields['bug']   = "Resolved bugs";
+$lang->report->annualData->executionFields['name']  = "{$lang->executionCommon} name";
+$lang->report->annualData->executionFields['story'] = "Finished stories";
+$lang->report->annualData->executionFields['task']  = "Finished tasks";
+$lang->report->annualData->executionFields['bug']   = "Resolved bugs";
 
 $lang->report->annualData->productFields['name'] = "{$lang->productCommon} name";
 $lang->report->annualData->productFields['plan'] = "Plans";
@@ -160,10 +169,10 @@ $lang->report->annualData->productFields['story']    = "Created stories";
 $lang->report->annualData->productFields['finished'] = "Finished stories";
 
 $lang->report->annualData->objectTypeList['product']     = $lang->productCommon;
-$lang->report->annualData->objectTypeList['story']       = $lang->storyCommon;
+$lang->report->annualData->objectTypeList['story']       = $lang->SRCommon;
 $lang->report->annualData->objectTypeList['productplan'] = "Plan";
 $lang->report->annualData->objectTypeList['release']     = "Release";
-$lang->report->annualData->objectTypeList['project']     = $lang->projectCommon;
+$lang->report->annualData->objectTypeList['execution']   = $lang->executionCommon;
 $lang->report->annualData->objectTypeList['task']        = 'Task';
 $lang->report->annualData->objectTypeList['repo']        = 'Code';
 $lang->report->annualData->objectTypeList['bug']         = 'Bug';
@@ -194,8 +203,8 @@ $lang->report->annualData->todoStatus['all']    = 'All';
 $lang->report->annualData->todoStatus['undone'] = 'Undone';
 $lang->report->annualData->todoStatus['done']   = 'Done';
 
-$lang->report->annualData->radarItems['product'] = "Product";
-$lang->report->annualData->radarItems['project'] = "Project";
-$lang->report->annualData->radarItems['devel']   = "Development";
-$lang->report->annualData->radarItems['qa']      = "QA";
-$lang->report->annualData->radarItems['other']   = "Other";
+$lang->report->annualData->radarItems['product']   = "Product";
+$lang->report->annualData->radarItems['execution'] = "Project";
+$lang->report->annualData->radarItems['devel']     = "Development";
+$lang->report->annualData->radarItems['qa']        = "QA";
+$lang->report->annualData->radarItems['other']     = "Other";

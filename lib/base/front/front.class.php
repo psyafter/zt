@@ -172,7 +172,6 @@ class baseHTML
         $selectedItems = ",$selectedItems,";
         foreach($options as $key => $value)
         {
-            $key      = str_replace('item', '', $key);
             $selected = strpos($selectedItems, ",$key,") !== false ? " selected='selected'" : '';
             $string  .= "<option value='$key'$selected>$value</option>\n";
         }
@@ -209,7 +208,6 @@ class baseHTML
             $string .= "<optgroup label='$groupName'>\n";
             foreach($options as $key => $value)
             {
-                $key      = str_replace('item', '', $key);
                 $selected = strpos($selectedItems, ",$key,") !== false ? " selected='selected'" : '';
                 $string  .= "<option value='$key'$selected>$value</option>\n";
             }
@@ -280,7 +278,6 @@ class baseHTML
 
         foreach($options as $key => $value)
         {
-            $key     = str_replace('item', '', $key);
             if($isBlock) $string .= "<div class='checkbox'><label>";
             else $string .= "<label class='checkbox-inline'>";
             $string .= "<input type='checkbox' name='{$name}[]' value='$key' ";
@@ -489,13 +486,32 @@ class baseHTML
     {
         if(helper::inOnlyBodyMode()) return false;
 
-        global $lang;
-        if(empty($label))
+        global $lang, $app, $config;
+        if(empty($label)) $label = $lang->goback;
+
+        $gobackLink   = "<a href='javascript:history.go(-1)' class='btn btn-back $class' $misc>{$label}</a>";
+        $tab          = $_COOKIE['tab'];
+        $referer      = isset($_SERVER['HTTP_REFERER']) ? strtolower($_SERVER['HTTP_REFERER']) : '';
+        $refererParts = parse_url($referer);
+
+        if($config->requestType == 'PATH_INFO' and empty($refererParts)) return $gobackLink;
+        if($config->requestType == 'GET' and !isset($refererParts['query'])) return $gobackLink;
+
+        $refererLink   = $config->requestType == 'PATH_INFO' ? $refererParts['path'] : $refererParts['query'];
+        $currentModule = $app->getModuleName();
+        $currentMethod = $app->getMethodName();
+        $gobackList    = isset($_COOKIE['goback']) ? json_decode($_COOKIE['goback'], true) : array();
+        $gobackLink    = isset($gobackList[$tab]) ? $gobackList[$tab] : '';
+
+        /* If the link of the referer is not the link of the current page or the link of the index,  the cookie and gobackLink will be updated. */
+        if(!preg_match("/(m=|\/)(index|search|$currentModule)(&f=|-)(index|buildquery|$currentMethod)(&|-|\.)?/", $refererLink))
         {
-            global $lang;
-            $label = $lang->goback;
+            $gobackList[$tab] = $referer;
+            $gobackLink       = $referer;
+            setcookie('goback', json_encode($gobackList), $config->cookieLife, $config->webRoot, '', $config->cookieSecure, false);
         }
-        return  "<a href='javascript:history.go(-1);' class='btn btn-back $class' $misc>{$label}</a>";
+
+        return  "<a href='{$gobackLink}' class='btn btn-back $class' $misc>{$label}</a>";
     }
 
     /**
@@ -574,10 +590,12 @@ function selectAll(checker, scope, type)
     {
         if(type == 'button')
         {
+            var check = $('#' + scope + ' input:checkbox').length == $('#' + scope + ' input:checkbox:checked').length ? false : true;
             $('#' + scope + ' input').each(function()
             {
-                $(this).prop("checked", true)
+                $(this).prop("checked", check)
             });
+            $(checker).data('check', check == true ? false :true);
         }
         else if(type == 'checkbox')
         {
@@ -591,9 +609,10 @@ function selectAll(checker, scope, type)
     {
         if(type == 'button')
         {
+            var check = $('input:checkbox').length == $('input:checkbox:checked').length ? false : true;
             $('input:checkbox').each(function()
             {
-                $(this).prop("checked", true)
+                $(this).prop("checked", check)
             });
         }
         else if(type == 'checkbox')
@@ -813,6 +832,10 @@ class baseJS
             return json_encode($output);
         }
 
+        /* Convert ' to \'. */
+        $message = str_replace("\\'", "'", $message);
+        $message = str_replace("'", "\\'", $message);
+
         return self::start($full) . "alert('" . $message . "')" . self::end() . self::resetForm();
     }
 
@@ -885,16 +908,18 @@ class baseJS
      * 显示一个确认框，点击确定跳转到$okURL，点击取消跳转到$cancelURL。
      * show a confirm box, press ok go to okURL, else go to cancleURL.
      *
-     * @param  string $message      显示的内容。              the text to be showed.
-     * @param  string $okURL        点击确定后跳转的地址。    the url to go to when press 'ok'.
-     * @param  string $cancleURL    点击取消后跳转的地址。    the url to go to when press 'cancle'.
-     * @param  string $okTarget     点击确定后跳转的target。  the target to go to when press 'ok'.
-     * @param  string $cancleTarget 点击取消后跳转的target。  the target to go to when press 'cancle'.
+     * @param  string $message       显示的内容。              the text to be showed.
+     * @param  string $okURL         点击确定后跳转的地址。    the url to go to when press 'ok'.
+     * @param  string $cancleURL     点击取消后跳转的地址。    the url to go to when press 'cancle'.
+     * @param  string $okTarget      点击确定后跳转的target。  the target to go to when press 'ok'.
+     * @param  string $cancleTarget  点击取消后跳转的target。  the target to go to when press 'cancle'.
+     * @param  string $okOpenApp     点击确定后跳转的应用。    the app to go to when press 'ok'.
+     * @param  string $cancleOpenApp 点击取消后跳转的应用。    the app to go to when press 'cancle'.
      * @static
      * @access public
      * @return string
      */
-    static public function confirm($message = '', $okURL = '', $cancleURL = '', $okTarget = "self", $cancleTarget = "self")
+    static public function confirm($message = '', $okURL = '', $cancleURL = '', $okTarget = "self", $cancleTarget = "self", $okOpenApp = '', $cancleOpenApp = '')
     {
         global $app;
         if($app->viewType == 'json')
@@ -921,6 +946,10 @@ class baseJS
         {
             $confirmAction = "history.back(-1);";
         }
+        elseif(strpos($okTarget, '$.apps.open') !== false)
+        {
+            $confirmAction = "$okTarget('$okURL', '$okOpenApp');";
+        }
         elseif(!empty($okURL))
         {
             $confirmAction = "$okTarget.location = '$okURL';";
@@ -930,6 +959,10 @@ class baseJS
         if(strtolower($cancleURL) == "back")
         {
             $cancleAction = "history.back(-1);";
+        }
+        elseif(strpos($cancleTarget, '$.apps.open') !== false)
+        {
+            $cancleAction = "$cancleTarget('$cancleURL', '$cancleOpenApp');";
         }
         elseif(!empty($cancleURL))
         {
@@ -987,6 +1020,10 @@ EOT;
         if(strtolower($url) == "back")
         {
             $js .= "history.back(-1);\n";
+        }
+        elseif(strpos($target, '$.apps.open') !== false)
+        {
+            $js .= "$target('$url')";
         }
         else
         {

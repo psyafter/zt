@@ -11,10 +11,11 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
+<?php js::set('tab', $app->tab);?>
 <style>
-li.story-item > .tree-actions .tree-action[data-type=sort]{display:none;}
-li.story-item > .tree-actions .tree-action[data-type=edit]{display:none;}
-li.story-item > .tree-actions .tree-action[data-type=delete]{display:none;}
+li.story-item > .tree-actions .tree-action[data-type=sort] {display: none;}
+li.story-item > .tree-actions .tree-action[data-type=edit] {display: none;}
+li.story-item > .tree-actions .tree-action[data-type=delete] {display: none;}
 </style>
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
@@ -50,10 +51,10 @@ li.story-item > .tree-actions .tree-action[data-type=delete]{display:none;}
             <tr>
               <td class="text-middle text-right with-padding">
                 <?php
-                echo "<span>" . html::a($this->createLink('tree', 'browsetask', "root={$root->id}&productID=$productID&viewType=task"), $root->name) . "<i class='icon icon-angle-right muted'></i></span>";
+echo "<span>" . html::a($this->createLink('tree', 'browsetask', "root={$root->id}&productID=$productID&viewType=task"), $root->name, '', "data-app='{$app->tab}'") . "<i class='icon icon-angle-right muted'></i></span>";
                 foreach($parentModules as $module)
                 {
-                    echo "<span>" . html::a($this->createLink('tree', 'browsetask', "root={$root->id}&productID=$productID&moduleID=$module->id"), $module->name) . " <i class='icon icon-angle-right muted'></i></span>";
+                    echo "<span>" . html::a($this->createLink('tree', 'browsetask', "root={$root->id}&productID=$productID&moduleID=$module->id"), $module->name, '', "data-app='{$app->tab}'") . " <i class='icon icon-angle-right muted'></i></span>";
                 }
                 ?>
               </td>
@@ -137,8 +138,8 @@ $(function()
         {
             var $toggle = $('<span class="module-name" data-id="' + item.id + '">' + link + '</span>');
 
-            var title = (item.type === 'product' ? '<i class="icon icon-cube text-muted"></i> ' : '') + item.name;
-            var link = item.id !== undefined ? ('<a href="' + createLink('tree', 'browsetask', 'rootID=<?php echo $rootID ?>&viewType=task&moduleID={0}'.format(item.id)) + '">' + title + '</a>') : ('<span class="tree-toggle">' + title + '</span>');
+            var title = (item.type === 'product' ? '<i class="icon icon-product text-muted"></i> ' : '') + item.name;
+            var link = item.id !== undefined ? ('<a data-app=' + tab + ' href="' + createLink('tree', 'browsetask', 'rootID=<?php echo $rootID ?>&viewType=task&moduleID={0}'.format(item.id)) + '">' + title + '</a>') : ('<span class="tree-toggle">' + title + '</span>');
             var $toggle = $('<span class="module-name" data-id="' + item.id + '">' + link + '</span>');
             if(item.type === 'task')
             {
@@ -173,7 +174,7 @@ $(function()
             {
                 linkTemplate: '<?php echo helper::createLink('tree', 'browsetask', "rootID=$rootID&viewType=task&moduleID={0}"); ?>',
                 title: '<?php echo $lang->tree->child ?>',
-                template: '<a href="javascript:;"><i class="icon icon-treemap-alt"></i></a>'
+                template: '<a href="javascript:;"><i class="icon icon-split"></i></a>'
             }
         },
         action: function(event)
@@ -204,7 +205,10 @@ $(function()
                     var item = $li.data();
                     orders['orders[' + item.id + ']'] = $li.attr('data-order') || item.order;
                 });
-                $.post('<?php echo $this->createLink('tree', 'updateOrder', "root={$root->id}&viewType=task");?>', orders).error(function()
+                $.post('<?php echo $this->createLink('tree', 'updateOrder', "root={$root->id}&viewType=task");?>', orders, function(data)
+                {
+                    $('.main-col').load(location.href + ' .main-col .panel');
+                }).error(function()
                 {
                     bootbox.alert(lang.timeout);
                 });

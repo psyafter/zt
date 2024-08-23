@@ -7,7 +7,7 @@
  *
  * The author disclaims copyright to this source code. In place of
  * a legal notice, here is a blessing:
- * 
+ *
  *  May you do good and not evil.
  *  May you find forgiveness for yourself and forgive others.
  *  May you share freely, never taking more than you give.
@@ -64,7 +64,8 @@ class baseHelper
     {
         /* 设置$appName和$moduleName。Set appName and moduleName. */
         global $app, $config;
-        if(strpos($moduleName, '.') !== false) 
+
+        if(strpos($moduleName, '.') !== false)
         {
             list($appName, $moduleName) = explode('.', $moduleName);
         }
@@ -84,7 +85,7 @@ class baseHelper
         if($config->requestType == 'PATH_INFO2') $link .= '/';
 
         /**
-         * #1: RequestType为GET。When the requestType is GET. 
+         * #1: RequestType为GET。When the requestType is GET.
          * Input: moduleName=article&methodName=index&var1=value1. Output: ?m=article&f=index&var1=value1.
          *
          */
@@ -93,11 +94,12 @@ class baseHelper
             $link .= "?{$config->moduleVar}=$moduleName&{$config->methodVar}=$methodName";
             if($viewType != 'html') $link .= "&{$config->viewVar}=" . $viewType;
             foreach($vars as $key => $value) $link .= "&$key=$value";
+
             return self::processOnlyBodyParam($link, $onlyBody);
         }
 
         /**
-         * #2: 方法名不是默认值或者是默认值，但有传参。MethodName equals the default method or vars not empty. 
+         * #2: 方法名不是默认值或者是默认值，但有传参。MethodName equals the default method or vars not empty.
          * Input: moduleName=article&methodName=view. Output: article-view.html
          * Input: moduleName=article&methodName=view. Output: article-index-abc.html
          *
@@ -112,18 +114,18 @@ class baseHelper
         }
 
         /**
-         * #3: 方法名为默认值且没有传参且模块名为默认值。MethodName is the default and moduleName is default and vars empty. 
+         * #3: 方法名为默认值且没有传参且模块名为默认值。MethodName is the default and moduleName is default and vars empty.
          * Input: moduleName=index&methodName=index. Output: index.html
          *
          */
         if($moduleName == $config->default->module)
         {
-            $link .= $config->default->method . '.' . $viewType; 
+            $link .= $config->default->method . '.' . $viewType;
             return self::processOnlyBodyParam($link, $onlyBody);
         }
 
         /**
-         * #4: 方法名为默认值且没有传参且模块名不为默认值，viewType和app指定的相等。MethodName is default but moduleName not and viewType equal app's viewType.. 
+         * #4: 方法名为默认值且没有传参且模块名不为默认值，viewType和app指定的相等。MethodName is default but moduleName not and viewType equal app's viewType..
          * Input: moduleName=article&methodName=index&viewType=html. Output: /article/
          *
          */
@@ -134,7 +136,7 @@ class baseHelper
         }
 
         /**
-         * #5: 方法名为默认值且没有传参且模块名不为默认值，viewType有另外指定。MethodName is default but moduleName not and viewType no equls app's viewType. 
+         * #5: 方法名为默认值且没有传参且模块名不为默认值，viewType有另外指定。MethodName is default but moduleName not and viewType no equls app's viewType.
          * Input: moduleName=article&methodName=index&viewType=json. Output: /article.json
          *
          */
@@ -148,9 +150,9 @@ class baseHelper
      *
      * 如果传参的时候设定了$onlyBody为真，或者当前页面请求中包含了onlybody=yes，在生成链接的时候继续追加。
      * If $onlyBody set to true or onlybody=yes in the url, append onlyBody param to the link.
-     * 
-     * @param  string  $link 
-     * @param  bool    $onlyBody 
+     *
+     * @param  string  $link
+     * @param  bool    $onlyBody
      * @static
      * @access public
      * @return string
@@ -159,14 +161,14 @@ class baseHelper
     {
         global $config;
         if(!$onlyBody and !self::inOnlyBodyMode()) return $link;
-        $onlybodyString = $config->requestType != 'GET' ? "?onlybody=yes" : "&onlybody=yes";
+        $onlybodyString = strpos($link, '?') === false ? "?onlybody=yes" : "&onlybody=yes";
         return $link . $onlybodyString;
     }
 
     /**
      * 检查是否是onlybody模式。
      * Check in only body mode or not.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -176,7 +178,7 @@ class baseHelper
     }
 
     /**
-     * 使用helper::import()来引入文件，不要直接使用include或者require. 
+     * 使用helper::import()来引入文件，不要直接使用include或者require.
      * Using helper::import() to import a file, instead of include or require.
      *
      * @param string    $file   the file to be imported.
@@ -203,7 +205,7 @@ class baseHelper
     /**
      * 将数组或者列表转化成 IN( 'a', 'b') 的形式。
      * Convert a list to  IN('a', 'b') string.
-     * 
+     *
      * @param   string|array $idList   列表，可以是数组或者用逗号隔开的列表。The id lists, can be a array or a string joined with comma.
      * @static
      * @access  public
@@ -211,24 +213,21 @@ class baseHelper
      */
     static public function dbIN($idList)
     {
-        if(is_array($idList)) 
+        if(is_array($idList))
         {
-            if(!function_exists('get_magic_quotes_gpc') or !get_magic_quotes_gpc())
-            {
-                foreach($idList as $key=>$value) $idList[$key] = addslashes($value); 
-            }
+            foreach($idList as $key=>$value) $idList[$key] = addslashes($value);
             return "IN ('" . join("','", $idList) . "')";
         }
 
         if(!is_string($idList)) $idList = json_encode($idList);
-        if(!function_exists('get_magic_quotes_gpc') or !get_magic_quotes_gpc()) $idList = addslashes($idList);
+        $idList = addslashes($idList);
         return "IN ('" . str_replace(',', "','", str_replace(' ', '', $idList)) . "')";
     }
 
     /**
      * 安全的Base64编码，框架对'/'字符比较敏感，转换为'.'。
      * Create safe base64 encoded string for the framework.
-     * 
+     *
      * @param   string  $string   the string to encode.
      * @static
      * @access  public
@@ -242,7 +241,7 @@ class baseHelper
     /**
      * 解码base64，先将之前的'.' 转换回'/'
      * Decode the string encoded by safe64Encode.
-     * 
+     *
      * @param   string  $string   the string to decode
      * @static
      * @access  public
@@ -256,7 +255,7 @@ class baseHelper
     /**
      * JSON编码，自动处理转义的问题。
      * JSON encode, process the slashes.
-     * 
+     *
      * @param   mixed  $data   the object to encode
      * @static
      * @access  public
@@ -264,13 +263,13 @@ class baseHelper
      */
     static public function jsonEncode($data)
     {
-        return (function_exists('get_magic_quotes_gpc') and get_magic_quotes_gpc()) ? addslashes(json_encode($data)) : json_encode($data);
+        return json_encode($data);
     }
 
     /**
      * Encrypt password.
-     * 
-     * @param  string    $password 
+     *
+     * @param  string    $password
      * @static
      * @access public
      * @return string
@@ -285,7 +284,7 @@ class baseHelper
             $secret = $config->encryptSecret;
             if(function_exists('mcrypt_encrypt'))
             {
-                $encrypted = base64_encode(@mcrypt_encrypt(MCRYPT_DES, $secret, $password, MCRYPT_MODE_CBC));
+                $encrypted = base64_encode(@mcrypt_encrypt(MCRYPT_DES, substr($secret, 0, 8), $password, MCRYPT_MODE_CBC));
             }
             elseif(function_exists('openssl_encrypt'))
             {
@@ -293,7 +292,7 @@ class baseHelper
                 $oversize = strlen($password) % 8;
                 if($oversize != 0) $password .= str_repeat("\0", 8 - $oversize);
 
-                $encrypted = @openssl_encrypt($password, 'DES-CBC', $secret, OPENSSL_ZERO_PADDING);
+                $encrypted = @openssl_encrypt($password, 'DES-CBC', substr($secret, 0, 8), OPENSSL_ZERO_PADDING);
             }
         }
         if(empty($encrypted)) $encrypted = $password;
@@ -303,8 +302,8 @@ class baseHelper
 
     /**
      * Decrypt password.
-     * 
-     * @param  string $password 
+     *
+     * @param  string $password
      * @static
      * @access public
      * @return string
@@ -319,11 +318,11 @@ class baseHelper
             $secret = $config->encryptSecret;
             if(function_exists('mcrypt_decrypt'))
             {
-                $decryptedPassword = @mcrypt_decrypt(MCRYPT_DES, $secret, base64_decode($password), MCRYPT_MODE_CBC);
+                $decryptedPassword = @mcrypt_decrypt(MCRYPT_DES, substr($secret, 0, 8), base64_decode($password), MCRYPT_MODE_CBC);
             }
             elseif(function_exists('openssl_decrypt'))
             {
-                $decryptedPassword = openssl_decrypt($password, 'DES-CBC', $secret, OPENSSL_ZERO_PADDING);
+                $decryptedPassword = openssl_decrypt($password, 'DES-CBC', substr($secret, 0, 8), OPENSSL_ZERO_PADDING);
             }
 
             /* Check decrypted password. Judge whether there is garbled code. */
@@ -339,9 +338,9 @@ class baseHelper
     /**
      * 判断是否是utf8编码
      * Judge a string is utf-8 or not.
-     * 
+     *
      * @author hmdker@gmail.com
-     * @param  string    $string 
+     * @param  string    $string
      * @see    http://php.net/manual/en/function.mb-detect-encoding.php
      * @static
      * @access public
@@ -349,7 +348,7 @@ class baseHelper
      */
     static public function isUTF8($string)
     {
-        $c    = 0; 
+        $c    = 0;
         $b    = 0;
         $bits = 0;
         $len  = strlen($string);
@@ -381,7 +380,7 @@ class baseHelper
     /**
      * 去掉UTF-8 Bom头。
      * Remove UTF-8 Bom.
-     * 
+     *
      * @param  string    $string
      * @access public
      * @return string
@@ -397,9 +396,9 @@ class baseHelper
      * Enhanced substr version: support multibyte languages like Chinese.
      *
      * @param string    $string
-     * @param int       $length 
-     * @param string    $append 
-     * @return string 
+     * @param int       $length
+     * @param string    $append
+     * @return string
      */
     public static function substr($string, $length, $append = '')
     {
@@ -415,7 +414,7 @@ class baseHelper
 
     /**
      * Get browser name and version.
-     * 
+     *
      * @access public
      * @return array
      */
@@ -451,8 +450,8 @@ class baseHelper
     }
 
     /**
-     * Get client os from agent info. 
-     * 
+     * Get client os from agent info.
+     *
      * @static
      * @access public
      * @return string
@@ -487,17 +486,17 @@ class baseHelper
         $osList['/webos/i']              = 'Mobile';
 
         foreach ($osList as $regex => $value)
-        { 
-            if(preg_match($regex, $_SERVER['HTTP_USER_AGENT'])) return $value; 
-        }   
+        {
+            if(preg_match($regex, $_SERVER['HTTP_USER_AGENT'])) return $value;
+        }
 
         return 'unknown';
     }
-    
+
     /**
      *  计算两个日期相差的天数，取整。
      *  Compute the diff days of two date.
-     * 
+     *
      * @param   string $date1   the first date.
      * @param   string $date2   the sencond date.
      * @access  public
@@ -505,13 +504,18 @@ class baseHelper
      */
     static public function diffDate($date1, $date2)
     {
-        return round((strtotime($date1) - strtotime($date2)) / 86400, 0);
+        /* Get the timestamp in the current operating system. */
+        $date1 = new DateTime($date1);
+        $date2 = new DateTime($date2);
+        $date1 = date_format($date1, "U");
+        $date2 = date_format($date2, "U");
+        return round(($date1 - $date2) / 86400, 0);
     }
 
     /**
      *  获取当前时间，使用common语言文件定义的DT_DATETIME1常量。
      *  Get now time use the DT_DATETIME1 constant defined in the lang file.
-     * 
+     *
      * @access  public
      * @return  datetime  now
      */
@@ -535,7 +539,7 @@ class baseHelper
     /**
      *  获取当前日期，使用common语言文件定义的DT_TIME1常量。
      *  Get now time use the DT_TIME1 constant defined in the lang file.
-     * 
+     *
      * @access  public
      * @return  date  today
      */
@@ -547,7 +551,7 @@ class baseHelper
     /**
      *  判断日期是不是零。
      *  Judge a date is zero or not.
-     * 
+     *
      * @access  public
      * @return  bool
      */
@@ -559,7 +563,7 @@ class baseHelper
     /**
      *  列出目录中符合该正则表达式的文件。
      *  Get files match the pattern under a directory.
-     * 
+     *
      * @access  public
      * @return  array   the files match the pattern
      */
@@ -576,13 +580,13 @@ class baseHelper
     /**
      * 切换目录。第一次调用的时候记录当前的路径，再次调用的时候切换回之前的路径。
      * Change directory: first call, save the $cwd, secend call, change to $cwd.
-     * 
-     * @param  string $path 
+     *
+     * @param  string $path
      * @static
      * @access public
      * @return void
      */
-    static function cd($path = '')
+    static public function cd($path = '')
     {
         static $cwd = '';
         if($path) $cwd = getcwd();
@@ -601,7 +605,7 @@ class baseHelper
      *
      * @param  string $domain
      * @return string $siteCode
-     **/ 
+     **/
     public static function parseSiteCode($domain)
     {
         global $config;
@@ -636,7 +640,7 @@ class baseHelper
     /**
      * 检查是否是AJAX请求。
      * Check is ajax request.
-     * 
+     *
      * @static
      * @access public
      * @return bool
@@ -651,8 +655,8 @@ class baseHelper
     /**
      * 301跳转。
      * Header 301 Moved Permanently.
-     * 
-     * @param  string    $locate 
+     *
+     * @param  string    $locate
      * @access public
      * @return void
      */
@@ -662,11 +666,11 @@ class baseHelper
         die(header('Location:' . $locate));
     }
 
-    /** 
+    /**
      * 获取远程IP。
-     * Get remote ip. 
-     * 
-     * @param  bool  $proxy 
+     * Get remote ip.
+     *
+     * @param  bool  $proxy
      * @access public
      * @return string
      */
@@ -686,8 +690,8 @@ class baseHelper
 
     /**
      * Restart session.
-     * 
-     * @param  string $sessionID 
+     *
+     * @param  string $sessionID
      * @static
      * @access public
      * @return void
@@ -703,8 +707,8 @@ class baseHelper
 
     /**
      * Check DB to repair table.
-     * 
-     * @param  object  $exception 
+     *
+     * @param  object  $exception
      * @static
      * @access public
      * @return string
@@ -741,7 +745,7 @@ class baseHelper
  *
  * @param  string        $methodName  the method name
  * @param  string|array  $vars        the params passed to the method, can be array('key' => 'value') or key1=value1&key2=value2)
- * @param  string        $viewType    
+ * @param  string        $viewType
  * @return string the link string.
  */
 function inLink($methodName = 'index', $vars = '', $viewType = '')
@@ -768,7 +772,7 @@ function cycle($items)
 /**
  * 获取当前时间的Unix时间戳，精确到微妙。
  * Get current microtime.
- * 
+ *
  * @access public
  * @return float current time.
  */
@@ -781,8 +785,8 @@ function getTime()
 /**
  * 打印变量的信息
  * dump a var.
- * 
- * @param mixed $var 
+ *
+ * @param mixed $var
  * @access public
  * @return void
  */
@@ -812,10 +816,10 @@ function isLocalIP()
 
 /**
  * 获取webRoot。
- * Get web root. 
- * 
+ * Get web root.
+ *
  * @access public
- * @return string 
+ * @return string
  */
 function getWebRoot($full = false)
 {
@@ -830,7 +834,7 @@ function getWebRoot($full = false)
         }
         $path = empty($path) ? '/' : preg_replace('/\/www$/', '/www/', $path);
     }
-    
+
     if($full)
     {
         $http = (isset($_SERVER['HTTPS']) and strtolower($_SERVER['HTTPS']) != 'off') ? 'https://' : 'http://';
@@ -844,10 +848,10 @@ function getWebRoot($full = false)
 
 /**
  * 当数组/对象变量$var存在$key项时，返回存在的对应值或设定值，否则返回$key或不存在的设定值。
- * When the $var has the $key, return it, esle result one default value.
- * 
- * @param  array|object    $var 
- * @param  string|int      $key 
+ * When the $var has the $key, return it, else result one default value.
+ *
+ * @param  array|object    $var
+ * @param  string|int      $key
  * @param  mixed           $valueWhenNone     value when the key not exits.
  * @param  mixed           $valueWhenExists   value when the key exits.
  * @access public
@@ -868,4 +872,18 @@ function zget($var, $key, $valueWhenNone = false, $valueWhenExists = false)
 
     if($valueWhenNone !== false) return $valueWhenNone;
     return $key;
+}
+
+/**
+ * Is https.
+ *
+ * @access public
+ * @return bool
+ */
+function isHttps()
+{
+    if(!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') return true;
+    if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') return true;
+    if(!empty($_SERVER['HTTP_FRONT_END_HTTPS']) && strtolower($_SERVER['HTTP_FRONT_END_HTTPS']) !== 'off') return true;
+    return false;
 }

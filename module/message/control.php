@@ -33,7 +33,7 @@ class message extends control
 
     /**
      * Browser Setting
-     * 
+     *
      * @access public
      * @return void
      */
@@ -57,11 +57,11 @@ class message extends control
             {
                 $response['result']  = 'fail';
                 $response['message'] = dao::getError();
-                $this->send($response);
+                return $this->send($response);
             }
 
             $response['locate'] = $this->createLink('message', 'browser');
-            $this->send($response);
+            return $this->send($response);
         }
 
         $this->view->title      = $this->lang->message->browser;
@@ -80,12 +80,12 @@ class message extends control
      */
     public function setting()
     {
-        if($_POST)
+        if(strtolower($this->server->request_method) == "post")
         {
             $data = fixer::input('post')->get();
-            $data->messageSetting = json_encode($data->messageSetting);
+            $data->messageSetting = !empty($data->messageSetting) ? json_encode($data->messageSetting) : '';
             $this->loadModel('setting')->setItem('system.message.setting', $data->messageSetting);
-            $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
+            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
         }
 
         $this->loadModel('webhook');

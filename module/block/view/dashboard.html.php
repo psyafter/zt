@@ -22,7 +22,7 @@ $useGuest = $this->app->user->account == 'guest';
   <div class="table-empty-tip">
     <p>
       <span class="text-muted"><?php echo $lang->block->noData;?></span>
-      <?php echo html::a($this->createLink("block", "admin", "id=0&module=$module"), "<i class='icon icon-plus'></i> {$lang->block->createBlock}", '', "data-toggle='modal' data-type='ajax' data-width='700' data-title='{$lang->block->createBlock}' class='btn btn-info'")?> 
+      <?php echo html::a($this->createLink("block", "admin", "id=0&module=$module"), "<i class='icon icon-plus'></i> {$lang->block->createBlock}", '', "data-toggle='modal' data-type='ajax' data-width='700' data-title='{$lang->block->createBlock}' class='btn btn-info'")?>
       <?php echo html::a($this->createLink("block", "ajaxReset", "module=$module"), "<i class='icon icon-refresh'></i> {$lang->block->reset}", 'hiddenwin', 'class="btn btn-info"')?>
     </p>
   </div>
@@ -38,7 +38,6 @@ $useGuest = $this->app->user->account == 'guest';
           <div class='panel-title'><?php echo $block->title;?></div>
         <?php endif;?>
           <nav class='panel-actions nav nav-default'>
-            <?php if(!empty($block->actionLink)) echo '<li>' . $block->actionLink . '</li>';?>
             <?php if(!empty($block->moreLink)) echo '<li>' . html::a($block->moreLink, '<i class="icon icon-more"></i>', '', "title='{$lang->more}'") . '</li>'; ?>
             <li class='dropdown'>
               <a href='javascript:;' data-toggle='dropdown' class='panel-action'><i class='icon icon-ellipsis-v'></i></a>
@@ -74,7 +73,6 @@ $useGuest = $this->app->user->account == 'guest';
           <div class='panel-title'><?php echo $block->title;?></div>
         <?php endif;?>
           <nav class='panel-actions nav nav-default'>
-            <?php if(!empty($block->actionLink)) echo '<li>' . $block->actionLink . '</li>';?>
             <?php if(!empty($block->moreLink)) echo '<li>' . html::a($block->moreLink, '<i class="icon icon-more"></i>', '', "title='{$lang->more}'") . '</li>';?>
             <li class='dropdown'>
               <a href='javascript:;' data-toggle='dropdown' class='panel-action'><i class='icon icon-ellipsis-v'></i></a>
@@ -103,31 +101,34 @@ $useGuest = $this->app->user->account == 'guest';
   </div>
 </div>
 <script>
-config.ordersSaved = '<?php echo $lang->block->ordersSaved; ?>';
+config.ordersSaved        = '<?php echo $lang->block->ordersSaved; ?>';
 config.confirmRemoveBlock = '<?php echo $lang->block->confirmRemoveBlock; ?>';
+config.cannotPlaceInLeft  = '<?php echo $lang->block->cannotPlaceInLeft; ?>';
+config.cannotPlaceInRight = '<?php echo $lang->block->cannotPlaceInRight; ?>';
+
 var module   = '<?php echo $module?>';
 var useGuest = <?php echo $useGuest ? 'true' : 'false';?>;
-<?php if(!$useGuest):?>
-<?php if(!isset($config->$module->block->initVersion) or $config->$module->block->initVersion < '2'):?>
+
+<?php /* Check annual remind */ ?>
 $(function()
 {
-    if(confirm('<?php echo $lang->block->noticeNewBlock;?>'))
+    function checkRemind()
     {
-        $('#hiddenwin').attr('src', '<?php echo $this->createLink('block', 'ajaxUseNew', "module=$module&confirm=yes");?>');
+        $.getJSON(createLink('misc', 'getRemind'), function(response)
+        {
+            if(!response || !response.data || !response.data.content) return;
+
+            var myModalTrigger = new $.zui.ModalTrigger(
+            {
+                title: response.data.title,
+                custom: response.data.content,
+                width: 600
+            });
+            $('#showAnnual').click(function(){myModalTrigger.close()});
+        });
     }
-    else
-    {
-        $('#hiddenwin').attr('src', '<?php echo $this->createLink('block', 'ajaxUseNew', "module=$module&confirm=no");?>');
-    }
-})
-<?php endif;?>
-<?php endif;?>
-<?php $remind = $this->loadModel('misc')->getRemind();?>
-<?php if(!empty($remind)):?>
-var myModalTrigger = new $.zui.ModalTrigger({title:'<?php echo $lang->misc->remind;?>', custom: function(){return <?php echo json_encode($remind);?>}, width:'600px'});
-var result = myModalTrigger.show();
-$('#showAnnual').click(function(){myModalTrigger.close()});
-<?php endif;?>
+    setTimeout(checkRemind, 1000);
+});
 </script>
 <?php if($extView = $this->getExtViewFile(__FILE__)){include $extView; return helper::cd();}?>
 <?php if(isset($pageJS)) js::execute($pageJS);?>

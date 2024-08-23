@@ -31,6 +31,7 @@ $lang->file->preview       = "Apperçu";
 $lang->file->addFile       = 'Ajouter';
 $lang->file->beginUpload   = 'Clic pour Charger';
 $lang->file->uploadSuccess = 'Chargé !';
+$lang->file->batchExport   = 'Export in batches';
 
 $lang->file->pathname  = 'Nom Chemin';
 $lang->file->title     = 'Titre';

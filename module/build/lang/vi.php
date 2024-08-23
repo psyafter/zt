@@ -12,17 +12,17 @@
 $lang->build->common           = "Bản dựng";
 $lang->build->create           = "Tạo bản dựng";
 $lang->build->edit             = "Sửa bản dựng";
-$lang->build->linkStory        = "Liên kết {$lang->storyCommon}";
+$lang->build->linkStory        = "Liên kết {$lang->SRCommon}";
 $lang->build->linkBug          = "Liên kết Bug";
 $lang->build->delete           = "Xóa bản dựng";
 $lang->build->deleted          = "Đã xóa";
 $lang->build->view             = "Chi tiết bản dựng";
 $lang->build->batchUnlink      = 'Hủy liên kết hàng loạt';
-$lang->build->batchUnlinkStory = "Hủy liên kết {$lang->storyCommon} hàng loạt";
+$lang->build->batchUnlinkStory = "Hủy liên kết {$lang->SRCommon} hàng loạt";
 $lang->build->batchUnlinkBug   = 'Hủy liên kết Bug hàng loạt';
 
 $lang->build->confirmDelete      = "Bạn có muốn xóa bản dựng này?";
-$lang->build->confirmUnlinkStory = "Bạn có muốn hủy liên kết {$lang->storyCommon} này?";
+$lang->build->confirmUnlinkStory = "Bạn có muốn hủy liên kết {$lang->SRCommon} này?";
 $lang->build->confirmUnlinkBug   = "Bạn có muốn hủy liên kết this Bug?";
 
 $lang->build->basicInfo = 'Thông tin cơ bản';
@@ -30,7 +30,7 @@ $lang->build->basicInfo = 'Thông tin cơ bản';
 $lang->build->id            = 'ID';
 $lang->build->product       = $lang->productCommon;
 $lang->build->branch        = 'Platform/Branch';
-$lang->build->project       = $lang->projectCommon;
+$lang->build->execution     = $lang->executionCommon;
 $lang->build->name          = 'Tên';
 $lang->build->date          = 'Ngày';
 $lang->build->builder       = 'Builder';
@@ -40,19 +40,19 @@ $lang->build->desc          = 'Mô tả';
 $lang->build->files         = 'Files';
 $lang->build->last          = 'Bản dựng cuối';
 $lang->build->packageType   = 'Loại gói';
-$lang->build->unlinkStory   = "Hủy liên kết {$lang->storyCommon}";
+$lang->build->unlinkStory   = "Hủy liên kết {$lang->SRCommon}";
 $lang->build->unlinkBug     = 'Hủy liên kết Bug';
-$lang->build->stories       = "{$lang->storyCommon} đã kết thúc";
+$lang->build->stories       = "{$lang->SRCommon} đã kết thúc";
 $lang->build->bugs          = 'Bugs đã giải quyết';
 $lang->build->generatedBugs = 'Bugs đã báo cáo';
-$lang->build->noProduct     = " <span style='color:red'>{$lang->projectCommon} này chưa liên kết tới {$lang->productCommon}, bởi vậy Bản dựng này không thể tạo. Vui lòng liên kết <a href='%s'> {$lang->productCommon} trước</a></span>";
+$lang->build->noProduct     = " <span id='noProduct' style='color:red'>{$lang->executionCommon} này chưa liên kết tới {$lang->productCommon}, bởi vậy Bản dựng này không thể tạo. Vui lòng liên kết <a href='%s' data-app='%s' data-toggle='modal' data-type='iframe'> {$lang->productCommon} trước</a></span>";
 $lang->build->noBuild       = 'Không có bản dựng nào';
 
 $lang->build->notice = new stdclass();
-$lang->build->notice->changeProduct = "The {$lang->storyCommon}, bug, or the version of the submitted test order has been linked, and its {$lang->productCommon} cannot be modified";
-$lang->build->notice->changeProject = "The version of the submitted test order cannot be modified {$lang->projectCommon}";
+$lang->build->notice->changeProduct   = "The {$lang->SRCommon}, bug, or the version of the submitted test order has been linked, and its {$lang->productCommon} cannot be modified";
+$lang->build->notice->changeExecution = "The version of the submitted test order cannot be modified {$lang->executionCommon}";
 
-$lang->build->finishStories = "  {$lang->storyCommon} đã kết thúc %s";
+$lang->build->finishStories = "  {$lang->SRCommon} đã kết thúc %s";
 $lang->build->resolvedBugs  = '  Bug đã giải quyết %s';
 $lang->build->createdBugs   = '  Bug đã báo cáo %s';
 
@@ -62,4 +62,5 @@ $lang->build->placeholder->filePath = ' Đường dẫn tải về cho bản d�
 
 $lang->build->action = new stdclass();
 $lang->build->action->buildopened = '$date, được tạo bởi <strong>$actor</strong>, Bản dựng <strong>$extra</strong>.' . "\n";
+
 $lang->backhome = 'Trở lại';

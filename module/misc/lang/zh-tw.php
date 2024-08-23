@@ -10,10 +10,8 @@
  * @link        https://www.zentao.pm
  */
 $lang->misc = new stdclass();
-$lang->misc->common = '雜項';
-$lang->misc->ping   = '防超時';
-$lang->misc->api    = 'https://api.zentao.pm';
-$lang->misc->enApi  = 'https://api.zentao.pm';
+$lang->misc->common  = '雜項';
+$lang->misc->ping    = '防超時';
 
 $lang->misc->zentao = new stdclass();
 $lang->misc->zentao->version           = '版本%s';
@@ -83,13 +81,36 @@ $lang->misc->noticeRepair = "<h5>普通用戶請聯繫管理員進行修復</h5>
     </ol>";
 
 $lang->misc->feature = new stdclass();
-$lang->misc->feature->lastest  = '最新版本';
-$lang->misc->feature->detailed = '詳情';
+$lang->misc->feature->lastest        = '最新版本';
+$lang->misc->feature->detailed       = '詳情';
+$lang->misc->feature->introduction   = '新功能介紹';
+$lang->misc->feature->tutorial       = '新手引導教程';
+$lang->misc->feature->youngBlueTheme = '全新青春藍主題';
+$lang->misc->feature->nextStep       = '下一步';
+$lang->misc->feature->close          = '關閉';
+$lang->misc->feature->downloadFile   = '下載新版本功能介紹文檔';
+$lang->misc->feature->tutorialDesc   = "<p>禪道15系列新增了多項功能，您可以通過“<strong>新手引導教程</strong>”快速瞭解禪道的基本使用方法。</p><p>通過滑鼠經過 [<span style='color: #0c60e1'>頭像-新手引導</span>]，點擊新手引導，即可進入新手引導教程。</p>";
+$lang->misc->feature->themeDesc      = "<p>禪道15系列上線了全新的“青春藍”主題，頁面呈現更加美觀，體驗更加友好。</p><p>通過滑鼠經過 [<span style='color: #0c60e1'>頭像-主題-青春藍</span>]，點擊青春藍，即可設置成功。</p>";
 
+$lang->misc->releaseDate['15.7.1']      = '2021-11-02';
+$lang->misc->releaseDate['15.7']        = '2021-10-18';
+$lang->misc->releaseDate['15.6']        = '2021-10-12';
+$lang->misc->releaseDate['15.5']        = '2021-09-14';
+$lang->misc->releaseDate['15.4']        = '2021-08-23';
+$lang->misc->releaseDate['15.3']        = '2021-08-04';
+$lang->misc->releaseDate['15.2']        = '2021-07-20';
+$lang->misc->releaseDate['15.0.3']      = '2021-06-24';
+$lang->misc->releaseDate['15.0.2']      = '2021-06-12';
+$lang->misc->releaseDate['15.0.1']      = '2021-06-06';
+$lang->misc->releaseDate['15.0']        = '2021-04-30';
+$lang->misc->releaseDate['15.0.rc3']    = '2021-04-16';
+$lang->misc->releaseDate['15.0.rc2']    = '2021-04-09';
+$lang->misc->releaseDate['15.0.rc1']    = '2021-04-05';
 $lang->misc->releaseDate['12.5.3']      = '2021-01-06';
 $lang->misc->releaseDate['12.5.2']      = '2020-12-18';
 $lang->misc->releaseDate['12.5.1']      = '2020-11-30';
 $lang->misc->releaseDate['12.5.stable'] = '2020-11-19';
+$lang->misc->releaseDate['20.0.alpha1'] = '2020-10-30';
 $lang->misc->releaseDate['12.4.4']      = '2020-10-30';
 $lang->misc->releaseDate['12.4.3']      = '2020-10-13';
 $lang->misc->releaseDate['12.4.2']      = '2020-09-18';
@@ -139,15 +160,30 @@ $lang->misc->releaseDate['7.2.stable']  = '2015-05-22';
 $lang->misc->releaseDate['7.1.stable']  = '2015-03-07';
 $lang->misc->releaseDate['6.3.stable']  = '2014-11-07';
 
+$lang->misc->feature->all['15.7.1'][] = array('title' => '修復Bug。', 'desc' => '');
+$lang->misc->feature->all['15.7'][]   = array('title' => '新增介面庫。修復Bug。', 'desc' => '');
+$lang->misc->feature->all['15.6'][]   = array('title' => '修復Bug。', 'desc' => '');
+$lang->misc->feature->all['15.5'][]   = array('title' => '增加項目集/產品/項目看板視圖、全局添加功能、新手引導。 修復Bug。', 'desc' => '');
+$lang->misc->feature->all['15.4'][]   = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['15.3'][]   = array('title' => '實現界面風格改動和文檔優化，修復Bug', 'desc' => '');
+$lang->misc->feature->all['15.2'][]   = array('title' => '優化新版本升級流程，增加執行看板。', 'desc' => '');
+
+$lang->misc->feature->all['15.0.3'][]      = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['15.0.2'][]      = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['15.0.1'][]      = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['15.0'][]        = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['15.0.rc3'][]    = array('title' => '完善細節，修復Bug', 'desc' => '');
+$lang->misc->feature->all['15.0.rc2'][]    = array('title' => '修復Bug，優化界面交互', 'desc' => '');
+$lang->misc->feature->all['15.0.rc1'][]    = array('title' => '升級到15版本，重構導航、文檔庫，增加項目集管理', 'desc' => '');
 $lang->misc->feature->all['12.5.3'][]      = array('title' => '優化年度總結', 'desc' => '');
 $lang->misc->feature->all['12.5.2'][]      = array('title' => '修復Bug', 'desc' => '');
 $lang->misc->feature->all['12.5.1'][]      = array('title' => '修復漏洞。', 'desc' => '');
 $lang->misc->feature->all['12.5.stable'][] = array('title' => '解決bug，完成高優先順序需求。', 'desc' => '');
 
-$lang->misc->feature->all['12.4.4'][] = array('title' => '兼容專業版和企業版', 'desc' => '');
-$lang->misc->feature->all['12.4.3'][] = array('title' => '修復Bug', 'desc' => '');
-$lang->misc->feature->all['12.4.2'][] = array('title' => '修復Bug', 'desc' => '');
-$lang->misc->feature->all['12.4.1'][] = array('title' => '修復Bug', 'desc' => '');
+$lang->misc->feature->all['12.4.4'][] = array('title'=>'兼容專業版和企業版', 'desc' => '');
+$lang->misc->feature->all['12.4.3'][] = array('title'=>'修復Bug', 'desc' => '');
+$lang->misc->feature->all['12.4.2'][] = array('title'=>'修復Bug', 'desc' => '');
+$lang->misc->feature->all['12.4.1'][] = array('title'=>'修復Bug', 'desc' => '');
 
 $lang->misc->feature->all['12.4.stable'][] = array('title'=>'修復Bug', 'desc' => '');
 
@@ -182,7 +218,7 @@ $lang->misc->feature->all['11.5.stable'][] = array('title'=>'整合新版本客�
 
 $lang->misc->feature->all['11.4.1'][]      = array('title'=>'完善細節，修復Bug', 'desc' => '');
 
-$lang->misc->feature->all["11.4.stable"][] = array("title"=>"完善細節，修復Bug", "desc" => "<p>增強測試任務管理</p><p>優化計劃、發佈、版本關聯{$lang->storyCommon}和bug的交互</p><p>文檔庫可以自定義是否顯示子分類裡的文檔</p><p>修復bug，完善細節</p>");
+$lang->misc->feature->all["11.4.stable"][] = array("title"=>"完善細節，修復Bug", "desc" => "<p>增強測試任務管理</p><p>優化計劃、發佈、版本關聯{$lang->SRCommon}和bug的交互</p><p>文檔庫可以自定義是否顯示子分類裡的文檔</p><p>修復bug，完善細節</p>");
 
 $lang->misc->feature->all['11.3.stable'][] = array('title'=>'完善細節，修復Bug', 'desc' => '<p>計劃添加子計劃功能</p><p>優化chosen交互</p><p>添加時區設置</p><p>優化文檔庫和文檔</p>');
 
@@ -234,14 +270,14 @@ $lang->misc->feature->all['8.3.stable'][] = array('title'=>'調整文檔功能',
 $lang->misc->feature->all['8.2.stable'][] = array('title'=>'首頁自定義', 'desc' => '<p>我的地盤由我做主。現在開始，你可以向首頁添加多種多樣的內容區塊，而且還可以決定如何排列和顯示他們。</p><p>我的地盤、產品、項目、測試模組下均支持首頁自定義功能。</p>');
 $lang->misc->feature->all['8.2.stable'][] = array('title'=>'導航定製', 'desc' => '<p>導航上顯示的項目現在完全由你來決定，不僅僅可以決定在導航上展示哪些內容，還可以決定展示的順序。</p><p>將滑鼠懸浮在導航上稍後會在右側顯示定製按鈕，點擊打開定製對話框，通過點擊切換是否顯示，拖放操作來更改顯示順序。</p>');
 $lang->misc->feature->all['8.2.stable'][] = array('title'=>'批量添加、編輯自定義', 'desc' => '<p>可以在批量添加和批量編輯頁面自定義操作的欄位。</p>');
-$lang->misc->feature->all['8.2.stable'][] = array('title'=>"添加{$lang->storyCommon}、任務、Bug、用例自定義", 'desc' => "<p>可以在添加{$lang->storyCommon}、任務、Bug、用例頁面，自定義部分欄位是否顯示。</p>");
-$lang->misc->feature->all['8.2.stable'][] = array('title'=>'導出自定義', 'desc' => "<p>在導出{$lang->storyCommon}、任務、Bug、用例的時候，用戶可以自定義導出的欄位，也可以保存模板方便每次導出。</p>");
-$lang->misc->feature->all['8.2.stable'][] = array('title'=>"{$lang->storyCommon}、任務、Bug、用例組合檢索功能", 'desc' => "<p>在{$lang->storyCommon}、任務、Bug、用例列表頁面，可以實現模組和標籤的組合檢索。</p>");
+$lang->misc->feature->all['8.2.stable'][] = array('title'=>"添加{$lang->SRCommon}、任務、Bug、用例自定義", 'desc' => "<p>可以在添加{$lang->SRCommon}、任務、Bug、用例頁面，自定義部分欄位是否顯示。</p>");
+$lang->misc->feature->all['8.2.stable'][] = array('title'=>'導出自定義', 'desc' => "<p>在導出{$lang->SRCommon}、任務、Bug、用例的時候，用戶可以自定義導出的欄位，也可以保存模板方便每次導出。</p>");
+$lang->misc->feature->all['8.2.stable'][] = array('title'=>"{$lang->SRCommon}、任務、Bug、用例組合檢索功能", 'desc' => "<p>在{$lang->SRCommon}、任務、Bug、用例列表頁面，可以實現模組和標籤的組合檢索。</p>");
 $lang->misc->feature->all['8.2.stable'][] = array('title'=>'增加新手教程', 'desc' => '<p>增加新手教程，方便新用戶瞭解禪道使用。</p>');
 
-$lang->misc->feature->all['7.4.beta'][] = array('title'=>'產品實現分支功能', 'desc' => "<p>產品增加分支/平台類型，相應的{$lang->storyCommon}、計劃、Bug、用例、模組等都增加分支。</p>");
+$lang->misc->feature->all['7.4.beta'][] = array('title'=>'產品實現分支功能', 'desc' => "<p>產品增加分支/平台類型，相應的{$lang->SRCommon}、計劃、Bug、用例、模組等都增加分支。</p>");
 $lang->misc->feature->all['7.4.beta'][] = array('title'=>'調整發佈模組', 'desc' => '<p>發佈增加停止維護操作，當發佈停止維護時，創建Bug將不顯示這個發佈。</p><p>發佈中遺留的bug改為手工關聯。</p>');
-$lang->misc->feature->all['7.4.beta'][] = array('title'=>"調整{$lang->storyCommon}和Bug的創建頁面", 'desc' => '');
+$lang->misc->feature->all['7.4.beta'][] = array('title'=>"調整{$lang->SRCommon}和Bug的創建頁面", 'desc' => '');
 
 $lang->misc->feature->all['7.2.stable'][] = array('title'=>'增強安全', 'desc' => '<p>加強對管理員弱口令的檢查。</p><p>寫插件，上傳插件的時候需要創建ok檔案。</p><p>敏感操作增加管理員口令的檢查</p><p>對輸入內容做striptags, specialchars處理。</p>');
 $lang->misc->feature->all['7.2.stable'][] = array('title'=>'完善細節', 'desc' => '');

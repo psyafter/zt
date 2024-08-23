@@ -25,26 +25,19 @@ function loadList(type, id)
 
     var param = 'userID=' + userID;
     if(id) param += '&id=' + id;
-    if(type == 'bug')
+    if(moduleList.indexOf(type) !== -1)
     {
-        link = createLink('bug', 'ajaxGetUserBugs', param);
-    }
-    else if(type == 'task')
-    {
-        link = createLink('task', 'ajaxGetUserTasks', param);
-    }
-    else if(type == 'story')
-    {
-        link = createLink('story', 'ajaxGetUserStorys', param);
+        link = createLink(type, objectsMethod[type], param);
     }
 
-    if(type == 'bug' || type == 'task' || type == 'story')
+    if(moduleList.indexOf(type) !== -1)
     {
         $.get(link, function(data, status)
         {
             if(data.length != 0)
             {
                 $(divClass).html(data).find('select').chosen();
+                if(config.currentMethod == 'edit') $(divClass).html(data).find('select').val(idvalue).trigger('chosen:updated');
             }
             else
             {
@@ -113,7 +106,7 @@ function switchTimeList(number)
 
 function switchDateFeature(switcher)
 {
-    if(switcher.checked) 
+    if(switcher.checked)
     {
         $('#begin').attr('disabled','disabled').trigger('chosen:updated');
         $('#end').attr('disabled','disabled').trigger('chosen:updated');

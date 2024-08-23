@@ -6,10 +6,39 @@ $(function()
     if(taskConsumed > 0) alert(addChildTask);
 });
 
-/* Get select of stories.*/
-function setStories(moduleID, projectID, num)
+$(document).on('change', "[name^='estStarted'], [name^='deadline']", function()
 {
-    link = createLink('story', 'ajaxGetProjectStories', 'projectID=' + projectID + '&productID=0&branch=0&moduleID=' + moduleID + '&storyID=0&num=' + num + '&type=short');
+    toggleCheck($(this));
+})
+
+/**
+ * Toggle checkbox.
+ *
+ * @param  object $obj
+ * @access public
+ * @return void
+ */
+function toggleCheck(obj)
+{
+    var $this  = $(obj);
+    var date   = $this.val();
+    var $ditto = $this.closest('div').find("input[type='checkBox']");
+    if(date == '')
+    {
+        $ditto.attr('checked', true);
+        $ditto.closest('.input-group-addon').show();
+    }
+    else
+    {
+        $ditto.removeAttr('checked');
+        $ditto.closest('.input-group-addon').hide();
+    }
+}
+
+/* Get select of stories.*/
+function setStories(moduleID, executionID, num)
+{
+    link = createLink('story', 'ajaxGetExecutionStories', 'executionID=' + executionID + '&productID=0&branch=0&moduleID=' + moduleID + '&storyID=0&num=' + num + '&type=short');
     $.get(link, function(stories)
     {
         var storyID = $('#story' + num).val();
@@ -193,8 +222,6 @@ $(document).on('mousedown', 'select', function()
 
 $(function()
 {
-    /* Adjust width for ie chosen width. */
-    var chosenWidth = $('#module1_chosen').width();
     $('.chosen-container[id^=module]').width(chosenWidth);
     $('.chosen-container[id^=module]').css('max-width', chosenWidth);
 
