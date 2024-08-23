@@ -675,8 +675,8 @@ class upgrade extends control
         {
             $this->loadModel('setting')->updateVersion($this->config->version);
 
-            $installFile = $this->app->getAppRoot() . 'www/install.php';
-            $upgradeFile = $this->app->getAppRoot() . 'www/upgrade.php';
+            $installFile = $this->app->getAppRoot() . 'install.php';
+            $upgradeFile = $this->app->getAppRoot() . 'upgrade.php';
             if(file_exists($installFile)) @unlink($installFile);
             if(file_exists($upgradeFile)) @unlink($upgradeFile);
             unset($_SESSION['upgrading']);
