@@ -23,7 +23,7 @@ function changeParams(obj)
     }
 
     var link = createLink('report', 'workload', 'begin=' + begin + '&end=' + end + '&days=' + days + '&workday=' + workday + '&dept=' + dept + '&assign=' + assign);
-    location.href=link;
+    location.href = link;
 }
 
 /**

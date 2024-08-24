@@ -2,7 +2,7 @@
 /**
  * The model file of stage module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     stage
@@ -19,17 +19,21 @@ class stageModel extends model
      * @access public
      * @return int|bool
      */
-    public function create()
+    public function create($type = 'waterfall')
     {
         $stage = fixer::input('post')
+            ->setDefault('projectType', $type)
             ->add('createdBy', $this->app->user->account)
             ->add('createdDate', helper::today())
             ->get();
 
-        $totalPercent = $this->getTotalPercent();
+        if(isset($this->config->setPercent) and $this->config->setPercent == 1)
+        {
+            $totalPercent = $this->getTotalPercent($type);
 
-        if(!is_numeric($stage->percent)) return dao::$errors['message'][] = $this->lang->stage->error->notNum;
-        if(round($totalPercent + $stage->percent) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+            if(!is_numeric($stage->percent)) return dao::$errors['message'][] = $this->lang->stage->error->notNum;
+            if(round($totalPercent + $stage->percent) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+        }
 
         $this->dao->insert(TABLE_STAGE)
             ->data($stage)
@@ -48,13 +52,16 @@ class stageModel extends model
      * @access public
      * @return bool
      */
-    public function batchCreate()
+    public function batchCreate($type = 'waterfall')
     {
         $data = fixer::input('post')->get();
 
-        $totalPercent = $this->getTotalPercent();
-
-        if(round($totalPercent + array_sum($data->percent)) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+        $setPercent = (isset($this->config->setPercent) and $this->config->setPercent == 1) ? true : false;
+        if($setPercent)
+        {
+            $totalPercent = $this->getTotalPercent($type);
+            if(round($totalPercent + array_sum($data->percent)) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+        }
 
         $this->loadModel('action');
         foreach($data->name as $i => $name)
@@ -63,8 +70,9 @@ class stageModel extends model
 
             $stage = new stdclass();
             $stage->name        = $name;
-            $stage->percent     = $data->percent[$i];
+            if($setPercent) $stage->percent = $data->percent[$i];
             $stage->type        = $data->type[$i];
+            $stage->projectType = $type;
             $stage->createdBy   = $this->app->user->account;
             $stage->createdDate = helper::today();
 
@@ -72,9 +80,9 @@ class stageModel extends model
                 ->batchCheck($this->config->stage->create->requiredFields, 'notempty')
                 ->checkIF($stage->percent != '', 'percent', 'float')
                 ->exec();
-            
-            if(dao::isError()) return false; 
-            
+
+            if(dao::isError()) return false;
+
             $stageID = $this->dao->lastInsertID();
             $this->action->create('stage', $stageID, 'Opened');
         }
@@ -98,9 +106,11 @@ class stageModel extends model
             ->add('editedDate', helper::today())
             ->get();
 
-        $totalPercent = $this->getTotalPercent();
-
-        if(round($totalPercent + $stage->percent - $oldStage->percent) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+        if(isset($this->config->setPercent) and $this->config->setPercent == 1)
+        {
+            $totalPercent = $this->getTotalPercent($oldStage->projectType);
+            if(round($totalPercent + $stage->percent - $oldStage->percent) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+        }
 
         $this->dao->update(TABLE_STAGE)
             ->data($stage)
@@ -117,13 +127,30 @@ class stageModel extends model
      * Get stages.
      *
      * @param  string $orderBy
+     * @param  int    $projectID
+     * @param  string $type
      * @access public
      * @return array
      */
-    public function getStages($orderBy = 'id_desc')
+    public function getStages($orderBy = 'id_desc', $projectID = 0, $type = '')
     {
-        return $this->dao->select('*')->from(TABLE_STAGE)->where('deleted')->eq(0)->orderBy($orderBy)->fetchAll('id');
-    }
+        if($projectID)
+        {
+            return $this->dao->select('id,name,type,percent,openedBy as createdBy,begin as createdDate,lastEditedBy as editedBy,end as editedDate,deleted')
+                ->from(TABLE_EXECUTION)
+                ->where('type')->in('sprint,stage,kanban')
+                ->andWhere('deleted')->eq('0')
+                ->andWhere('vision')->eq($this->config->vision)
+                ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->sprints)->fi()
+                ->andWhere('project')->eq($projectID)
+                ->orderBy($orderBy)
+                ->fetchAll('id');
+        }
+        else
+        {
+            return $this->dao->select('*')->from(TABLE_STAGE)->where('deleted')->eq(0)->andWhere('projectType')->eq($type)->orderBy($orderBy)->fetchAll('id');
+        }
+     }
 
     /**
      * Get pairs of stage.
@@ -159,10 +186,41 @@ class stageModel extends model
     /**
      *  Get stage total percent
      *
-     *  return string
+     *  @param  string $type
+     *  @return string
      */
-    public function getTotalPercent()
+    public function getTotalPercent($type)
     {
-        return $this->dao->select('sum(percent) as total')->from(TABLE_STAGE)->where('deleted')->eq('0')->fetch('total');
+        return $this->dao->select('sum(percent) as total')->from(TABLE_STAGE)->where('deleted')->eq('0')->andWhere('projectType')->eq($type)->fetch('total');
+    }
+
+    /**
+     * Set menu.
+     *
+     * @param  string $type
+     * @access public
+     * @return void
+     */
+    public function setMenu($type)
+    {
+        $this->app->loadLang('admin');
+        $moduleName = $this->app->rawModule;
+        $methodName = $this->app->rawMethod;
+        if(!isset($this->lang->admin->menuList->model['subMenu']['waterfall']['exclude'])) $this->lang->admin->menuList->model['subMenu']['waterfall']['exclude'] = '';
+        if(!isset($this->lang->admin->menuList->model['subMenu']['waterfallplus']['exclude'])) $this->lang->admin->menuList->model['subMenu']['waterfallplus']['exclude'] = '';
+        if($type == 'waterfall')
+        {
+            $this->lang->admin->menuList->model['subMenu']['waterfallplus']['exclude'] .= ",{$moduleName}-{$methodName}";
+            unset($this->lang->admin->menuList->model['subMenu']['scrum']['subModule']);
+            unset($this->lang->admin->menuList->model['subMenu']['scrumplus']['subModule']);
+            unset($this->lang->admin->menuList->model['subMenu']['waterfallplus']['subModule']);
+        }
+        if($type == 'waterfallplus')
+        {
+            $this->lang->admin->menuList->model['subMenu']['waterfall']['exclude'] .= ",{$moduleName}-{$methodName}";
+            unset($this->lang->admin->menuList->model['subMenu']['scrum']['subModule']);
+            unset($this->lang->admin->menuList->model['subMenu']['waterfall']['subModule']);
+            unset($this->lang->admin->menuList->model['subMenu']['scrumplus']['subModule']);
+        }
     }
 }

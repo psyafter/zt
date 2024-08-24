@@ -1,8 +1,8 @@
 <?php
 $lang->client->common       = '版本更新';
-$lang->client->create       = '手動添加版本';
-$lang->client->browse       = '版本更新列表';
-$lang->client->edit         = '編輯版本';
+$lang->client->create       = '客戶端版本';
+$lang->client->browse       = '客戶端版本更新列表';
+$lang->client->edit         = '編輯客戶端';
 $lang->client->delete       = '刪除版本';
 $lang->client->checkUpgrade = '檢查更新';
 $lang->client->set          = '參數設置';
@@ -11,7 +11,7 @@ $lang->client->polling      = '輪詢間隔';
 $lang->client->xxdRunTime   = 'XXD運行時間';
 
 $lang->client->id              = 'ID';
-$lang->client->version         = '版本';
+$lang->client->version         = '客戶端版本';
 $lang->client->update          = '更新';
 $lang->client->xxcVersion      = 'XXC版本';
 $lang->client->main            = '重要更新內容';
@@ -85,7 +85,7 @@ $lang->client->xxdStatusList['offline'] = '離線';
 
 $lang->client->downloadClient = '下載客戶端';
 $lang->client->os             = '操作系統';
-$lang->client->downloading    = '正在獲取安裝包:';
+$lang->client->downloading    = '正在獲取安裝包';
 $lang->client->downloaded     = '成功獲取安裝包';
 $lang->client->setting        = '正在設置配置信息';
 $lang->client->setted         = '成功設置配置信息';
@@ -111,3 +111,5 @@ $lang->client->errorInfo->dirNotWritable = '客戶端下載存儲路徑 <span cl
 
 $lang->client->userDownloadTips = '點擊下載按鈕即可下載包含當前伺服器信息和賬號配置的喧喧客戶端。';
 $lang->client->generateLinkTips = '點擊獲取連結按鈕可以生成用於在內部分發的喧喧客戶端 zip 包下載連結。';
+
+$lang->client->releaseTip = "發佈後用戶將會在客戶端收到版本升級提醒。";

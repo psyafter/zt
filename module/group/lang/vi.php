@@ -2,7 +2,7 @@
 /**
  * The group module English file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license  ZPL (http://zpl.pub/page/zplv12.html)
  * @author   Nguyễn Quốc Nho <quocnho@gmail.com>
  * @package  group
@@ -35,10 +35,6 @@ $lang->group->noticeVisit        = 'Blank means no access limit.';
 $lang->group->noneProgram        = "No Program";
 $lang->group->noneProduct        = "Không có {$lang->productCommon}";
 $lang->group->noneProject        = "No Project";
-
-global $config;
-if($config->systemMode == 'new') $lang->group->noneProject = 'No Project';
-if($config->systemMode == 'classic') $lang->group->noneProject = "No {$lang->executionCommon}";
 
 $lang->group->id      = 'ID';
 $lang->group->name    = 'Nhóm';

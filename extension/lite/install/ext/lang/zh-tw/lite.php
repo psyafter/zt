@@ -2,12 +2,12 @@
 $lang->install->license  = '禪道迅捷版軟件使用 Z PUBLIC LICENSE(ZPL) 1.2 授權協議';
 $lang->install->welcome  = '歡迎使用禪道迅捷版！';
 $lang->install->desc     = <<<EOT
-禪道迅捷版是易軟天創旗下的一款輕量級的項目管理軟件，主要定位於人人都可用的項目管理工具。禪道迅捷版涵蓋了項目管理、通用看板管理、考勤管理、文檔管理、組織管理、自定義工作流等諸多
+禪道迅捷版是禪道軟件旗下的一款輕量級的項目管理軟件，主要定位於人人都可用的項目管理工具。禪道迅捷版涵蓋了項目管理、通用看板管理、考勤管理、文檔管理、組織管理、自定義工作流等諸多
 
 實用功能，專為中小企業量身打造，讓公司每個部門、每個人都能做好項目管理、提高工作效率。
 EOT;
 $lang->install->links    = <<<EOT
-禪道迅捷版由<strong><a href='https://www.cnezsoft.com' target='_blank' class='text-danger'>青島易軟天創網絡科技有限公司</a>開發</strong>。
+禪道迅捷版由<strong><a href='https://www.cnezsoft.com' target='_blank' class='text-danger'>禪道軟件（青島）有限公司</a>開發</strong>。
 官方網站：<a href='https://www.zentao.pm' target='_blank'>https://www.zentao.pm</a>
 技術支持：<a href='https://www.zentao.pm/ask/' target='_blank'>https://www.zentao.pm/ask/</a>
 新浪微博：<a href='https://weibo.com/easysoft' target='_blank'>https://weibo.com/easysoft</a>

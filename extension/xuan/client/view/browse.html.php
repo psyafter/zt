@@ -17,7 +17,7 @@
     <strong><?php echo $lang->client->browse?></strong>
     <div class='pull-right panel-actions'>
       <?php commonModel::printLink('client', 'checkUpgrade', '', $lang->client->checkUpgrade, 'class="btn btn-primary"');?>
-      <?php commonModel::printLink('client', 'create', '', $lang->client->create, 'class="btn btn-primary" data-toggle="modal"');?>
+      <?php commonModel::printLink('client', 'create', '', "<i class='icon icon-plus'> ". $lang->client->create . "</i>", 'class="btn btn-primary" data-toggle="modal"');?>
     </div>
   </div>
   <table class='table table-hover'>

@@ -2,7 +2,7 @@
 /**
  * The control file of program module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     program
  * @version     $Id
@@ -10,6 +10,14 @@
  */
 class program extends control
 {
+    /**
+     * Construct
+     *
+     * @param  string $moduleName
+     * @param  string $methodName
+     * @access public
+     * @return void
+     */
     public function __construct($moduleName = '', $methodName = '')
     {
         parent::__construct($moduleName, $methodName);
@@ -21,12 +29,12 @@ class program extends control
     /**
      * Program list.
      *
-     * @param  varchar $status
-     * @param  varchar $orderBy
+     * @param  string  $status
+     * @param  string  $orderBy
      * @access public
      * @return void
      */
-    public function browse($status = 'all', $orderBy = 'order_asc', $recTotal = 0, $recPerPage = 10, $pageID = 1, $param = 0)
+    public function browse($status = 'unclosed', $orderBy = 'order_asc', $recTotal = 0, $recPerPage = 10, $pageID = 1, $param = 0)
     {
         if(common::hasPriv('program', 'create')) $this->lang->pageActions = html::a($this->createLink('program', 'create'), "<i class='icon icon-plus'></i> " . $this->lang->program->create, '', "class='btn btn-primary create-program-btn'");
 
@@ -53,7 +61,8 @@ class program extends control
             else
             {
                 /* Get top programs and projects. */
-                $topObjects = $this->program->getList($status, $orderBy, $pager, 'top');
+                $topObjects = $this->program->getList($status == 'unclosed' ? 'doing,suspended,wait' : $status, $orderBy, $pager, 'top');
+                if(!$topObjects) $topObjects = array(0);
                 $programs   = $this->program->getList($status, $orderBy, NULL, 'child', array_keys($topObjects));
 
                 /* Get summary. */
@@ -132,7 +141,7 @@ class program extends control
      * @access public
      * @return void
      */
-    public function product($programID = 0, $browseType = 'noclosed', $orderBy = 'order_desc', $recTotal = 0, $recPerPage = 15, $pageID = 1)
+    public function product($programID = 0, $browseType = 'noclosed', $orderBy = 'order_asc', $recTotal = 0, $recPerPage = 15, $pageID = 1)
     {
         $programPairs = $this->program->getPairs();
 
@@ -162,14 +171,17 @@ class program extends control
             $this->view->program = $program;
         }
 
-        $this->view->title       = $this->lang->program->product;
-        $this->view->position[]  = $this->lang->program->product;
-        $this->view->programID   = $programID;
-        $this->view->browseType  = $browseType;
-        $this->view->orderBy     = $orderBy;
-        $this->view->pager       = $pager;
-        $this->view->users       = $this->loadModel('user')->getPairs('noletter');
-        $this->view->products    = $this->loadModel('product')->getStats($orderBy, $pager, $browseType, '', 'story', $programID);
+        $this->view->title         = $this->lang->program->product;
+        $this->view->position[]    = $this->lang->program->product;
+        $this->view->programID     = $programID;
+        $this->view->browseType    = $browseType;
+        $this->view->orderBy       = $orderBy;
+        $this->view->pager         = $pager;
+        $this->view->users         = $this->loadModel('user')->getPairs('noletter');
+        $this->view->products      = $this->loadModel('product')->getStats($orderBy, $pager, $browseType, '', 'story', $programID);
+        $this->view->userIdPairs   = $this->user->getPairs('noletter|showid');
+        $this->view->usersAvatar   = $this->user->getAvatarPairs('');
+        $this->view->showBatchEdit = $this->cookie->showProductBatchEdit;
 
         $this->display();
     }
@@ -192,7 +204,8 @@ class program extends control
             if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
             $this->loadModel('action')->create('program', $programID, 'opened');
-            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'id' => $programID, 'locate' => inlink('browse')));
+            $locateLink = $this->session->programList ? $this->session->programList : $this->createLink('program', 'browse');
+            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'id' => $programID, 'locate' => $locateLink));
         }
 
         $extra = str_replace(array(',', ' '), array('&', ''), $extra);
@@ -233,7 +246,7 @@ class program extends control
                 $this->action->logHistory($actionID, $changes);
             }
 
-            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inLink('browse')));
+            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->session->programList ? $this->session->programList : inLink('browse')));
         }
 
         $program       = $this->program->getByID($programID);
@@ -429,7 +442,7 @@ class program extends control
         if($productCount) return print(js::alert($this->lang->program->hasProduct));
 
         $program = $this->dao->select('*')->from(TABLE_PROGRAM)->where('id')->eq($programID)->fetch();
-        if($confirm == 'no') return print(js::confirm($this->lang->program->confirmDelete, $this->createLink('program', 'delete', "programID=$programID&confirm=yes")));
+        if($confirm == 'no') return print(js::confirm(sprintf($this->lang->program->confirmDelete, $program->name), $this->createLink('program', 'delete', "programID=$programID&confirm=yes")));
 
         $this->dao->update(TABLE_PROGRAM)->set('deleted')->eq(1)->where('id')->eq($programID)->exec();
         $this->loadModel('action')->create('program', $programID, 'deleted', '', ACTIONMODEL::CAN_UNDELETED);
@@ -449,7 +462,7 @@ class program extends control
      * @access public
      * @return void
      */
-    public function project($programID = 0, $browseType = 'all', $orderBy = 'order_desc', $recTotal = 0, $recPerPage = 15, $pageID = 1)
+    public function project($programID = 0, $browseType = 'doing', $orderBy = 'order_desc', $recTotal = 0, $recPerPage = 15, $pageID = 1)
     {
         $programID = $this->program->saveState($programID, $this->program->getPairs());
         setCookie("lastProgram", $programID, $this->config->cookieLife, $this->config->webRoot, '', false, true);
@@ -472,15 +485,19 @@ class program extends control
         $sortField    = zget($this->config->program->sortFields, $order[0], 'id') . '_' . $order[1];
         $projectStats = $this->program->getProjectStats($programID, $browseType, 0, $sortField, $pager, $programTitle);
 
+        $allProjectsNum = $this->program->getProjectStats($programID, 'all');
+        $this->view->allProjectsNum = $allProjectsNum;
+
         $this->view->title      = $this->lang->program->project;
         $this->view->position[] = $this->lang->program->project;
 
-        $this->view->projectStats = $projectStats;
-        $this->view->pager        = $pager;
-        $this->view->programID    = $programID;
-        $this->view->users        = $this->loadModel('user')->getPairs('noletter|pofirst|nodeleted');
-        $this->view->browseType   = $browseType;
-        $this->view->orderBy      = $orderBy;
+        $this->view->projectStats  = $projectStats;
+        $this->view->pager         = $pager;
+        $this->view->programID     = $programID;
+        $this->view->users         = $this->loadModel('user')->getPairs('noletter|pofirst|nodeleted');
+        $this->view->browseType    = $browseType;
+        $this->view->orderBy       = $orderBy;
+        $this->view->showBatchEdit = $this->cookie->showProjectBatchEdit;
 
         $this->display();
     }
@@ -543,7 +560,7 @@ class program extends control
     {
         if($confirm == 'no')
         {
-            return print(js::confirm($this->lang->program->confirmDelete, $this->inlink('unlinkStakeholder', "stakeholderID=$stakeholderID&programID=$programID&confirm=yes")));
+            return print(js::confirm($this->lang->program->confirmUnlink, $this->inlink('unlinkStakeholder', "stakeholderID=$stakeholderID&programID=$programID&confirm=yes")));
         }
         else
         {
@@ -701,20 +718,6 @@ class program extends control
     }
 
     /**
-     * Ajax get budget left.
-     *
-     * @param  int    $programID
-     * @access public
-     * @return void
-     */
-    public function ajaxGetBudgetLeft($programID)
-    {
-        $program    = $this->program->getByID($programID);
-        $budgetLeft = $this->program->getBudgetLeft($program);
-        echo number_format($budgetLeft, 2);
-    }
-
-    /**
      * Update program order.
      *
      * @access public
@@ -761,5 +764,17 @@ class program extends control
         if(!$program) return print(js::error($this->lang->notFound) . js::locate('back'));
 
         echo $this->fetch('program', 'product', "programID=$programID");
+    }
+
+    /**
+     * Ajax set show setting.
+     *
+     * @access public
+     * @return void
+     */
+    public function ajaxSetShowSetting()
+    {
+        $data = fixer::input('post')->get();
+        $this->loadModel('setting')->updateItem("{$this->app->user->account}.program.showAllProjects", $data->showAllProjects);
     }
 }

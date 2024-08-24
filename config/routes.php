@@ -21,6 +21,11 @@ $routes['/feedbacks/:id']        = 'feedback';
 $routes['/feedbacks/:id/assign'] = 'feedbackAssignto';
 $routes['/feedbacks/:id/close']  = 'feedbackClose';
 
+$routes['/tickets']              = 'tickets';
+$routes['/tickets/:id']          = 'ticket';
+$routes['/tickets/:id/assign']   = 'ticketAssignto';
+$routes['/tickets/:id/close']    = 'ticketClose';
+
 $routes['/options/:type'] = 'options';
 
 $routes['/configurations']       = 'configs';
@@ -90,6 +95,7 @@ $routes['/tasks/:id']            = 'task';
 $routes['/tasks/:id/assignto']   = 'taskAssignTo';
 $routes['/tasks/:id/start']      = 'taskStart';
 $routes['/tasks/:id/pause']      = 'taskPause';
+$routes['/tasks/:id/restart']    = 'taskRestart';
 $routes['/tasks/:id/finish']     = 'taskFinish';
 $routes['/tasks/:id/close']      = 'taskClose';
 $routes['/tasks/:id/estimate']   = 'taskRecordEstimate';
@@ -153,10 +159,17 @@ $routes['/docs/:id']     = 'doc';
 
 $routes['/repos']       = 'repos';
 $routes['/repos/rules'] = 'reporules';
+$routes['/jobs']        = 'jobs';
+$routes['/mr']          = 'mr';
 
 $routes['/modules'] = 'modules';
 
 $routes['/reports'] = 'reports';
+
+$routes['/host/heartbeat']    = 'hostHeartbeat';
+$routes['/host/submitResult'] = 'hostSubmit';
+
+$routes['/ztf/submitResult'] = 'ztfSubmit';
 
 $routes['/z/folders']           = 'zfolders';
 $routes['/z/folders/:id']       = 'zfolder';

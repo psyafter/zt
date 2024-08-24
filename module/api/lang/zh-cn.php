@@ -2,14 +2,13 @@
 /**
  * The api module zh-cn file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     api
  * @version     $Id: zh-cn.php 5129 2013-07-15 00:16:07Z zhujinyonging@gmail.com $
  * @link        https://www.zentao.pm
  */
-$lang->api = new stdclass();
 $lang->api->common   = 'API接口';
 $lang->api->getModel = '超级model调用接口';
 $lang->api->sql      = 'SQL查询接口';
@@ -60,6 +59,8 @@ $lang->api->confirmDeleteLib = "您确定删除该接口库吗？";
 $lang->api->filterStruct     = "使用数据结构填充";
 $lang->api->defaultVersion   = "当前版本";
 $lang->api->zentaoAPI        = "禅道API文档v1";
+$lang->api->search           = "搜索";
+$lang->api->allLibs          = "全部接口库";
 
 /* Common access control lang. */
 $lang->api->whiteList          = '白名单';
@@ -124,6 +125,12 @@ $lang->api->query              = '请求参数';
 $lang->api->params             = '请求体';
 $lang->api->response           = '请求响应';
 $lang->api->responseExample    = '响应示例';
+$lang->api->id                 = '接口编号';
+$lang->api->addedBy            = '由谁添加';
+$lang->api->addedDate          = '添加时间';
+$lang->api->editedBy           = '由谁更新';
+$lang->api->editedDate         = '更新时间';
+$lang->api->version            = '版本号';
 $lang->api->res                = new stdClass();
 $lang->api->res->name          = '名称';
 $lang->api->res->desc          = '描述';
@@ -208,3 +215,4 @@ $lang->api_lib_release->version = '版本';
 $lang->api->error             = new stdclass();
 $lang->api->error->onlySelect = 'SQL查询接口只允许SELECT查询';
 $lang->api->error->disabled   = '因为安全原因，该功能被禁用。可以到config目录，修改配置项 %s，打开此功能。';
+$lang->api->error->notInput   = '因字段参数类型限制，暂不支持调试';

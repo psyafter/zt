@@ -22,6 +22,6 @@ $lang->execution->icons['gantt']     = 'lane';
 $lang->execution->icons['tree']      = 'treemap';
 $lang->execution->icons['grouptask'] = 'sitemap';
 
-$lang->execution->aclList['private'] = "私有（團隊成員和項目負責人可訪問）";
+$lang->execution->aclList['private'] = "私有（團隊成員和{$lang->projectCommon}負責人可訪問）";
 
-$lang->execution->common = '項目看板';
+$lang->execution->common = "{$lang->projectCommon}看板";

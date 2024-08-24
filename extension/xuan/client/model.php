@@ -369,8 +369,12 @@ class clientModel extends model
         touch($packageDir . 'packing');
 
         /* Write server address into config file. */
-        $loginInfo = (object)array('ui' => array('defaultUser' => array('server' => strstr($_SERVER['HTTP_HOST'], ':', true))));
+        $loginInfo = new stdclass();
+        $loginInfo->ui = new stdclass();
+        $loginInfo->ui->defaultUser = new stdclass();
+        $loginInfo->ui->defaultUser->server = $this->config->xuanxuan->server;
         $loginInfo = json_encode($loginInfo);
+
         $loginFile = $packageDir . 'config.json';
         file_put_contents($loginFile, $loginInfo);
 

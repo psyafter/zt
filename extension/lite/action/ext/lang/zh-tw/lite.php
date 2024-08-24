@@ -1,13 +1,14 @@
 <?php
 $lang->action->label->execution = "看板|execution|task|executionID=%s";
 $lang->action->label->task      = '任務|task|view|taskID=%s';
+$lang->action->label->module    = '目錄|tree|browse|productid=%s&type=story&currentModuleID=0&branch=all';
 
 /* Object type. */
-$lang->action->objectTypes['execution'] = '項目' . $lang->executionCommon;
+$lang->action->objectTypes['execution'] = $lang->projectCommon . $lang->executionCommon;
 
 $lang->action->search = new stdclass();
 $lang->action->search->objectTypeList['']            = '';
-$lang->action->search->objectTypeList['project']     = '項目';
+$lang->action->search->objectTypeList['project']     = $lang->projectCommon;
 $lang->action->search->objectTypeList['execution']   = '看板';
 $lang->action->search->objectTypeList['story']       = "目標";
 $lang->action->search->objectTypeList['task']        = '任務';
@@ -101,13 +102,6 @@ $lang->action->search->label['verified']              = $lang->action->label->ve
 $lang->action->search->label['login']                 = $lang->action->label->login;
 $lang->action->search->label['logout']                = $lang->action->label->logout;
 
-$lang->action->label->createchildrenstory   = "創建子目標";
-$lang->action->label->linkchildstory        = "關聯子目標";
-$lang->action->label->unlinkchildrenstory   = "取消關聯子目標";
-$lang->action->label->linkparentstory       = "關聯到父目標";
-$lang->action->label->unlinkparentstory     = "從父目標取消關聯";
-$lang->action->label->deletechildrenstory   = "刪除子目標";
-
 $lang->action->desc->createchildrenstory = '$date, 由 <strong>$actor</strong> 創建子目標 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->linkchildstory      = '$date, 由 <strong>$actor</strong> 關聯子目標 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->unlinkchildrenstory = '$date, 由 <strong>$actor</strong> 移除子目標 <strong>$extra</strong>。' . "\n";
@@ -115,4 +109,4 @@ $lang->action->desc->linkparentstory     = '$date, 由 <strong>$actor</strong> �
 $lang->action->desc->unlinkparentstory   = '$date, 由 <strong>$actor</strong> 從父目標<strong>$extra</strong>取消關聯。' . "\n";
 $lang->action->desc->deletechildrenstory = '$date, 由 <strong>$actor</strong> 刪除子目標<strong>$extra</strong>。' . "\n";
 
-$lang->action->executionNoProject = '該項目看板沒有所屬的項目，請先還原項目再還原項目看板';
+$lang->action->executionNoProject = "該{$lang->projectCommon}看板沒有所屬的{$lang->projectCommon}，請先還原{$lang->projectCommon}再還原{$lang->projectCommon}看板";

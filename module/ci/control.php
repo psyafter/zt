@@ -2,7 +2,7 @@
 /**
  * The control file of ci module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chenqi <chenqi@cnezsoft.com>
  * @package     product
@@ -149,16 +149,18 @@ class ci extends control
                 ->fetch();
 
             $testtask = new stdclass();
-            $testtask->product   = $productID;
-            $testtask->name      = sprintf($this->lang->testtask->titleOfAuto, date('Y-m-d H:i:s'));
-            $testtask->owner     = $this->app->user->account;
-            $testtask->project   = $lastProject->project;
-            $testtask->execution = $lastProject->id;
-            $testtask->build     = 'trunk';
-            $testtask->auto      = strtolower($testType);
-            $testtask->begin     = date('Y-m-d');
-            $testtask->end       = date('Y-m-d', time() + 24 * 3600);
-            $testtask->status    = 'done';
+            $testtask->product     = $productID;
+            $testtask->name        = !empty($post->name) ? $post->name : sprintf($this->lang->testtask->titleOfAuto, date('Y-m-d H:i:s'));
+            $testtask->owner       = $this->app->user->account;
+            $testtask->project     = $lastProject->project;
+            $testtask->execution   = $lastProject->id;
+            $testtask->build       = 'trunk';
+            $testtask->auto        = strtolower($testType);
+            $testtask->begin       = date('Y-m-d');
+            $testtask->end         = date('Y-m-d', time() + 24 * 3600);
+            $testtask->status      = 'done';
+            $testtask->createdBy   = $this->app->user->account;
+            $testtask->createdDate = helper::now();
 
             $this->dao->insert(TABLE_TESTTASK)->data($testtask)->exec();
             $taskID = $this->dao->lastInsertId();

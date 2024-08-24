@@ -2,7 +2,7 @@
 /**
  * The project entry point of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2021 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     entries
@@ -16,7 +16,7 @@ class projectsEntry extends entry
      *
      * @param  int    $programID
      * @access public
-     * @return void
+     * @return string
      */
     public function get($programID = 0)
     {
@@ -26,7 +26,7 @@ class projectsEntry extends entry
 
         $_COOKIE['involved'] = $this->param('involved', 0);
 
-        $this->config->systemMode = 'new';
+        $this->config->systemMode = 'ALM';
 
         if($programID)
         {
@@ -73,7 +73,7 @@ class projectsEntry extends entry
      * POST method.
      *
      * @access public
-     * @return void
+     * @return string
      */
     public function post()
     {
@@ -99,14 +99,14 @@ class projectsEntry extends entry
 
         $project = $this->loadModel('project')->getByID($data->id);
 
-        $this->send(201, $this->format($project, 'openedBy:user,openedDate:time,lastEditedBy:user,lastEditedDate:time,closedBy:user,closedDate:time,canceledBy:user,canceledDate:time,realBegan:date,realEnd:date,PM:user,whitelist:userList,deleted:bool'));
+        return $this->send(201, $this->format($project, 'openedBy:user,openedDate:time,lastEditedBy:user,lastEditedDate:time,closedBy:user,closedDate:time,canceledBy:user,canceledDate:time,realBegan:date,realEnd:date,PM:user,whitelist:userList,deleted:bool'));
     }
 
     /**
      * Get drop menu.
      *
      * @access public
-     * @return void
+     * @return string
      */
     public function getDropMenu()
     {
@@ -138,6 +138,6 @@ class projectsEntry extends entry
                 }
             }
         }
-        $this->send(200, $dropMenu);
+        return $this->send(200, $dropMenu);
     }
 }

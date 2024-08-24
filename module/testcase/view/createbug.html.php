@@ -2,7 +2,7 @@
 /**
  * The createByg view file of testcase module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     testcase
@@ -38,7 +38,7 @@ function createBug(obj)
     }
     else
     {
-        window.open(link, '_parent');
+        window.open(link, '_blank');
     }
     config.onlybody = onlybody;
 }
@@ -72,6 +72,18 @@ $(function()
         $('tr').remove('#result-success');
         $('tr:first').addClass("show-detail");
         $('#tr-detail_1').removeClass("hide");
+    });
+
+    $('#resultsContainer').click(function(event)
+    {
+        if(event.target.id.indexOf('checkAll') !== -1)
+        {
+            var checkAll  = document.getElementById(event.target.id);
+            var checkAll  = $(checkAll);
+            var isChecked = checkAll.prop('checked');
+
+            checkAll.closest('tbody').children('tr').find('input[type=checkbox]').prop('checked', isChecked);
+        }
     });
 });
 var sessionString = '<?php echo session_name() . '=' . session_id();?>';

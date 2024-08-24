@@ -2,21 +2,21 @@
 /**
  * The product entry point of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2021 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     entries
  * @version     1
  * @link        https://www.zentao.pm
  */
-class productEntry extends Entry
+class productEntry extends entry
 {
     /**
      * GET method.
      *
      * @param  int    $productID
      * @access public
-     * @return void
+     * @return string
      */
     public function get($productID)
     {
@@ -103,7 +103,7 @@ class productEntry extends Entry
      *
      * @param  int    $productID
      * @access public
-     * @return void
+     * @return string
      */
     public function put($productID)
     {
@@ -120,7 +120,7 @@ class productEntry extends Entry
         if(isset($data->result) and $data->result == 'fail') return $this->sendError(400, $data->message);
 
         $product = $this->product->getByID($productID);
-        $this->send(200, $this->format($product, 'createdDate:time'));
+        return $this->send(200, $this->format($product, 'createdDate:time,whitelist:userList,createdBy:user,PO:user,RD:user,QD:user'));
     }
 
     /**
@@ -128,7 +128,7 @@ class productEntry extends Entry
      *
      * @param  int    $productID
      * @access public
-     * @return void
+     * @return string
      */
     public function delete($productID)
     {
@@ -136,6 +136,6 @@ class productEntry extends Entry
         $control->delete($productID, 'yes');
 
         $this->getData();
-        $this->sendSuccess(200, 'success');
+        return $this->sendSuccess(200, 'success');
     }
 }

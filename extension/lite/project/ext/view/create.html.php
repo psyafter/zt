@@ -2,7 +2,7 @@
 /**
  * The create view file of project module for lite vision of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Wenrui LI <liwenrui@easycorp.ltd>
  * @package     project
@@ -40,10 +40,12 @@
           <th><?php echo $lang->project->name;?></th>
           <td class="col-main"><?php echo html::input('name', $name, "class='form-control' required");?></td>
         </tr>
+        <?php if(isset($config->setCode) and $config->setCode == 1):?>
         <tr>
           <th><?php echo $lang->project->code;?></th>
           <td><?php echo html::input('code', '', "class='form-control' required");?></td>
         </tr>
+        <?php endif;?>
         <tr>
           <th><?php echo $lang->project->PM;?></th>
           <td><?php echo html::select('PM', $pmUsers, '', "class='form-control chosen'" . (strpos($requiredFields, 'PM') !== false ? ' required' : ''));?></td>
@@ -59,7 +61,10 @@
           </td>
           <td colspan='2'><?php echo html::radio('delta', $lang->project->endList , '', "onclick='computeEndDate(this.value)'");?></td>
         </tr>
-
+        <tr>
+          <th><?php echo $lang->execution->team;?></th>
+          <td colspan='2'><?php echo html::select('teamMembers[]', $users, '', "class='form-control picker-select' multiple"); ?></td>
+        </tr>
         <tr>
           <th><?php echo $lang->project->desc;?></th>
           <td colspan='3'>
@@ -85,6 +90,7 @@
             <?php
               echo html::hidden('model', $model);
               echo html::hidden('vision', 'lite');
+              echo html::hidden('hasProduct', 1);
               echo html::hidden('parent', 0);
               echo html::submitButton();
               echo $gobackLink ? html::a($gobackLink, $lang->goback, '', 'class="btn btn-wide"') : html::backButton();

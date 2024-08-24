@@ -3,28 +3,29 @@
 <?php js::set('method', $method);?>
 <style>
 #navTabs {position: sticky; top: 0; background: #fff; z-index: 950;}
-#navTabs>li {padding: 0px 10px; display: inline-block}
-#navTabs>li>span {display: inline-block;}
-#navTabs>li>a {margin: 0!important; padding: 8px 0px; display: inline-block}
+#navTabs > li {padding: 0px 10px; display: inline-block}
+#navTabs > li > span {display: inline-block;}
+#navTabs > li > a {margin: 0!important; padding: 8px 0px; display: inline-block}
 
 #tabContent {margin-top: 5px; z-index: 900; max-width: 220px}
 .projectTree ul {list-style: none; margin: 0}
-.projectTree .projects>ul {padding-left: 7px;}
-.projectTree .projects>ul>li>div {display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;}
-.projectTree .projects>ul>li label {background: rgba(255,255,255,0.5); line-height: unset; color: #838a9d; border: 1px solid #d8d8d8; border-radius: 2px; padding: 1px 4px;}
+.projectTree .projects > ul {padding-left: 7px;}
+.projectTree .projects > ul > li > div {display: flex; flex-flow: row nowrap; justify-content: flex-start; align-items: center;}
+.projectTree .projects > ul > li label {background: rgba(255,255,255,0.5); line-height: unset; color: #838a9d; border: 1px solid #d8d8d8; border-radius: 2px; padding: 1px 4px;}
 .projectTree li a i.icon {font-size: 15px !important;}
 .projectTree li a i.icon:before {min-width: 16px !important;}
 .projectTree li .label {position: unset; margin-bottom: 0;}
-.projectTree li>a, div.hide-in-search>a {display: block; padding: 2px 10px 2px 5px; overflow: hidden; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; border-radius: 4px;}
-.projectTree .tree li>.list-toggle {line-height: 24px;}
+.projectTree li > a, div.hide-in-search>a {display: block; padding: 2px 10px 2px 5px; overflow: hidden; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; border-radius: 4px;}
+.projectTree .tree li > .list-toggle {line-height: 24px;}
 .projectTree .tree li.has-list.open:before {content: unset;}
+.tree.noProgram li {padding-left: 0;}
 
-#swapper li>div.hide-in-search>a:focus, #swapper li>div.hide-in-search>a:hover {color: #838a9d; cursor: default;}
+#swapper li > div.hide-in-search>a:focus, #swapper li > div.hide-in-search>a:hover {color: #838a9d; cursor: default;}
 #swapper li > a {margin-top: 4px; margin-bottom: 4px;}
 #swapper li {padding-top: 0; padding-bottom: 0;}
-#swapper .tree li>.list-toggle {top: -1px;}
+#swapper .tree li > .list-toggle {top: -1px;}
 
-#closed {width: 90px; height: 25px; line-height: 25px; background-color: #ddd; color: #3c495c; text-align: center; margin-left: 15px; border-radius: 2px;}
+#dropMenu div#closed {width: 90px; height: 25px; line-height: 25px; background-color: #ddd; color: #3c495c; text-align: center; margin-left: 15px; border-radius: 2px;}
 #gray-line {width:230px; height: 1px; margin-left: 10px; margin-bottom:2px; background-color: #ddd;}
 </style>
 <?php
@@ -35,6 +36,7 @@ $tabActive          = '';
 $myProjects         = 0;
 $others             = 0;
 $dones              = 0;
+$currentProject     = '';
 
 foreach($projects as $programID => $programProjects)
 {
@@ -52,14 +54,15 @@ foreach($projects as $programID => $programProjects)
 }
 $projectsPinYin = common::convert2Pinyin($projectNames);
 
-$myProjectsHtml     = $config->systemMode == 'new' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="noProgram">';
-$normalProjectsHtml = $config->systemMode == 'new' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="noProgram">';
-$closedProjectsHtml = $config->systemMode == 'new' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="noProgram">';
+$myProjectsHtml     = $config->systemMode == 'ALM' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="tree noProgram">';
+$normalProjectsHtml = $config->systemMode == 'ALM' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="tree noProgram">';
+$closedProjectsHtml = $config->systemMode == 'ALM' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="tree noProgram">';
 
+$indexLink = helper::createLink('project', 'index', "projectID=%s");
 foreach($projects as $programID => $programProjects)
 {
     /* Add the program name before project. */
-    if(isset($programs[$programID]) and $config->systemMode == 'new')
+    if(isset($programs[$programID]) and $config->systemMode == 'ALM')
     {
         $programName = zget($programs, $programID);
 
@@ -70,16 +73,42 @@ foreach($projects as $programID => $programProjects)
 
     foreach($programProjects as $index => $project)
     {
-        $selected    = $project->id == $projectID ? 'selected' : '';
-        $icon        = '<i class="icon icon-sprint"></i> ';
+        if($project->id == $projectID) $currentProject = $project;
+        $selected = $project->id == $projectID ? 'selected' : '';
+        $icon     = '<i class="icon icon-sprint"></i> ';
 
         if($project->model != 'waterfall' and (in_array($module, $config->waterfallModules) or $method == 'track'))
         {
-            $link = helper::createLink('project', 'index', "projectID=%s");
+            $link = $indexLink;
         }
-        elseif($project->model == 'kanban')
+        elseif((in_array($project->model, array('scrum', 'agileplus'))) and
+            (
+                (in_array($module, array('issue', 'risk', 'meeting')) and !helper::hasFeature("{$project->model}_{$module}")) or
+                ($module == 'report' and $method == 'projectsummary' and !helper::hasFeature("{$project->model}_measrecord"))
+            ))
         {
-            $link = helper::createLink('project', 'index', "projectID=%s");
+            $link = $indexLink;
+        }
+        elseif(in_array($project->model, array('waterfall', 'waterfallplus')) and
+            (
+                (in_array($module, array('issue', 'risk', 'opportunity', 'measrecord', 'auditplan', 'meeting')) and !helper::hasFeature("{$project->model}_{$module}")) or
+                ($module == 'pssp' and !helper::hasFeature("{$project->model}_process")) or
+                ($module == 'report' and $method == 'projectsummary' and !helper::hasFeature("{$project->model}_measrecord"))
+            ))
+        {
+            $link = $indexLink;
+        }
+        elseif($project->model == 'kanban' and (($module == 'project' and !in_array($method, array('build', 'view', 'manageproducts', 'team', 'whitelist', 'managemembers', 'addwhitelist'))) or $module != 'project'))
+        {
+            $link = $indexLink;
+        }
+        elseif(empty($project->hasProduct) and $module == 'project' and $method == 'manageproducts')
+        {
+            $link = $indexLink;
+        }
+        elseif(empty($project->multiple))
+        {
+            $link = $indexLink;
         }
         else
         {
@@ -116,7 +145,7 @@ foreach($projects as $programID => $programProjects)
         }
 
         /* If the project is the last one in the program, print the closed label. */
-        if(isset($programs[$programID]) and !isset($programProjects[$index + 1]))
+        if($config->systemMode == 'ALM' and isset($programs[$programID]) and !isset($programProjects[$index + 1]))
         {
             if($projectCounts[$programID]['myProject']) $myProjectsHtml     .= '</ul></li>';
             if($projectCounts[$programID]['others'])    $normalProjectsHtml .= '</ul></li>';
@@ -159,14 +188,19 @@ $closedProjectsHtml .= '</ul>';
    <div class='list-group projects'><?php echo $closedProjectsHtml;?></div>
   </div>
 </div>
-<script>scrollToSelected();</script>
 <script>
 $(function()
 {
+    <?php if($currentProject->status == 'done' or $currentProject->status == 'closed'):?>
+    $('.col-footer .toggle-right-col').click(function(){ scrollToSelected(); })
+    <?php else:?>
+    scrollToSelected();
+    <?php endif;?>
+
     $('.nav-tabs li span').hide();
     $('.nav-tabs li.active').find('span').show();
 
-    $('.nav-tabs>li a').click(function()
+    $('.nav-tabs > li a').click(function()
     {
         if($('#swapper input[type="search"]').val() == '')
         {

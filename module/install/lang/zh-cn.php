@@ -2,7 +2,7 @@
 /**
  * The install module zh-cn file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     install
@@ -25,12 +25,12 @@ $lang->install->seeLatestRelease = '看看最新的版本';
 $lang->install->welcome          = '欢迎使用禅道项目管理软件！';
 $lang->install->license          = '禅道项目管理软件授权协议';
 $lang->install->desc             = <<<EOT
-禅道项目管理软件(ZenTaoPMS)是一款国产的，基于<a href='http://zpl.pub' target='_blank'>ZPL</a>协议，开源免费的项目管理软件，它集产品管理、项目管理、测试管理于一体，同时还包含了事务管理、组织管理等诸多功能，是中小型企业项目管理的首选。
+禅道项目管理软件(ZenTaoPMS)是一款国产的，基于<a href='http://zpl.pub/page/zplv12.html' target='_blank'>ZPL</a>或<a href='https://www.gnu.org/licenses/agpl-3.0.en.html' target='_blank'>AGPL</a>双授权协议，开源免费的项目管理软件，它集产品管理、项目管理、测试管理于一体，同时还包含了事务管理、组织管理等诸多功能，是中小型企业项目管理的首选。
 
 禅道项目管理软件使用PHP + MySQL开发，基于自主的PHP开发框架──ZenTaoPHP而成。第三方开发者或者企业可以非常方便的开发插件或者进行定制。
 EOT;
 $lang->install->links = <<<EOT
-禅道项目管理软件由<strong><a href='https://www.cnezsoft.com' target='_blank' class='text-danger'>青岛易软天创网络科技有限公司</a>开发</strong>。
+禅道项目管理软件由<strong><a href='https://www.cnezsoft.com' target='_blank' class='text-danger'>禅道软件（青岛）有限公司</a>开发</strong>。
 官方网站：<a href='https://www.zentao.pm' target='_blank'>https://www.zentao.pm</a>
 技术支持：<a href='https://www.zentao.pm/ask/' target='_blank'>https://www.zentao.pm/ask/</a>
 新浪微博：<a href='https://weibo.com/easysoft' target='_blank'>https://weibo.com/easysoft</a>
@@ -40,6 +40,7 @@ $lang->install->links = <<<EOT
 您现在正在安装的版本是 <strong class='text-danger'>%s</strong>。
 EOT;
 
+$lang->install->selectMode          = "请选择使用模式";
 $lang->install->introduction        = "禅道15系列功能介绍";
 $lang->install->howToUse            = "请问您计划如何使用禅道的新版本呢";
 $lang->install->guideVideo          = 'https://dl.cnezsoft.com/vedio/program0716.mp4';
@@ -48,17 +49,17 @@ $lang->install->introductionContent = <<<EOT
   <h4>尊敬的用户您好，欢迎您使用禅道项目管理系统。</h4>
   <p> 禅道自15系列开始提供了两种使用模式，一种是经典管理模式，功能较为精简，主要提供了产品和项目两个核心功能；另一种是全新项目集管理模式，增加了项目集和执行的概念。下面是全新项目集管理模式的介绍：</p>
   <div class='block-content'>
-    <div class='block-details'><p class='block-title'><i class='icon icon-program'></i><strong>项目集</strong></p><p>项目集用来管理一组相关的产品和项目，公司高层或者PMO可以用来做战略规划。</p></div>
+    <div class='block-details'><p class='block-title'><i class='icon icon-program'></i> <strong>项目集</strong></p><p>项目集用来管理一组相关的产品和项目，公司高层或者PMO可以用来做战略规划。</p></div>
     <div class='block-details block-right'>
-      <p class='block-title'><i class='icon icon-product'></i><strong>产品</strong></p>
+      <p class='block-title'><i class='icon icon-product'></i> <strong>产品</strong></p>
       <p>产品用来将公司的战略细分为可以进行研发的需求，产品经理可以用来做产品的发布计划。<p>
     </div>
     <div class='block-details'>
-      <p class='block-title'><i class='icon icon-project'></i><strong>项目</strong></p>
+      <p class='block-title'><i class='icon icon-project'></i> <strong>项目</strong></p>
       <p>项目用来组织相应的人力进行研发，做好项目过程的跟踪管理，多快好省地完成项目。</p>
     </div>
     <div class='block-details block-right'>
-      <p class='block-title'><i class='icon icon-run'></i><strong>执行</strong></p>
+      <p class='block-title'><i class='icon icon-run'></i> <strong>执行</strong></p>
       <p>执行用来做任务的分解、指派和跟踪，保证项目目标可以落实到人来执行。<p>
     </div>
   </div>
@@ -154,12 +155,15 @@ $lang->install->saved2File         = '配置信息已经成功保存到" <strong
 $lang->install->errorNotSaveConfig = '还没有保存配置文件';
 
 global $app;
-$lang->install->CSRFNotice = "系统已开启了CSRF的防御，如需关闭，请联系管理员到{$app->moduleRoot}config/config.php文件中手动关闭。";
+$lang->install->CSRFNotice = "系统已开启了CSRF的防御，如需关闭，请联系管理员到{$app->basePath}config/config.php文件中手动关闭。";
 
 $lang->install->getPriv            = '设置帐号';
 $lang->install->company            = '公司名称';
 $lang->install->account            = '管理员帐号';
 $lang->install->password           = '管理员密码';
+
+$lang->install->placeholder = new stdclass();
+$lang->install->placeholder->password = '6位及以上，包含大小写字母，数字。';
 
 $lang->install->errorEmpty['company']  = "{$lang->install->company}不能为空";
 $lang->install->errorEmpty['account']  = "{$lang->install->account}不能为空";
@@ -256,11 +260,11 @@ $lang->install->groupList['LIMITED']['desc']      = '受限用户分组(只能�
 $lang->install->groupList['PROJECTADMIN']['name'] = '项目管理员';
 $lang->install->groupList['PROJECTADMIN']['desc'] = '项目管理员可以维护项目的权限';
 $lang->install->groupList['LITEADMIN']['name']    = '管理员';
-$lang->install->groupList['LITEADMIN']['desc']    = '迅捷版用户分组';
+$lang->install->groupList['LITEADMIN']['desc']    = '运营管理界面用户分组';
 $lang->install->groupList['LITEPROJECT']['name']  = '项目管理';
-$lang->install->groupList['LITEPROJECT']['desc']  = '迅捷版用户分组';
+$lang->install->groupList['LITEPROJECT']['desc']  = '运营管理界面用户分组';
 $lang->install->groupList['LITETEAM']['name']     = '团队成员';
-$lang->install->groupList['LITETEAM']['desc']     = '迅捷版用户分组';
+$lang->install->groupList['LITETEAM']['desc']     = '运营管理界面用户分组';
 
 $lang->install->cronList[''] = '监控定时任务';
 $lang->install->cronList['moduleName=execution&methodName=computeBurn'] = '更新燃尽图';
@@ -289,10 +293,7 @@ EOT;
 
 $lang->install->product = array('chanzhi', 'zdoo', 'xuanxuan', 'ydisk', 'meshiot');
 
-$lang->install->modeList['classic'] = '经典管理模式';
-$lang->install->modeList['new']     = '全新项目集管理模式';
-
-$lang->install->promotion = "为您推荐易软天创旗下其他产品：";
+$lang->install->promotion = "为您推荐禅道软件旗下其他产品：";
 
 $lang->install->chanzhi       = new stdclass();
 $lang->install->chanzhi->name = '蝉知门户';

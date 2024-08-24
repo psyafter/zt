@@ -15,6 +15,7 @@ $lang->integration->error->officeNotEnabled         = '服務端尚未開啟 Off
 $lang->integration->error->userNotFoundForRequest   = '無法找到該請求對應的用戶。';
 $lang->integration->error->fileNotFoundForRequest   = '無法找到該請求對應的檔案。';
 $lang->integration->error->filePreviewNotSupported  = '不支持預覽該檔案。';
+$lang->integration->error->buildIdentifierFail      = '參數有誤，無法預覽。';
 
 $lang->integration->placeholder = new stdclass();
 $lang->integration->placeholder->collabora = '填寫 Collabora Online 的 URL，如 https://192.168.1.2:9980';

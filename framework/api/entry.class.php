@@ -18,7 +18,9 @@ class entry extends baseEntry
     {
         parent::__construct();
 
-        if(!isset($this->app->user) or $this->app->user->account == 'guest') $this->sendError(401, 'Unauthorized');
+        if($this->app->action == 'options') throw EndResponseException::create($this->send(204));
+
+        if(!isset($this->app->user) or $this->app->user->account == 'guest') throw EndResponseException::create($this->sendError(401, 'Unauthorized'));
 
         $this->dao = $this->loadModel('common')->dao;
     }
@@ -96,7 +98,7 @@ class baseEntry
      * Get request params.
      *
      * @param  string $key
-     * @param  string $defaultValue
+     * @param  mixed  $defaultValue
      * @access public
      * @return mixed
      */
@@ -110,13 +112,18 @@ class baseEntry
      * 设置请求参数
      * Set request param.
      *
-     * @param  string $key
-     * @param  mixed  $value
+     * @param  string|array  $key   if is array, set params by its key-value pairs.
+     * @param  mixed         $value
      * @access public
-     * @return mixed
+     * @return void
      */
-    public function setParam($key, $value)
+    public function setParam($key, $value = null)
     {
+        if(is_array($key))
+        {
+            foreach($key as $k => $v) $_GET[$k] = $v;
+            return;
+        }
         $_GET[$key] = $value;
     }
 
@@ -197,7 +204,7 @@ class baseEntry
      * @param  int   $code
      * @param  mixed $data
      * @access public
-     * @return void
+     * @return string
      */
     public function send($code, $data = '')
     {
@@ -208,8 +215,7 @@ class baseEntry
         header("Content-type: application/json");
         header("HTTP/1.1 {$this->statusCode[$code]}");
 
-        if($data) echo json_encode($data, JSON_HEX_TAG);
-        exit;
+        return !empty($data) ? json_encode($data, JSON_HEX_TAG) : '';
     }
 
     /**
@@ -219,14 +225,14 @@ class baseEntry
      * @param  int    $code
      * @param  string $msg
      * @access public
-     * @return void
+     * @return string
      */
     public function sendError($code, $msg)
     {
         $response = new stdclass();
         $response->error = $msg;
 
-        $this->send($code, $response);
+        return $this->send($code, $response);
     }
 
     /**
@@ -236,14 +242,14 @@ class baseEntry
      * @param  int    $code
      * @param  string $msg
      * @access public
-     * @return void
+     * @return string
      */
     public function sendSuccess($code, $msg)
     {
         $response = new stdclass();
         $response->message = $msg;
 
-        $this->send($code, $response);
+        return $this->send($code, $response);
     }
 
     /**
@@ -251,22 +257,22 @@ class baseEntry
      *
      * @param  string message
      * @access public
-     * @return void
+     * @return string
      */
     public function send400($message = 'error')
     {
-        $this->sendError(400, $message);
+        return $this->sendError(400, $message);
     }
 
     /**
      * Send 404 response.
      *
      * @access public
-     * @return void
+     * @return string
      */
     public function send404()
     {
-        $this->sendError(404, '404 Not found');
+        return $this->sendError(404, '404 Not found');
     }
 
     /**
@@ -298,9 +304,6 @@ class baseEntry
              * 引入该模块的control文件。
              * Include the control file of the module.
              **/
-
-            $file2Included = $app->setActionExtFile() ? $app->extActionFile : $app->controlFile;
-
             $isExt = $app->setActionExtFile();
             if($isExt)
             {
@@ -340,7 +343,7 @@ class baseEntry
      */
     public function loadModel($moduleName = '', $appName = '')
     {
-        if(empty($moduleName)) $moduleName = $this->moduleName;
+        if(empty($moduleName)) $moduleName = $this->app->moduleName;
         if(empty($appName))    $appName    = $this->app->appName;
 
         global $loadedModels;
@@ -467,7 +470,7 @@ class baseEntry
             {
                 $module = $this->app->moduleName;
                 $name   = isset($this->app->lang->$module->$field) ? $this->app->lang->$module->$field : $field;
-                $this->sendError(400, sprintf($this->app->lang->error->notempty, $name));
+                throw EndResponseException::create($this->sendError(400, sprintf($this->app->lang->error->notempty, $name)));
             }
         }
     }
@@ -535,7 +538,7 @@ class baseEntry
 
             /* Format array. */
             $value = array();
-            if(is_array($object->$key))
+            if(is_array($object->$key) or is_object($object->$key))
             {
                 foreach($object->$key as $v) $value[] = $this->cast($v, $type);
             }
@@ -674,7 +677,7 @@ class baseEntry
      * @param  string $method
      * @param  array  $params
      * @access public
-     * @return void
+     * @return mixed
      */
     public function fetch($entry, $method, $params = array())
     {
@@ -689,7 +692,7 @@ class baseEntry
      * Check the user has permission to access this method, if not, return 403.
      *
      * @access public
-     * @return void
+     * @return void|string
      */
     public function checkPriv()
     {
@@ -697,7 +700,7 @@ class baseEntry
         $method = $this->app->getMethodName();
         if($module and $method and !$this->loadModel('common')->isOpenMethod($module, $method) and !commonModel::hasPriv($module, $method))
         {
-            $this->send(403, array('error' => 'Access not allowed'));
+            return $this->send(403, array('error' => 'Access not allowed'));
         }
     }
 

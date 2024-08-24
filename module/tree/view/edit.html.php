@@ -2,7 +2,7 @@
 /**
  * The edit view of tree module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     tree
@@ -34,7 +34,7 @@ if(isset($pageCSS)) css::internal($pageCSS);
     <form action="<?php echo inlink('edit', 'module=' . $module->id .'&type=' .$type);?>" target='hiddenwin' method='post' class='mt-10px' id='dataform'>
       <table class='table table-form'>
         <?php if($showProduct):?>
-        <tr>
+        <tr class="<?php if($hiddenProduct) echo 'hidden';?>">
           <th class='thWidth'><?php echo $lang->tree->product;?></th>
           <td>
             <div class='input-group'>
@@ -57,15 +57,19 @@ if(isset($pageCSS)) css::internal($pageCSS);
         <?php endif;?>
         <?php if($module->type != 'line'):?>
         <tr <?php if($hidden) echo "style='display:none'";?>>
-          <th class='thWidth'><?php echo ($type == 'doc' || $type == 'feedback') ? $lang->tree->parentCate : $lang->tree->parent;?></th>
-          <td><?php echo html::select('parent', $optionMenu, $module->parent, "class='form-control chosen'");?></td>
+          <th class='thWidth'><?php echo ($type == 'doc') ? $lang->tree->parentCate : $lang->tree->parent;?></th>
+          <td>
+            <div class='input-group' id='moduleIdBox'>
+              <?php echo html::select('parent', $optionMenu, $module->parent, "class='form-control chosen'");?>
+            </div>
+          </td>
         </tr>
         <?php endif;?>
         <tr <?php if($hidden) echo "style='display:none'";?>>
           <th class='thWidth'>
             <?php
             $lblTreeName = $lang->tree->name;
-            if($type == 'doc' || $type == 'feedback') $lblTreeName = $lang->tree->cate;
+            if($type == 'doc') $lblTreeName = $lang->tree->cate;
             if($type == 'line') $lblTreeName = $lang->tree->line;
             echo $lblTreeName;
             ?>
@@ -184,13 +188,12 @@ function loadModules(branch)
     var productID = $('#root').val();
     var branchID  = $(branch).val();
     var moduleID  = $('#parent').val();
-    var moduleBox = $('#parent').closest('tr').children('td');
 
     if(typeof(branchID) == 'undefined') branchID = 0;
     if(typeof(moduleID) == 'undefined') moduleID = 0;
 
-    link = createLink('tree', 'ajaxGetOptionMenu', 'productID=' + productID + '&viewtype=story&branch=' + branchID + '&rootModuleID=0&returnType=html&fieldID=&needManage=true&extra=&currentModuleID=' + moduleID);
-    $(moduleBox).load(link, function()
+    link = createLink('tree', 'ajaxGetOptionMenu', 'productID=' + productID + '&viewtype=' + type + '&branch=' + branchID + '&rootModuleID=0&returnType=html&fieldID=&needManage=false&extra=excludeModuleID=' + <?php echo $module->id;?> + ',noMainBranch,nodeleted&currentModuleID=' + moduleID);
+    $('#moduleIdBox').load(link, function()
     {
         $(this).children('select').attr('id', 'parent').attr('name', 'parent');
         $(this).find('select').chosen()

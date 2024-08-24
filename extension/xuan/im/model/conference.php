@@ -1,5 +1,5 @@
 <?php
-class conference extends model
+class imConference extends model
 {
     /**
      * Get conference by the id of chat.
@@ -105,8 +105,8 @@ class conference extends model
             if(!isset($conferenceConfig->backendtype) || $conferenceConfig->backendtype == 'owt')
             {
                 $roomInfo = $this->conference->createRoom($chatID);
-                $rid = $roomInfo->id;
                 if(empty($roomInfo)) return false;
+                $rid = $roomInfo->id;
             }
 
             $conferenceData = new stdClass();
@@ -141,7 +141,7 @@ class conference extends model
     public function close($chatID, $userID)
     {
         $conference = $this->getByChatID($chatID);
-        if($conference->status == 'closed') return false;
+        if($conference->status == 'closed') return true;
 
         $this->dao->update(TABLE_IM_CONFERENCE)
             ->set('status')->eq('closed')

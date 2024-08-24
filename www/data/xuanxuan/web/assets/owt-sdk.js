@@ -1680,6 +1680,7 @@
                     }, {
                         key: "_onConnectionStateChange",
                         value: function (e) {
+                            this._handleError("pcState-" + this._pc.connectionState);
                             "closed" !== this._pc.connectionState && "failed" !== this._pc.connectionState || ("failed" === this._pc.connectionState ? this._handleError("connection failed.") : this._fireEndedEventOnPublicationOrSubscription())
                         }
                     }, {
@@ -1807,6 +1808,18 @@
                     }, {
                         key: "_handleError",
                         value: function (e) {
+                            if (e.startsWith && e.startsWith('pcState-')) {
+                                if (!this._ended) {
+                                    var n = this._publication || this._subscription;
+                                    if (n) {
+                                        var r = new o.ErrorEvent("pcState", {
+                                            error: new Error(e)
+                                        });
+                                        n.dispatchEvent(r);
+                                    }
+                                }
+                                return;
+                            }
                             var t = new u.ConferenceError(e);
                             if (this._publishPromise || this._subscribePromise)
                                 return this._rejectPromise(t);

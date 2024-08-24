@@ -2,7 +2,7 @@
 /**
  * The testcase module English file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testcase
@@ -11,7 +11,15 @@
  */
 $lang->testcase->id               = 'ID';
 $lang->testcase->product          = $lang->productCommon;
+$lang->testcase->project          = $lang->projectCommon;
+$lang->testcase->execution        = $lang->executionCommon;
+$lang->testcase->linkStory        = 'linkStory';
 $lang->testcase->module           = 'Module';
+$lang->testcase->auto             = 'Test Automation Cases';
+$lang->testcase->frame            = 'Test Automation Cramework';
+$lang->testcase->howRun           = 'Testing Method';
+$lang->testcase->frequency        = 'Frequency';
+$lang->testcase->path             = 'Path';
 $lang->testcase->lib              = "Bibliothek";
 $lang->testcase->branch           = "Branch/Platform";
 $lang->testcase->moduleAB         = 'Module';
@@ -22,11 +30,13 @@ $lang->testcase->order            = 'Rank';
 $lang->testcase->title            = 'Titel';
 $lang->testcase->precondition     = 'Voraussetzungen';
 $lang->testcase->pri              = 'Priorität';
-$lang->testcase->type             = 'Typ';
+$lang->testcase->type             = 'Type';
 $lang->testcase->status           = 'Status';
+$lang->testcase->statusAB         = 'Status';
 $lang->testcase->subStatus        = 'Sub Status';
 $lang->testcase->steps            = 'Schritte';
 $lang->testcase->openedBy         = 'Ersteller';
+$lang->testcase->openedByAB       = 'Reporter';
 $lang->testcase->openedDate       = 'Erstellt am';
 $lang->testcase->lastEditedBy     = 'Bearbeitet von';
 $lang->testcase->result           = 'Ergebnis';
@@ -36,7 +46,14 @@ $lang->testcase->files            = 'Dateien';
 $lang->testcase->linkCase         = 'Verbundene Fälle';
 $lang->testcase->linkCases        = 'Fall verbinden';
 $lang->testcase->unlinkCase       = 'Fall verbindung aufheben';
+$lang->testcase->linkBug          = 'Linked Bugs';
+$lang->testcase->linkBugs         = 'Link Bug';
+$lang->testcase->unlinkBug        = 'Unlink Bugs';
 $lang->testcase->stage            = 'Phase';
+$lang->testcase->scriptedBy       = 'ScriptedBy';
+$lang->testcase->scriptedDate     = 'ScriptedDate';
+$lang->testcase->scriptStatus     = 'Script Status';
+$lang->testcase->scriptLocation   = 'Script Location';
 $lang->testcase->reviewedBy       = 'Überprüft von';
 $lang->testcase->reviewedDate     = 'Überprüft von';
 $lang->testcase->reviewResult     = 'Prüfungsbericht';
@@ -54,6 +71,7 @@ $lang->testcase->assignedTo       = 'An';
 $lang->testcase->colorTag         = 'Farb-Tag';
 $lang->testcase->lastRunResult    = 'Ergebnis';
 $lang->testcase->desc             = 'Schritt';
+$lang->testcase->parent           = 'Parent';
 $lang->testcase->xml              = 'XML';
 $lang->testcase->expect           = 'Erwartet';
 $lang->testcase->allProduct       = "Alle {$lang->productCommon}";
@@ -73,8 +91,17 @@ $lang->testcase->sync             = 'Sync. Case';
 $lang->testcase->ignore           = 'Ignore';
 $lang->testcase->fromTesttask     = 'From Test Request';
 $lang->testcase->fromCaselib      = 'From CaseLib';
+$lang->testcase->fromCaseID       = 'From Case ID';
+$lang->testcase->fromCaseVersion  = 'From Case Version';
+$lang->testcase->mailto           = 'Mailto';
 $lang->testcase->deleted          = 'Deleted';
 $lang->testcase->browseUnits      = 'Unit Test';
+$lang->testcase->suite            = 'Test Suite';
+$lang->testcase->executionStatus  = 'executionStatus';
+$lang->testcase->caseType         = 'Case Type';
+$lang->testcase->allType          = 'All Types';
+$lang->testcase->showAutoCase     = 'Automated';
+$lang->testcase->automation       = 'Automation Test';
 
 $lang->case = $lang->testcase;  // For dao checking using. Because 'case' is a php keywords, so the module name is testcase, table name is still case.
 
@@ -83,7 +110,6 @@ $lang->testcase->stepDesc    = 'Schritt';
 $lang->testcase->stepExpect  = 'Erwartet';
 $lang->testcase->stepVersion = 'Version';
 
-$lang->testcase->common                  = 'Fall';
 $lang->testcase->index                   = "Home";
 $lang->testcase->create                  = "Fall erstellen";
 $lang->testcase->batchCreate             = "Mehrere erstellen";
@@ -105,12 +131,13 @@ $lang->testcase->batchConfirmStoryChange = "Mehrere bestätigen";
 $lang->testcase->batchCaseTypeChange     = "Mehrere Typen änderen";
 $lang->testcase->browse                  = "Fälle";
 $lang->testcase->groupCase               = "Nach Gruppe";
+$lang->testcase->zeroCase                = "Storys ohne Fälle";
 $lang->testcase->import                  = "Importieren";
 $lang->testcase->importAction            = "Import Case";
 $lang->testcase->fileImport              = "Importiere CSV";
 $lang->testcase->importFromLib           = "Import aus Bibliothek";
 $lang->testcase->showImport              = "Import Anzeigen";
-$lang->testcase->exportTemplet           = "Export Vorlage";
+$lang->testcase->exportTemplate          = "Export Vorlage";
 $lang->testcase->export                  = "Exportiere Daten";
 $lang->testcase->exportAction            = "Export Case";
 $lang->testcase->reportChart             = 'Bericht Chart';
@@ -123,6 +150,9 @@ $lang->testcase->groupName               = 'Gruppenname';
 $lang->testcase->step                    = 'Schritt';
 $lang->testcase->stepChild               = 'Teilschritt';
 $lang->testcase->viewAll                 = 'Alle anziegen';
+$lang->testcase->importToLib             = "Import To Library";
+$lang->testcase->showScript              = 'Show Script';
+$lang->testcase->autoScript              = 'Script';
 
 $lang->testcase->new = 'Neu';
 
@@ -146,17 +176,18 @@ $lang->testcase->lblTypeValue   = 'Typenliste';
 $lang->testcase->lblStageValue  = 'Stageliste';
 $lang->testcase->lblStatusValue = 'Statusliste';
 
-$lang->testcase->legendBasicInfo    = 'Basis Info';
-$lang->testcase->legendAttatch      = 'Datei';
-$lang->testcase->legendLinkBugs     = 'Bug';
-$lang->testcase->legendOpenAndEdit  = 'Erstellt/Bearbeitet';
-$lang->testcase->legendComment      = 'Bemerkung';
+$lang->testcase->legendBasicInfo       = 'Basis Info';
+$lang->testcase->legendAttatch         = 'Datei';
+$lang->testcase->legendLinkBugs        = 'Bug';
+$lang->testcase->legendOpenAndEdit     = 'Erstellt/Bearbeitet';
+$lang->testcase->legendComment         = 'Bemerkung';
 
-$lang->testcase->summary            = "Fälle auf dieser Seite: <strong>%s</strong> insgesamt, <strong>%s</strong> ausgeführt.";
-$lang->testcase->confirmDelete      = 'Möchten Sie diesen Testfall schließen?';
-$lang->testcase->confirmBatchDelete = 'Möchten Sie diese Testfälle schließen?';
-$lang->testcase->ditto              = 'Dito';
-$lang->testcase->dittoNotice        = 'Dieser Fall gehört nicht zu den Produkt!';
+$lang->testcase->summary               = "Fälle auf dieser Seite: <strong>%s</strong> insgesamt, <strong>%s</strong> ausgeführt.";
+$lang->testcase->confirmDelete         = 'Möchten Sie diesen Testfall schließen?';
+$lang->testcase->confirmBatchDelete    = 'Möchten Sie diese Testfälle schließen?';
+$lang->testcase->ditto                 = 'Dito';
+$lang->testcase->dittoNotice           = "This Case is not linked to the {$lang->productCommon} as the last one is!";
+$lang->testcase->confirmUnlinkTesttask = 'The case [%s] is already associated in the testtask order of the previous branch/platform, after adjusting the branch/platform, it will be removed from the test list of the previous branch/platform, please confirm whether to continue to modify.';
 
 $lang->testcase->reviewList[0] = 'Nein';
 $lang->testcase->reviewList[1] = 'Ja';
@@ -203,30 +234,35 @@ $lang->testcase->resultList['blocked'] = 'Blockiert';
 
 $lang->testcase->buttonToList = 'Zurück';
 
+$lang->testcase->whichLine        = 'Line No.%s : ';
+$lang->testcase->stepsEmpty       = 'Step %s cannot be empty.';
 $lang->testcase->errorEncode      = 'Keine Daten. Bitte wählen Sie das richtige Encoding und versuchen Sie es erneut!';
 $lang->testcase->noFunction       = 'Iconv und mb_convert_encoding wurde nicht gefunden. Sie können die Daten nicht in das gewünschte Format konvertieren!';
 $lang->testcase->noRequire        = "Zeile %s hat “%s” was ein benötigtes Feld ist und nicht leer sein darf.";
+$lang->testcase->noRequireTip     = "“%s”is a required field and it should not be blank.";
 $lang->testcase->noLibrary        = "Es existiert keine Bibliothek. Bitte erstellen Sie eine.";
 $lang->testcase->mustChooseResult = 'Prüfungsergebnis wird benötigt.';
 $lang->testcase->noModule         = '<div>Es existieren keine Module</div><div>Jetzt verwalten</div>';
 $lang->testcase->noCase           = 'Keine Fälle. ';
+$lang->testcase->importedCases    = 'The case with ID%s has been imported in the same module and has been ignored.';
 
 $lang->testcase->searchStories = 'Story suchen';
 $lang->testcase->selectLib     = 'Bibliothek wählen';
+$lang->testcase->selectLibAB   = 'Bibliothek wählen';
 
 $lang->testcase->action = new stdclass();
 $lang->testcase->action->fromlib               = array('main' => '$date, importiert von <strong>$actor</strong> aus Bibliothek <strong>$extra</strong>.');
 $lang->testcase->action->reviewed              = array('main' => '$date, überprüft von <strong>$actor</strong> und Prüfungsergebnis ist <strong>$extra</strong>.', 'extra' => 'reviewResultList');
-$lang->testcase->action->linked2project        = array('main' => '$date, 由 <strong>$actor</strong> 关联到项目 <strong>$extra</strong>。');
-$lang->testcase->action->unlinkedfromproject   = array('main' => '$date, 由 <strong>$actor</strong> 从项目 <strong>$extra</strong> 移除。');
-$lang->testcase->action->linked2execution      = array('main' => '$date, 由 <strong>$actor</strong> 关联到' . $lang->executionCommon . ' <strong>$extra</strong>。');
-$lang->testcase->action->unlinkedfromexecution = array('main' => '$date, 由 <strong>$actor</strong> 从' . $lang->executionCommon . ' <strong>$extra</strong> 移除。');
+$lang->testcase->action->linked2project        = array('main' => '$date, linked ' . $lang->projectCommon . ' by <strong>$actor</strong> to <strong>$extra</strong>.');
+$lang->testcase->action->unlinkedfromproject   = array('main' => '$date, removed by <strong>$actor</strong> from <strong>$extra</strong>.');
+$lang->testcase->action->linked2execution      = array('main' => '$date, linked ' . $lang->executionCommon . ' by  <strong>$actor</strong> to <strong>$extra</strong>.');
+$lang->testcase->action->unlinkedfromexecution = array('main' => '$date, removed by <strong>$actor</strong> from <strong>$extra</strong>.');
 
+$lang->testcase->featureBar['browse']['casetype']    = $lang->testcase->caseType;
 $lang->testcase->featureBar['browse']['all']         = $lang->testcase->allCases;
 $lang->testcase->featureBar['browse']['wait']        = 'Wartend';
 $lang->testcase->featureBar['browse']['needconfirm'] = $lang->testcase->needConfirm;
 $lang->testcase->featureBar['browse']['group']       = 'Group View';
-$lang->testcase->featureBar['browse']['suite']       = 'Suite';
 $lang->testcase->featureBar['browse']['zerocase']    = 'Zero Case Story';
-$lang->testcase->featureBar['browse']['browseunits'] = 'Unit Test';
-$lang->testcase->featureBar['groupcase']             = $lang->testcase->featureBar['browse'];
+$lang->testcase->featureBar['browse']['suite']       = 'Suite';
+$lang->testcase->featureBar['browse']['autocase']    = $lang->testcase->showAutoCase;

@@ -1,7 +1,7 @@
 <?php
 /**
  * The kanban view file of custom module of ZenTaoPMS.
- * @copyright   Copyright 2009-2020 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2020 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Liyuchun <liyuchun@cnezsoft.com>
  * @package     custom
@@ -9,9 +9,14 @@
  * @link        https://www.zentao.pm
  */
 ?>
-<?php include 'header.html.php';?>
+<?php include $app->getModuleRoot() . 'common/view/header.html.php';?>
 <div id='mainContent' class='main-content'>
   <form class="load-indicator main-form form-ajax" method='post'>
+    <div class='main-header'>
+      <div class='heading'>
+        <strong><?php echo $lang->custom->product->fields['product'];?></strong>
+      </div>
+    </div>
     <table class='table table-form'>
       <tr>
         <th class='w-150px'><?php echo $lang->custom->closedKanban;?></th>
@@ -21,7 +26,13 @@
           <label class="radio-inline"><input type="radio" name="kanban" value="<?php echo $key?>"<?php echo $key == $checkedKey ? " checked='checked'" : ''?> id="kanban<?php echo $key;?>"><?php echo $value;?></label>
           <?php endforeach;?>
         </td>
-        <td><span class='alert alert-info no-margin'><?php echo $lang->custom->notice->readOnlyOfKanban;?></span></td>
+        <td></td>
+      </tr>
+      <tr>
+        <th></th>
+        <td colspan="2" id="readOnlyOfKanban">
+          <i class="icon-exclamation-sign"></i>&nbsp;<?php echo $lang->custom->notice->readOnlyOfKanban;?>
+        </td>
       </tr>
       <tr>
         <th></th>

@@ -1,8 +1,8 @@
 <?php
 $lang->client->common       = '版本更新';
-$lang->client->create       = '手动添加版本';
-$lang->client->browse       = '版本更新列表';
-$lang->client->edit         = '编辑版本';
+$lang->client->create       = '客户端版本';
+$lang->client->browse       = '客户端版本更新列表';
+$lang->client->edit         = '编辑客户端';
 $lang->client->delete       = '删除版本';
 $lang->client->checkUpgrade = '检查更新';
 $lang->client->set          = '参数设置';
@@ -11,7 +11,7 @@ $lang->client->polling      = '轮询间隔';
 $lang->client->xxdRunTime   = 'XXD运行时间';
 
 $lang->client->id              = 'ID';
-$lang->client->version         = '版本';
+$lang->client->version         = '客户端版本';
 $lang->client->update          = '更新';
 $lang->client->xxcVersion      = 'XXC版本';
 $lang->client->main            = '重要更新内容';
@@ -85,7 +85,7 @@ $lang->client->xxdStatusList['offline'] = '离线';
 
 $lang->client->downloadClient = '下载客户端';
 $lang->client->os             = '操作系统';
-$lang->client->downloading    = '正在获取安装包:';
+$lang->client->downloading    = '正在获取安装包';
 $lang->client->downloaded     = '成功获取安装包';
 $lang->client->setting        = '正在设置配置信息';
 $lang->client->setted         = '成功设置配置信息';
@@ -111,3 +111,5 @@ $lang->client->errorInfo->dirNotWritable = '客户端下载存储路径 <span cl
 
 $lang->client->userDownloadTips = '点击下载按钮即可下载包含当前服务器信息和账号配置的喧喧客户端。';
 $lang->client->generateLinkTips = '点击获取链接按钮可以生成用于在内部分发的喧喧客户端 zip 包下载链接。';
+
+$lang->client->releaseTip = "发布后用户将会在客户端收到版本升级提醒。";

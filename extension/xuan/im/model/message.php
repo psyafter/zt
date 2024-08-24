@@ -1,5 +1,5 @@
 <?php
-class message extends model
+class imMessage extends model
 {
     /**
      * Get message list.
@@ -50,8 +50,63 @@ class message extends model
         $messages = $sql
             ->orderBy('id_desc')
             ->beginIF($pager != null)->page($pager)->fi()
-            ->fetchAll();
+			->fetchAll();
+        $messages = $this->decodeMessages($messages);
+        return $format ? $this->format($messages) : $messages;
+    }
 
+    /**
+     * Get message list by indexes.
+     *
+     * @param  string $cgid
+     * @param  array  $indexList
+     * @param  object $pager
+     * @param  string $startDate
+     * @param  string $type
+     * @param  bool   $format
+     * @param  bool   $masterOnly
+     * @param  int    $userID
+     * @access public
+     * @return array
+     */
+    public function getListByIndexes($cgid = '', $indexList = array(), $pager = null, $startDate = '', $type = '', $format = true, $masterOnly = false, $userID = null)
+    {
+        if($cgid == '') return array();
+        if($masterOnly)
+        {
+            $tables = array((object)array('tableName' => TABLE_IM_MESSAGE, 'messages' => $indexList));
+        }
+        else
+        {
+            if(!empty($indexList)) $tables = $this->getChatTablesByChatIndexes($cgid, $indexList);
+            if(!empty($startDate)) $tables = $this->getChatTablesByDateRange($cgid, $startDate);
+            if(empty($indexList) && empty($startDate)) $tables = $this->getChatAllTables($cgid);
+            if(empty($tables)) return array();
+        }
+
+        $queries = array();
+        foreach($tables as $table)
+        {
+            $queries[] = $this->dao->select('*')->from($table->tableName)->where('1')
+                ->andWhere('cgid')->eq($cgid)
+                ->beginIF(!empty($indexList))->andWhere('`index`')->in($table->messages)->fi()
+                ->beginIF(!empty($startDate))->andWhere('date')->ge($startDate)->fi()
+                ->beginIF(!empty($type) && strpos($type, '!') === 0)->andWhere('type')->ne(substr($type, 1))->fi()
+                ->beginIF(!empty($type) && strpos($type, '!') !== 0)->andWhere('type')->eq($type)->fi()
+                ->beginIF($userID != null)->andWhere('user')->eq($userID)->fi()
+                ->get();
+        }
+        $query = join(' UNION ALL ', $queries);
+
+        $sql = $this->dao->select('*')->from(TABLE_IM_MESSAGE);
+        $sql->sqlobj->sql = 'SELECT * FROM (' . $query . ') as t';
+
+        /* Assemble order by and pager stuff. */
+        $messages = $sql
+            ->orderBy('id_desc')
+            ->beginIF($pager != null)->page($pager)->fi()
+            ->fetchAll();
+        $messages = $this->decodeMessages($messages);
         return $format ? $this->format($messages) : $messages;
     }
 
@@ -101,6 +156,42 @@ class message extends model
             ->beginIF(!$reverse)->orderBy('id')->fi()
             ->limit($limit)
             ->fetchAll();
+        $messages = $this->decodeMessages($messages);
+        return $returnID ? array_map(function($obj){return (int)$obj->id;}, $messages) : $this->format($messages);
+    }
+
+    /**
+     * Get chat messages by indexes.
+     *
+     * @param  string $cgid
+     * @param  array  $indexList
+     * @param  bool   $reverse
+     * @param  bool   $returnID  return id list only.
+     * @access public
+     * @return array
+     */
+    public function getListAroundIDByIndexes($cgid, $indexList, $reverse = false, $returnID = false)
+    {
+        $tables  = $this->getChatTablesByChatIndexes($cgid, $indexList);
+        $queries = array();
+        foreach($tables as $table)
+        {
+            $queries[] = $this->dao->select($returnID ? 'id' : '*')->from($table->tableName)
+                ->where('cgid')->eq($cgid)
+                ->beginIF(!empty($indexList))->andWhere('`index`')->in($table->messages)->fi()
+                ->get();
+        }
+        $query = join(' UNION ALL ', $queries);
+
+        $sql = $this->dao->select('*')->from(TABLE_IM_MESSAGE);
+        $sql->sqlobj->sql = 'SELECT * FROM (' . $query . ') as t';
+
+        /* Assemble order by and pager stuff. */
+        $messages = $sql
+            ->beginIF($reverse)->orderBy('id_desc')->fi()
+            ->beginIF(!$reverse)->orderBy('id')->fi()
+            ->fetchAll();
+        $messages = $this->decodeMessages($messages);
         return $returnID ? array_map(function($obj){return (int)$obj->id;}, $messages) : $this->format($messages);
     }
 
@@ -137,6 +228,7 @@ class message extends model
         foreach($messages as $message)
         {
             $message->id      = (int)$message->id;
+            $message->index   = (int)$message->index;
             $message->user    = (int)$message->user;
             $message->date    = strtotime($message->date);
             $message->deleted = isset($message->deleted) ? (bool)$message->deleted : false;
@@ -162,8 +254,10 @@ class message extends model
      */
     public function create($messageList = array(), $userID = 0)
     {
-        $idList   = array();
-        $chatList = array();
+        $idList           = array();
+        $chatMessageID    = array();
+        $chatMessageIndex = array();
+        $now = helper::now();
         foreach($messageList as $message)
         {
             $message = (object) $message;
@@ -172,6 +266,7 @@ class message extends model
             {
                 if($msg->contentType == 'image' || $msg->contentType == 'file')
                 {
+                    $message = $this->encodeMessage($message);
                     $this->dao->update(TABLE_IM_MESSAGE)->set('content')->eq($message->content)->where('id')->eq($msg->id)->exec();
                 }
                 $idList[] = $msg->id;
@@ -179,21 +274,52 @@ class message extends model
             elseif(!$msg)
             {
                 if(!(isset($message->user) && $message->user)) $message->user = $userID;
-                if(!(isset($message->date) && $message->date)) $message->date = helper::now();
+                if(!(isset($message->date) && $message->date)) $message->date = $now;
 
-                $this->dao->insert(TABLE_IM_MESSAGE)->data($message)->exec();
-                $idList[] = $this->dao->lastInsertID();
+                $msgIndex = $this->dao->select('MAX(`index`) + 1')->from(TABLE_IM_MESSAGE)->where('cgid')->eq($message->cgid)->fetch('MAX(`index`) + 1');
+                if(empty($msgIndex)) $msgIndex = $this->dao->select('`lastMessageIndex` + 1')->from(TABLE_IM_CHAT)->where('gid')->eq($message->cgid)->fetch('`lastMessageIndex` + 1');
+                if(empty($msgIndex)) $msgIndex = 1;
+
+                $message->index = $msgIndex;
+                $chatMessageIndex[$message->cgid] = $msgIndex;
+
+                $this->dao->insert(TABLE_IM_MESSAGE)->data($this->encodeMessage($message))->exec();
+                $message->id = $this->dao->lastInsertID();
+                $idList[] = $message->id;
             }
-            $chatList[$message->cgid] = $message->cgid;
+            if(isset($message->id)) $chatMessageID[$message->cgid] = $message->id;
         }
         if(empty($idList)) return array();
 
-        $this->dao->update(TABLE_IM_CHAT)
-            ->set('lastActiveTime')->eq(helper::now())
-            ->set('lastMessage')->eq(max($idList))
-            ->where('gid')->in($chatList)->exec();
+        foreach(array_keys($chatMessageID) as $cgid)
+        {
+            $setData = "lastActiveTime = '$now'";
+            if(isset($chatMessageIndex[$cgid]))
+            {
+                $setData .= ", lastMessage = $chatMessageID[$cgid]";
+            }
+            if(isset($chatMessageIndex[$cgid]))
+            {
+                $setData .= ", lastMessageIndex = $chatMessageIndex[$cgid]";
+            }
+            $this->dao->update(TABLE_IM_CHAT)
+                ->set($setData)
+                ->where('gid')->eq($cgid)
+                ->exec();
+        }
 
         return $this->getList('', $idList);
+    }
+
+    /**
+     * set message with new content.
+     * @param $message
+     * @return void
+     */
+    public function setMessage($message)
+    {
+        $msg = $this->encodeMessage($message);
+        $this->dao->update(TABLE_IM_MESSAGE)->set('content')->eq($msg->content)->where('id')->eq($message->id)->exec();
     }
 
     /**
@@ -232,7 +358,7 @@ class message extends model
             ->beginIF($pager != null)->page($pager)->fi()
             ->fetchAll();
 
-        return $this->format($messages);
+        return $this->format($this->decodeMessages($messages));
     }
 
     /**
@@ -356,11 +482,22 @@ class message extends model
             $membersData = array_merge($members, array($userID));
             $message->data = json_encode(array('reminders' => $membersData));
         }
-
         /* If quit a chat, only send broadcast to the admins or the created user of chat. */
         if($type == 'leaveChat')
         {
-            if($chat->admins) $adminUsers = explode(',', trim($chat->admins, ','));
+            if($chat->admins)
+            {
+                if(is_array($chat->admins))
+                {
+                    $adminUsers = array_map(function($value){
+                        return trim($value);
+                    }, $chat->admins);
+                }
+                if(is_string($chat->admins))
+                {
+                   $adminUsers = explode(',', trim($chat->admins, ','));
+                }
+            }
             if(!$adminUsers)
             {
                 $user = $this->loadModel('user')->getByAccount($chat->createdBy);
@@ -409,7 +546,7 @@ class message extends model
         $userName    = empty($user->realname) ? $user->account : $user->realname;
         $userMention = "[@$userName](@#$user->id)";
 
-        if($type == 'changeChatOwnership')
+        if(stripos($type, 'changeChatOwnership') === 0)
         {
             $nameInMarkdown = preg_replace('/([#\\`*_{}\[\]\(\)\+\-\.!])/i', '\\\\$1', $chat->name);
             return sprintf($this->lang->im->broadcast->$type, $nameInMarkdown, $chat->gid, $userMention);
@@ -453,25 +590,49 @@ class message extends model
             return sprintf($this->lang->im->broadcast->$type, $userMention, $memberMentions);
         }
 
+        if($type == 'archiveChat' or $type == 'unarchiveChat')
+        {
+            $nameInMarkdown = preg_replace('/([#\\`*_{}\[\]\(\)\+\-\.!])/i', '\\\\$1', $chat->name);
+            return sprintf($this->lang->im->broadcast->$type, $userMention, $nameInMarkdown);
+        }
+
         return sprintf($this->lang->im->broadcast->$type, $userMention);
     }
 
     /**
      * Retract one message.
      *
-     * @param  string $gid
+     * @param  string  $gid
+     * @param  boolean $byAdmin
+     * @param  int     $deletedBy
      * @access public
      * @return array
      */
-    public function retract($gid = '')
+    public function retract($gid = '', $byAdmin = false, $deletedBy = 0)
     {
-        $message = $this->dao->select('id, gid, cgid, user, date, deleted, type, contentType')->from(TABLE_IM_MESSAGE)->where('gid')->eq($gid)->fetch();
+        $message = $this->dao->select('id, gid, cgid, `index`, user, date, data, deleted, type, contentType')->from(TABLE_IM_MESSAGE)->where('gid')->eq($gid)->fetch();
+
+        $archiveDate = $this->dao->select('archiveDate')->from(TABLE_IM_CHAT)->where('gid')->eq($message->cgid)->fetch('archiveDate');
+        if($archiveDate !== '0000-00-00 00:00:00') return array();
 
         $messageLife = (strtotime(helper::now()) - strtotime($message->date)) / 60;
-        if($messageLife <= $this->config->im->retract->validTime)
+        if($messageLife <= $this->config->im->retract->validTime && $message->user == $deletedBy)
         {
             $message->deleted = 1;
             $this->dao->update(TABLE_IM_MESSAGE)->set('deleted')->eq($message->deleted)->where('gid')->eq($gid)->exec();
+        }
+        else if($byAdmin)
+        {
+            $messageData = empty($message->data) ? new stdClass() : json_decode($message->data);
+            $bySelf = $message->user == $deletedBy;
+            if(!$bySelf)
+            {
+                $messageData->deletedBy = $deletedBy;
+                $message->data = $messageData;
+            }
+            $message->deleted = 1;
+            if($bySelf) $this->dao->update(TABLE_IM_MESSAGE)->set('deleted')->eq($message->deleted)->where('gid')->eq($gid)->exec();
+            else        $this->dao->update(TABLE_IM_MESSAGE)->set('deleted')->eq($message->deleted)->set('data')->eq(json_encode($messageData))->where('gid')->eq($gid)->exec();
         }
 
         return $this->format(array($message));
@@ -634,9 +795,28 @@ class message extends model
             $data->sender      = $messageData->sender;
             $data->users       = $messageData->target;
 
+            if($data->cgid != 'notification' && !empty($message->index)) $data->index = $message->index;
+
             $notifications[] = $data;
         }
         return $notifications;
+    }
+
+    /**
+     * create a bot welcome message.
+     * @param int  $userID
+     * @param bool $needUpdate
+     * @return void
+     */
+    public function createXuanbotWelcomeNotify($userID, $needUpdate = false)
+    {
+        $sender = new stdclass();
+        $sender->id     = 0;
+        $sender->name   = $this->lang->im->bot->commonName;
+        $sender->avatar = commonModel::getSysURL() . $this->config->webRoot . 'data/image/xuanbot.png';
+
+        if($needUpdate) $this->createNotify(array($userID), $this->lang->im->bot->upgradeWelcome->title, '', $this->lang->im->bot->upgradeWelcome->content, 'text', $this->lang->im->bot->upgradeWelcome->link, array(), $sender);
+        $this->createNotify(array($userID), $this->lang->im->bot->welcome->title, '', $this->lang->im->bot->welcome->content, 'text', $this->lang->im->bot->welcome->link, array(), $sender);
     }
 
     /**
@@ -685,14 +865,20 @@ class message extends model
 		$notify->type		 = 'notify';
 		$notify->content     = $content;
 		$notify->contentType = $contentType;
-		$notify->data		 = json_encode($info);
+        $notify->data		 = json_encode($info);
 
-		$this->dao->insert(TABLE_IM_MESSAGE)->data($notify)->exec();
+        $msgIndex = $this->dao->select('MAX(`index`) + 1')->from(TABLE_IM_MESSAGE)->where('cgid')->eq($cgid)->fetch('MAX(`index`) + 1');
+        if(empty($msgIndex)) $msgIndex = $this->dao->select('`lastMessageIndex` + 1')->from(TABLE_IM_CHAT)->where('gid')->eq($cgid)->fetch('`lastMessageIndex` + 1');
+        if(empty($msgIndex)) $msgIndex = 1;
+        $notify->index = $msgIndex;
+
+		$this->dao->insert(TABLE_IM_MESSAGE)->data($this->encodeMessage($notify))->exec();
         $message = $this->dao->lastInsertID();
 
         $this->dao->update(TABLE_IM_CHAT)
             ->set('lastActiveTime')->eq(helper::now())
             ->set('lastMessage')->eq($message)
+            ->set('lastMessageIndex')->eq($msgIndex)
             ->where('gid')->eq($cgid)->exec();
 
 		$this->saveStatus($info['target'], $message, 'waiting');
@@ -767,6 +953,28 @@ class message extends model
     }
 
     /**
+     * Get all message tables with cgid.
+     *
+     * @param  string $cgid
+     * @access public
+     * @return array
+     */
+    public function getChatAllTables($cgid = '')
+    {
+        if($cgid == '') return array();
+        $tables = $this->dao->select('DISTINCT tableName')->from(TABLE_IM_CHAT_MESSAGE_INDEX)->fetchAll();
+
+        foreach($tables as $key => $table) $tables[$key]->messages = '';
+
+        $master = new stdclass;
+        $master->tableName = TABLE_IM_MESSAGE;
+        $master->messages  = '';
+        $tables[] = $master;
+
+        return $tables;
+    }
+
+    /**
      * Get message table names by message IDs.
      *
      * @param  array  $messageIDs
@@ -814,6 +1022,57 @@ class message extends model
     }
 
     /**
+     * Get chat message table names by message indexes.
+     *
+     * @param  string $cgid
+     * @param  array  $indexes
+     * @access public
+     * @return array
+     */
+    public function getChatTablesByChatIndexes($cgid, $indexes)
+    {
+        if($cgid == '') return array();
+        $indexIds = $indexes;
+        $tables   = array();
+        $indices  = $this->dao->select('tableName,startIndex,endIndex')->from(TABLE_IM_CHAT_MESSAGE_INDEX)->where('gid')->eq($cgid)->fetchAll('tableName');
+
+        $processedIDs = array();
+        foreach($indices as $index)
+        {
+            $min = $index->startIndex;
+            $max = $index->endIndex;
+            $ids = array_filter(
+                $indexes,
+                function($id) use ($min, $max)
+                {
+                    return $id >= $min && $id <= $max;
+                }
+            );
+            $indexes = array_diff($indexes, $ids);
+            if(!empty($ids))
+            {
+                $result = new stdclass();
+                $result->tableName = $index->tableName;
+                $result->messages  = $ids;
+                $tables[$index->tableName] = $result;
+
+                $processedIDs = array_merge($processedIDs, $ids);
+            }
+        }
+
+        $unindexed = array_diff($indexIds, $processedIDs);
+        if(!empty($unindexed))
+        {
+            $result = new stdclass();
+            $result->tableName = TABLE_IM_MESSAGE;
+            $result->messages  = $unindexed;
+            $tables[TABLE_IM_MESSAGE] = $result;
+        }
+
+        return $tables;
+    }
+
+    /**
      * Get tables by start (and / or) end date).
      *
      * @param  string $startDate
@@ -825,6 +1084,51 @@ class message extends model
     {
         $tables = $this->dao->select('tableName,startDate,endDate')->from(TABLE_IM_MESSAGE_INDEX)
             ->where('1')
+            ->beginIF(!empty($startDate))->andWhere('endDate')->ge($startDate)->fi()
+            ->beginIF(!empty($endDate))->andWhere('startDate')->le($endDate)->fi()
+            ->fetchAll('tableName');
+
+        if(empty($tables)) $appendMaster = true;
+
+        /* If endDate is even later than the max endDate we have in the index, append the master table. */
+        elseif(!empty($endDate))
+        {
+            $maxEndDate = max(array_map(
+                function($t)
+                {
+                    return $t->endDate;
+                },
+                $tables
+            ));
+            if($maxEndDate < $endDate) $appendMaster = true;
+        }
+
+        if(isset($appendMaster))
+        {
+            $master = new stdclass();
+            $master->tableName = TABLE_IM_MESSAGE;
+            $master->startDate = isset($maxEndDate) ? $maxEndDate : '0000-00-00 00:00:00';
+            $master->endDate   = '9999-12-31 23:59:59';
+            $tables[] = $master;
+        }
+
+        return $tables;
+    }
+
+    /**
+     * Get chat tables by start (and / or) end date).
+     *
+     * @param  string $cgid
+     * @param  string $startDate
+     * @param  string $endDate
+     * @access public
+     * @return array
+     */
+    public function getChatTablesByDateRange($cgid = '', $startDate = '', $endDate = '')
+    {
+        if($cgid == '') return array();
+        $tables = $this->dao->select('tableName,startDate,endDate')->from(TABLE_IM_CHAT_MESSAGE_INDEX)
+            ->where('gid')->eq($cgid)
             ->beginIF(!empty($startDate))->andWhere('endDate')->ge($startDate)->fi()
             ->beginIF(!empty($endDate))->andWhere('startDate')->le($endDate)->fi()
             ->fetchAll('tableName');
@@ -1016,9 +1320,11 @@ class message extends model
      */
     public function reindex($table = '')
     {
-        $MAXID  = 'MAX(id)';
-        $MINID  = 'MIN(id)';
-        $IDDATE = 'id,date';
+        $MAXID    = 'MAX(id)';
+        $MINID    = 'MIN(id)';
+        $MAXINDEX = 'MAX(`index`)';
+        $MININDEX = 'MIN(`index`)';
+        $IDDATE   = 'id,date';
 
         $messageMeta = new stdclass();
         $firstRecord = $this->dao->select($IDDATE)->from($table)->orderBy('id')->limit(1)->fetch();
@@ -1032,7 +1338,7 @@ class message extends model
         $messageMeta->chats     = ',' . join(',', $chats) . ',';
         $this->dao->insert(TABLE_IM_MESSAGE_INDEX)->data($messageMeta)->exec();
 
-        $chatsInfo = $this->dao->select('cgid,MAX(id),MIN(id),count(*)')->from($table)->groupBy('cgid')->fetchAll();
+        $chatsInfo = $this->dao->select('cgid,MAX(id),MIN(id),MAX(`index`),MIN(`index`),count(*)')->from($table)->groupBy('cgid')->fetchAll();
         $messages = array();
         foreach($chatsInfo as $info)
         {
@@ -1050,6 +1356,8 @@ class message extends model
             $meta[] = $info->cgid;
             $meta[] = $info->{$MINID};
             $meta[] = $info->{$MAXID};
+            $meta[] = $info->{$MININDEX};
+            $meta[] = $info->{$MAXINDEX};
             $meta[] = $messageDates[$info->{$MINID}];
             $meta[] = $messageDates[$info->{$MAXID}];
             $meta[] = $info->{'count(*)'};
@@ -1058,7 +1366,118 @@ class message extends model
             $values[] = $data;
         }
         $insertStmt = $this->dao->insert(TABLE_IM_CHAT_MESSAGE_INDEX)->get();
-        $insertStmt = substr($insertStmt, 0, -4) . '(`tableName`,`gid`,`start`,`end`,`startDate`,`endDate`,`count`) VALUES ' . join(',', $values);
+        $insertStmt = substr($insertStmt, 0, -4) . '(`tableName`,`gid`,`start`,`end`,`startIndex`,`endIndex`,`startDate`,`endDate`,`count`) VALUES ' . join(',', $values);
         $this->dao->exec($insertStmt);
+    }
+
+    /**
+     * codec string with rot47.
+     *
+     * @access public
+     * @param  string $str  string to be rot47
+     * @return string
+     */
+    public function codecWithRot47($str)
+    {
+        return strtr($str, '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~', 'PQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNO');
+    }
+
+    /**
+     * decode text with rot47 & base64.
+     *
+     * @access public
+     * @param  string $text  text to be rot47
+     * @return string
+     */
+    public function decodeText($text)
+    {
+		$rot47Encoded = $this->codecWithRot47($text);
+		return base64_decode($rot47Encoded);
+    }
+
+    /**
+     * decode chat messages.
+     *
+     * @access public
+     * @param  array $messages  messages to be decode
+     * @return array
+     */
+    public function decodeMessages($messages)
+    {
+        if(isset($this->config->xuanxuan->messageEncrypt) && ($this->config->xuanxuan->messageEncrypt == 'on') && commonModel::isLicensedMethod('im', 'messageEncrypt'))
+        {
+            return array_map(function($msg) {
+				if(isset($msg->content) && isset($this->config->xuanxuan->lastUnEncryptMessageId) && intval($this->config->xuanxuan->lastUnEncryptMessageId) <= $msg->id)
+				{
+					$msg->content = $this->decodeText($msg->content);
+				}
+				return $msg;
+            }, $messages);
+        }
+        return $messages;
+    }
+
+    /**
+     * decode one chat message.
+     *
+     * @access public
+     * @param  object $message  message to be decode
+     * @return string
+     */
+    public function decodeMessage($message)
+    {
+        if(isset($this->config->xuanxuan->messageEncrypt) && ($this->config->xuanxuan->messageEncrypt == 'on') && commonModel::isLicensedMethod('im', 'messageEncrypt') && isset($this->config->xuanxuan->lastUnEncryptMessageId) && intval($this->config->xuanxuan->lastUnEncryptMessageId) <= $message->id)
+        {
+			$message->content = $this->decodeText($message->content);
+        }
+        return $message;
+    }
+
+    /**
+	 * encode one chat message.
+	 *
+     * @access public
+     * @param  object $message  message to be encode
+     * @return object
+     */
+    public function encodeMessage($message)
+    {
+        if(isset($this->config->xuanxuan->messageEncrypt) && ($this->config->xuanxuan->messageEncrypt == 'on') && commonModel::isLicensedMethod('im', 'messageEncrypt'))
+        {
+            $message->content = $this->codecWithRot47(base64_encode($message->content));
+        }
+        return $message;
+	}
+
+    /**
+	 * get last message id
+	 *
+     * @access public
+     * @return int
+     */
+    public function getLastMessageId()
+    {
+        $lastMessageId = $this->dao->select('id')
+            ->from(TABLE_IM_MESSAGE)
+            ->orderBy('id desc')
+            ->limit(1)
+            ->fetch('id');
+        if(!$lastMessageId)
+        {
+            $messagesCount = $this->dao->select('COUNT(*)')->from(TABLE_IM_MESSAGE)->fetch('COUNT(*)');
+            if($messagesCount == 0)
+            {
+                $messagesIdxCount = $this->dao->select('COUNT(*)')->from(TABLE_IM_MESSAGE_INDEX)->fetch('COUNT(*)');
+                if($messagesIdxCount > 0)
+                {
+                    $lastMessageId = $this->dao->select('MAX(end)')->from(TABLE_IM_MESSAGE_INDEX)->fetch('MAX(end)');
+                }
+                else
+                {
+                    $lastMessageId = 0;
+                }
+            }
+        }
+        return $lastMessageId;
     }
 }

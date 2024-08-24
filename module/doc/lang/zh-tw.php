@@ -2,7 +2,7 @@
 /**
  * The doc module zh-tw file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禪道軟件（青島）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     doc
@@ -34,7 +34,7 @@ $lang->doclib->create['execution'] = '創建' . $lang->executionCommon . '文檔
 $lang->doclib->create['custom']    = '創建自定義文檔庫';
 
 $lang->doclib->main['product']   = $lang->productCommon . '主庫';
-$lang->doclib->main['project']   = '項目主庫';
+$lang->doclib->main['project']   = "{$lang->projectCommon}主庫";
 $lang->doclib->main['execution'] = $lang->executionCommon . '主庫';
 
 $lang->doclib->tabList['product']   = $lang->productCommon;
@@ -45,9 +45,9 @@ $lang->doclib->nameList['custom'] = '自定義文檔庫名稱';
 
 /* 欄位列表。*/
 $lang->doc->common       = '文檔';
-$lang->doc->id           = '編號';
+$lang->doc->id           = '文檔編號';
 $lang->doc->product      = '所屬' . $lang->productCommon;
-$lang->doc->project      = '所屬項目';
+$lang->doc->project      = "所屬{$lang->projectCommon}";
 $lang->doc->execution    = '所屬' . $lang->execution->common;
 $lang->doc->lib          = '所屬文檔庫';
 $lang->doc->module       = '所屬目錄';
@@ -61,9 +61,11 @@ $lang->doc->keywords     = '關鍵字';
 $lang->doc->url          = '文檔URL';
 $lang->doc->files        = '附件';
 $lang->doc->addedBy      = '由誰添加';
+$lang->doc->addedByAB    = '創建者';
 $lang->doc->addedDate    = '添加時間';
 $lang->doc->editedBy     = '由誰更新';
 $lang->doc->editedDate   = '更新時間';
+$lang->doc->lastEditedBy = '最後更新者';
 $lang->doc->version      = '版本號';
 $lang->doc->basicInfo    = '基本信息';
 $lang->doc->deleted      = '已刪除';
@@ -94,6 +96,7 @@ $lang->doc->main         = '文檔主庫';
 $lang->doc->order        = '排序';
 $lang->doc->doc          = '文檔';
 $lang->doc->updateOrder  = '更新排序';
+$lang->doc->nextStep     = '下一步';
 
 $lang->doc->moduleDoc     = '按模組瀏覽';
 $lang->doc->searchDoc     = '搜索';
@@ -136,29 +139,33 @@ $lang->doc->menuTitle        = '目錄';
 
 $lang->doc->collectAction = '收藏文檔';
 
-$lang->doc->libName        = '文檔庫名稱';
-$lang->doc->libType        = '文檔庫類型';
-$lang->doc->custom         = '自定義文檔庫';
-$lang->doc->customAB       = '自定義庫';
-$lang->doc->createLib      = '創建文檔庫';
-$lang->doc->allLibs        = '文檔庫列表';
-$lang->doc->objectLibs     = "文檔庫文檔詳情";
-$lang->doc->showFiles      = '附件庫';
-$lang->doc->editLib        = '編輯文檔庫';
-$lang->doc->deleteLib      = '刪除文檔庫';
-$lang->doc->fixedMenu      = '固定到菜單欄';
-$lang->doc->removeMenu     = '從菜單欄移除';
-$lang->doc->search         = '搜索';
-$lang->doc->allCollections = '查看全部收藏文檔';
-$lang->doc->keywordsTips   = '多個關鍵字請用逗號分隔。';
+$lang->doc->libName          = '文檔庫名稱';
+$lang->doc->libType          = '文檔庫類型';
+$lang->doc->custom           = '自定義文檔庫';
+$lang->doc->customAB         = '自定義庫';
+$lang->doc->createLib        = '創建文檔庫';
+$lang->doc->allLibs          = '文檔庫列表';
+$lang->doc->objectLibs       = "文檔庫文檔詳情";
+$lang->doc->showFiles        = '附件庫';
+$lang->doc->editLib          = '編輯文檔庫';
+$lang->doc->deleteLib        = '刪除文檔庫';
+$lang->doc->fixedMenu        = '固定到菜單欄';
+$lang->doc->removeMenu       = '從菜單欄移除';
+$lang->doc->search           = '搜索';
+$lang->doc->allCollections   = '查看全部收藏文檔';
+$lang->doc->keywordsTips     = '多個關鍵字請用逗號分隔。';
+$lang->doc->sortLibs         = '文檔庫排序';
+$lang->doc->titlePlaceholder = '請輸入標題';
+$lang->doc->confirm          = '確認';
 
 global $config;
 /* 查詢條件列表 */
 $lang->doc->allProduct    = '所有' . $lang->productCommon;
 $lang->doc->allExecutions = '所有' . $lang->executionCommon;
+$lang->doc->allProjects   = '所有' . $lang->projectCommon;
 
 $lang->doc->libTypeList['product']   = $lang->productCommon . '文檔庫';
-if($config->systemMode == 'new') $lang->doc->libTypeList['project'] = '項目文檔庫';
+$lang->doc->libTypeList['project']   = "{$lang->projectCommon}文檔庫";
 $lang->doc->libTypeList['execution'] = $lang->execution->common . '文檔庫';
 $lang->doc->libTypeList['api']       = '介面庫';
 $lang->doc->libTypeList['custom']    = '自定義文檔庫';
@@ -242,15 +249,16 @@ $lang->doc->errorEmptyLib        = '文檔庫暫無數據。';
 $lang->doc->confirmUpdateContent = '檢查到您有未保存的文檔內容，是否繼續編輯？';
 $lang->doc->selectLibType        = '請選擇文檔庫類型';
 $lang->doc->noLibreOffice        = '您還沒有office轉換設置訪問權限!';
+$lang->doc->errorParentChapter   = '父章節不能是自身章節及子章節！';
 
-$lang->doc->noticeAcl['lib']['product']['default']   = '有所選產品訪問權限的用戶可以訪問。';
-$lang->doc->noticeAcl['lib']['product']['custom']    = '有所選產品訪問權限或白名單裡的用戶可以訪問。';
-$lang->doc->noticeAcl['lib']['project']['default']   = "有所選項目訪問權限的用戶可以訪問。";
-$lang->doc->noticeAcl['lib']['project']['open']      = "有所選項目訪問權限的用戶可以訪問。";
-$lang->doc->noticeAcl['lib']['project']['private']   = "有所選項目訪問權限或白名單裡的用戶可以訪問。";
+$lang->doc->noticeAcl['lib']['product']['default']   = "有所選{$lang->productCommon}訪問權限的用戶可以訪問。";
+$lang->doc->noticeAcl['lib']['product']['custom']    = "有所選{$lang->productCommon}訪問權限或白名單裡的用戶可以訪問。";
+$lang->doc->noticeAcl['lib']['project']['default']   = "有所選{$lang->projectCommon}訪問權限的用戶可以訪問。";
+$lang->doc->noticeAcl['lib']['project']['open']      = "有所選{$lang->projectCommon}訪問權限的用戶可以訪問。";
+$lang->doc->noticeAcl['lib']['project']['private']   = "有所選{$lang->projectCommon}訪問權限或白名單裡的用戶可以訪問。";
 $lang->doc->noticeAcl['lib']['project']['custom']    = "白名單的用戶可以訪問。";
-$lang->doc->noticeAcl['lib']['execution']['default'] = "有所選{$lang->executionCommon}訪問權限的用戶可以訪問。";
-$lang->doc->noticeAcl['lib']['execution']['custom']  = "有所選{$lang->executionCommon}訪問權限或白名單裡的用戶可以訪問。";
+$lang->doc->noticeAcl['lib']['execution']['default'] = "有所選{$lang->execution->common}訪問權限的用戶可以訪問。";
+$lang->doc->noticeAcl['lib']['execution']['custom']  = "有所選{$lang->execution->common}訪問權限或白名單裡的用戶可以訪問。";
 $lang->doc->noticeAcl['lib']['api']['open']          = '所有人都可以訪問。';
 $lang->doc->noticeAcl['lib']['api']['custom']        = '白名單的用戶可以訪問。';
 $lang->doc->noticeAcl['lib']['api']['private']       = '只有創建者自己可以訪問。';

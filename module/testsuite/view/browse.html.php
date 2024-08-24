@@ -2,7 +2,7 @@
 /**
  * The browse view file of testsuite module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testsuite
@@ -15,10 +15,16 @@
 <?php js::set('flow', $config->global->flow);?>
 <div id="mainMenu" class='clearfix'>
   <div class="btn-toolbar pull-left">
-    <a href class='btn btn-link btn-active-text'>
-      <span class='text'><?php echo $lang->testsuite->browse?></span>
-      <span class='label label-light label-badge'><?php echo $pager->recTotal;?></span>
-    </a>
+    <?php
+    common::sortFeatureMenu();
+    foreach($lang->testsuite->featureBar['browse'] as $featureType => $label)
+    {
+        $activeClass = $type == $featureType ? 'btn-active-text' : '';
+        $label       = "<span class='text'>$label</span>";
+        if($type == $featureType) $label .= " <span class='label label-light label-badge'>{$pager->recTotal}</span>";
+        echo html::a(inlink('browse', "productID=$productID&type=$featureType"), $label, '',"class='btn btn-link $activeClass'");
+    }
+    ?>
   </div>
   <?php if(common::canModify('product', $product)):?>
   <div class="btn-toolbar pull-right">
@@ -39,7 +45,7 @@
   <?php else:?>
   <table class='table has-sort-head' id='suiteList'>
     <thead>
-    <?php $vars = "productID=$productID&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}"; ?>
+    <?php $vars = "productID=$productID&type=$type&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}"; ?>
       <tr>
         <th class='c-id text-left'><?php common::printOrderLink('id', $orderBy, $vars, $lang->idAB);?></th>
         <th class='c-name text-left'><?php common::printOrderLink('name', $orderBy, $vars, $lang->testsuite->name);?></th>
@@ -76,7 +82,10 @@
     <?php endforeach;?>
     </tbody>
   </table>
-  <div class='table-footer'><?php $pager->show('right', 'pagerjs');?></div>
+  <div class='table-footer'>
+    <div class='table-statistic'><?php echo $summary;?></div>
+    <?php $pager->show('right', 'pagerjs');?>
+  </div>
   <?php endif;?>
 </div>
 <?php include '../../common/view/footer.html.php';?>

@@ -2,7 +2,7 @@
 /**
  * The model file of group module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     group
@@ -27,7 +27,8 @@ class groupModel extends model
             unset($group->limited);
             $group->role = 'limited';
         }
-        $this->dao->insert(TABLE_GROUP)->data($group)->batchCheck($this->config->group->create->requiredFields, 'notempty')->exec();
+        $this->lang->error->unique = $this->lang->group->repeat;
+        $this->dao->insert(TABLE_GROUP)->data($group)->batchCheck($this->config->group->create->requiredFields, 'notempty')->check('name', 'unique')->exec();
         return $this->dao->lastInsertId();
     }
 
@@ -41,7 +42,8 @@ class groupModel extends model
     public function update($groupID)
     {
         $group = fixer::input('post')->get();
-        return $this->dao->update(TABLE_GROUP)->data($group)->batchCheck($this->config->group->edit->requiredFields, 'notempty')->where('id')->eq($groupID)->exec();
+        $this->lang->error->unique = $this->lang->group->repeat;
+        return $this->dao->update(TABLE_GROUP)->data($group)->batchCheck($this->config->group->edit->requiredFields, 'notempty')->check('name', 'unique', "id != {$groupID}")->where('id')->eq($groupID)->exec();
     }
 
     /**
@@ -54,6 +56,7 @@ class groupModel extends model
     public function copy($groupID)
     {
         $group = fixer::input('post')->remove('options')->get();
+        $this->lang->error->unique = $this->lang->group->repeat;
         $this->dao->insert(TABLE_GROUP)->data($group)->check('name', 'unique')->check('name', 'notempty')->exec();
         if($this->post->options == false) return;
         if(!dao::isError())
@@ -151,17 +154,18 @@ class groupModel extends model
      * Get group by account.
      *
      * @param  string    $account
+     * @param  bool      $allVision
      * @access public
      * @return array
      */
-    public function getByAccount($account)
+    public function getByAccount($account, $allVision = false)
     {
         return $this->dao->select('t2.*')->from(TABLE_USERGROUP)->alias('t1')
             ->leftJoin(TABLE_GROUP)->alias('t2')
             ->on('t1.`group` = t2.id')
             ->where('t1.account')->eq($account)
             ->andWhere('t2.project')->eq(0)
-            ->andWhere('t2.vision')->eq($this->config->vision)
+            ->beginIF(!$allVision)->andWhere('t2.vision')->eq($this->config->vision)->fi()
             ->fetchAll('id');
     }
 
@@ -231,21 +235,113 @@ class groupModel extends model
     }
 
     /**
-     * Get user programs of a group.
+     * Get object for manage admin group.
      *
-     * @param  int    $groupID
+     * @access public
+     * @return void
+     */
+    public function getObject4AdminGroup()
+    {
+        $objects = $this->dao->select('id, name, path, type, project, grade, parent')->from(TABLE_PROJECT)
+            ->where('vision')->eq($this->config->vision)
+            ->andWhere('type')->ne('program')
+            ->andWhere('deleted')->eq(0)
+            ->fetchAll('id');
+
+        $productList = $this->dao->select('id, name, program')->from(TABLE_PRODUCT)
+            ->where('vision')->eq($this->config->vision)
+            ->andWhere('deleted')->eq(0)
+            ->andWhere('shadow')->eq(0)
+            ->fetchAll('id');
+
+        /* Get the list of program sets under administrator permission. */
+        if(!$this->app->user->admin)
+        {
+            $this->app->user->admin = true;
+            $changeAdmin            = true;
+        }
+        $programs = $this->loadModel('program')->getParentPairs('', '', false);
+        if(!empty($changeAdmin)) $this->app->user->admin = false;
+
+        $projects   = array();
+        $executions = array();
+        $products   = array();
+        foreach($objects as $object)
+        {
+            $type  = $object->type;
+            $path  = explode(',', trim($object->path, ','));
+            $topID = $path[0];
+
+            if($type == 'project')
+            {
+                if($topID != $object->id) $object->name = isset($objects[$topID]) ? $objects[$topID]->name . '/' . $object->name : $object->name;
+                $projects[$object->id] = $object->name;
+            }
+            else
+            {
+                if($object->grade == 2)
+                {
+                    unset($objects[$object->parent]);
+                    unset($executions[$object->parent]);
+                }
+
+                $object->name = isset($objects[$object->project]) ? $objects[$object->project]->name . '/' . $object->name : $object->name;
+                $executions[$object->id] = $object->name;
+            }
+        }
+
+        foreach($productList as $id => $product)
+        {
+            if(isset($programs[$product->program]) and $this->config->systemMode == 'ALM') $product->name = $programs[$product->program] . '/' . $product->name;
+            $products[$product->id] = $product->name;
+        }
+
+        return array($programs, $projects, $products, $executions);
+    }
+
+    /**
+     * Get project admins for manage project admin.
+     *
      * @access public
      * @return array
      */
-    public function getUserPrograms($groupID)
+    public function getProjectAdmins()
     {
-        return $this->dao->select('t1.account, t1.project')
-            ->from(TABLE_USERGROUP)->alias('t1')
-            ->leftJoin(TABLE_USER)->alias('t2')->on('t1.account = t2.account')
-            ->where('`group`')->eq((int)$groupID)
-            ->andWhere('t2.deleted')->eq(0)
-            ->orderBy('account')
-            ->fetchPairs();
+        $admins = $this->dao->select('*')->from(TABLE_PROJECTADMIN)->fetchGroup('group', 'account');
+
+        $projectAdmins = array();
+        foreach($admins as $groupID => $adminGroup)
+        {
+            if(!empty($adminGroup))
+            {
+                $accounts = implode(',', array_keys($adminGroup));
+                $projectAdmins[$accounts] = current($adminGroup);
+            }
+        }
+
+        return $projectAdmins;
+    }
+
+    /**
+     * Get admins by object id list.
+     *
+     * @param  int    $idList
+     * @param  string $field
+     * @access public
+     * @return void
+     */
+    public function getAdmins($idList, $field = 'programs')
+    {
+        $objects = array();
+        foreach($idList as $id)
+        {
+            $objects[$id] = $this->dao->select('DISTINCT account')->from(TABLE_PROJECTADMIN)
+                ->where("CONCAT(',', $field, ',')")->like("%$id%")
+                ->orWhere($field)->eq('all')
+                ->fetchPairs();
+        }
+
+        return $objects;
     }
 
     /**
@@ -308,6 +404,7 @@ class groupModel extends model
      */
     public function updatePrivByGroup($groupID, $menu, $version)
     {
+        /* Delete old. */
         /* Set priv when have version. */
         if($version)
         {
@@ -322,27 +419,20 @@ class groupModel extends model
                     $this->dao->delete()->from(TABLE_GROUPPRIV)->where('`group`')->eq($groupID)->andWhere('module')->eq($module)->andWhere('method')->eq($method)->exec();
                 }
             }
-
-            /* Replace new. */
-            if($this->post->actions)
-            {
-                foreach($this->post->actions as $moduleName => $moduleActions)
-                {
-                    foreach($moduleActions as $actionName)
-                    {
-                        $data         = new stdclass();
-                        $data->group  = $groupID;
-                        $data->module = $moduleName;
-                        $data->method = $actionName;
-                        $this->dao->replace(TABLE_GROUPPRIV)->data($data)->exec();
-                    }
-                }
-            }
-            return true;
         }
-
-        /* Delete old. */
-        $this->dao->delete()->from(TABLE_GROUPPRIV)->where('`group`')->eq($groupID)->andWhere('module')->in($this->getMenuModules($menu))->exec();
+        else
+        {
+            foreach($this->getMenuModules($menu) as $moduleName)
+            {
+                $methodList = (array)zget($this->lang->resource, $moduleName, array());
+                $methodList = array_keys($methodList);
+                $this->dao->delete()->from(TABLE_GROUPPRIV)
+                    ->where('`group`')->eq($groupID)
+                    ->andWhere('module')->eq($moduleName)
+                    ->beginIF($methodList)->andWhere('method')->in($methodList)->fi()
+                    ->exec();
+            }
+        }
 
         /* Insert new. */
         if($this->post->actions)
@@ -359,7 +449,6 @@ class groupModel extends model
                 }
             }
         }
-
         return true;
     }
 
@@ -374,6 +463,23 @@ class groupModel extends model
     {
         $actions  = $this->post->actions;
         $oldGroup = $this->getByID($groupID);
+        $projects = isset($actions['projects']) ? $actions['projects'] : array();
+        $sprints  = isset($actions['sprints'])  ? $actions['sprints']  : array();
+
+        /* Add shadow productID when select noProduct project or execution. */
+        if(($projects or $sprints) and isset($actions['products']))
+        {
+            /* Get all noProduct projects and executions . */
+            $noProductList       = $this->loadModel('project')->getNoProductList();
+            $shadowProductIDList = $this->dao->select('id')->from(TABLE_PRODUCT)->where('shadow')->eq(1)->fetchPairs();
+            $noProductObjects    = array_merge($projects, $sprints);
+
+            foreach($noProductObjects as $objectID)
+            {
+                if(isset($noProductList[$objectID])) $actions['products'][] = $noProductList[$objectID]->product;
+            }
+        }
+
         if(isset($_POST['allchecker']))$actions['views']   = array();
         if(!isset($actions['actions']))$actions['actions'] = array();
 
@@ -475,24 +581,66 @@ class groupModel extends model
     public function updateProjectAdmin($groupID)
     {
         $this->loadModel('user');
-        $this->dao->delete()->from(TABLE_USERGROUP)->where('`group`')->eq($groupID)->exec();
 
-        $members  = $this->post->members ? $this->post->members : array();
-        $programs = $this->post->program ? $this->post->program : array();
-        foreach($members as $id => $account)
+        $allUsers = $this->dao->select('account')->from(TABLE_PROJECTADMIN)->fetchPairs();
+        $this->dao->delete()->from(TABLE_PROJECTADMIN)->exec();
+
+        $members       = $this->post->members      ? $this->post->members      : array();
+        $programs      = $this->post->program      ? $this->post->program      : array();
+        $projects      = $this->post->project      ? $this->post->project      : array();
+        $products      = $this->post->product      ? $this->post->product      : array();
+        $executions    = $this->post->execution    ? $this->post->execution    : array();
+        $programAll    = $this->post->programAll   ? $this->post->programAll   : '';
+        $projectAll    = $this->post->projectAll   ? $this->post->projectAll   : '';
+        $productAll    = $this->post->productAll   ? $this->post->productAll   : '';
+        $executionAll  = $this->post->executionAll ? $this->post->executionAll : '';
+        $noProductList = $this->loadModel('project')->getNoProductList();
+        $shadowProductIDList = $this->dao->select('id')->from(TABLE_PRODUCT)->where('shadow')->eq(1)->fetchPairs();
+
+        foreach($members as $lineID => $accounts)
+        {
+            $programs[$lineID]   = isset($programs[$lineID])   ? $programs[$lineID]   : array();
+            $projects[$lineID]   = isset($projects[$lineID])   ? $projects[$lineID]   : array();
+            $products[$lineID]   = isset($products[$lineID])   ? $products[$lineID]   : array();
+            $executions[$lineID] = isset($executions[$lineID]) ? $executions[$lineID] : array();
+
+            if(($projects[$lineID] or $executions[$lineID]) and !empty($products[$lineID]))
+            {
+                $objects = array_merge($projects[$lineID], $executions[$lineID]);
+                foreach($objects as $objectID)
+                {
+                    if(isset($noProductList[$objectID])) $products[$lineID][] = $noProductList[$objectID]->product;
+                }
+            }
+
+            if($executionAll[$lineID] or $projectAll[$lineID]) $products[$lineID] = array_merge($products[$lineID], $shadowProductIDList);
+
+            if(empty($accounts)) continue;
+            foreach($accounts as $account)
+            {
+                $program   = isset($programAll[$lineID])   ? 'all' : implode(',', $programs[$lineID]);
+                $project   = isset($projectAll[$lineID])   ? 'all' : implode(',', $projects[$lineID]);
+                $product   = isset($productAll[$lineID])   ? 'all' : implode(',', $products[$lineID]);
+                $execution = isset($executionAll[$lineID]) ? 'all' : implode(',', $executions[$lineID]);
+
+                $data = new stdclass();
+                $data->group      = $lineID;
+                $data->account    = $account;
+                $data->programs   = $program;
+                $data->projects   = $project;
+                $data->products   = $product;
+                $data->executions = $execution;
+
+                $this->dao->replace(TABLE_PROJECTADMIN)->data($data)->exec();
+
+                $allUsers[$account] = $account;
+            }
+        }
+
+        foreach($allUsers as $account)
         {
             if(!$account) continue;
-            $data = new stdclass();
-            $data->group   = $groupID;
-            $data->account = $account;
-            $data->project = implode(',', $programs[$account]);
-
-            $this->dao->replace(TABLE_USERGROUP)->data($data)->exec();
-            foreach($programs[$account] as $programID)
-            {
-                if(!$programID) continue;
-                $this->user->updateUserView($programID, 'program');
-            }
+            $this->user->computeUserView($account, true);
         }
 
         if(!dao::isError()) return true;

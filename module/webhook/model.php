@@ -2,7 +2,7 @@
 /**
  * The model file of webhook module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2017 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2017 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Gang Liu <liugang@cnezsoft.com>
  * @package     webhook
@@ -122,6 +122,10 @@ class webhookModel extends model
             {
                 $text = substr($data->markdown->content, 0, strpos($data->markdown->content, '(http'));
             }
+            elseif(isset($data->text->content))
+            {
+                $text = substr($data->text->content, 0, strpos($data->text->content, '(http'));
+            }
             elseif(isset($data->content))
             {
                 $text = $data->content->text;
@@ -187,6 +191,7 @@ class webhookModel extends model
             ->trim('agentId,appKey,appSecret,wechatAgentId,wechatCorpId,wechatCorpSecret,feishuAppId,feishuAppSecret')
             ->remove('allParams, allActions')
             ->get();
+        $webhook->domain = trim($webhook->domain, '/');
         $webhook->params = $this->post->params ? implode(',', $this->post->params) . ',text' : 'text';
 
         if($webhook->type == 'dinguser')
@@ -260,7 +265,8 @@ class webhookModel extends model
             ->trim('agentId,appKey,appSecret,wechatAgentId,wechatCorpId,wechatCorpSecret,feishuAppId,feishuAppSecret')
             ->remove('allParams, allActions')
             ->get();
-        $webhook->params  = $this->post->params ? implode(',', $this->post->params) . ',text' : 'text';
+        $webhook->domain = trim($webhook->domain, '/');
+        $webhook->params = $this->post->params ? implode(',', $this->post->params) . ',text' : 'text';
 
         if($webhook->type == 'dinguser')
         {
@@ -420,6 +426,7 @@ class webhookModel extends model
         $viewLink       = $this->getViewLink($objectType == 'kanbancard' ? 'kanban' : $objectType, $objectType == 'kanbancard' ? $object->kanban : $objectID);
         $objectTypeName = ($objectType == 'story' and $object->type == 'requirement') ? $this->lang->action->objectTypes['requirement'] : $this->lang->action->objectTypes[$objectType];
         $title          = $this->app->user->realname . $this->lang->action->label->$actionType . $objectTypeName;
+        $host           = (defined('RUN_MODE') and RUN_MODE == 'api') ? '' : $host;
         $text           = $title . ' ' . "[#{$objectID}::{$object->$field}](" . $host . $viewLink . ")";
 
         $mobile = '';
@@ -450,7 +457,7 @@ class webhookModel extends model
         {
             $data = $this->getWeixinData($title, $text, $mobile);
         }
-        elseif($webhook->type == 'feishuuser')
+        elseif($webhook->type == 'feishuuser' or $webhook->type == 'feishugroup')
         {
             $data = $this->getFeishuData($title, $text);
         }
@@ -564,7 +571,7 @@ class webhookModel extends model
     }
 
     /**
-     * Get weixin data.
+     * Get weixin send data.
      *
      * @param  string $title
      * @param  string $text
@@ -572,7 +579,7 @@ class webhookModel extends model
      * @access public
      * @return object
      */
-    public function getWeixinData($title, $text, $mobile)
+    public function getWeixinData($title, $text, $mobile = '')
     {
         $data = new stdclass();
         $data->msgtype = 'markdown';
@@ -580,13 +587,25 @@ class webhookModel extends model
         $markdown = new stdclass();
         $markdown->content = $text;
 
-        if($mobile) $markdown->mentioned_mobile_list = array($mobile);
+        if($mobile)
+        {
+            $data->msgtype = 'text';
+            $markdown->mentioned_mobile_list = array($mobile);
+        }
 
-        $data->markdown = $markdown;
+        $data->{$data->msgtype} = $markdown;
 
         return $data;
     }
 
+    /**
+     * Get feishu send data.
+     *
+     * @param  string $title
+     * @param  string $text
+     * @access public
+     * @return object
+     */
     public function getFeishuData($title, $text)
     {
         $data = new stdclass();
@@ -612,7 +631,7 @@ class webhookModel extends model
         if(empty($table)) return false;
 
         $object = $this->dao->select('*')->from($table)->where('id')->eq($action->objectID)->fetch();
-        $toList = $this->loadModel('message')->getToList($object, $action->objectType);
+        $toList = $this->loadModel('message')->getToList($object, $action->objectType, $actionID);
         if(!empty($object->mailto)) $toList .= ',' . $object->mailto;
         if(empty($toList)) return false;
 
@@ -690,11 +709,9 @@ class webhookModel extends model
             $sign = $timestamp . "\n" . $webhook->secret;
             $sign = base64_encode(hash_hmac('sha256', '', $sign, true));
 
-            $content = array();
-            $content['timestamp'] = $timestamp;
-            $content['sign']      = $sign;
-            $content['msg_type']  = 'text';
-            $content['content']   = json_decode($sendData);
+            $content = json_decode($sendData);
+            $content->timestamp = $timestamp;
+            $content->sign      = $sign;
             $sendData = json_encode($content);
         }
 

@@ -2,7 +2,7 @@
 /**
  * The testsuite entry point of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2021 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     entries
@@ -16,7 +16,7 @@ class testsuiteEntry extends entry
      *
      * @param  int    $testsuiteID
      * @access public
-     * @return void
+     * @return string
      */
     public function get($testsuiteID)
     {
@@ -36,7 +36,7 @@ class testsuiteEntry extends entry
             $suite->testcases[] = $this->format($case, 'openedBy:user,openedDate:time,lastEditedBy:user,lastEditedDate:time,lastRunDate:time,scriptedDate:date,reviewedBy:user,reviewedDate:date,deleted:bool');
         }
 
-        $this->send(200, $suite);
+        return $this->send(200, $suite);
     }
 
     /**
@@ -44,7 +44,7 @@ class testsuiteEntry extends entry
      *
      * @param  int    $testsuiteID
      * @access public
-     * @return void
+     * @return string
      */
     public function delete($testsuiteID)
     {
@@ -53,6 +53,6 @@ class testsuiteEntry extends entry
 
         $this->getData();
 
-        $this->sendSuccess(200, 'success');
+        return $this->sendSuccess(200, 'success');
     }
 }

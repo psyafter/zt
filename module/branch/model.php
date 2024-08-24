@@ -2,7 +2,7 @@
 /**
  * The model file of branch module of ZenTaoCMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     branch
@@ -22,6 +22,7 @@ class branchModel extends model
      */
     public function getById($branchID, $productID = 0, $field = 'name')
     {
+        if($branchID == 'all') return false;
         if(empty($branchID))
         {
             if(empty($productID)) $productID = $this->session->product;
@@ -126,7 +127,7 @@ class branchModel extends model
 
         if($executionID)
         {
-            if(isset($executionBranches['0'])) $branches = array('0' => $this->lang->branch->main) + $branches;
+            $branches = array('all' => $this->lang->branch->all, '0' => $this->lang->branch->main) + $branches;
             return $branches;
         }
 
@@ -781,5 +782,19 @@ class branchModel extends model
         }
 
         return $targetBranch;
+    }
+
+    /**
+     * Judge an action is clickable or not..
+     *
+     * @param object $branch
+     * @param string $action
+     * @static
+     * @access public
+     * @return bool
+     */
+    public static function isClickable($branch, $action)
+    {
+        return true;
     }
 }

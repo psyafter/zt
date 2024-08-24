@@ -2,7 +2,7 @@
 /**
  * The search module zh-tw file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禪道軟件（青島）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     search
@@ -30,6 +30,7 @@ $lang->search->noQuery       = '還沒有保存查詢！';
 $lang->search->onMenuBar     = '顯示在菜單欄';
 $lang->search->custom        = '自定義';
 $lang->search->setCommon     = '設為公共查詢條件';
+$lang->search->saveCondition = '保存搜索條件';
 
 $lang->search->account  = '用戶名';
 $lang->search->module   = '模組';
@@ -89,17 +90,18 @@ $lang->search->modules['product']     = $lang->productCommon;
 $lang->search->modules['release']     = '發佈';
 $lang->search->modules['testtask']    = '測試單';
 $lang->search->modules['testsuite']   = '測試套件';
-$lang->search->modules['testreport']  = '報告';
+$lang->search->modules['testreport']  = '測試報告';
 $lang->search->modules['productplan'] = '計劃';
 $lang->search->modules['program']     = '項目集';
-$lang->search->modules['project']     = '項目';
-$lang->search->modules['execution']   = $lang->executionCommon;
-$lang->search->modules['story']       = '需求';
+$lang->search->modules['project']     = $lang->projectCommon;
+$lang->search->modules['execution']   = $lang->execution->common;
+$lang->search->modules['story']       = $lang->SRCommon;
+$lang->search->modules['requirement'] = $lang->URCommon;
 
 $lang->search->objectTypeList['story']            = $lang->SRCommon;
 $lang->search->objectTypeList['requirement']      = $lang->URCommon;
 $lang->search->objectTypeList['stage']            = '階段';
-$lang->search->objectTypeList['sprint']           = $lang->executionCommon;
+$lang->search->objectTypeList['sprint']           = $lang->execution->common;
 $lang->search->objectTypeList['kanban']           = '看板';
 $lang->search->objectTypeList['commonIssue']      = '問題';
 $lang->search->objectTypeList['stakeholderIssue'] = '干係人問題';

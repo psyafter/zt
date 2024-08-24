@@ -2,7 +2,7 @@
 /**
  * The view of doc module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Jia Fu <fujia@cnezsoft.com>
  * @package     doc
@@ -116,7 +116,7 @@ js::set('docID', $doc->id);
           }
           elseif($doc->contentType == 'markdown')
           {
-              echo "<textarea id='markdownContent' /></textarea>";
+              echo "<textarea id='markdownContent'></textarea>";
           }
           else
           {
@@ -244,7 +244,7 @@ js::set('docID', $doc->id);
 <?php if($doc->contentType == 'markdown'):?>
 <?php css::import($jsRoot . "markdown/simplemde.min.css");?>
 <?php js::import($jsRoot . 'markdown/simplemde.min.js'); ?>
-<?php js::set('markdownText', $doc->content);?>
+<?php js::set('markdownText', htmlspecialchars($doc->content));?>
 <script>
 $(function()
 {

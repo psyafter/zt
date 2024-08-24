@@ -12,6 +12,7 @@ $editorLang   = isset($editorLangs[$app->getClientLang()]) ? $editorLangs[$app->
 $uid = uniqid('');
 ?>
 <?php js::import($jsRoot . 'kindeditor/kindeditor.min.js'); ?>
+<script src='<?php echo $jsRoot;?>kindeditor/plugins/holder/holder.js'></script>
 <?php js::import($jsRoot . "kindeditor/lang/{$editorLang}.js");?>
 <script>
 (function($) {
@@ -19,6 +20,10 @@ $uid = uniqid('');
     var editor = <?php echo json_encode($editor);?>;
     var K = KindEditor;
 
+    var measurementTools =
+    [ 'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic','underline', '|',
+    'justifyleft', 'justifycenter', 'justifyright', 'insertorderedlist', 'insertunorderedlist', '|',
+    'emoticons', 'image', 'code', 'link', 'table', '|', 'removeformat','undo', 'redo', 'fullscreen', 'source', 'about', 'holder'];
     var bugTools =
     [ 'formatblock', 'fontname', 'fontsize', '|', 'forecolor', 'hilitecolor', 'bold', 'italic','underline', '|',
     'justifyleft', 'justifycenter', 'justifyright', 'insertorderedlist', 'insertunorderedlist', '|',
@@ -34,11 +39,20 @@ $uid = uniqid('');
     'emoticons', 'image', 'insertfile', 'hr', '|', 'link', 'unlink', '/',
     'undo', 'redo', '|', 'selectall', 'cut', 'copy', 'paste', '|', 'plainpaste', 'wordpaste', '|', 'removeformat', 'clearhtml','quickformat', '|',
     'indent', 'outdent', 'subscript', 'superscript', '|',
-    'table', 'code', 'pagebreak',
+    'table', 'code', '|', 'pagebreak', 'anchor', '|',
     'fullscreen', 'source', 'preview', 'about'];
-    var editorToolsMap = {fullTools: fullTools, simpleTools: simpleTools, bugTools: bugTools};
+    var docTools =
+    [ 'formatblock', 'fontname', 'fontsize', 'lineheight', '|', 'forecolor', 'hilitecolor', '|', 'bold', 'italic','underline', 'strikethrough', '|',
+    'justifyleft', 'justifycenter', 'justifyright', 'justifyfull', '|',
+    'insertorderedlist', 'insertunorderedlist', '|',
+    'emoticons', 'image', 'hr', '|', 'link', '|',
+    'undo', 'redo', '|', 'selectall', 'cut', 'copy', 'paste', '|', 'plainpaste', 'wordpaste', '|', 'removeformat', 'clearhtml','quickformat', '|',
+    'indent', 'outdent', 'subscript', 'superscript', '|',
+    'table', 'code', 'pagebreak',
+    'source'];
+    var editorToolsMap = {fullTools: fullTools, simpleTools: simpleTools, bugTools: bugTools, measurementTools: measurementTools, docTools: docTools};
 
-    /* Kindeditor default options. */
+    // Kindeditor default options
     var editorDefaults =
     {
         cssPath: [config.themeRoot + 'zui/css/min.css'],
@@ -48,19 +62,18 @@ $uid = uniqid('');
         bodyClass: 'article-content',
         urlType: 'absolute',
         uploadJson: createLink('file', 'ajaxUpload', 'uid=' + kuid),
+        allowFileManager: true,
         langType: '<?php echo $editorLang?>',
         cssData: 'html,body {background: none}.article-content{overflow:visible}.article-content, .article-content table td, .article-content table th {line-height: 1.3846153846; font-size: 13px;}.article-content .table-auto {width: auto!important; max-width: 100%;}',
-        placeholder: <?php echo json_encode($lang->noticePasteImg);?>,
         placeholderStyle: {fontSize: '13px', color: '#888'},
-        pasteImage: {postUrl: createLink('file', 'ajaxPasteImg', 'uid=' + kuid)},
+        pasteImage: {postUrl: createLink('file', 'ajaxPasteImg', 'uid=' + kuid), placeholder: <?php echo json_encode($lang->noticePasteImg);?>},
         syncAfterBlur: true,
-        allowFileManager: false,
         spellcheck: false
     };
 
     window.editor = {};
 
-    /* Init kindeditor. */
+    // Init kindeditor
     var setKindeditor = function(element, options)
     {
         var $editor  = $(element);
@@ -88,6 +101,8 @@ $uid = uniqid('');
 
         $.extend(options,
         {
+            holderEditText: '<?php echo $this->lang->edit?>', // 设置 holder 鼠标悬停时的提示编辑文本
+            holderEdit: true, // 启用编辑 holder 功能
             items: editorTool,
             placeholder: $editor.attr('placeholder') || options.placeholder || '',
             pasteImage: {postUrl: createLink('file', 'ajaxPasteImg', 'uid=' + kuid), placeholder: $editor.attr('placeholder') || <?php echo json_encode($lang->noticePasteImg);?>},
@@ -103,7 +118,7 @@ $uid = uniqid('');
         catch(e){return false;}
     };
 
-    /* Init kindeditor with jquery way. */
+    // Init kindeditor with jquery way
     $.fn.kindeditor = function(options)
     {
         return this.each(function()
@@ -112,7 +127,7 @@ $uid = uniqid('');
         });
     };
 
-    /* Init all kindeditor. */
+    // Init all kindeditor
     var initKindeditor = function(afterInit)
     {
         var $submitBtn = $('form :input[type=submit]');
@@ -128,7 +143,7 @@ $uid = uniqid('');
         });
     };
 
-    /* Init all kindeditors when document is ready. */
+    // Init all kindeditors when document is ready
     $(initKindeditor);
 }(jQuery));
 </script>

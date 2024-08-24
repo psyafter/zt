@@ -2,7 +2,7 @@
 /**
  * The install module zh-tw file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禪道軟件（青島）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     install
@@ -25,12 +25,12 @@ $lang->install->seeLatestRelease = '看看最新的版本';
 $lang->install->welcome          = '歡迎使用禪道項目管理軟件！';
 $lang->install->license          = '禪道項目管理軟件授權協議';
 $lang->install->desc             = <<<EOT
-禪道項目管理軟件(ZenTaoPMS)是一款國產的，基于<a href='http://zpl.pub' target='_blank'>ZPL</a>協議，開源免費的項目管理軟件，它集產品管理、項目管理、測試管理於一體，同時還包含了事務管理、組織管理等諸多功能，是中小型企業項目管理的首選。
+禪道項目管理軟件(ZenTaoPMS)是一款國產的，基于<a href='http://zpl.pub/page/zplv12.html' target='_blank'>ZPL</a>或<a href='https://www.gnu.org/licenses/agpl-3.0.en.html' target='_blank'>AGPL</a>雙授權協議，開源免費的項目管理軟件，它集產品管理、項目管理、測試管理於一體，同時還包含了事務管理、組織管理等諸多功能，是中小型企業項目管理的首選。
 
 禪道項目管理軟件使用PHP + MySQL開發，基于自主的PHP開發框架──ZenTaoPHP而成。第三方開發者或者企業可以非常方便的開發插件或者進行定製。
 EOT;
 $lang->install->links = <<<EOT
-禪道項目管理軟件由<strong><a href='https://www.cnezsoft.com' target='_blank' class='text-danger'>青島易軟天創網絡科技有限公司</a>開發</strong>。
+禪道項目管理軟件由<strong><a href='https://www.cnezsoft.com' target='_blank' class='text-danger'>禪道軟件（青島）有限公司</a>開發</strong>。
 官方網站：<a href='https://www.zentao.pm' target='_blank'>https://www.zentao.pm</a>
 技術支持：<a href='https://www.zentao.pm/ask/' target='_blank'>https://www.zentao.pm/ask/</a>
 新浪微博：<a href='https://weibo.com/easysoft' target='_blank'>https://weibo.com/easysoft</a>
@@ -40,6 +40,7 @@ $lang->install->links = <<<EOT
 您現在正在安裝的版本是 <strong class='text-danger'>%s</strong>。
 EOT;
 
+$lang->install->selectMode          = "請選擇使用模式";
 $lang->install->introduction        = "禪道15系列功能介紹";
 $lang->install->howToUse            = "請問您計劃如何使用禪道的新版本呢";
 $lang->install->guideVideo          = 'https://dl.cnezsoft.com/vedio/program0716.mp4';
@@ -48,17 +49,17 @@ $lang->install->introductionContent = <<<EOT
   <h4>尊敬的用戶您好，歡迎您使用禪道項目管理系統。</h4>
   <p> 禪道自15系列開始提供了兩種使用模式，一種是經典管理模式，功能較為精簡，主要提供了產品和項目兩個核心功能；另一種是全新項目集管理模式，增加了項目集和執行的概念。下面是全新項目集管理模式的介紹：</p>
   <div class='block-content'>
-    <div class='block-details'><p class='block-title'><i class='icon icon-program'></i><strong>項目集</strong></p><p>項目集用來管理一組相關的產品和項目，公司高層或者PMO可以用來做戰略規劃。</p></div>
+    <div class='block-details'><p class='block-title'><i class='icon icon-program'></i> <strong>項目集</strong></p><p>項目集用來管理一組相關的產品和項目，公司高層或者PMO可以用來做戰略規劃。</p></div>
     <div class='block-details block-right'>
-      <p class='block-title'><i class='icon icon-product'></i><strong>產品</strong></p>
+      <p class='block-title'><i class='icon icon-product'></i> <strong>產品</strong></p>
       <p>產品用來將公司的戰略細分為可以進行研發的需求，產品經理可以用來做產品的發佈計劃。<p>
     </div>
     <div class='block-details'>
-      <p class='block-title'><i class='icon icon-project'></i><strong>項目</strong></p>
+      <p class='block-title'><i class='icon icon-project'></i> <strong>項目</strong></p>
       <p>項目用來組織相應的人力進行研發，做好項目過程的跟蹤管理，多快好省地完成項目。</p>
     </div>
     <div class='block-details block-right'>
-      <p class='block-title'><i class='icon icon-run'></i><strong>執行</strong></p>
+      <p class='block-title'><i class='icon icon-run'></i> <strong>執行</strong></p>
       <p>執行用來做任務的分解、指派和跟蹤，保證項目目標可以落實到人來執行。<p>
     </div>
   </div>
@@ -154,12 +155,15 @@ $lang->install->saved2File         = '配置信息已經成功保存到" <strong
 $lang->install->errorNotSaveConfig = '還沒有保存配置檔案';
 
 global $app;
-$lang->install->CSRFNotice = "系統已開啟了CSRF的防禦，如需關閉，請聯繫管理員到{$app->moduleRoot}config/config.php檔案中手動關閉。";
+$lang->install->CSRFNotice = "系統已開啟了CSRF的防禦，如需關閉，請聯繫管理員到{$app->basePath}config/config.php檔案中手動關閉。";
 
 $lang->install->getPriv            = '設置帳號';
 $lang->install->company            = '公司名稱';
 $lang->install->account            = '管理員帳號';
 $lang->install->password           = '管理員密碼';
+
+$lang->install->placeholder = new stdclass();
+$lang->install->placeholder->password = '6位及以上，包含大小寫字母，數字。';
 
 $lang->install->errorEmpty['company']  = "{$lang->install->company}不能為空";
 $lang->install->errorEmpty['account']  = "{$lang->install->account}不能為空";
@@ -256,11 +260,11 @@ $lang->install->groupList['LIMITED']['desc']      = '受限用戶分組(只能�
 $lang->install->groupList['PROJECTADMIN']['name'] = '項目管理員';
 $lang->install->groupList['PROJECTADMIN']['desc'] = '項目管理員可以維護項目的權限';
 $lang->install->groupList['LITEADMIN']['name']    = '管理員';
-$lang->install->groupList['LITEADMIN']['desc']    = '迅捷版用戶分組';
+$lang->install->groupList['LITEADMIN']['desc']    = '運營管理界面用戶分組';
 $lang->install->groupList['LITEPROJECT']['name']  = '項目管理';
-$lang->install->groupList['LITEPROJECT']['desc']  = '迅捷版用戶分組';
+$lang->install->groupList['LITEPROJECT']['desc']  = '運營管理界面用戶分組';
 $lang->install->groupList['LITETEAM']['name']     = '團隊成員';
-$lang->install->groupList['LITETEAM']['desc']     = '迅捷版用戶分組';
+$lang->install->groupList['LITETEAM']['desc']     = '運營管理界面用戶分組';
 
 $lang->install->cronList[''] = '監控定時任務';
 $lang->install->cronList['moduleName=execution&methodName=computeBurn'] = '更新燃盡圖';
@@ -289,10 +293,7 @@ EOT;
 
 $lang->install->product = array('chanzhi', 'zdoo', 'xuanxuan', 'ydisk', 'meshiot');
 
-$lang->install->modeList['classic'] = '經典管理模式';
-$lang->install->modeList['new']     = '全新項目集管理模式';
-
-$lang->install->promotion = "為您推薦易軟天創旗下其他產品：";
+$lang->install->promotion = "為您推薦禪道軟件旗下其他產品：";
 
 $lang->install->chanzhi       = new stdclass();
 $lang->install->chanzhi->name = '蟬知門戶';

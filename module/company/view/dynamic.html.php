@@ -2,7 +2,7 @@
 /**
  * The action->dynamic view file of dashboard module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     dashboard
@@ -12,10 +12,9 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php js::set('browseType', $browseType);?>
-<?php js::set('systemMode', $config->systemMode);?>
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
-    <?php foreach($lang->action->periods as $period => $label):?>
+    <?php foreach($lang->company->featureBar['dynamic'] as $period => $label):?>
     <?php
     $label  = "<span class='text'>$label</span>";
     $active = '';
@@ -32,10 +31,8 @@
     <?php if($this->config->vision == 'rnd'):?>
     <div class="input-control space c-product"><?php echo html::select('product', $products, $productID, 'class="form-control chosen" data-max_drop_width="215"');?></div>
     <?php endif;?>
-    <?php if($config->systemMode == 'new'):?>
     <div class="input-control space c-project"><?php echo html::select('project', $projects, $projectID, 'class="form-control chosen" data-max_drop_width="215"');?></div>
-    <?php endif;?>
-    <div class="input-control space c-execution"><?php echo html::select('execution', $executions, $executionID, 'class="form-control chosen" data-max_drop_width="215"'); ?></div>
+    <div class="input-control space c-execution"><?php echo html::select('execution', $executions, $executionID, 'class="form-control chosen" data-max_drop_width="350"'); ?></div>
     <div class="input-control space c-order"><?php echo html::select('orderBy', $lang->company->order, $orderBy, 'class="form-control chosen" data-max_drop_width="215" data-disable_search="true"'); ?></div>
     <a class="btn btn-link querybox-toggle" id="bysearchTab"><i class="icon icon-search muted"></i> <?php echo $lang->action->dynamic->search;?></a>
   </div>
@@ -64,17 +61,23 @@
       </div>
       <ul class="timeline timeline-tag-left <?php if($browseType == 'all') echo 'margin-l-50px';?>">
         <?php foreach($actions as $i => $action):?>
+        <?php if($action->action == 'adjusttasktowait') continue;?>
         <?php if(empty($firstAction)) $firstAction = $action;?>
         <li <?php if($action->major) echo "class='active'";?>>
           <div>
             <span class="timeline-tag"><?php echo $action->time?></span>
             <span class="timeline-text">
               <?php echo zget($accountPairs, $action->actor);?>
-              <span class='label-action'><?php echo ' ' . $action->actionLabel;?></span>
+              <span class='label-action'><?php echo $action->actionLabel;?></span>
               <?php if($action->action != 'login' and $action->action != 'logout'):?>
               <span class="text"><?php echo $action->objectLabel;?></span>
+              <?php if($action->objectID):?>
+              <span class="label label-id"><?php echo (strpos(',module,chartgroup,', ",$action->objectType,") !== false and strpos(',created,edited,moved,', "$action->action") !== false) ? trim($action->extra, ',') : $action->objectID;?></span>
+              <?php endif;?>
               <?php $tab = '';?>
               <?php if($action->objectType == 'meeting') $tab = $action->project ? "data-app='project'" : "data-app='my'";?>
+              <?php if($action->objectType == 'module' and $config->vision == 'lite') $tab = "data-app='project'";?>
+              <span class="label-name">
               <?php
               if(empty($action->objectName) and $action->objectID)
               {
@@ -93,9 +96,7 @@
                   echo html::a($action->objectLink, $action->objectName, '', $tab);
               }
               ?>
-              <?php if($action->objectID):?>
-              <span class="label label-id"><?php echo $action->objectID;?></span>
-              <?php endif;?>
+              </span>
               <?php endif;?>
             </span>
           </div>

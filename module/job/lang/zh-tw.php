@@ -1,13 +1,13 @@
 <?php
 $lang->job->common        = '構建任務';
 $lang->job->browse        = '瀏覽構建任務';
-$lang->job->create        = '創建構建任務';
-$lang->job->edit          = '編輯構建任務';
-$lang->job->exec          = '執行構建';
+$lang->job->create        = '添加流水綫';
+$lang->job->edit          = '編輯流水綫';
+$lang->job->exec          = '執行流水綫';
 $lang->job->runPipeline   = '運行流水綫';
 $lang->job->view          = '執行詳情';
-$lang->job->delete        = '刪除構建任務';
-$lang->job->confirmDelete = '確認刪除該構建任務';
+$lang->job->delete        = '刪除流水綫';
+$lang->job->confirmDelete = '確認刪除該流水綫';
 $lang->job->dirChange     = '目錄改動';
 $lang->job->buildTag      = '打標籤';
 $lang->job->execSuccess   = '執行成功';
@@ -23,7 +23,7 @@ $lang->job->jenkins         = 'Jenkins';
 $lang->job->jkHost          = 'Jenkins伺服器';
 $lang->job->jkJob           = 'Jenkins任務';
 $lang->job->buildSpec       = '構建對象'; // 'pipeline@server'
-$lang->job->engine          = '構建引擎';
+$lang->job->engine          = '引擎';
 $lang->job->server          = '伺服器';
 $lang->job->pipeline        = '流水綫';
 $lang->job->buildType       = '構建類型';
@@ -83,7 +83,7 @@ $lang->job->frameList['sonarqube'] = 'SonarQube';
 $lang->job->paramValueList['']                 = '';
 $lang->job->paramValueList['$zentao_version']  = '當前版本號';
 $lang->job->paramValueList['$zentao_account']  = '當前用戶名';
-$lang->job->paramValueList['$zentao_product']  = '當前產品ID';
+$lang->job->paramValueList['$zentao_product']  = "當前{$lang->productCommon}ID";
 $lang->job->paramValueList['$zentao_repopath'] = '當前版本庫路徑';
 
 $lang->job->engineList = array();
@@ -101,3 +101,6 @@ $lang->job->pipelineVariablesKeyPlaceHolder   = "輸入變數的名稱";
 $lang->job->pipelineVariablesValuePlaceHolder = "輸入變數的值";
 $lang->job->pipelineVariablesTips             = "指定要在此次運行中使用的變數值。CI/CD設置中指定的值將用作預設值。";
 $lang->job->setReferenceTips                  = "在執行構建前，請先設置代碼庫的分支信息。";
+
+$lang->job->featureBar['browse']['job']     = '列表';
+$lang->job->featureBar['browse']['compile'] = '構建歷史';

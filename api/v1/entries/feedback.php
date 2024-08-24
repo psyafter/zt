@@ -2,21 +2,21 @@
 /**
  * The product entry point of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2021 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     entries
  * @version     1
  * @link        https://www.zentao.pm
  */
-class feedbackEntry extends Entry
+class feedbackEntry extends entry
 {
     /**
      * GET method.
      *
      * @param  int    $feedbackID
      * @access public
-     * @return void
+     * @return string
      */
     public function get($feedbackID)
     {
@@ -37,7 +37,7 @@ class feedbackEntry extends Entry
         if(isset($data->status) and $data->status == 'fail') return $this->sendError(zget($data, 'code', 400), $data->message);
 
         $feedback->actions = $this->loadModel('action')->processActionForAPI($data->data->actions, $data->data->users, $this->lang->feedback);
-        $this->send(200, $this->format($feedback, 'activatedDate:time,openedBy:user,openedDate:time,assignedTo:user,assignedDate:time,mailto:userList,resolvedBy:user,resolvedDate:time,closedBy:user,closedDate:time,lastEditedBy:user,lastEditedDate:time,deadline:date,deleted:bool'));
+        return $this->send(200, $this->format($feedback, 'activatedDate:time,openedBy:user,openedDate:time,assignedTo:user,assignedDate:time,mailto:userList,resolvedBy:user,resolvedDate:time,closedBy:user,closedDate:time,lastEditedBy:user,lastEditedDate:time,deadline:date,deleted:bool'));
     }
 
     /**
@@ -45,7 +45,7 @@ class feedbackEntry extends Entry
      *
      * @param  int    $feedbackID
      * @access public
-     * @return void
+     * @return string
      */
     public function put($feedbackID)
     {
@@ -71,7 +71,7 @@ class feedbackEntry extends Entry
      *
      * @param  int    $feedbackID
      * @access public
-     * @return void
+     * @return string
      */
     public function delete($feedbackID)
     {
@@ -79,7 +79,7 @@ class feedbackEntry extends Entry
         $control->delete($feedbackID, 'yes');
 
         $this->getData();
-        $this->sendSuccess(200, 'success');
+        return $this->sendSuccess(200, 'success');
     }
 }
 

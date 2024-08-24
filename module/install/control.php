@@ -2,7 +2,7 @@
 /**
  * The control file of install currentModule of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     install
@@ -205,6 +205,7 @@ class install extends control
         if(!empty($_POST))
         {
             $this->loadModel('setting')->setItem('system.common.global.mode', $this->post->mode); // Update mode.
+            $this->loadModel('custom')->disableFeaturesByMode($this->post->mode);
             return print(js::locate(inlink('step5'), 'parent'));
         }
 
@@ -217,7 +218,13 @@ class install extends control
         {
             $this->app->loadLang('upgrade');
 
-            $this->view->title = $this->lang->install->introduction;
+            list($disabledFeatures, $enabledScrumFeatures, $disabledScrumFeatures) = $this->loadModel('custom')->computeFeatures();
+
+            $this->view->title                 = $this->lang->install->selectMode;
+            $this->view->edition               = $this->config->edition;
+            $this->view->disabledFeatures      = $disabledFeatures;
+            $this->view->enabledScrumFeatures  = $enabledScrumFeatures;
+            $this->view->disabledScrumFeatures = $disabledScrumFeatures;
             $this->display();
         }
     }
@@ -233,13 +240,23 @@ class install extends control
         if(!empty($_POST))
         {
             $this->install->grantPriv();
-            if(dao::isError()) return print(js::error(dao::getError()) . js::locate('back'));
+            if(dao::isError()) return print(js::error(dao::getError()));
 
             $this->install->updateLang();
-            if(dao::isError()) return print(js::error(dao::getError()) . js::locate('back'));
+            if(dao::isError()) return print(js::error(dao::getError()));
 
             if($this->post->importDemoData) $this->install->importDemoData();
-            if(dao::isError()) return print(js::alert($this->lang->install->errorImportDemoData) . js::locate('back'));
+
+            $defaultProgram = $this->loadModel('setting')->getItem('owner=system&module=common&section=global&key=defaultProgram');
+            if($this->config->systemMode == 'light' and empty($defaultProgram))
+            {
+                /* Lean mode create default program. */
+                $programID = $this->loadModel('program')->createDefaultProgram();
+                /* Set default program config. */
+                $this->loadModel('setting')->setItem('system.common.global.defaultProgram', $programID);
+            }
+
+            if(dao::isError()) return print(js::alert($this->lang->install->errorImportDemoData));
 
             $this->loadModel('setting');
             $this->setting->updateVersion($this->config->version);
@@ -249,7 +266,10 @@ class install extends control
             $this->setting->setItem('system.common.safe.changeWeak', '1');
             $this->setting->setItem('system.common.global.cron', 1);
 
-            if(strpos($this->app->getClientLang(), 'zh') === 0) $this->loadModel('api')->createDemoData($this->lang->api->zentaoAPI, 'http://' . $_SERVER['HTTP_HOST'] . $this->app->config->webRoot . 'api.php/v1', '16.0');
+            $httpType = (isset($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == 'on') ? 'https' : 'http';
+            if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) and strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https') $httpType = 'https';
+            if(isset($_SERVER['REQUEST_SCHEME']) and strtolower($_SERVER['REQUEST_SCHEME']) == 'https') $httpType = 'https';
+            if(strpos($this->app->getClientLang(), 'zh') === 0) $this->loadModel('api')->createDemoData($this->lang->api->zentaoAPI, "{$httpType}://{$_SERVER['HTTP_HOST']}" . $this->app->config->webRoot . 'api.php/v1', '16.0');
             return print(js::locate(inlink('step6'), 'parent'));
         }
 

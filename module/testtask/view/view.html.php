@@ -2,7 +2,7 @@
 /**
  * The view file of case module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     case
@@ -33,7 +33,7 @@
         <div class="detail-title"><?php echo $lang->testtask->desc;?></div>
         <div class="detail-content article-content"><?php echo !empty($task->desc) ? $task->desc : $lang->noData;?></div>
       </div>
-      <?php echo $this->fetch('file', 'printFiles', array('files' => $task->files, 'fieldset' => 'true', 'object' => $task));?>
+      <?php echo $this->fetch('file', 'printFiles', array('files' => $task->files, 'fieldset' => 'true', 'object' => $task, 'method' => 'view', 'showDelete' => false));?>
       <?php if($task->report):?>
       <div class="detail">
         <div class="detail-title"><?php echo $lang->testtask->report;?></div>
@@ -62,12 +62,14 @@
         <div class="detail-content">
           <table class="table table-data table-fixed">
             <?php $isOnlybody = helper::inOnlyBodyMode(); ?>
+            <?php if(!empty($execution->multiple)):?>
             <tr>
               <th class='w-90px'><?php echo $lang->testtask->execution;?></th>
               <td><?php echo $isOnlybody ? $task->executionName : html::a($this->createLink('execution', 'story', "executionID=$task->execution"), $task->executionName, '', "title='{$task->executionName}'");?></td>
             </tr>
+            <?php endif;?>
             <tr>
-              <th><?php echo $lang->testtask->build;?></th>
+              <th class='w-90px'><?php echo $lang->testtask->build;?></th>
               <td>
                 <?php
                 if($task->build == 'trunk')
@@ -97,7 +99,7 @@
             </tr>
             <tr>
               <th><?php echo $lang->testtask->pri;?></th>
-              <td><?php echo $task->pri;?></td>
+              <td><?php echo zget($lang->testtask->priList, $task->pri);?></td>
             </tr>
             <tr>
               <th><?php echo $lang->testtask->begin;?></th>
@@ -113,7 +115,7 @@
             </tr>
             <tr>
               <th><?php echo $lang->testtask->status;?></th>
-              <td class='task-<?php echo $task->status?>'><?php echo $this->processStatus('testtask', $task);?></td>
+              <td class='status-testtask status-<?php echo $task->status?>'><?php echo $this->processStatus('testtask', $task);?></td>
             </tr>
             <tr>
               <th><?php echo $lang->testtask->testreport;?></th>

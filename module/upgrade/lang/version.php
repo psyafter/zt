@@ -159,10 +159,29 @@ $lang->upgrade->fromVersions['16_5']       = '16.5';
 $lang->upgrade->fromVersions['17_0_beta1'] = '17.0.beta1';
 $lang->upgrade->fromVersions['17_0_beta2'] = '17.0.beta2';
 $lang->upgrade->fromVersions['17_0']       = '17.0';
+$lang->upgrade->fromVersions['17_1']       = '17.1';
+$lang->upgrade->fromVersions['17_2']       = '17.2';
+$lang->upgrade->fromVersions['17_3']       = '17.3';
+$lang->upgrade->fromVersions['17_4']       = '17.4';
+$lang->upgrade->fromVersions['17_5']       = '17.5';
+$lang->upgrade->fromVersions['17_6']       = '17.6';
+$lang->upgrade->fromVersions['17_6_1']     = '17.6.1';
+$lang->upgrade->fromVersions['17_6_2']     = '17.6.2';
+$lang->upgrade->fromVersions['17_7']       = '17.7';
+$lang->upgrade->fromVersions['17_8']       = '17.8';
+$lang->upgrade->fromVersions['18_0_beta1'] = '18.0.beta1';
+$lang->upgrade->fromVersions['18_0_beta2'] = '18.0.beta2';
+$lang->upgrade->fromVersions['18_0_beta3'] = '18.0.beta3';
+$lang->upgrade->fromVersions['18_0']       = '18.0';
+$lang->upgrade->fromVersions['18_1']       = '18.1';
+$lang->upgrade->fromVersions['18_2']       = '18.2';
+$lang->upgrade->fromVersions['18_3']       = '18.3'; // pms insert position.
 
+global $config;
 /* Lite. */
 $lang->upgrade->fromVersions['lite1_0'] = 'Lite1.0';
 $lang->upgrade->fromVersions['lite1_1'] = 'Lite1.1';
+if($config->edition != 'open') $lang->upgrade->fromVersions['liteVIP1_1'] = 'LiteVIP1.1';
 
 /* Pro. */
 $lang->upgrade->fromVersions['pro1_0']        = 'Pro1.0';
@@ -320,6 +339,23 @@ $lang->upgrade->fromVersions['biz6_5']       = 'Biz6.5';
 $lang->upgrade->fromVersions['biz7_0_beta1'] = 'Biz7.0.beta1';
 $lang->upgrade->fromVersions['biz7_0_beta2'] = 'Biz7.0.beta2';
 $lang->upgrade->fromVersions['biz7_0']       = 'Biz7.0';
+$lang->upgrade->fromVersions['biz7_1']       = 'Biz7.1';
+$lang->upgrade->fromVersions['biz7_2']       = 'Biz7.2';
+$lang->upgrade->fromVersions['biz7_3']       = 'Biz7.3';
+$lang->upgrade->fromVersions['biz7_4']       = 'Biz7.4';
+$lang->upgrade->fromVersions['biz7_5']       = 'Biz7.5';
+$lang->upgrade->fromVersions['biz7_6']       = 'Biz7.6';
+$lang->upgrade->fromVersions['biz7_6_1']     = 'Biz7.6.1';
+$lang->upgrade->fromVersions['biz7_6_2']     = 'Biz7.6.2';
+$lang->upgrade->fromVersions['biz7_7']       = 'Biz7.7';
+$lang->upgrade->fromVersions['biz7_8']       = 'Biz7.8';
+$lang->upgrade->fromVersions['biz8_0_beta1'] = 'Biz8.0.beta1';
+$lang->upgrade->fromVersions['biz8_0_beta2'] = 'Biz8.0.beta2';
+$lang->upgrade->fromVersions['biz8_0_beta3'] = 'Biz8.0.beta3';
+$lang->upgrade->fromVersions['biz8_0']       = 'Biz8.0';
+$lang->upgrade->fromVersions['biz8_1']       = 'Biz8.1';
+$lang->upgrade->fromVersions['biz8_2']       = 'Biz8.2';
+$lang->upgrade->fromVersions['biz8_3']       = 'Biz8.3'; // biz insert position.
 
 /* Max. */
 $lang->upgrade->fromVersions['max2_0_beta4'] = 'Max2.0.beta4';
@@ -339,3 +375,20 @@ $lang->upgrade->fromVersions['max3_0_beta1'] = 'Max3.0.beta1';
 $lang->upgrade->fromVersions['max3_0']       = 'Max3.0';
 $lang->upgrade->fromVersions['max3_1_beta1'] = 'Max3.1.beta1';
 $lang->upgrade->fromVersions['max3_1_beta2'] = 'Max3.1.beta2';
+$lang->upgrade->fromVersions['max3_1']       = 'Max3.1';
+$lang->upgrade->fromVersions['max3_2']       = 'Max3.2';
+$lang->upgrade->fromVersions['max3_3']       = 'Max3.3';
+$lang->upgrade->fromVersions['max3_4']       = 'Max3.4';
+$lang->upgrade->fromVersions['max3_5']       = 'Max3.5';
+$lang->upgrade->fromVersions['max3_6']       = 'Max3.6';
+$lang->upgrade->fromVersions['max3_6_1']     = 'Max3.6.1';
+$lang->upgrade->fromVersions['max3_6_2']     = 'Max3.6.2';
+$lang->upgrade->fromVersions['max3_6_3']     = 'Max3.6.3';
+$lang->upgrade->fromVersions['max3_7']       = 'Max3.7';
+$lang->upgrade->fromVersions['max3_8']       = 'Max3.8';
+$lang->upgrade->fromVersions['max4_0_beta1'] = 'Max4.0.beta1';
+$lang->upgrade->fromVersions['max4_0_beta2'] = 'Max4.0.beta2';
+$lang->upgrade->fromVersions['max4_0_beta3'] = 'Max4.0.beta3';
+$lang->upgrade->fromVersions['max4_0']       = 'Max4.0';
+$lang->upgrade->fromVersions['max4_1']       = 'Max4.1';
+$lang->upgrade->fromVersions['max4_2']       = 'Max4.2'; // max insert position.

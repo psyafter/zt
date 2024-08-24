@@ -19,7 +19,6 @@ public function getListSinceLastPoll($action = '')
             ->andWhere('t1.objectType')->eq('user')
             ->andWhere('t2.field')->eq('password')
             ->andWhere('t1.action')->eq('edited')
-            ->andWhere('t1.result')->eq('success')
             ->andWhere('t1.date')->gt($lastPoll)
             ->orderBy('t1.`date`_desc')
             ->fetchAll();
@@ -29,7 +28,6 @@ public function getListSinceLastPoll($action = '')
         $actions = $this->dao->select('id, objectID, date')->from(TABLE_ACTION)
             ->where('date')->gt($lastPoll)
             ->andWhere('action')->eq('loginxuanxuan')
-            ->andWhere('result')->eq('success')
             ->orderBy('`date`_desc')
             ->fetchAll();
     }

@@ -48,18 +48,30 @@ class integration extends control
      * @param  string $hostname
      * @param  string $port
      * @param  string $sessionID      user's sessionID on XXD server
+     * @param  string $mode           ro | rw, rw enables collabora editing if file is marked as editable
+     * @param  int    $messageID      required if mode is set to rw
      * @param  int    $userID
      * @access public
      * @return void   redirects user to collabora view url
      */
-    public function wopi($fileID, $serverName, $protocol, $hostname, $port, $sessionID, $userID = 0)
+    public function wopi($fileID, $serverName, $protocol, $hostname, $port, $sessionID, $mode = 'ro', $messageID = 0, $userID = 0)
     {
+        /* Fix params for older clients. */
+        if(is_numeric($mode))
+        {
+            $userID = $mode;
+            $mode = 'ro';
+        }
+
         if(method_exists($this->app, 'loadConfig'))
         {
             $this->app->loadConfig('file');
             if(!zget($this->config->integration->office, 'officeEnabled') && empty($this->config->file->collaboraPath)) die($this->lang->integration->error->officeNotEnabled);
         }
         elseif(!zget($this->config->integration->office, 'officeEnabled')) die($this->lang->integration->error->officeNotEnabled);
+
+        $user = $this->dao->select('account,realname')->from(TABLE_USER)->where('id')->eq($userID)->fetch();
+        if(!$user) die($this->lang->integration->error->userNotFoundForRequest);
 
         $file = $this->loadModel('file')->getByID($fileID);
         if(!$file) die($this->lang->integration->error->fileNotFoundForRequest);
@@ -68,11 +80,12 @@ class integration extends control
         if(!$discovery) die($this->lang->integration->error->cannotConnectToCollabora);
         if(!isset($discovery[$file->extension])) die($this->lang->integration->error->filePreviewNotSupported);
 
-        $fileIdentifier = $this->integration->getOfficeFileIdentifier($file, $serverName, $sessionID, $userID);
+        $identifiers = $this->integration->getOfficeIdentifiers($file, $serverName, $mode == 'rw', $messageID, $sessionID, $user->realname, $userID);
+        if(empty($identifiers)) die($this->lang->integration->error->buildIdentifierFail);
 
         $serverAddress = $protocol . '://' . $hostname . ':' . $port;
-        $xxdWopiUrl = $serverAddress . '/wopi/files/' . $fileIdentifier;
-        $collaboraUrl = $discovery[$file->extension]['urlsrc'] . 'WOPISrc=' . $xxdWopiUrl . '&access_token=' . $sessionID;
+        $xxdWopiUrl = $serverAddress . '/wopi/files/' . $identifiers->file;
+        $collaboraUrl = $discovery[$file->extension]['urlsrc'] . 'WOPISrc=' . $xxdWopiUrl . '&access_token=' . $identifiers->user;
 
         /* Change theme with css variables */
         $cssVariables = '';

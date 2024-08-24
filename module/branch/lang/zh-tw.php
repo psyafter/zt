@@ -27,7 +27,7 @@ $lang->branch->mergeBranch       = '合併@branch@';
 $lang->branch->mergeBranchAction = '合併分支';
 
 $lang->branch->id          = 'ID';
-$lang->branch->product     = '所屬產品';
+$lang->branch->product     = "所屬{$lang->productCommon}";
 $lang->branch->name        = '%s名稱';
 $lang->branch->status      = '狀態';
 $lang->branch->createdDate = '創建時間';
@@ -51,12 +51,12 @@ $lang->branch->targetBranchTips  = '您可以將其合併到已有的一個@bran
 $lang->branch->confirmMerge      = '"mergedBranch"的數據將被合併到"targetBranch",請確認是否要執行分支合併操作，合併後數據將不可再恢復！';
 
 $lang->branch->noData     = '暫時沒有分支。';
-$lang->branch->mainBranch = '產品預設主幹%s。';
+$lang->branch->mainBranch = "{$lang->productCommon}預設主幹%s。";
 
 $lang->branch->statusList = array();
 $lang->branch->statusList['active'] = '激活';
 $lang->branch->statusList['closed'] = '已關閉';
 
-$lang->branch->featureBar['manage']['all']    = '所有';
+$lang->branch->featureBar['manage']['all']    = '全部';
 $lang->branch->featureBar['manage']['active'] = '激活';
 $lang->branch->featureBar['manage']['closed'] = '已關閉';

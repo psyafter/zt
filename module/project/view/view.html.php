@@ -2,7 +2,7 @@
 /**
  * The view method view file of project module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     project
@@ -12,6 +12,9 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/kindeditor.html.php';?>
+<?php if(!common::checkNotCN()):?>
+<style> table.data-stats > tbody > tr.statsTr > td:first-child {width: 60px;}</style>
+<?php endif;?>
 <div id='mainContent' class="main-row">
   <div class="col-8 main-col">
     <div class="row">
@@ -19,15 +22,17 @@
         <div class="panel block-dynamic" style="height: 280px">
           <div class="panel-heading">
             <div class="panel-title"><?php echo $lang->execution->latestDynamic;?></div>
+            <?php if($project->model != 'kanban' and common::hasPriv('project', 'dynamic')):?>
             <nav class="panel-actions nav nav-default">
-              <li><?php common::printLink('project', 'dynamic', "projectID=$project->id&type=all", '<i class="icon icon-more icon-sm"></i>', '', "title=$lang->more");?></li>
+              <li><?php common::printLink('project', 'dynamic', "projectID=$project->id&type=all", strtoupper($lang->more), '', "title=$lang->more");?></li>
             </nav>
+            <?php endif;?>
           </div>
           <div class="panel-body scrollbar-hover">
             <ul class="timeline timeline-tag-left no-margin">
               <?php foreach($dynamics as $action):?>
               <li <?php if($action->major) echo "class='active'";?>>
-                <div class='text-ellipsis'>
+                <div>
                   <span class="timeline-tag"><?php echo $action->date;?></span>
                   <span class="timeline-text"><?php echo zget($users, $action->actor) . ' ' . "<span class='label-action'>{$action->actionLabel}</span>" . $action->objectLabel . ' ' . html::a($action->objectLink, $action->objectName, '', "title='$action->objectName'");?></span>
                 </div>
@@ -41,9 +46,11 @@
         <div class="panel block-team" style="height: 280px">
           <div class="panel-heading">
             <div class="panel-title"><?php echo $lang->execution->relatedMember;?></div>
+            <?php if(common::hasPriv('project', 'team')):?>
             <nav class="panel-actions nav nav-default">
-              <li><?php common::printLink('project', 'manageMembers', "projectID=$project->id", '<i class="icon icon-more icon-sm"></i>', '', "title=$lang->more");?></li>
+              <li><?php common::printLink('project', 'team', "projectID=$project->id", strtoupper($lang->more), '', "title=$lang->more");?></li>
             </nav>
+            <?php endif;?>
           </div>
           <div class="panel-body">
             <div class="row row-grid">
@@ -107,26 +114,55 @@
       <div class="col-sm-12">
         <div class="cell">
           <div class="detail">
-            <h2 class="detail-title"><span class="label-id"><?php echo $project->id;?></span> <span class="label label-light label-outline"><?php echo $project->code;?></span> <?php echo $project->name;?></h2>
+            <?php $hiddenCode = (!isset($config->setCode) or $config->setCode == 0) ? 'hidden' : '';?>
+            <h2 class="detail-title"><span class="label-id"><?php echo $project->id;?></span> <span class="label label-light label-outline <?php echo $hiddenCode;?>"><?php echo $project->code;?></span> <?php echo $project->name;?></h2>
             <div class="detail-content article-content">
               <div><span class="text-limit hidden" data-limit-size="40"><?php echo $project->desc;?></span><a class="text-primary text-limit-toggle small" data-text-expand="<?php echo $lang->expand;?>"  data-text-collapse="<?php echo $lang->collapse;?>"></a></div>
               <p>
+                <?php if($config->vision == 'rnd'):?>
+                <span class="label label-primary label-outline"><?php echo zget($lang->project->projectTypeList, $project->hasProduct);?></span>
+                <?php endif; ?>
                 <?php if($project->deleted):?>
                 <span class='label label-danger label-outline'><?php echo $lang->project->deleted;?></span>
                 <?php endif; ?>
-                <span class="label label-primary label-outline"><?php echo zget($lang->execution->lifeTimeList, $project->lifetime);?></span>
+                <span class="label label-primary label-outline"><?php echo zget($lang->execution->lifeTimeList, $project->lifetime, '');?></span>
                 <?php if(isset($project->delay)):?>
                 <span class="label label-danger label-outline"><?php echo $lang->project->delayed;?></span>
                 <?php else:?>
-                <span class="label label-success label-outline"><?php echo $this->processStatus('project', $project);?></span>
+                <span class="label status-<?php echo $project->status;?> label-outline"><?php echo $this->processStatus('project', $project);?></span>
                 <?php endif;?>
               </p>
             </div>
           </div>
+          <?php if(empty($globalDisableProgram)):?>
+          <div class="detail">
+            <div class="detail-title">
+              <strong><?php echo $lang->project->parent;?></strong>
+            </div>
+            <div class="detail-content">
+              <div class="row row-grid">
+                <div class="col-xs-12">
+                <?php if($project->grade > 1):?>
+                  <i class='icon icon-program text-muted'></i>
+                  <?php
+                  $names = '';
+                  foreach($programList as $id => $name)
+                  {
+                      $names .= common::hasPriv('program', 'product') ? html::a($this->createLink('program', 'product', "programID=$id"), $name) . '/ ' : $name . '/ ';
+                  }
+                  echo rtrim($names, '/ ');
+                  ?>
+                <?php endif;?>
+                </div>
+              </div>
+            </div>
+          </div>
+          <?php endif;?>
+          <?php if(!empty($project->hasProduct)):?>
           <div class="detail">
             <div class="detail-title">
               <strong><?php echo $lang->project->manageProducts;?></strong>
-              <?php common::printLink('project', 'manageproducts', "projectID=$project->id", '<i class="icon icon-more icon-sm"></i>', '', "class='btn btn-link pull-right muted'");?>
+              <?php common::printLink('project', 'manageproducts', "projectID=$project->id", strtoupper($lang->more), '', "class='btn btn-link pull-right muted'");?>
             </div>
             <div class="detail-content">
               <div class="row row-grid">
@@ -146,24 +182,28 @@
             <div class="detail-content">
               <div class="row row-grid">
                 <?php foreach($products as $productID => $product):?>
-                <?php foreach($product->plans as $planID):?>
+                <?php foreach($product->plans as $planIDList):?>
+                <?php $planIDList = explode(',', $planIDList);?>
+                <?php foreach($planIDList as $planID):?>
                 <?php if(isset($planGroup[$productID][$planID])):?>
-                <div class="col-xs-12"><?php echo html::a($this->createLink('productplan', 'view', "planID={$planID}"), $product->name . '/' . $planGroup[$productID][$planID]);?></div>
+                <div class="col-xs-12"><?php echo html::a($this->createLink('productplan', 'view', "planID={$planID}"), "<i class='icon icon-calendar text-muted'></i> " . $product->name . '/' . $planGroup[$productID][$planID]);?></div>
                 <?php endif;?>
+                <?php endforeach;?>
                 <?php endforeach;?>
                 <?php endforeach;?>
               </div>
             </div>
           </div>
+          <?php endif;?>
           <div class='detail'>
             <div class='detail-title'><strong><?php echo $lang->execution->lblStats;?></strong></div>
             <div class="detail-content">
               <table class='table table-data data-stats'>
                 <tbody>
-                  <tr class='statsTr'><td class='w-100px'></td><td></td><td></td><td></td></tr>
+                  <tr class='statsTr'><td></td><td></td><td></td><td></td></tr>
                   <tr>
                     <td colspan="4">
-                      <?php $progress = ($workhour->totalConsumed + $workhour->totalLeft) ? floor($workhour->totalConsumed / ($workhour->totalConsumed + $workhour->totalLeft) * 1000) / 1000 * 100 : 0;?>
+                      <?php $progress = $project->model == 'waterfall' ? $this->project->getWaterfallProgress($project->id) : (($workhour->totalConsumed + $workhour->totalLeft) ? floor($workhour->totalConsumed / ($workhour->totalConsumed + $workhour->totalLeft) * 1000) / 1000 * 100 : 0);?>
                       <?php echo $lang->project->progress;?> <?php echo $progress . $lang->percent;?> &nbsp;
                       <div class="progress inline-block">
                         <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="<?php echo $progress;?>" aria-valuemin="0" aria-valuemax="100" style="width: <?php echo $progress . $lang->percent;?>"></div>
@@ -178,7 +218,7 @@
                   </tr>
                   <tr>
                     <th><?php echo $lang->project->end;?></th>
-                    <td><?php echo $project->end;?></td>
+                    <td><?php echo $project->end = $project->end == LONG_TIME ? $this->lang->project->longTime : $project->end;;?></td>
                     <th><?php echo $lang->project->realEndAB;?></th>
                     <td><?php echo $project->realEnd == '0000-00-00' ? '' : $project->realEnd;?></td>
                   </tr>
@@ -186,7 +226,7 @@
                     <th><?php echo $lang->execution->totalEstimate;?></th>
                     <td><?php echo (float)$workhour->totalEstimate . $lang->execution->workHour;?></td>
                     <th><?php echo $lang->execution->totalDays;?></th>
-                    <td><?php echo $project->days;?></td>
+                    <td><?php echo (float)$project->days . $lang->execution->day;?></td>
                   </tr>
                   <tr>
                     <th><?php echo $lang->execution->totalConsumed;?></th>
@@ -207,14 +247,37 @@
             <div class="detail-content">
               <table class="table table-data data-basic">
                 <tbody>
+                  <?php if(empty($project->hasProduct) and !empty($config->URAndSR) and $project->model !== 'kanban' and isset($lang->project->menu->storyGroup)):?>
                   <tr>
                     <th><?php echo $lang->story->common;?></th>
-                    <td><?php echo $statData->storyCount;?></td>
-                    <th><?php echo $lang->task->common;?></th>
-                    <td><?php echo $statData->taskCount;?></td>
-                    <th><?php echo $lang->bug->common;?></th>
-                    <td><?php echo $statData->bugCount;?></td>
+                    <td title="<?php echo $statData->storyCount;?>"><?php echo $statData->storyCount;?></td>
+                    <th><?php echo $lang->requirement->common;?></th>
+                    <td title="<?php echo $statData->requirementCount;?>"><?php echo $statData->requirementCount;?></td>
                   </tr>
+                  <tr>
+                    <th><?php echo $lang->task->common;?></th>
+                    <td title="<?php echo $statData->taskCount;?>"><?php echo $statData->taskCount;?></td>
+                    <th><?php echo $lang->bug->common;?></th>
+                    <td title="<?php echo $statData->bugCount;?>"><?php echo $statData->bugCount;?></td>
+                  </tr>
+                  <tr>
+                    <th><?php echo $lang->project->budget;?></th>
+                    <td title="<?php echo $project->budget;?>"><?php echo $project->budget;?></td>
+                  </tr>
+                  <?php else:?>
+                  <tr>
+                    <th><?php echo $lang->story->common;?></th>
+                    <td title="<?php echo $statData->storyCount;?>"><?php echo $statData->storyCount;?></td>
+                    <th><?php echo $lang->task->common;?></th>
+                    <td title="<?php echo $statData->taskCount;?>"><?php echo $statData->taskCount;?></td>
+                  </tr>
+                  <tr>
+                    <th><?php echo $lang->bug->common;?></th>
+                    <td title="<?php echo $statData->bugCount;?>"><?php echo $statData->bugCount;?></td>
+                    <th><?php echo $lang->project->budget;?></th>
+                    <td title="<?php echo $project->budget;?>"><?php echo $project->budget;?></td>
+                  </tr>
+                  <?php endif;?>
                 </tbody>
               </table>
             </div>

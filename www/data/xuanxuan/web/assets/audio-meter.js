@@ -1,3 +1,5 @@
+// origin code from https://stackoverflow.com/questions/62702721/how-to-get-microphone-volume-using-audioworklet
+
 registerProcessor(
     'meter',
     class extends AudioWorkletProcessor {
@@ -9,18 +11,20 @@ registerProcessor(
         constructor() {
             super();
             this._nextUpdateFrame = this._updateIntervalInMS;
-            this.port.onmessage = (event) => {
-                if (event.data.updateIntervalInMS) {
-                    this._updateIntervalInMS = event.data.updateIntervalInMS;
-                }
-            };
+            if (this.port) {
+                this.port.onmessage = (event) => {
+                    if (event.data.updateIntervalInMS) {
+                        this._updateIntervalInMS = event.data.updateIntervalInMS;
+                    }
+                };
+            }
         }
 
         get intervalInFrames() {
             return (this._updateIntervalInMS / 1000) * sampleRate;
         }
 
-        process(inputs, outputs, parameters) {
+        process(inputs) {
             const input = inputs[0];
 
             // Note that the input will be down-mixed to mono; however, if no inputs are

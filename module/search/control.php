@@ -2,7 +2,7 @@
 /**
  * The control file of search module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     search
@@ -20,8 +20,8 @@ class search extends control
     public function __construct($module = '', $method = '')
     {
         parent::__construct($module, $method);
-        if($this->config->edition != 'max')  unset($this->lang->search->modules['effort']);
-        if($this->config->systemMode != 'new') unset($this->lang->search->modules['program'], $this->lang->search->modules['project']);
+        if($this->config->edition != 'max')      unset($this->lang->search->modules['effort']);
+        if($this->config->systemMode == 'light') unset($this->lang->search->modules['program']);
     }
 
     /**
@@ -49,12 +49,18 @@ class search extends control
         $_SESSION['searchParams']['module'] = $module;
         $this->search->initSession($module, $fields, $params);
 
+        if($module == 'trash' and $this->session->objectName)
+        {
+            $space = common::checkNotCN() ? ' ' : '';
+            $this->lang->search->common = $this->lang->search->common . $space . $this->session->objectName;
+        }
+
         $this->view->module       = $module;
         $this->view->groupItems   = $this->config->search->groupItems;
         $this->view->searchFields = $fields;
         $this->view->actionURL    = $actionURL;
         $this->view->fieldParams  = $this->search->setDefaultParams($fields, $params);
-        $this->view->queries      = $this->search->getQueryPairs($module);
+        $this->view->queries      = $this->search->getQueryList($module);
         $this->view->queryID      = $queryID;
         $this->view->style        = empty($style) ? 'full' : $style;
         $this->view->onMenuBar    = empty($onMenuBar) ? 'no' : $onMenuBar;
@@ -142,13 +148,13 @@ class search extends control
     {
         $query   = $queryID ? $queryID : '';
         $module  = empty($module) ? $this->session->searchParams['module'] : $module;
-        $queries = $this->search->getQueryPairs($module);
-
+        $queries = $this->search->getQueryList($module);
         $html = '';
-        foreach($queries as $queryID => $queryName)
+        foreach($queries as $query)
         {
-            if(empty($queryID)) continue;
-            $html .= '<li>' . html::a("javascript:executeQuery({$queryID})", $queryName . (common::hasPriv('search', 'deleteQuery') ? '<i class="icon icon-close"></i>' : ''), '', "class='label user-query' data-query-id='$queryID'") . '</li>';
+            if(empty($query->id)) continue;
+
+            $html .= '<li>' . html::a("javascript:executeQuery({$query->id})", $query->title . ((common::hasPriv('search', 'deleteQuery') and $this->app->user->account == $query->account) ? '<i class="icon icon-close"></i>' : ''), '', "class='label user-query' data-query-id='$query->id' title='{$query->title}'") . '</li>';
         }
         echo $html;
     }
@@ -185,14 +191,12 @@ class search extends control
             }
             else
             {
-                $type = zget($this->lang->searchObjects, ($result['type'] == 'case' ? 'testcase' : $result['type']), $result['type']);
+                $type = zget($this->lang->search->modules, ($result['type'] == 'case' ? 'testcase' : $result['type']), $result['type']);
                 return $this->send(array('result' => 'unfinished', 'message' => sprintf($this->lang->search->buildResult, $type, $type, $result['count']), 'type' => $type, 'count' => $result['count'], 'next' => inlink('buildIndex', "type={$result['type']}&lastID={$result['lastID']}") ));
             }
         }
 
         $this->lang->navGroup->search  = 'admin';
-        $this->lang->search->menu      = $this->lang->admin->menu;
-        $this->lang->search->menuOrder = $this->lang->admin->menuOrder;
 
         $this->view->title = $this->lang->search->buildIndex;
         $this->display();
@@ -221,11 +225,19 @@ class search extends control
         $type = (empty($type) or $type[0] == 'all') ? 'all' : $type;
 
         $this->app->loadClass('pager', $static = true);
-        $begin    = time();
-        $results  = $this->search->getList($words, $type);
-        $recTotal = count($results);
-        $pager    = new pager($recTotal, $this->config->search->recPerPage, $pageID);
-        $results  = array_chunk($results, $pager->recPerPage);
+        $begin   = time();
+        $pager   = new pager(0, $this->config->search->recPerPage, $pageID);
+        $results = $this->search->getList($words, $type, $pager);
+
+        $typeCount = $this->search->getListCount();
+        $typeList  = array('all' => $this->lang->search->modules['all']);
+        foreach($typeCount as $objectType => $count)
+        {
+            if(!isset($this->lang->search->modules[$objectType])) continue;
+            if($this->config->systemMode == 'light' and $objectType == 'program') continue;
+
+            $typeList[$objectType] = $this->lang->search->modules[$objectType];
+        }
 
         /* Set session. */
         $uri  = inlink('index', "recTotal=$pager->recTotal&pageID=$pager->pageID");
@@ -258,10 +270,11 @@ class search extends control
 
         if(strpos($this->server->http_referer, 'search') === false) $this->session->set('referer', $this->server->http_referer);
 
-        $this->view->results    = empty($results) ? $results : $results[$pageID - 1];
+        $this->view->results    = $results;
         $this->view->consumed   = time() - $begin;
         $this->view->title      = $this->lang->search->index;
         $this->view->type       = $type;
+        $this->view->typeList   = $typeList;
         $this->view->pager      = $pager;
         $this->view->words      = $words;
         $this->view->referer    = $this->session->referer;

@@ -111,6 +111,15 @@ class baseHTML
         if(strlen(trim($title)) == 0) $title = $href;
         $newline = $newline ? "\n" : '';
 
+        /* Make sure href is opened in the same tab. */
+        if(strpos($misc, 'data-app=') === false)
+        {
+            global $app, $lang;
+            $module  = $app->rawModule;
+            $dataApp = (isset($lang->navGroup->$module) and $lang->navGroup->$module != $app->tab) ? "data-app='{$app->tab}'" : '';
+            $misc   .= ' ' . $dataApp;
+        }
+
         return "<a href='$href' $misc>$title</a>$newline";
     }
 
@@ -321,7 +330,8 @@ class baseHTML
      */
     static public function hidden($name, $value = "", $attrib = "")
     {
-        return "<input type='hidden' name='$name' id='$name' value='$value' $attrib />\n";
+        $id = str_replace(array('[', ']'), "", $name);
+        return "<input type='hidden' name='$name' id='$id' value='$value' $attrib />\n";
     }
 
     /**
@@ -338,7 +348,8 @@ class baseHTML
     static public function password($name, $value = "", $attrib = "")
     {
         if(stripos($attrib, 'autocomplete') === false) $attrib .= " autocomplete='off'";
-        return "<input type='password' name='$name' id='$name' value='$value' $attrib />\n";
+        $id = str_replace(array('[', ']'), "", $name);
+        return "<input type='password' name='$name' id='$id' value='$value' $attrib />\n";
     }
 
     /**
@@ -355,6 +366,7 @@ class baseHTML
     static public function textarea($name, $value = "", $attrib = "")
     {
         $id = "id='$name'";
+        $id = str_replace(array('[', ']'), "", $id);
         if(strpos($attrib, 'id=') !== false) $id = '';
         return "<textarea name='$name' $id $attrib>$value</textarea>\n";
     }
@@ -388,8 +400,9 @@ class baseHTML
      */
     static public function date($name, $value = "", $options = '', $attrib = '')
     {
-        $html = "<div class='input-append date date-picker' {$options}>";
-        $html .= "<input type='text' name='{$name}' id='$name' value='$value' {$attrib} />\n";
+        $id    = str_replace(array('[', ']'), "", $name);
+        $html  = "<div class='input-append date date-picker' {$options}>";
+        $html .= "<input type='text' name='{$name}' id='$id' value='$value' {$attrib} />\n";
         $html .= "<span class='add-on'><button class='btn' type='button'><i class='icon-calendar'></i></button></span></div>";
         return $html;
     }
@@ -408,8 +421,9 @@ class baseHTML
      */
     static public function dateTime($name, $value = "", $options = '', $attrib = '')
     {
-        $html = "<div class='input-append date time-picker' {$options}>";
-        $html .= "<input type='text' name='{$name}' id='$name' value='$value' {$attrib} />\n";
+        $id    = str_replace(array('[', ']'), "", $name);
+        $html  = "<div class='input-append date time-picker' {$options}>";
+        $html .= "<input type='text' name='{$name}' id='$id' value='$value' {$attrib} />\n";
         $html .= "<span class='add-on'><button class='btn' type='button'><i class='icon-calendar'></i></button></span></div>";
         return $html;
     }
@@ -501,7 +515,13 @@ class baseHTML
         $gobackList    = isset($_COOKIE['goback']) ? json_decode($_COOKIE['goback'], true) : array();
         $gobackLink    = isset($gobackList[$tab]) ? $gobackList[$tab] : '';
 
-        if(strpos($misc, 'data-app') === false) $misc .= " data-app='" . $tab . "'";
+        /* Make sure href is opened in the same tab. */
+        if(strpos($misc, 'data-app=') === false)
+        {
+            $module  = $app->rawModule;
+            $dataApp = (isset($lang->navGroup->$module) and $lang->navGroup->$module != $app->tab) ? "data-app='{$app->tab}'" : '';
+            $misc   .= ' ' . $dataApp;
+        }
 
         /* If the link of the referer is not the link of the current page or the link of the index,  the cookie and gobackLink will be updated. */
         if(!preg_match("/(m=|\/)(index|search|$currentModule)(&f=|-)(index|buildquery|$currentMethod)(&|-|\.)?/", strtolower($refererLink)))
@@ -836,7 +856,7 @@ class baseJS
         $message = str_replace("\\'", "'", $message);
         $message = str_replace("'", "\\'", $message);
 
-        return self::start($full) . "alert('" . $message . "')" . self::end() . self::resetForm();
+        return static::start($full) . "alert('" . $message . "')" . static::end() . static::resetForm();
     }
 
     /**
@@ -849,7 +869,7 @@ class baseJS
      */
     static public function close()
     {
-        return self::start() . "window.close()" . self::end();
+        return static::start() . "window.close()" . static::end();
     }
 
     /**
@@ -888,7 +908,7 @@ class baseJS
         {
             $alertMessage = $message;
         }
-        return self::alert($alertMessage, $full);
+        return static::alert($alertMessage, $full);
     }
 
     /**
@@ -901,7 +921,7 @@ class baseJS
      */
     static public function resetForm()
     {
-        return self::start() . 'if(window.parent) window.parent.$.enableForm();' . self::end();
+        return static::start() . 'if(window.parent) window.parent.$.enableForm();' . static::end();
     }
 
     /**
@@ -939,7 +959,7 @@ class baseJS
             return json_encode($output);
         }
 
-        $js = self::start();
+        $js = static::start();
 
         $confirmAction = '';
         if(strtolower($okURL) == "back")
@@ -968,8 +988,9 @@ class baseJS
         {
             $cancleAction = "$cancleTarget.location = '$cancleURL';";
         }
-
-        $js .= <<<EOT
+        if(strpos($_SERVER['HTTP_USER_AGENT'], 'xuanxuan') === false)
+        {
+            $js .= <<<EOT
 if(confirm("$message"))
 {
     $confirmAction
@@ -979,7 +1000,13 @@ else
     $cancleAction
 }
 EOT;
-        $js .= self::end();
+        }
+        else
+        {
+            $js .= $confirmAction;
+        }
+
+        $js .= static::end();
         return $js;
     }
 
@@ -1016,7 +1043,7 @@ EOT;
             return json_encode($output);
         }
 
-        $js  = self::start();
+        $js  = static::start();
         if(strtolower($url) == "back")
         {
             $js .= "history.back(-1);\n";
@@ -1027,9 +1054,11 @@ EOT;
         }
         else
         {
+            /* Can not locate the url that has '#app', so remove it. */
+            if(strpos($url, '#app=') !== false) $url = substr($url, 0, strpos($url, '#app='));
             $js .= "$target.location='$url';\n";
         }
-        return $js . self::end();
+        return $js . static::end();
     }
 
     /**
@@ -1042,7 +1071,7 @@ EOT;
      */
     static public function closeWindow()
     {
-        return self::start(). "window.close();" . self::end();
+        return static::start(). "window.close();" . static::end();
     }
 
     /**
@@ -1058,9 +1087,9 @@ EOT;
      */
     static public function refresh($url, $target = "self", $time = 3000)
     {
-        $js  = self::start();
+        $js  = static::start();
         $js .= "setTimeout(\"$target.location='$url'\", $time);";
-        $js .= self::end();
+        $js .= static::end();
         return $js;
     }
 
@@ -1075,7 +1104,7 @@ EOT;
      */
     static public function reload($window = 'self')
     {
-        $js  = self::start();
+        $js  = static::start();
         // See bug #2379 http://pms.zentao.pm/bug-view-2379.html
         if($window !== 'self' && $window !== 'window')
         {
@@ -1085,7 +1114,7 @@ EOT;
         {
             $js .= "$window.location.reload(true);\n";
         }
-        $js .= self::end();
+        $js .= static::end();
         return $js;
     }
 
@@ -1101,7 +1130,7 @@ EOT;
      */
     static public function closeColorbox($window = 'self')
     {
-        return self::closeModal($window);
+        return static::closeModal($window);
     }
 
     /**
@@ -1117,10 +1146,10 @@ EOT;
      */
     static public function closeModal($window = 'self', $location = 'this', $callback = 'null')
     {
-        $js  = self::start();
+        $js  = static::start();
         $js .= "if($window.location.href == self.location.href){ $window.window.close();}";
         $js .= "else{ $window.$.cookie('selfClose', 1);$window.$.closeModal($callback, '$location');}";
-        $js .= self::end();
+        $js .= static::end();
         return $js;
     }
 
@@ -1172,15 +1201,32 @@ EOT;
         if($config->tabSession and helper::isWithTID()) $jsConfig->tid = zget($_GET, 'tid', '');
 
         $jsLang = new stdclass();
-        $jsLang->submitting = isset($lang->loading) ? $lang->loading : '';
-        $jsLang->save       = $jsConfig->save;
-        $jsLang->expand     = isset($lang->expand)  ? $lang->expand  : '';
-        $jsLang->timeout    = isset($lang->timeout) ? $lang->timeout : '';
+        $jsLang->submitting   = isset($lang->loading) ? $lang->loading : '';
+        $jsLang->save         = $jsConfig->save;
+        $jsLang->expand       = isset($lang->expand)  ? $lang->expand  : '';
+        $jsLang->timeout      = isset($lang->timeout) ? $lang->timeout : '';
+        $jsLang->confirmDraft = isset($lang->confirmDraft) ? $lang->confirmDraft : '';
+        $jsLang->resume       = isset($lang->resume)  ? $lang->resume  : '';
+        $jsLang->program      = zget($lang->program, 'common', '');
+        $jsLang->project      = zget($lang->project, 'common', '');
+        $jsLang->product      = zget($lang->product, 'common', '');
+        $jsLang->task         = zget($lang->task, 'common', '');
+        $jsLang->story        = zget($lang->story, 'common', '');
+        $jsLang->bug          = zget($lang->bug, 'common', '');
+        $jsLang->testcase     = zget($lang->testcase, 'common', '');
+        $jsLang->zahost       = zget($lang->zahost, 'common', '');
+        $jsLang->zanode       = zget($lang->zanode, 'common', '');
+        $jsLang->gitlab       = zget($lang->gitlab, 'common', '');
+        $jsLang->gogs         = zget($lang->gogs, 'common', '');
+        $jsLang->gitea        = zget($lang->gitea, 'common', '');
+        $jsLang->jenkins      = zget($lang->jenkins, 'common', '');
+        $jsLang->sonarqube    = zget($lang->sonarqube, 'common', '');
+        $jsLang->repo         = zget($lang->repo, 'common', '');
 
-        $js  = self::start(false);
+        $js  = static::start(false);
         $js .= 'window.config=' . json_encode($jsConfig) . ";\n";
         $js .= 'window.lang=' . json_encode($jsLang) . ";\n";
-        $js .= self::end();
+        $js .= static::end();
         echo $js;
     }
 
@@ -1195,9 +1241,9 @@ EOT;
      */
     static public function execute($code)
     {
-        $js = self::start($full = false);
+        $js = static::start($full = false);
         $js .= $code;
-        $js .= self::end();
+        $js .= static::end();
         echo $js;
     }
 
@@ -1217,14 +1263,15 @@ EOT;
         $prefix = (isset($config->framework->jsWithPrefix) and $config->framework->jsWithPrefix == false) ? '' : 'v.';
 
         static $viewOBJOut;
-        $js  = self::start(false);
+        $js  = static::start(false);
         if(!$viewOBJOut and $prefix)
         {
             $js .= 'if(typeof(v) != "object") v = {};';
             $viewOBJOut = true;
         }
 
-        if(is_numeric($value))
+        /* Fix value is '0123' error. */
+        if(is_numeric($value) and !preg_match('/^0[0-9]+/', $value))
         {
             $js .= "{$prefix}{$key} = {$value};";
         }
@@ -1251,9 +1298,9 @@ EOT;
         else
         {
             $value = addslashes($value);
-            $js .= "{$prefix}{$key} = '{$value};'";
+            $js .= "{$prefix}{$key} = '{$value}';";
         }
-        $js .= self::end($newline = false);
+        $js .= static::end($newline = false);
         echo $js;
     }
 }

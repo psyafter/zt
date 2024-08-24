@@ -33,13 +33,13 @@ $lang->block->default['full']['my']['5']['params']['count']   = '15';
 
 $lang->block->modules['kanban']['index'] = new stdclass();
 $lang->block->modules['kanban']['index']->availableBlocks = new stdclass();
-$lang->block->modules['kanban']['index']->availableBlocks->scrumoverview  = '項目概況';
+$lang->block->modules['kanban']['index']->availableBlocks->scrumoverview  = "{$lang->projectCommon}概況";
 $lang->block->modules['kanban']['index']->availableBlocks->scrumlist      = $lang->executionCommon . '列表';
 $lang->block->modules['kanban']['index']->availableBlocks->sprint         = $lang->executionCommon . '總覽';
 $lang->block->modules['kanban']['index']->availableBlocks->projectdynamic = '最新動態';
 
 $lang->block->modules['project']->availableBlocks = new stdclass();
-$lang->block->modules['project']->availableBlocks->project = '項目列表';
+$lang->block->modules['project']->availableBlocks->project = "{$lang->projectCommon}列表";
 
 $lang->block->modules['execution'] = new stdclass();
 $lang->block->modules['execution']->availableBlocks = new stdclass();

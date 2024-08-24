@@ -2,7 +2,7 @@
 /**
  * The control file of group module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     group
@@ -37,7 +37,17 @@ class group extends control
 
         $groups = $this->group->getList();
         $groupUsers = array();
-        foreach($groups as $group) $groupUsers[$group->id] = $this->group->getUserPairs($group->id);
+        foreach($groups as $group)
+        {
+            if($group->role == 'projectAdmin')
+            {
+                $groupUsers[$group->id] = $this->dao->select('t1.account, t2.realname')->from(TABLE_PROJECTADMIN)->alias('t1')->leftJoin(TABLE_USER)->alias('t2')->on('t1.account = t2.account')->fetchPairs();
+            }
+            else
+            {
+                $groupUsers[$group->id] = $this->group->getUserPairs($group->id);
+            }
+        }
 
         $this->view->title      = $title;
         $this->view->position   = $position;
@@ -81,6 +91,7 @@ class group extends control
        if(!empty($_POST))
         {
             $this->group->update($groupID);
+            if(dao::isError()) return print(js::error(dao::getError()));
             if(isonlybody()) return print(js::closeModal('parent.parent', 'this'));
             return print(js::locate($this->createLink('group', 'browse'), 'parent'));
         }
@@ -140,11 +151,31 @@ class group extends control
         $group = $this->group->getByID($groupID);
         $this->view->title = $this->lang->company->common . $this->lang->colon . $group->name . $this->lang->colon . $this->lang->group->manageView;
 
+        /* Get the list of data sets under administrator permission. */
+        if(!$this->app->user->admin)
+        {
+            $this->app->user->admin = true;
+            $changeAdmin            = true;
+        }
+
+        $executionProject = $this->dao->select('t1.id, t2.name')->from(TABLE_EXECUTION)->alias('t1')
+            ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
+            ->where('t1.deleted')->eq('0')
+            ->andWhere('t1.id')->in($this->app->user->view->sprints)
+            ->fetchPairs();
+
+        $executions = $this->loadModel('execution')->getPairs(0, 'all', 'all');
+        foreach($executions as $id => $name)
+        {
+            if(isset($executionProject[$id])) $executions[$id] = $executionProject[$id] . ' / ' . $name;
+        }
+
         $this->view->group      = $group;
-        $this->view->programs   = $this->loadModel('program')->getPairs(true, 'order_desc');
+        $this->view->programs   = $this->loadModel('program')->getParentPairs('', '', false);
         $this->view->projects   = $this->loadModel('project')->getPairsByProgram('', 'all', true, 'order_desc');
-        $this->view->executions = $this->loadModel('execution')->getPairs(0, 'all', 'all');
+        $this->view->executions = $executions;
         $this->view->products   = $this->loadModel('product')->getPairs();
+        if(!empty($changeAdmin)) $this->app->user->admin = false;
 
         $navGroup = array();
         foreach($this->lang->navGroup as $moduleName => $groupName)
@@ -169,6 +200,7 @@ class group extends control
     public function managePriv($type = 'byGroup', $param = 0, $menu = '', $version = '')
     {
         if($type == 'byGroup') $groupID = $param;
+
         $this->view->type = $type;
         foreach($this->lang->resource as $moduleName => $action)
         {
@@ -181,8 +213,8 @@ class group extends control
             if($type == 'byModule') $result = $this->group->updatePrivByModule();
             if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
-            if($type == 'byGroup') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => inlink('browse')));
-            if($type == 'byModule') return print(js::alert($this->lang->saveSuccess) . js::execute('window.parent.location.reload()'));
+            if($type == 'byGroup') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'reload'));
+            if($type == 'byModule') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => 'parent'));
         }
 
         if($type == 'byGroup')
@@ -190,14 +222,6 @@ class group extends control
             $this->group->sortResource();
             $group      = $this->group->getById($groupID);
             $groupPrivs = $this->group->getPrivs($groupID);
-
-            if($this->config->systemMode == 'classic')
-            {
-                if(isset($groupPrivs['project']['browse']))
-                {
-                    $groupPrivs['project']['list'] = 'list';
-                }
-            }
 
             $this->view->title      = $this->lang->company->common . $this->lang->colon . $group->name . $this->lang->colon . $this->lang->group->managePriv;
             $this->view->position[] = $group->name;
@@ -210,6 +234,9 @@ class group extends control
             {
                 if(version_compare($currentVersion, $realVersion, '>=')) $changelog[] = join(',', $currentChangeLog);
             }
+
+            $this->lang->custom->common = $this->lang->group->config;
+            if($this->config->edition == 'max' and $this->config->vision == 'rnd' and isset($this->lang->baseline)) $this->lang->baseline->common = $this->lang->group->docTemplate;
 
             $this->view->group      = $group;
             $this->view->changelogs = ',' . join(',', $changelog) . ',';
@@ -227,9 +254,9 @@ class group extends control
             foreach($this->lang->resource as $module => $moduleActions)
             {
                 $modules[$module] = $this->lang->$module->common;
-                foreach($moduleActions as $action)
+                foreach($moduleActions as $key => $action)
                 {
-                    $actions[$module][$action] = $this->lang->$module->$action;
+                    $actions[$module][$key] = $this->lang->$module->$action;
                 }
             }
             $this->view->groups  = $this->group->getPairs();
@@ -259,12 +286,9 @@ class group extends control
         $groupUsers   = $this->group->getUserPairs($groupID);
         $allUsers     = $this->loadModel('dept')->getDeptUserPairs($deptID);
         $otherUsers   = array_diff_assoc($allUsers, $groupUsers);
+        $outsideUsers = $this->user->getPairs('outside|noclosed|noletter|noempty');
 
-        if($this->config->systemMode == 'new')
-        {
-            $outsideUsers = $this->user->getPairs('outside|noclosed|noletter|noempty');
-            $this->view->outsideUsers = array_diff_assoc($outsideUsers, $groupUsers);
-        }
+        $this->view->outsideUsers = array_diff_assoc($outsideUsers, $groupUsers);
 
         $title      = $this->lang->company->common . $this->lang->colon . $group->name . $this->lang->colon . $this->lang->group->manageMember;
         $position[] = $group->name;
@@ -294,23 +318,28 @@ class group extends control
             $this->group->updateProjectAdmin($groupID);
             return print(js::locate(inlink('manageProjectAdmin', "group=$groupID"), 'parent'));
         }
-        $group        = $this->group->getById($groupID);
-        $groupUsers   = $this->group->getUserPairs($groupID);
-        $userPrograms = $this->group->getUserPrograms($groupID);
-        $allUsers     = array('' => '') + $groupUsers + $this->loadModel('dept')->getDeptUserPairs($deptID);
+
+        list($programs, $projects, $products, $executions) = $this->group->getObject4AdminGroup();
+
+        $group      = $this->group->getById($groupID);
+        $groupUsers = $this->dao->select('t1.account, t2.realname')->from(TABLE_PROJECTADMIN)->alias('t1')->leftJoin(TABLE_USER)->alias('t2')->on('t1.account = t2.account')->fetchPairs();
 
         $title      = $this->lang->company->common . $this->lang->colon . $group->name . $this->lang->colon . $this->lang->group->manageMember;
         $position[] = $group->name;
         $position[] = $this->lang->group->manageMember;
 
-        $this->view->title        = $title;
-        $this->view->position     = $position;
-        $this->view->allUsers     = $allUsers;
-        $this->view->group        = $group;
-        $this->view->programs     = $this->dao->select('id, name')->from(TABLE_PROJECT)->where('type')->eq('project')->andWhere('vision')->eq($this->config->vision)->andWhere('deleted')->eq(0)->fetchPairs();
-        $this->view->deptTree     = $this->loadModel('dept')->getTreeMenu($rooteDeptID = 0, array('deptModel', 'createManageProjectAdminLink'), $groupID);
-        $this->view->groupUsers   = $groupUsers;
-        $this->view->userPrograms = $userPrograms;
+        $this->view->title         = $title;
+        $this->view->position      = $position;
+        $this->view->allUsers      = array('' => '') + $groupUsers + $this->loadModel('dept')->getDeptUserPairs($deptID);
+        $this->view->groupID       = $groupID;
+        $this->view->deptID        = $deptID;
+        $this->view->deptName      = $deptID ? $this->dao->findById($deptID)->from(TABLE_DEPT)->fetch('name') : '';
+        $this->view->programs      = $programs;
+        $this->view->projects      = $projects;
+        $this->view->products      = $products;
+        $this->view->executions    = $executions;
+        $this->view->deptTree      = $this->loadModel('dept')->getTreeMenu($rooteDeptID = 0, array('deptModel', 'createManageProjectAdminLink'), $groupID);
+        $this->view->projectAdmins = $this->group->getProjectAdmins();
 
         $this->display();
     }

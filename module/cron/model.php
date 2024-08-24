@@ -2,7 +2,7 @@
 /**
  * The model file of cron module of ZenTaoCMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     cron
@@ -98,21 +98,16 @@ class cronModel extends model
      * Change cron status to running
      *
      * @param int    $cronID
-     * @param string $lastTime
      * @access public
-     * @return bool|int
+     * @return bool
      */
-    public function changeStatusRunning($cronID, $lastTime)
+    public function changeStatusRunning($cronID)
     {
         $data = new stdclass();
-        $data->status = 'running';
+        $data->status   = 'running';
         $data->lastTime = date(DT_DATETIME1);
-        $rows = $this->dao->update(TABLE_CRON)->data($data)
-                                              ->where('id')->eq($cronID)
-                                              ->andWhere('status')->ne('running')
-                                              ->andWhere('lastTime')->eq($lastTime)
-                                              ->exec();
-        return dao::isError() ? false : $rows;
+        $this->dao->update(TABLE_CRON)->data($data)->where('id')->eq($cronID)->exec();
+        return !dao::isError();
     }
 
     /**

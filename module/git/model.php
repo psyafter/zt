@@ -2,7 +2,7 @@
 /**
  * The model file of git module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     git
@@ -128,12 +128,24 @@ class gitModel extends model
         $branches = $this->repo->getBranches($repo);
         $commits  = $repo->commits;
 
-        $gitlabAccountPairs = array();
+        $accountPairs = array();
         if($repo->SCM == 'Gitlab')
         {
-            $gitlabUserList = $this->loadModel('gitlab')->apiGetUsers($repo->gitlab);
-            $acountIDPairs  = $this->gitlab->getUserIdAccountPairs($repo->gitlab);
-            foreach($gitlabUserList as $gitlabUser) $gitlabAccountPairs[$gitlabUser->realname] = zget($acountIDPairs, $gitlabUser->id, '');
+            $userList      = $this->loadModel('gitlab')->apiGetUsers($repo->gitService);
+            $acountIDPairs = $this->gitlab->getUserIdAccountPairs($repo->gitService);
+            foreach($userList as $gitlabUser) $accountPairs[$gitlabUser->realname] = zget($acountIDPairs, $gitlabUser->id, '');
+        }
+        elseif($repo->SCM == 'Gitea')
+        {
+            $userList      = $this->loadModel('gitea')->apiGetUsers($repo->gitService);
+            $acountIDPairs = $this->gitea->getUserAccountIdPairs($repo->gitService, 'openID,account');
+            foreach($userList as $gitlabUser) $accountPairs[$gitlabUser->realname] = zget($acountIDPairs, $gitlabUser->id, '');
+        }
+        elseif($repo->SCM == 'Gogs')
+        {
+            $userList      = $this->loadModel('gogs')->apiGetUsers($repo->gitService);
+            $acountIDPairs = $this->gogs->getUserAccountIdPairs($repo->gitService, 'openID,account');
+            foreach($userList as $gitlabUser) $accountPairs[$gitlabUser->realname] = zget($acountIDPairs, $gitlabUser->id, '');
         }
 
         /* Update code commit history. */
@@ -147,13 +159,13 @@ class gitModel extends model
             $lastInDB = $this->repo->getLatestCommit($repo->id);
 
             /* Ignore unsynced branch. */
-            if(empty($lastInDB))
+            if($repo->synced != 1)
             {
                 if($printLog) $this->printLog("Please init repo {$repo->name}");
                 continue;
             }
 
-            $version = (int)$lastInDB->commit + 1;
+            $version = isset($lastInDB->commit) ? (int)$lastInDB->commit + 1 : 1;
             $logs    = $this->repo->getUnsyncedCommits($repo);
             $objects = array();
             if(!empty($logs))
@@ -166,7 +178,10 @@ class gitModel extends model
                     if($printLog) $this->printLog("parsing log {$log->revision}");
                     if($printLog) $this->printLog("comment is\n----------\n" . trim($log->msg) . "\n----------");
 
-                    $objects = $this->repo->parseComment($log->msg);
+                    $objects     = $this->repo->parseComment($log->msg);
+                    $lastVersion = $version;
+                    $version     = $this->repo->saveOneCommit($repo->id, $log, $version, $branch);
+
                     if($objects)
                     {
                         if($printLog) $this->printLog('extract' .
@@ -174,7 +189,20 @@ class gitModel extends model
                             ' task:' . join(' ', $objects['tasks']) .
                             ' bug:'  . join(',', $objects['bugs']));
 
-                        $this->repo->saveAction2PMS($objects, $log, $this->repoRoot, $repo->encoding, 'git', $gitlabAccountPairs);
+                        if($lastVersion != $version)
+                        {
+                            $this->repo->saveAction2PMS($objects, $log, $this->repoRoot, $repo->encoding, 'git', $accountPairs);
+
+                            /* Objects link commit. */
+                            foreach($objects as $objectType => $objectIDs)
+                            {
+                                $objectTypeMap = array('stories' => 'story', 'bugs' => 'bug', 'tasks' => 'task');
+                                if(empty($objectIDs) or !isset($objectTypeMap[$objectType])) continue;
+
+                                $this->post->$objectType = $objectIDs;
+                                $this->repo->link($repo->id, $log->revision, $objectTypeMap[$objectType]);
+                            }
+                        }
                     }
                     else
                     {
@@ -190,7 +218,6 @@ class gitModel extends model
                             if(strpos($log->msg, $comment) !== false) $this->loadModel('compile')->createByJob($job->id);
                         }
                     }
-                    $version  = $this->repo->saveOneCommit($repo->id, $log, $version, $branch);
                     $commits += count($logs);
                 }
             }
@@ -209,7 +236,7 @@ class gitModel extends model
      */
     public function setRepos()
     {
-        $repos    = $this->loadModel('repo')->getListBySCM('Git,Gitlab');
+        $repos    = $this->loadModel('repo')->getListBySCM('Git,Gitlab,Gogs,Gitea');
         $gitRepos = array();
         $paths    = array();
         foreach($repos as $repo)

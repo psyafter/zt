@@ -77,12 +77,17 @@ class baseHelper
 
         /* 处理$viewType和$vars。Set $viewType and $vars. */
         if(empty($viewType)) $viewType = $app->getViewType();
-        if(!is_array($vars)) parse_str($vars, $vars);
+        if(!is_array($vars))
+        {
+            /* Prevent + from converting to spaces. */
+            $vars = str_replace('+', '%2B', $vars);
+            parse_str($vars, $vars);
+        }
 
         /* 生成url链接的开始部分。Set the begin parts of the link. */
         if($config->requestType == 'PATH_INFO')  $link = $config->webRoot . $appName;
         if($config->requestType != 'PATH_INFO')  $link = $config->webRoot . $appName . basename($_SERVER['SCRIPT_NAME']);
-        if($config->requestType == 'PATH_INFO2') $link .= '/';
+        if($config->requestType == 'PATH_INFO2') $link = '/';
 
         /**
          * #1: RequestType为GET。When the requestType is GET.
@@ -131,7 +136,7 @@ class baseHelper
          */
         if($viewType == $app->getViewType())
         {
-            $link .= $moduleName . '/';
+            $link .= $moduleName . '.' . $viewType;
             return self::processOnlyBodyParam($link, $onlyBody);
         }
 
@@ -164,7 +169,7 @@ class baseHelper
         $sign = strpos($link, '?') === false ? "?" : "&";
         $appendString = '';
         if($onlyBody or self::inOnlyBodyMode()) $appendString = $sign . "onlybody=yes";
-        if(self::isWithTID()) $appendString .= empty($appendString) ? "{$sign}tid={$_GET['tid']}" : "&tid={$_GET['tid']}";
+        if(self::isWithTID() and strpos($link, 'tid=') === false) $appendString .= empty($appendString) ? "{$sign}tid={$_GET['tid']}" : "&tid={$_GET['tid']}";
         return $link . $appendString;
     }
 
@@ -173,7 +178,7 @@ class baseHelper
      * Check in only body mode or not.
      *
      * @access public
-     * @return void
+     * @return bool
      */
     public static function inOnlyBodyMode()
     {
@@ -459,7 +464,7 @@ class baseHelper
 
         $agent = $_SERVER["HTTP_USER_AGENT"];
 
-        /* Chrome should checked before safari.*/
+        /* Chrome should check before safari.*/
         if(strpos($agent, 'Firefox') !== false) $browser['name'] = "firefox";
         if(strpos($agent, 'Opera') !== false)   $browser['name'] = 'opera';
         if(strpos($agent, 'Safari') !== false)  $browser['name'] = 'safari';
@@ -735,6 +740,19 @@ class baseHelper
 
         session_write_close();
         session_id($sessionID);
+        if(ini_get('session.save_handler') == 'user' and isset($_GET['tid']))
+        {
+            $ztSessionHandler = new ztSessionHandler($_GET['tid']);
+            session_set_save_handler(
+                array($ztSessionHandler, "open"),
+                array($ztSessionHandler, "close"),
+                array($ztSessionHandler, "read"),
+                array($ztSessionHandler, "write"),
+                array($ztSessionHandler, "destroy"),
+                array($ztSessionHandler, "gc")
+            );
+            register_shutdown_function('session_write_close');
+        }
         session_start();
     }
 
@@ -835,7 +853,7 @@ function a($var)
  * Judge the server ip is local or not.
  *
  * @access public
- * @return void
+ * @return bool
  */
 function isLocalIP()
 {
@@ -936,38 +954,67 @@ function htmlSpecialString($string, $flags = '', $encoding = 'UTF-8')
     return htmlspecialchars($string, $flags, $encoding);
 }
 
-if (!function_exists('array_column'))
+if(!function_exists('array_column'))
 {
     function array_column(array $input, $columnKey, $indexKey = null)
     {
         $output = array();
 
-        foreach ($input as $row) {
-            $key = $value = null;
+        foreach($input as $row)
+        {
+            $key    = $value = null;
             $keySet = $valueSet = false;
 
-            if (null !== $indexKey && array_key_exists($indexKey, $row)) {
+            if(null !== $indexKey && array_key_exists($indexKey, $row))
+            {
                 $keySet = true;
-                $key = (string) $row[$indexKey];
+                $key    = (string) $row[$indexKey];
             }
 
-            if (null === $columnKey) {
+            if(null === $columnKey)
+            {
                 $valueSet = true;
-                $value = $row;
-            } elseif (\is_array($row) && \array_key_exists($columnKey, $row)) {
+                $value    = $row;
+            }
+            elseif(\is_array($row) && \array_key_exists($columnKey, $row))
+            {
                 $valueSet = true;
-                $value = $row[$columnKey];
+                $value    = $row[$columnKey];
+            }
+            elseif(\is_object($row) && \property_exists($row, $columnKey))
+            {
+                $valueSet = true;
+                $value    = $row->$columnKey;
             }
 
-            if ($valueSet) {
-                if ($keySet) {
+            if($valueSet)
+            {
+                if($keySet)
+                {
                     $output[$key] = $value;
-                } else {
+                }
+                else
+                {
                     $output[] = $value;
                 }
             }
         }
 
         return $output;
+    }
+}
+
+if (!function_exists('getallheaders')) {
+    function getallheaders()
+    {
+        $headers = array();
+        foreach ($_SERVER as $name => $value) 
+        {
+            if (substr($name, 0, 5) == 'HTTP_')
+            {
+                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+            }
+        }
+        return $headers;
     }
 }

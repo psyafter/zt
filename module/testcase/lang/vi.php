@@ -2,7 +2,7 @@
 /**
  * The testcase module English file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license  ZPL (http://zpl.pub/page/zplv12.html)
  * @author   Nguyễn Quốc Nho <quocnho@gmail.com>
  * @package  testcase
@@ -75,6 +75,9 @@ $lang->testcase->fromTesttask     = 'Từ Yêu cầu Test';
 $lang->testcase->fromCaselib      = 'Từ thư viện tình huống';
 $lang->testcase->deleted          = 'Đã xóa';
 $lang->testcase->browseUnits      = 'Unit Test';
+$lang->testcase->caseType         = 'Case Type';
+$lang->testcase->allType          = 'All Types';
+$lang->testcase->showAutoCase     = 'Automated Test Cases';
 
 $lang->case = $lang->testcase;  // For dao checking using. Because 'case' is a php keywords, so the module name is testcase, table name is still case.
 
@@ -110,7 +113,7 @@ $lang->testcase->importAction            = "Nhập tình huống";
 $lang->testcase->fileImport              = "Nhập CSV";
 $lang->testcase->importFromLib           = "Nhập từ thư viện";
 $lang->testcase->showImport              = "Hiển thị Nhập khẩu";
-$lang->testcase->exportTemplet           = "Xuất Mẫu";
+$lang->testcase->exportTemplate          = "Xuất Mẫu";
 $lang->testcase->export                  = "Xuất dữ liệu";
 $lang->testcase->exportAction            = "Xuất tình huống";
 $lang->testcase->reportChart             = 'Biểu đồ báo cáo';
@@ -123,6 +126,7 @@ $lang->testcase->groupName               = 'Tên nhóm';
 $lang->testcase->step                    = 'Các bước';
 $lang->testcase->stepChild               = 'Các bước con';
 $lang->testcase->viewAll                 = 'Tất cả tình huống';
+$lang->testcase->showScript              = 'Show Script';
 
 $lang->testcase->new = 'Mới';
 
@@ -222,6 +226,7 @@ $lang->testcase->action->unlinkedfromproject   = array('main' => '$date, 由 <st
 $lang->testcase->action->linked2execution      = array('main' => '$date, 由 <strong>$actor</strong> 关联到' . $lang->executionCommon . ' <strong>$extra</strong>。');
 $lang->testcase->action->unlinkedfromexecution = array('main' => '$date, 由 <strong>$actor</strong> 从' . $lang->executionCommon . ' <strong>$extra</strong> 移除。');
 
+$lang->testcase->featureBar['browse']['casetype']    = $lang->testcase->caseType;
 $lang->testcase->featureBar['browse']['all']         = $lang->testcase->allCases;
 $lang->testcase->featureBar['browse']['wait']        = 'Đang đợi';
 $lang->testcase->featureBar['browse']['needconfirm'] = $lang->testcase->needConfirm;
@@ -229,4 +234,5 @@ $lang->testcase->featureBar['browse']['group']       = 'Group View';
 $lang->testcase->featureBar['browse']['suite']       = 'Suite';
 $lang->testcase->featureBar['browse']['zerocase']    = 'Zero Case Story';
 $lang->testcase->featureBar['browse']['browseunits'] = 'Unit Test';
+$lang->testcase->featureBar['browse']['autocase']    = $lang->testcase->showAutoCase;
 $lang->testcase->featureBar['groupcase']             = $lang->testcase->featureBar['browse'];

@@ -77,6 +77,52 @@ class helper extends baseHelper
     }
 
     /**
+     * Verify that the system has opened on the feature.
+     *
+     * @param  string    $feature    scrum_risk | risk | scrum
+     * @static
+     * @access public
+     * @return bool
+     */
+    public static function hasFeature($feature)
+    {
+        global $config;
+
+        if(strpos($feature, '_') !== false)
+        {
+            $code = explode('_', $feature);
+            $code = $code[0] . ucfirst($code[1]);
+            return strpos(",$config->disabledFeatures,", ",{$code},") === false;
+        }
+        else
+        {
+            if(in_array($feature, array('scrum', 'waterfall', 'agileplus', 'waterfallplus'))) return strpos(",$config->disabledFeatures,", ",{$feature},") === false;
+
+            $hasFeature       = false;
+            $canConfigFeature = false;
+            foreach($config->featureGroup as $group => $modules)
+            {
+                foreach($modules as $module)
+                {
+                    if($feature == $group or $feature == $module)
+                    {
+                        $canConfigFeature = true;
+                        if(in_array($group, array('scrum', 'waterfall', 'agileplus', 'waterfallplus')))
+                        {
+                            if(helper::hasFeature("{$group}") and helper::hasFeature("{$group}_{$module}")) $hasFeature = true;
+                        }
+                        else
+                        {
+                            if(helper::hasFeature("{$group}_{$module}")) $hasFeature = true;
+                        }
+                    }
+                }
+            }
+            return !$canConfigFeature or ($hasFeature && strpos(",$config->disabledFeatures,", ",{$feature},") === false);
+        }
+    }
+
+    /**
      * Convert encoding.
      *
      * @param  string $string
@@ -259,6 +305,49 @@ class helper extends baseHelper
     {
         throw EndResponseException::create($content);
     }
+
+    /**
+     * Get date interval.
+     *
+     * @param  string|int $begin
+     * @param  string|int $end
+     * @param  string     $format  %Y-%m-%d %H:%i:%s
+     * @static
+     * @access public
+     * @return object|string
+     */
+    public static function getDateInterval($begin, $end = '', $format = '')
+    {
+        if(empty($end))    $end   = time();
+        if(is_int($begin)) $begin = date('Y-m-d H:i:s', $begin);
+        if(is_int($end))   $end   = date('Y-m-d H:i:s', $end);
+
+        $begin    = date_create($begin);
+        $end      = date_create($end);
+        $interval = date_diff($begin, $end);
+
+        if($format)
+        {
+            $dateInterval = $interval->format($format);
+        }
+        else
+        {
+            $dateInterval = new stdClass();
+            $dateInterval->year    = $interval->format('%y');
+            $dateInterval->month   = $interval->format('%m');
+            $dateInterval->day     = $interval->format('%d');
+            $dateInterval->hour    = $interval->format('%H');
+            $dateInterval->minute  = $interval->format('%i');
+            $dateInterval->secound = $interval->format('%s');
+            $dateInterval->year    = $dateInterval->year == '00' ? 0 : ltrim($dateInterval->year, '0');
+            $dateInterval->month   = $dateInterval->month == '00' ? 0 : ltrim($dateInterval->month, '0');
+            $dateInterval->day     = $dateInterval->day == '00' ? 0 : ltrim($dateInterval->day, '0');
+            $dateInterval->hour    = $dateInterval->hour == '00' ? 0 : ltrim($dateInterval->hour, '0');
+            $dateInterval->minute  = $dateInterval->minute == '00' ? 0 : ltrim($dateInterval->minute, '0');
+            $dateInterval->secound = $dateInterval->secound == '00' ? 0 : ltrim($dateInterval->secound, '0');
+        }
+        return $dateInterval;
+    }
 }
 
 /**
@@ -285,7 +374,7 @@ function formatTime($time, $format = '')
 {
     $time = str_replace('0000-00-00', '', $time);
     $time = str_replace('00:00:00', '', $time);
-    if(trim($time) == '') return ;
+    if(trim($time) == '') return '';
     if($format) return date($format, strtotime($time));
     return trim($time);
 }

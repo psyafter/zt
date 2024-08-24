@@ -2,7 +2,7 @@
 /**
  * The model file of release module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     release
@@ -23,19 +23,27 @@ class projectreleaseModel extends model
      */
     public function getByID($releaseID, $setImgSize = false)
     {
-        $release = $this->dao->select('t1.*, t2.id as buildID, t2.filePath, t2.scmPath, t2.name as buildName, t2.execution, t3.name as productName, t3.type as productType')
+        $release = $this->dao->select('t1.*, t2.name as productName, t2.type as productType')
             ->from(TABLE_RELEASE)->alias('t1')
-            ->leftJoin(TABLE_BUILD)->alias('t2')->on('t1.build = t2.id')
-            ->leftJoin(TABLE_PRODUCT)->alias('t3')->on('t1.product = t3.id')
+            ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id')
             ->where('t1.id')->eq((int)$releaseID)
             ->orderBy('t1.id DESC')
             ->fetch();
         if(!$release) return false;
 
+        $release->project = trim($release->project, ',');
+        $release->branch  = trim($release->branch, ',');
+        $release->build   = trim($release->build, ',');
+
+        $release->branches = array();
+        $branchIdList = explode(',', $release->branch);
+        foreach($branchIdList as $branchID) $release->branches[$branchID] = $branchID;
+
         $this->loadModel('file');
         $release = $this->file->replaceImgURL($release, 'desc');
-        $release->files = $this->file->getByObject('release', $releaseID);
-        if(empty($release->files))$release->files = $this->file->getByObject('build', $release->buildID);
+        $release->files      = $this->file->getByObject('release', $releaseID);
+        $release->buildInfos = $this->dao->select('id,project,product,execution,name,scmPath,filePath')->from(TABLE_BUILD)->where('id')->in($release->build)->fetchAll('id');
+        if(empty($release->files))$release->files = $this->file->getByObject('build', $release->build);
         if($setImgSize) $release->desc = $this->file->setImgSize($release->desc);
         return $release;
     }
@@ -49,18 +57,71 @@ class projectreleaseModel extends model
      * @access public
      * @return array
      */
-    public function getList($projectID, $type = 'all', $orderBy = 't1.date_desc')
+    public function getList($projectID, $type = 'all', $orderBy = 't1.date_desc', $pager = null)
     {
-        return $this->dao->select('t1.*, t2.name as productName, t3.id as buildID, t3.name as buildName, t3.execution, t4.name as executionName')
-            ->from(TABLE_RELEASE)->alias('t1')
+        $releases = $this->dao->select('t1.*, t2.name as productName, t2.type as productType')->from(TABLE_RELEASE)->alias('t1')
             ->leftJoin(TABLE_PRODUCT)->alias('t2')->on('t1.product = t2.id')
-            ->leftJoin(TABLE_BUILD)->alias('t3')->on('t1.build = t3.id')
-            ->leftJoin(TABLE_EXECUTION)->alias('t4')->on('t3.execution = t4.id')
-            ->where('t1.project')->eq((int)$projectID)
-            ->beginIF($type != 'all')->andWhere('t1.status')->eq($type)->fi()
-            ->andWhere('t1.deleted')->eq(0)
+            ->where('t1.deleted')->eq(0)
+            ->andWhere("FIND_IN_SET($projectID, t1.project)")
+            ->beginIF($type != 'all' && $type != 'review')->andWhere('t1.status')->eq($type)->fi()
+            ->beginIF($type == 'review')->andWhere("FIND_IN_SET('{$this->app->user->account}', t1.reviewers)")->fi()
             ->orderBy($orderBy)
+            ->page($pager)
             ->fetchAll();
+
+        $buildIdList   = array();
+        $productIdList = array();
+        foreach($releases as $release)
+        {
+            $release->project = trim($release->project, ',');
+            $release->branch  = trim($release->branch, ',');
+            $release->build   = trim($release->build, ',');
+
+            $buildIdList = array_merge($buildIdList, explode(',', $release->build));
+            $productIdList[$release->product] = $release->product;
+        }
+
+        $branchGroup = $this->loadModel('branch')->getByProducts($productIdList);
+        $builds      = $this->dao->select("id,project,product,branch,execution,name,scmPath,filePath")->from(TABLE_BUILD)->where('id')->in(array_unique($buildIdList))->fetchAll('id');
+        foreach($releases as $release)
+        {
+            $branchName = '';
+            if(isset($branchGroup[$release->product]))
+            {
+                $branches = $branchGroup[$release->product];
+                foreach(explode(',', $release->branch) as $releaseBranch)
+                {
+                    if($releaseBranch == '') continue;
+                    $branchName .= zget($branches, $releaseBranch, '');
+                    $branchName .= ',';
+                }
+                $branchName = trim($branchName, ',');
+            }
+            $release->branchName = $branchName;
+
+            $release->buildInfos = array();
+            foreach(explode(',', $release->build) as $buildID)
+            {
+                if(empty($buildID)) continue;
+
+                $build      = $builds[$buildID];
+                $branchName = '';
+                if(isset($branchGroup[$build->product]))
+                {
+                    $branches = $branchGroup[$build->product];
+                    foreach(explode(',', $build->branch) as $buildBranch)
+                    {
+                        if($buildBranch == '') continue;
+                        $branchName .= zget($branches, $buildBranch, '');
+                        $branchName .= ',';
+                    }
+                    $branchName = trim($branchName, ',');
+                }
+                $build->branchName = $branchName;
+                $release->buildInfos[$buildID] = $build;
+            }
+        }
+        return $releases;
     }
 
     /**
@@ -72,8 +133,10 @@ class projectreleaseModel extends model
      */
     public function getLast($projectID)
     {
+        $project = (int)$projectID;
         return $this->dao->select('id, name')->from(TABLE_RELEASE)
-            ->where('project')->eq((int)$projectID)
+            ->where('deleted')->eq(0)
+            ->andWhere("FIND_IN_SET($projectID, project)")
             ->orderBy('date DESC')
             ->limit(1)
             ->fetch();
@@ -88,50 +151,18 @@ class projectreleaseModel extends model
      */
     public function getReleasedBuilds($projectID)
     {
-        $releases = $this->dao->select('build')->from(TABLE_RELEASE)
+        $releases = $this->dao->select('shadow,build')->from(TABLE_RELEASE)
             ->where('deleted')->eq(0)
-            ->andWhere('project')->eq($projectID)
-            ->fetchAll('build');
-        return array_keys($releases);
-    }
+            ->andWhere("FIND_IN_SET($projectID, project)")
+            ->fetchAll();
 
-    /**
-     * Update a release.
-     *
-     * @param  int    $releaseID
-     * @access public
-     * @return void
-     */
-    public function update($releaseID)
-    {
-        /* Init vars. */
-        $releaseID  = (int)$releaseID;
-        $oldRelease = $this->dao->select('*')->from(TABLE_RELEASE)->where('id')->eq($releaseID)->fetch();
-        $branch     = $this->dao->select('branch')->from(TABLE_BUILD)->where('id')->eq((int)$this->post->build)->fetch('branch');
-
-        /* Check build if build is required. */
-        if(strpos($this->config->release->edit->requiredFields, 'build') !== false and $this->post->build == false) return dao::$errors['build'] = sprintf($this->lang->error->notempty, $this->lang->release->build);
-
-        $release = fixer::input('post')->stripTags($this->config->release->editor->edit['id'], $this->config->allowedTags)
-            ->add('branch',  (int)$branch)
-            ->join('mailto', ',')
-            ->setIF(!$this->post->marker, 'marker', 0)
-            ->cleanInt('product')
-            ->remove('files,labels,allchecker,uid')
-            ->get();
-
-        $release = $this->loadModel('file')->processImgURL($release, $this->config->release->editor->edit['id'], $this->post->uid);
-        $this->dao->update(TABLE_RELEASE)->data($release)
-            ->autoCheck()
-            ->batchCheck($this->config->release->edit->requiredFields, 'notempty')
-            ->check('name', 'unique', "id != '$releaseID' AND product = '{$release->product}' AND branch = '$branch' AND deleted = '0'")
-            ->where('id')->eq((int)$releaseID)
-            ->exec();
-        if(!dao::isError())
+        $buildIdList = array();
+        foreach($releases as $release)
         {
-            $this->file->updateObjectID($this->post->uid, $releaseID, 'release');
-            return common::createChanges($oldRelease, $release);
+            $buildIdList   = array_merge($buildIdList, explode(',', trim($release->build, ',')));
+            $buildIdList[] = $release->shadow;
         }
+        return $buildIdList;
     }
 
     /**

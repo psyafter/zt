@@ -2,7 +2,7 @@
 /**
  * The en file of block module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     block
@@ -10,8 +10,6 @@
  * @link        https://www.zentao.pm
  */
 global $config;
-$lang->block = new stdclass();
-$lang->block->common     = 'Block';
 $lang->block->id         = 'ID';
 $lang->block->params     = 'Params';
 $lang->block->name       = 'Name';
@@ -38,15 +36,19 @@ $lang->block->lblBlock     = 'Block';
 $lang->block->lblNum       = 'Number';
 $lang->block->lblHtml      = 'HTML';
 $lang->block->dynamic      = 'Dynamics';
-$lang->block->assignToMe   = 'Todo';
+$lang->block->assignToMe   = 'Work';
+$lang->block->wait         = 'Wait';
+$lang->block->doing        = 'Doing';
 $lang->block->done         = 'Done';
 $lang->block->lblFlowchart = 'Flowchart';
 $lang->block->welcome      = 'Welcome';
 $lang->block->lblTesttask  = 'Test Request Detail';
 $lang->block->contribute   = 'Personal Contribution';
+$lang->block->finish       = 'Finish';
+$lang->block->guide        = 'Guide';
 
 $lang->block->leftToday           = 'Remained Work';
-$lang->block->myTask              = 'My Tasks';
+$lang->block->myTask              = 'Tasks';
 $lang->block->myStory             = 'Stories';
 $lang->block->myBug               = 'Bugs';
 $lang->block->myExecution         = 'Unclosed ' . $lang->executionCommon . 's';
@@ -74,9 +76,10 @@ $lang->block->consumedHours       = 'Cost';
 $lang->block->time                = 'No';
 $lang->block->week                = 'Week';
 $lang->block->month               = 'Month';
-$lang->block->selectProduct       = 'Product selection';
+$lang->block->selectProduct       = "{$lang->productCommon} selection";
 $lang->block->of                  = ' of ';
 $lang->block->remain              = 'Left';
+$lang->block->allStories          = 'All';
 
 $lang->block->createBlock        = 'Add Block';
 $lang->block->editBlock          = 'Edit Block';
@@ -90,10 +93,11 @@ $lang->block->remove             = 'Remove';
 $lang->block->refresh            = 'Refresh';
 $lang->block->nbsp               = ' ';
 $lang->block->hidden             = 'Hide';
-$lang->block->dynamicInfo        = "<span class='timeline-tag'>%s</span> <span class='timeline-text'>%s <em>%s</em> %s <a href='%s' title='%s'>%s</a></span>";
-$lang->block->noLinkDynamic      = "<span class='timeline-tag'>%s</span> <span class='timeline-text' title='%s'>%s <em>%s</em> %s %s</span>";
+$lang->block->dynamicInfo        = "<span class='timeline-tag'>%s</span> <span class='timeline-text'>%s<span class='label-action'>%s</span>%s<a href='%s' title='%s'>%s</a></span>";
+$lang->block->noLinkDynamic      = "<span class='timeline-tag'>%s</span> <span class='timeline-text' title='%s'>%s<span class='label-action'>%s</span>%s<span class='label-name'>%s</span></span>";
 $lang->block->cannotPlaceInLeft  = 'Cannot place the block at left side.';
 $lang->block->cannotPlaceInRight = 'Cannot place the block at right side.';
+$lang->block->tutorial           = 'Enter the tutorial';
 
 $lang->block->productName  = $lang->productCommon . ' Name';
 $lang->block->totalStory   = 'Total Story';
@@ -102,17 +106,18 @@ $lang->block->totalRelease = 'Release The Number';
 $lang->block->totalTask    = 'The Total ' . $lang->task->common;
 
 $lang->block->totalInvestment = 'Total investment';
-$lang->block->totalPeople     = 'Total number';
+$lang->block->totalPeople     = 'Total';
 $lang->block->spent           = 'Has Been Spent';
 $lang->block->budget          = 'Budget';
 $lang->block->left            = 'Remain';
 
 $lang->block->titleList['flowchart']      = 'Flow Chart';
+$lang->block->titleList['guide']          = 'Guides';
 $lang->block->titleList['statistic']      = 'Statistic';
-$lang->block->titleList['recentproject']  = 'Recent Project';
+$lang->block->titleList['recentproject']  = "Recent {$lang->projectCommon}";
 $lang->block->titleList['assigntome']     = 'Assign to me';
-$lang->block->titleList['projectteam']    = 'Project manpower input';
-$lang->block->titleList['project']        = 'Project List';
+$lang->block->titleList['projectteam']    = "{$lang->projectCommon} manpower input";
+$lang->block->titleList['project']        = "{$lang->projectCommon} List";
 $lang->block->titleList['dynamic']        = 'Dynamic';
 $lang->block->titleList['list']           = 'Todo List';
 $lang->block->titleList['contribute']     = 'Contribute';
@@ -120,7 +125,7 @@ $lang->block->titleList['scrumoverview']  = 'Scrumoverview';
 $lang->block->titleList['scrumtest']      = 'Scrum Test';
 $lang->block->titleList['scrumlist']      = 'Scrum List';
 $lang->block->titleList['sprint']         = 'Sprint';
-$lang->block->titleList['projectdynamic'] = 'Project Dynamic';
+$lang->block->titleList['projectdynamic'] = "{$lang->projectCommon} Dynamic";
 $lang->block->titleList['bug']            = 'Bug';
 $lang->block->titleList['case']           = 'Case';
 $lang->block->titleList['testtask']       = 'Test Task';
@@ -135,7 +140,9 @@ $lang->block->default['waterfall']['project']['6']['block']  = 'projectdynamic';
 $lang->block->default['waterfall']['project']['6']['grid']   = 4;
 $lang->block->default['waterfall']['project']['6']['source'] = 'project';
 
-$lang->block->default['scrum']['project']['1']['title'] =  'Project Overview';
+$lang->block->default['waterfallplus'] = $lang->block->default['waterfall'];
+
+$lang->block->default['scrum']['project']['1']['title'] = $lang->projectCommon . ' Overview';
 $lang->block->default['scrum']['project']['1']['block'] = 'scrumoverview';
 $lang->block->default['scrum']['project']['1']['grid']  = 8;
 
@@ -162,7 +169,8 @@ $lang->block->default['scrum']['project']['4']['grid']  = 4;
 $lang->block->default['scrum']['project']['5']['title'] = 'Dynamic';
 $lang->block->default['scrum']['project']['5']['block'] = 'projectdynamic';
 $lang->block->default['scrum']['project']['5']['grid']  = 4;
-$lang->block->default['kanban'] = $lang->block->default['scrum'];
+$lang->block->default['kanban']    = $lang->block->default['scrum'];
+$lang->block->default['agileplus'] = $lang->block->default['scrum'];
 
 $lang->block->default['product']['1']['title'] = $lang->productCommon . ' Report';
 $lang->block->default['product']['1']['block'] = 'statistic';
@@ -269,8 +277,8 @@ $lang->block->default['full']['my']['2']['block']  = 'dynamic';
 $lang->block->default['full']['my']['2']['grid']   = 4;
 $lang->block->default['full']['my']['2']['source'] = '';
 
-$lang->block->default['full']['my']['3']['title']  = 'Flow Chart';
-$lang->block->default['full']['my']['3']['block']  = 'flowchart';
+$lang->block->default['full']['my']['3']['title']  = 'Guides';
+$lang->block->default['full']['my']['3']['block']  = 'guide';
 $lang->block->default['full']['my']['3']['source'] = '';
 $lang->block->default['full']['my']['3']['grid']   = 8;
 
@@ -280,22 +288,19 @@ $lang->block->default['full']['my']['4']['grid']            = 4;
 $lang->block->default['full']['my']['4']['source']          = 'todo';
 $lang->block->default['full']['my']['4']['params']['count'] = '20';
 
-if($config->systemMode == 'new')
-{
-    $lang->block->default['full']['my']['5']['title']           = 'Project Statistic';
-    $lang->block->default['full']['my']['5']['block']           = 'statistic';
-    $lang->block->default['full']['my']['5']['source']          = 'project';
-    $lang->block->default['full']['my']['5']['grid']            = 8;
-    $lang->block->default['full']['my']['5']['params']['count'] = '20';
-}
+$lang->block->default['full']['my']['5']['title']           = "{$lang->projectCommon} Statistic";
+$lang->block->default['full']['my']['5']['block']           = 'statistic';
+$lang->block->default['full']['my']['5']['source']          = 'project';
+$lang->block->default['full']['my']['5']['grid']            = 8;
+$lang->block->default['full']['my']['5']['params']['count'] = '20';
 
 $lang->block->default['full']['my']['6']['title']  = 'Personal Contribution';
 $lang->block->default['full']['my']['6']['block']  = 'contribute';
 $lang->block->default['full']['my']['6']['source'] = '';
 $lang->block->default['full']['my']['6']['grid']   = 4;
 
-$lang->block->default['full']['my']['7']['title']  = 'Recent Projects';
-$lang->block->default['full']['my']['7']['block']  = 'recentproject';
+$lang->block->default['full']['my']['7']['title']  = "Recent {$lang->projectCommon}s";
+$lang->block->default['full']['my']['7']['block']  = "recent{$lang->projectCommon}";
 $lang->block->default['full']['my']['7']['source'] = 'project';
 $lang->block->default['full']['my']['7']['grid']   = 8;
 
@@ -304,31 +309,25 @@ $lang->block->default['full']['my']['8']['block']  = 'assigntome';
 $lang->block->default['full']['my']['8']['source'] = '';
 $lang->block->default['full']['my']['8']['grid']   = 8;
 
-$lang->block->default['full']['my']['8']['params']['todoCount']    = '20';
-$lang->block->default['full']['my']['8']['params']['taskCount']    = '20';
-$lang->block->default['full']['my']['8']['params']['bugCount']     = '20';
-$lang->block->default['full']['my']['8']['params']['riskCount']    = '20';
-$lang->block->default['full']['my']['8']['params']['issueCount']   = '20';
-$lang->block->default['full']['my']['8']['params']['storyCount']   = '20';
-$lang->block->default['full']['my']['8']['params']['meetingCount'] = '20';
+$lang->block->default['full']['my']['8']['params']['todoCount']     = '20';
+$lang->block->default['full']['my']['8']['params']['taskCount']     = '20';
+$lang->block->default['full']['my']['8']['params']['bugCount']      = '20';
+$lang->block->default['full']['my']['8']['params']['riskCount']     = '20';
+$lang->block->default['full']['my']['8']['params']['issueCount']    = '20';
+$lang->block->default['full']['my']['8']['params']['storyCount']    = '20';
+$lang->block->default['full']['my']['8']['params']['reviewCount']   = '20';
+$lang->block->default['full']['my']['8']['params']['meetingCount']  = '20';
+$lang->block->default['full']['my']['8']['params']['feedbackCount'] = '20';
 
-if($config->systemMode == 'new')
-{
-    $lang->block->default['full']['my']['9']['title']  = 'Manpower Input';
-    $lang->block->default['full']['my']['9']['block']  = 'projectteam';
-    $lang->block->default['full']['my']['9']['source'] = 'project';
-    $lang->block->default['full']['my']['9']['grid']   = 8;
-}
+$lang->block->default['full']['my']['9']['title']  = 'Manpower Input';
+$lang->block->default['full']['my']['9']['block']  = 'projectteam';
+$lang->block->default['full']['my']['9']['source'] = 'project';
+$lang->block->default['full']['my']['9']['grid']   = 8;
 
-$lang->block->default['full']['my']['10']['title']  = 'Project List';
-$lang->block->default['full']['my']['10']['block']  = 'project';
+$lang->block->default['full']['my']['10']['title']  = "{$lang->projectCommon} List";
+$lang->block->default['full']['my']['10']['block']  = $lang->projectCommon;
 $lang->block->default['full']['my']['10']['source'] = 'project';
 $lang->block->default['full']['my']['10']['grid']   = 8;
-if($config->systemMode == 'classic')
-{
-    $lang->block->default['full']['my']['10']['block']  = 'execution';
-    $lang->block->default['full']['my']['10']['source'] = 'execution';
-}
 
 $lang->block->default['full']['my']['10']['params']['orderBy'] = 'id_desc';
 $lang->block->default['full']['my']['10']['params']['count']   = '15';
@@ -338,7 +337,7 @@ $lang->block->type    = 'Type';
 $lang->block->orderBy = 'Order by';
 
 $lang->block->availableBlocks              = new stdclass();
-$lang->block->availableBlocks->todo        = 'schedule';
+$lang->block->availableBlocks->todo        = 'Schedule';
 $lang->block->availableBlocks->task        = 'Tasks';
 $lang->block->availableBlocks->bug         = 'Bugs';
 $lang->block->availableBlocks->case        = 'Cases';
@@ -353,32 +352,38 @@ $lang->block->availableBlocks->testtask    = 'Requests';
 $lang->block->availableBlocks->risk        = 'Risks';
 $lang->block->availableBlocks->issue       = 'Issues';
 $lang->block->availableBlocks->meeting     = 'Meetings';
+$lang->block->availableBlocks->feedback    = 'Feedbacks';
+$lang->block->availableBlocks->ticket      = 'Tickets';
 
-if($config->systemMode == 'new') $lang->block->moduleList['project'] = 'Project';
 $lang->block->moduleList['product']   = $lang->productCommon;
+$lang->block->moduleList['project']   = $lang->projectCommon;
 $lang->block->moduleList['execution'] = $lang->execution->common;
 $lang->block->moduleList['qa']        = 'Test';
 $lang->block->moduleList['todo']      = 'Todo';
 
 $lang->block->modules['project'] = new stdclass();
 $lang->block->modules['project']->availableBlocks = new stdclass();
-$lang->block->modules['project']->availableBlocks->project       = 'Project List';
-$lang->block->modules['project']->availableBlocks->recentproject = 'Recent Project';
-$lang->block->modules['project']->availableBlocks->statistic     = 'Project Statistic';
-if($config->systemMode == 'new') $lang->block->modules['project']->availableBlocks->projectteam = 'Project Manpower Input';
+$lang->block->modules['project']->availableBlocks->project       = "{$lang->projectCommon} List";
+$lang->block->modules['project']->availableBlocks->recentproject = "Recent {$lang->projectCommon}";
+$lang->block->modules['project']->availableBlocks->statistic     = "{$lang->projectCommon} Statistic";
+$lang->block->modules['project']->availableBlocks->projectteam   = "{$lang->projectCommon} Manpower Input";
 
 $lang->block->modules['scrum']['index'] = new stdclass();
 $lang->block->modules['scrum']['index']->availableBlocks = new stdclass();
-$lang->block->modules['scrum']['index']->availableBlocks->scrumoverview  = 'Project Overview';
+$lang->block->modules['scrum']['index']->availableBlocks->scrumoverview  = "{$lang->projectCommon} Overview";
 $lang->block->modules['scrum']['index']->availableBlocks->scrumlist      = $lang->executionCommon . ' List';
 $lang->block->modules['scrum']['index']->availableBlocks->sprint         = $lang->executionCommon . ' Overview';
 $lang->block->modules['scrum']['index']->availableBlocks->scrumtest      = 'Test Version';
 $lang->block->modules['scrum']['index']->availableBlocks->projectdynamic = 'Dynamics';
 
+$lang->block->modules['agileplus']['index'] = $lang->block->modules['scrum']['index'];
+
 $lang->block->modules['waterfall']['index'] = new stdclass();
 $lang->block->modules['waterfall']['index']->availableBlocks = new stdclass();
 $lang->block->modules['waterfall']['index']->availableBlocks->waterfallgantt = 'Plan Gantt Chart';
 $lang->block->modules['waterfall']['index']->availableBlocks->projectdynamic = 'Dynamics';
+
+$lang->block->modules['waterfallplus']['index'] = $lang->block->modules['waterfall']['index'];
 
 $lang->block->modules['product'] = new stdclass();
 $lang->block->modules['product']->availableBlocks = new stdclass();
@@ -418,10 +423,10 @@ $lang->block->orderByList->product['status_asc']  = 'Product Status ASC';
 $lang->block->orderByList->product['status_desc'] = 'Product Status DESC';
 
 $lang->block->orderByList->project = array();
-$lang->block->orderByList->project['id_asc']      = 'Project ID ASC';
-$lang->block->orderByList->project['id_desc']     = 'Project ID DESC';
-$lang->block->orderByList->project['status_asc']  = 'Project Status ASC';
-$lang->block->orderByList->project['status_desc'] = 'Project Status DESC';
+$lang->block->orderByList->project['id_asc']      = "{$lang->projectCommon} ID ASC";
+$lang->block->orderByList->project['id_desc']     = "{$lang->projectCommon} ID DESC";
+$lang->block->orderByList->project['status_asc']  = "{$lang->projectCommon} Status ASC";
+$lang->block->orderByList->project['status_desc'] = "{$lang->projectCommon} Status DESC";
 
 $lang->block->orderByList->execution = array();
 $lang->block->orderByList->execution['id_asc']      = 'Execution ID ASC';
@@ -465,13 +470,16 @@ $lang->block->orderByList->story['status_desc'] = 'Story Status DESC';
 $lang->block->orderByList->story['stage_asc']   = 'Story Phase ASC';
 $lang->block->orderByList->story['stage_desc']  = 'Story Phase DESC';
 
-$lang->block->todoCount    = 'Todo';
-$lang->block->taskCount    = 'Task';
-$lang->block->bugCount     = 'Bug';
-$lang->block->riskCount    = 'Risk';
-$lang->block->issueCount   = 'Issues';
-$lang->block->storyCount   = 'Stories';
-$lang->block->meetingCount = 'Meetings';
+$lang->block->todoCount     = 'Todo';
+$lang->block->taskCount     = 'Task';
+$lang->block->bugCount      = 'Bug';
+$lang->block->riskCount     = 'Risk';
+$lang->block->issueCount    = 'Issues';
+$lang->block->storyCount    = 'Stories';
+$lang->block->reviewCount   = 'Reviews';
+$lang->block->meetingCount  = 'Meetings';
+$lang->block->feedbackCount = 'Feedbacks';
+$lang->block->ticketCount   = 'Tickets';
 
 $lang->block->typeList = new stdclass();
 
@@ -521,18 +529,18 @@ $lang->block->typeList->testtask['done']    = 'Done';
 $lang->block->typeList->testtask['all']     = 'All';
 
 $lang->block->modules['project']->moreLinkList = new stdclass();
-$lang->block->modules['project']->moreLinkList->recentproject  = 'project|browse|';
-$lang->block->modules['project']->moreLinkList->statistic      = 'project|browse|';
-$lang->block->modules['project']->moreLinkList->project        = 'project|browse|';
+$lang->block->modules['project']->moreLinkList->recentproject  = "project|browse|";
+$lang->block->modules['project']->moreLinkList->statistic      = "project|browse|";
+$lang->block->modules['project']->moreLinkList->project        = "project|browse|";
 $lang->block->modules['project']->moreLinkList->cmmireport     = 'weekly|index|';
 $lang->block->modules['project']->moreLinkList->cmmiestimate   = 'workestimation|index|';
 $lang->block->modules['project']->moreLinkList->cmmiissue      = 'issue|browse|';
 $lang->block->modules['project']->moreLinkList->cmmirisk       = 'risk|browse|';
-$lang->block->modules['project']->moreLinkList->scrumlist      = 'project|execution|';
+$lang->block->modules['project']->moreLinkList->scrumlist      = "project|execution|";
 $lang->block->modules['project']->moreLinkList->scrumtest      = 'testtask|browse|';
 $lang->block->modules['project']->moreLinkList->scrumproduct   = 'product|all|';
-$lang->block->modules['project']->moreLinkList->sprint         = 'project|execution|';
-$lang->block->modules['project']->moreLinkList->projectdynamic = 'project|dynamic|';
+$lang->block->modules['project']->moreLinkList->sprint         = "project|execution|";
+$lang->block->modules['project']->moreLinkList->projectdynamic = "project|dynamic|";
 
 $lang->block->modules['product']->moreLinkList        = new stdclass();
 $lang->block->modules['product']->moreLinkList->list  = 'product|all|';
@@ -564,14 +572,14 @@ $lang->block->gridOptions[4] = 'Right';
 
 $lang->block->flowchart            = array();
 $lang->block->flowchart['admin']   = array('Administrator', 'Add Departments', 'Add Users', 'Maintain Privileges');
-if($config->systemMode == 'new') $lang->block->flowchart['program'] = array('Program Owner', 'Create Program', 'Link Product', "Create Project", "Budgeting and planning", 'Add Stakeholder');
+if($config->systemMode == 'ALM') $lang->block->flowchart['program'] = array('Program Owner', 'Create Program', "Link {$lang->productCommon}", "Create {$lang->projectCommon}", "Budgeting and planning", 'Add Stakeholder');
 $lang->block->flowchart['product'] = array($lang->productCommon . ' Owner', 'Add ' . $lang->productCommon, 'Maintain Modules', 'Maintain Plans', 'Maintain Stories', 'Create Releases');
-$lang->block->flowchart['project'] = array('Project Manager', 'Add projects and ' . $lang->executionCommon . 's', 'Maintain Teams', 'Link Stories', 'Create Tasks', 'Track');
-if($config->systemMode == 'new') $lang->block->flowchart['project'] = array('Project Manager', 'Add ' . $lang->executionCommon . 's', 'Maintain Teams', 'Link Stories', 'Create Tasks', 'Track');
+$lang->block->flowchart['project'] = array('Project Manager', "Add {$lang->productCommon}s and " . $lang->execution->common . 's', 'Maintain Teams', 'Link Stories', 'Create Tasks', 'Track');
 $lang->block->flowchart['dev']     = array('Dev Team', 'Claim Tasks/Bugs', 'Design', 'Update Status', 'Finish Tasks/Bugs', 'Commit Code');
 $lang->block->flowchart['tester']  = array('Test Team', 'Write Cases', 'Run Cases', 'Report Bugs', 'Verify Bugs', 'Close Bugs');
 
 $lang->block->zentaoapp = new stdclass();
+$lang->block->zentaoapp->common               = 'ZenTao App';
 $lang->block->zentaoapp->thisYearInvestment   = 'Investment The Year';
 $lang->block->zentaoapp->sinceTotalInvestment = 'Total Investment';
 $lang->block->zentaoapp->myStory              = 'My Story';
@@ -579,8 +587,8 @@ $lang->block->zentaoapp->allStorySum          = 'Total Stories';
 $lang->block->zentaoapp->storyCompleteRate    = 'Story CompleteRate';
 $lang->block->zentaoapp->latestExecution      = 'Latest Execution';
 $lang->block->zentaoapp->involvedExecution    = 'Involved Execution';
-$lang->block->zentaoapp->mangedProduct        = 'Manged Product';
-$lang->block->zentaoapp->involvedProject      = 'Involved Project';
+$lang->block->zentaoapp->mangedProduct        = "Manged {$lang->productCommon}";
+$lang->block->zentaoapp->involvedProject      = "Involved {$lang->projectCommon}";
 $lang->block->zentaoapp->customIndexCard      = 'Custom Index Cards';
 $lang->block->zentaoapp->createStory          = 'Story Create';
 $lang->block->zentaoapp->createEffort         = 'Effort Create';
@@ -591,3 +599,49 @@ $lang->block->zentaoapp->notSupportKanban     = 'The mobile terminal does not su
 $lang->block->zentaoapp->notSupportVersion    = 'This version of ZenTao is not currently supported on the mobile terminal';
 $lang->block->zentaoapp->incompatibleVersion  = 'The current version of ZenTao is lower, please upgrade to the latest version and try again';
 $lang->block->zentaoapp->canNotGetVersion     = 'Failed to get ZenTao version, please confirm if the URL is correct';
+$lang->block->zentaoapp->desc                 = "ZenTao mobile app provides you with a mobile work environment, which is convenient for managing personal to-do tasks at any time, tracking {$lang->projectCommon} progress, and enhancing the flexibility and agility of {$lang->projectCommon} management.";
+$lang->block->zentaoapp->downloadTip          = 'Scan QR code to download';
+
+$lang->block->zentaoclient = new stdClass();
+$lang->block->zentaoclient->common = 'ZenTao Client';
+$lang->block->zentaoclient->desc   = 'The ZenTao client provides functions such as chat, information notification, robot, and embedding ZenTao applet, which makes teamwork more convenient without frequently switching browsers.';
+
+$lang->block->zentaoclient->edition = new stdclass();
+$lang->block->zentaoclient->edition->win64   = 'Windows';
+$lang->block->zentaoclient->edition->linux64 = 'Linux';
+$lang->block->zentaoclient->edition->mac64   = 'Mac OS';
+
+$lang->block->guideTabs['flowchart']      = 'Flowchart';
+$lang->block->guideTabs['systemMode']     = 'Operating Modes';
+$lang->block->guideTabs['visionSwitch']   = 'Interface Switch';
+$lang->block->guideTabs['themeSwitch']    = 'Theme Switch';
+$lang->block->guideTabs['preference']     = 'Personalized setting';
+$lang->block->guideTabs['downloadClient'] = 'Desktop Client download';
+$lang->block->guideTabs['downloadMoblie'] = 'Mobile Apps download';
+
+$lang->block->themes['default']    = 'Default';
+$lang->block->themes['blue']       = 'Young Blue';
+$lang->block->themes['green']      = 'Green';
+$lang->block->themes['red']        = 'Red';
+$lang->block->themes['pink']       = 'Pink';
+$lang->block->themes['blackberry'] = 'Blackberry';
+$lang->block->themes['classic']    = 'Classic';
+$lang->block->themes['purple']     = 'Purple';
+
+$lang->block->visionTitle            = 'The user interface of ZenTao is divided into 【Full feature interface】 and 【Operation Management Interface】.';
+$lang->block->visions['rnd']         = new stdclass();
+$lang->block->visions['rnd']->key    = 'rnd';
+$lang->block->visions['rnd']->title  = 'Full feature interface';
+$lang->block->visions['rnd']->text   = "Integrate the program, {$lang->productCommon}, {$lang->projectCommon}, execution, test, etc., and provide the lifecycle {$lang->projectCommon} management solution.";
+$lang->block->visions['lite']        = new stdclass();
+$lang->block->visions['lite']->key   = 'lite';
+$lang->block->visions['lite']->title = 'Operation Management Interface';
+$lang->block->visions['lite']->text  = "Specially designed for Non-R&D teams, and based on the visual Kanban {$lang->projectCommon} management model.";
+
+$lang->block->customModes['light'] = 'Light Mode';
+$lang->block->customModes['ALM']   = 'ALM Mode';
+
+$lang->block->customModeTip = new stdClass();
+$lang->block->customModeTip->common = 'There are 2 running modes of ZenTao:  Light Mode and ALM Mode.';
+$lang->block->customModeTip->ALM    = 'The concept is more complete and rigorous, and the function is more abundant. It is suitable for medium and large R&D teams.';
+$lang->block->customModeTip->light  = "Provides the core function of {$lang->projectCommon} management, suitable for small R&D teams.";

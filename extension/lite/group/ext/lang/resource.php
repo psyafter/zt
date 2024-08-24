@@ -149,7 +149,7 @@ $lang->personnel->methodOrder[15] = 'whitelist';
 $lang->personnel->methodOrder[20] = 'addWhitelist';
 $lang->personnel->methodOrder[25] = 'unbindWhitelist';
 
-if($config->systemMode == 'new')
+if($config->systemMode == 'ALM')
 {
     $lang->resource->my->project = 'project';
 
@@ -158,7 +158,7 @@ if($config->systemMode == 'new')
     $lang->resource->project->index               = 'index';
     $lang->resource->project->browse              = 'browse';
     $lang->resource->project->kanban              = 'kanban';
-//    $lang->resource->project->programTitle        = 'moduleOpen';
+  //$lang->resource->project->programTitle        = 'moduleOpen';
     $lang->resource->project->create              = 'create';
     $lang->resource->project->edit                = 'edit';
     $lang->resource->project->batchEdit           = 'batchEdit';
@@ -261,6 +261,7 @@ $lang->resource->story->delete             = 'deleteAction';
 $lang->resource->story->view               = 'view';
 $lang->resource->story->change             = 'changeAction';
 $lang->resource->story->review             = 'reviewAction';
+$lang->resource->story->submitReview       = 'submitReview';
 $lang->resource->story->batchReview        = 'batchReview';
 $lang->resource->story->recall             = 'recall';
 $lang->resource->story->assignTo           = 'assignAction';
@@ -289,6 +290,7 @@ $lang->story->methodOrder[25]  = 'delete';
 $lang->story->methodOrder[30]  = 'view';
 $lang->story->methodOrder[35]  = 'change';
 $lang->story->methodOrder[40]  = 'review';
+$lang->story->methodOrder[44]  = 'submitReview';
 $lang->story->methodOrder[45]  = 'batchReview';
 $lang->story->methodOrder[50]  = 'recall';
 $lang->story->methodOrder[55]  = 'close';
@@ -330,7 +332,8 @@ $lang->resource->kanban->sortRegion         = 'sortRegion';
 $lang->resource->kanban->sortGroup          = 'sortGroup';
 $lang->resource->kanban->deleteRegion       = 'deleteRegion';
 $lang->resource->kanban->createLane         = 'createLane';
-$lang->resource->kanban->setLane            = 'setLane';
+$lang->resource->kanban->editLaneName       = 'editLaneName';
+$lang->resource->kanban->editLaneColor      = 'editLaneColor';
 $lang->resource->kanban->sortLane           = 'sortLane';
 $lang->resource->kanban->deleteLane         = 'deleteLane';
 $lang->resource->kanban->createColumn       = 'createColumn';
@@ -453,8 +456,8 @@ $lang->resource->execution->updateOrder       = 'updateOrder';
 $lang->resource->execution->taskKanban        = 'taskKanban';
 //$lang->resource->execution->printKanban       = 'printKanbanAction';
 $lang->resource->execution->tree              = 'treeAction';
-$lang->resource->execution->treeTask          = 'treeOnlyTask';
-$lang->resource->execution->treeStory         = 'treeOnlyStory';
+$lang->resource->execution->treeTask          = 'treeViewTask';
+$lang->resource->execution->treeStory         = 'treeViewStory';
 $lang->resource->execution->all               = 'allExecutionAB';
 $lang->resource->execution->export            = 'exportAction';
 $lang->resource->execution->storyKanban       = 'storyKanban';
@@ -550,6 +553,8 @@ $lang->resource->task->recordEstimate     = 'recordEstimateAction';
 $lang->resource->task->editEstimate       = 'editEstimate';
 $lang->resource->task->deleteEstimate     = 'deleteEstimate';
 $lang->resource->task->report             = 'reportChart';
+if($config->edition != 'open') $lang->resource->task->exportTemplate = 'exportTemplate';
+if($config->edition != 'open') $lang->resource->task->import        = 'import';
 
 $lang->task->methodOrder[5]   = 'create';
 $lang->task->methodOrder[10]  = 'batchCreate';
@@ -574,6 +579,8 @@ $lang->task->methodOrder[100] = 'editEstimate';
 $lang->task->methodOrder[105] = 'deleteEstimate';
 $lang->task->methodOrder[110] = 'report';
 $lang->task->methodOrder[115] = 'batchChangeModule';
+$lang->task->methodOrder[120] = 'exportTemplate';
+$lang->task->methodOrder[125] = 'import';
 
 /* Doc. */
 $lang->resource->doc = new stdclass();
@@ -641,8 +648,9 @@ $lang->mail->methodOrder[65] = 'ztCloud';
 $lang->resource->custom = new stdclass();
 $lang->resource->custom->index              = 'index';
 $lang->resource->custom->set                = 'set';
-$lang->resource->custom->product            = 'product';
-$lang->resource->custom->execution          = 'execution';
+$lang->resource->custom->product            = 'productName';
+$lang->resource->custom->execution          = 'executionCommon';
+$lang->resource->custom->required           = 'required';
 $lang->resource->custom->restore            = 'restore';
 $lang->resource->custom->flow               = 'flow';
 $lang->resource->custom->working            = 'working';
@@ -659,17 +667,18 @@ $lang->custom->methodOrder[5]  = 'index';
 $lang->custom->methodOrder[10] = 'set';
 $lang->custom->methodOrder[15] = 'product';
 $lang->custom->methodOrder[20] = 'execution';
-$lang->custom->methodOrder[25] = 'restore';
-$lang->custom->methodOrder[30] = 'flow';
-$lang->custom->methodOrder[35] = 'working';
-$lang->custom->methodOrder[40] = 'setPublic';
-$lang->custom->methodOrder[45] = 'timezone';
-$lang->custom->methodOrder[50] = 'setStoryConcept';
-$lang->custom->methodOrder[55] = 'editStoryConcept';
-$lang->custom->methodOrder[60] = 'browseStoryConcept';
-$lang->custom->methodOrder[65] = 'setDefaultConcept';
-$lang->custom->methodOrder[70] = 'deleteStoryConcept';
-$lang->custom->methodOrder[75] = 'libreoffice';
+$lang->custom->methodOrder[25] = 'required';
+$lang->custom->methodOrder[30] = 'restore';
+$lang->custom->methodOrder[35] = 'flow';
+$lang->custom->methodOrder[40] = 'working';
+$lang->custom->methodOrder[45] = 'setPublic';
+$lang->custom->methodOrder[50] = 'timezone';
+$lang->custom->methodOrder[55] = 'setStoryConcept';
+$lang->custom->methodOrder[60] = 'editStoryConcept';
+$lang->custom->methodOrder[65] = 'browseStoryConcept';
+$lang->custom->methodOrder[70] = 'setDefaultConcept';
+$lang->custom->methodOrder[75] = 'deleteStoryConcept';
+$lang->custom->methodOrder[80] = 'libreoffice';
 
 $lang->resource->datatable = new stdclass();
 $lang->resource->datatable->setGlobal = 'setGlobal';
@@ -969,12 +978,28 @@ if($config->edition == 'biz' or $config->edition == 'max')
     $lang->resource->feedback->delete     = 'delete';
     $lang->resource->feedback->close      = 'closeAction';
     $lang->resource->feedback->export     = 'exportAction';
+    $lang->resource->feedback->assignTo   = 'assignAction';
 
     if($config->visions == ',lite,') unset($lang->resource->feedback);
 
     /* Faq. */
     $lang->resource->faq = new stdclass();
     $lang->resource->faq->browse = 'browse';
+
+    /* Ticket */
+    $lang->resource->ticket = new stdclass();
+    $lang->resource->ticket->index          = 'index';
+    $lang->resource->ticket->create         = 'create';
+    $lang->resource->ticket->edit           = 'edit';
+    $lang->resource->ticket->view           = 'view';
+    $lang->resource->ticket->browse         = 'browse';
+    $lang->resource->ticket->assignTo       = 'assign';
+    $lang->resource->ticket->close          = 'close';
+    $lang->resource->ticket->activate       = 'activate';
+    $lang->resource->ticket->delete         = 'delete';
+    $lang->resource->ticket->exportTemplate = 'exportTemplate';
+    $lang->resource->ticket->import         = 'import';
+    $lang->resource->ticket->export         = 'exportAction';
 
     /* Attend */
     $lang->resource->attend = new stdclass();

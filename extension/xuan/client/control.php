@@ -381,7 +381,7 @@ class client extends control
         $loginInfo = new stdclass();
         $loginInfo->ui = new stdclass();
         $loginInfo->ui->defaultUser = new stdclass();
-        $loginInfo->ui->defaultUser->server  = commonModel::getSysURL();;
+        $loginInfo->ui->defaultUser->server  = $this->config->xuanxuan->server;
         $loginInfo->ui->defaultUser->account = $this->app->user->account;
         $loginInfo = json_encode($loginInfo);
 

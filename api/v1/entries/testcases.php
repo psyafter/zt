@@ -2,7 +2,7 @@
 /**
  * The testcases entry point of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2021 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     entries
@@ -16,7 +16,7 @@ class testcasesEntry extends entry
      *
      * @param  int    $productID
      * @access public
-     * @return void
+     * @return string
      */
     public function get($productID = 0)
     {
@@ -26,7 +26,7 @@ class testcasesEntry extends entry
         $this->app->cookie->caseModule = 0;
         $this->app->cookie->caseSuite  = 0;
 
-        $type     = 'all';
+        $type     = $this->param('status', 'all');
         $param    = 0;
         $moduleID = $this->param('module', 0);
         if($moduleID)
@@ -63,7 +63,7 @@ class testcasesEntry extends entry
      *
      * @param  int    $productID
      * @access public
-     * @return void
+     * @return string
      */
     public function post($productID = 0)
     {
@@ -106,6 +106,6 @@ class testcasesEntry extends entry
         $case = $this->loadModel('testcase')->getByID($data->id);
         $case->steps = (isset($case->steps) and !empty($case->steps)) ? array_values($case->steps) : array();
 
-        $this->send(200, $this->format($case, 'openedBy:user,openedDate:time,lastEditedBy:user,lastEditedDate:time,lastRunDate:time,scriptedDate:date,reviewedBy:user,reviewedDate:date,deleted:bool'));
+        return $this->send(200, $this->format($case, 'openedBy:user,openedDate:time,lastEditedBy:user,lastEditedDate:time,lastRunDate:time,scriptedDate:date,reviewedBy:user,reviewedDate:date,deleted:bool'));
     }
 }

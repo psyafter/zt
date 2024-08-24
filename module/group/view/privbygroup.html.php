@@ -2,7 +2,7 @@
 /**
  * The manage privilege by group view of group module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     group
@@ -17,7 +17,7 @@
   </div>
 </div>
 <div id='mainContent' class='main-content'>
-  <form class="load-indicator main-form form-ajax" id="managePrivForm" method="post" target='hiddenwin'>
+  <form class="load-indicator main-form form-ajax" id="managePrivForm" method="post">
     <table class='table table-hover table-striped table-bordered'>
       <thead>
         <tr class='text-center'>
@@ -64,8 +64,8 @@
         if($i >= $config->group->maxToolBarCount) echo '<li>';
         echo html::a(inlink('managePriv', sprintf($params, $module)), "<span class='text'>" . strip_tags(substr($title, 0, strpos($title, '|'))) . '</span>', '', "class='btn btn-link $active'");
         if($i >= $config->group->maxToolBarCount) echo '</li>';
-        if($i == count($lang->mainNav->menuOrder) and $i >= $config->group->maxToolBarCount) echo '</ul></div>';
     }
+    if($i >= $config->group->maxToolBarCount) echo '</ul></div>';
     ?>
 
     <?php $active = $menu == 'other' ? 'btn-active-text' : '';?>

@@ -2,35 +2,38 @@
 /**
  * The report module English file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     report
  * @version     $Id: en.php 5080 2013-07-10 00:46:59Z wyd621@gmail.com $
  * @link        https://www.zentao.pm
  */
-$lang->report->index     = 'Home';
-$lang->report->list      = 'Liste';
-$lang->report->item      = 'Eintrag';
-$lang->report->value     = 'Wert';
-$lang->report->percent   = '%';
-$lang->report->undefined = 'Undefiniert';
-$lang->report->query     = 'Abfrage';
-$lang->report->annual    = 'Annual Summary';
-$lang->report->project   = 'Project';
+$lang->report->index              = 'Home';
+$lang->report->list               = 'Liste';
+$lang->report->preview            = 'View Pivot Table';
+$lang->report->item               = 'Eintrag';
+$lang->report->value              = 'Wert';
+$lang->report->percent            = '%';
+$lang->report->undefined          = 'Undefiniert';
+$lang->report->query              = 'Abfrage';
+$lang->report->annual             = 'Annual Summary';
+$lang->report->project            = $lang->projectCommon;
+$lang->report->PO                 = 'PO';
+$lang->report->viewEveryoneAnnual = 'View everyone annual summary';
 
 $lang->report->colors[]   = 'AFD8F8';
-$lang->report->colors[]   = 'F6BD0F';
-$lang->report->colors[]   = '8BBA00';
-$lang->report->colors[]   = 'FF8E46';
-$lang->report->colors[]   = '008E8E';
-$lang->report->colors[]   = 'D64646';
-$lang->report->colors[]   = '8E468E';
-$lang->report->colors[]   = '588526';
-$lang->report->colors[]   = 'B3AA00';
-$lang->report->colors[]   = '008ED6';
-$lang->report->colors[]   = '9D080D';
-$lang->report->colors[]   = 'A186BE';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
+$lang->report->colors[]   = 'AFD8F8';
 
 $lang->report->assign['noassign'] = 'Nicht zugeordnet';
 $lang->report->assign['assign']   = 'Zugeordnet';
@@ -48,16 +51,16 @@ $lang->report->beginAndEnd      = ' : von';
 $lang->report->begin            = 'Begin';
 $lang->report->end              = 'End';
 $lang->report->dept             = 'Abteilung';
-$lang->report->deviationChart   = 'Projektabweichungskurve';
+$lang->report->deviationChart   = "{$lang->projectCommon} Deviation Chart";
 
 $lang->reportList = new stdclass();
-$lang->reportList->project = new stdclass();
 $lang->reportList->product = new stdclass();
+$lang->reportList->project = new stdclass();
 $lang->reportList->test    = new stdclass();
 $lang->reportList->staff   = new stdclass();
 
-$lang->reportList->project->lists[10] = "{$lang->execution->common} Abweichnung|reportprojectdeviation";
 $lang->reportList->product->lists[10] = $lang->productCommon . ' Zusammenfassung|report|productsummary';
+$lang->reportList->project->lists[10] = "{$lang->execution->common} Abweichnung|report|projectdeviation";
 $lang->reportList->test->lists[10]    = 'Bugs gemeldet|report|bugcreate';
 $lang->reportList->test->lists[13]    = 'Bugs zugeordnet|report|bugassign';
 $lang->reportList->staff->lists[10]   = 'Team Arbeitslast|report|workload';
@@ -108,8 +111,10 @@ $lang->report->mailTitle->todo     = " Todo (%s),";
 $lang->report->mailTitle->testTask = " Test Aufgaben (%s),";
 
 $lang->report->deviationDesc = 'According to the Closed Execution Deviation Rate = ((Total Cost - Total Estimate) / Total Estimate), the Deviation Rate is n/a when the Total Estimate is 0.';
-$lang->report->proVersion    = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Testen Sie ZenTao Pro für mehr Informationen!</a>';
-$lang->report->proVersionEn  = '<a href="http://api.zentao.pm/goto.php?item=proversion&from=reportpage" target="_blank">Testen Sie ZenTao Pro für mehr Informationen!</a>';
+$lang->report->proVersion    = '<a href="https://www.zentao.pm/page/enterprise.html" target="_blank">Testen Sie ZenTao Pro für mehr Informationen!</a>';
+$lang->report->proVersionEn  = '<a href="https://www.zentao.pm/" etarget="_blank">Testen Sie ZenTao Pro für mehr Informationen!</a>';
+$lang->report->workloadDesc  = 'Workload = the total left hours of all tasks of the user / selected days * hours per day.
+For example: the begin and end date is January 1st to January 7th, and the total work days is 5 days, 8 hours per day. The Work load is all unfinished tasks assigned to this user to be finished in 5 days, 8 hours per day.';
 
 $lang->report->annualData = new stdclass();
 $lang->report->annualData->title            = "%s work summary in %s";
@@ -165,8 +170,8 @@ if(!empty($config->URAndSR))
 {
     $lang->report->annualData->productFields['requirement'] = "Created requirements";
 }
-$lang->report->annualData->productFields['story']    = "Created stories";
-$lang->report->annualData->productFields['finished'] = "Finished stories";
+$lang->report->annualData->productFields['story']  = "Created stories";
+$lang->report->annualData->productFields['closed'] = "Closed stories";
 
 $lang->report->annualData->objectTypeList['product']     = $lang->productCommon;
 $lang->report->annualData->objectTypeList['story']       = $lang->SRCommon;
@@ -193,6 +198,9 @@ $lang->report->annualData->actionList['assign']    = 'Assigned';
 $lang->report->annualData->actionList['activate']  = 'Activated';
 $lang->report->annualData->actionList['resolve']   = 'Resolved';
 $lang->report->annualData->actionList['run']       = 'Execute';
+$lang->report->annualData->actionList['stop']      = 'Stop Maintenance';
+$lang->report->annualData->actionList['putoff']    = 'Postponed ';
+$lang->report->annualData->actionList['suspend']   = 'Suspended';
 $lang->report->annualData->actionList['change']    = 'Changed';
 $lang->report->annualData->actionList['pause']     = 'Paused';
 $lang->report->annualData->actionList['cancel']    = 'Canceled';
@@ -203,8 +211,8 @@ $lang->report->annualData->todoStatus['all']    = 'All';
 $lang->report->annualData->todoStatus['undone'] = 'Undone';
 $lang->report->annualData->todoStatus['done']   = 'Done';
 
-$lang->report->annualData->radarItems['product']   = "Product";
-$lang->report->annualData->radarItems['execution'] = "Project";
+$lang->report->annualData->radarItems['product']   = $lang->productCommon;
+$lang->report->annualData->radarItems['execution'] = $lang->projectCommon;
 $lang->report->annualData->radarItems['devel']     = "Development";
 $lang->report->annualData->radarItems['qa']        = "QA";
 $lang->report->annualData->radarItems['other']     = "Other";

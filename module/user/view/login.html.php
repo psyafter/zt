@@ -2,7 +2,7 @@
 /**
  * The html template file of login method of user module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     ZenTaoPMS
@@ -11,6 +11,8 @@
 include '../../common/view/header.lite.html.php';
 if(empty($config->notMd5Pwd))js::import($jsRoot . 'md5.js');
 ?>
+<?php js::set('loginTimeoutTip', $lang->user->error->loginTimeoutTip);?>
+<?php $zentaodirName = basename($this->app->getBasePath());?>
 <main id="main" class="fade no-padding">
   <div class="container" id="login">
     <div id="loginPanel">
@@ -33,6 +35,9 @@ if(empty($config->notMd5Pwd))js::import($jsRoot . 'md5.js');
           <form method='post' target='hiddenwin'>
             <table class='table table-form'>
               <tbody>
+                <?php if($loginExpired):?>
+                <p class='text-red'><?php echo $lang->user->loginExpired;?></p>
+                <?php endif;?>
                 <tr>
                   <th><?php echo $lang->user->account;?></th>
                   <td><input class='form-control' type='text' name='account' id='account' autocomplete='off' autofocus /></td>
@@ -63,7 +68,8 @@ if(empty($config->notMd5Pwd))js::import($jsRoot . 'md5.js');
                   echo html::submitButton($lang->login, '', 'btn btn-primary');
                   if($app->company->guest) echo html::linkButton($lang->user->asGuest, $this->createLink($config->default->module));
                   echo html::hidden('referer', $referer);
-                  echo html::a(inlink('reset'), $lang->user->resetPassword);
+                  $resetLink = (isset($this->config->resetPWDByMail) and $this->config->resetPWDByMail) ? inlink('forgetPassword') : inlink('reset');
+                  echo html::a($resetLink, $lang->user->resetPassword);
                   ?>
                   </td>
                 </tr>
@@ -92,8 +98,7 @@ if(empty($config->notMd5Pwd))js::import($jsRoot . 'md5.js');
       $demoPassword = '123456';
       $md5Password  = md5('123456');
       $demoUsers    = 'productManager,projectManager,dev1,dev2,dev3,tester1,tester2,tester3,testManager';
-      if($this->app->getClientLang() == 'en') $demoUsers = 'thePO,pm1,pm2,pg1,pg2,pg3,thePM,qa1,theQS';
-      $demoUsers = $this->dao->select('account,password,realname')->from(TABLE_USER)->where('account')->in($demoUsers)->andWhere('deleted')->eq(0)->andWhere('password')->eq($md5Password)->fetchAll('account');
+      $demoUsers    = $this->dao->select('account,password,realname')->from(TABLE_USER)->where('account')->in($demoUsers)->andWhere('deleted')->eq(0)->andWhere('password')->eq($md5Password)->fetchAll('account');
       ?>
       <footer>
         <span><?php echo $lang->user->loginWithDemoUser;?></span>
@@ -112,8 +117,8 @@ if(empty($config->notMd5Pwd))js::import($jsRoot . 'md5.js');
     <div id="info" class="table-row">
       <div class="table-col text-middle text-center">
         <div id="poweredby">
-          <?php if($unsafeSites):?>
-          <div><a class='showNotice' href='javascript:showNotice()',><?php echo $lang->user->notice4Safe;?></a></div>
+          <?php if($unsafeSites and !empty($unsafeSites[$zentaodirName])):?>
+          <div><a class='showNotice' href='javascript:showNotice()'><?php echo $lang->user->notice4Safe;?></a></div>
           <?php endif;?>
           <?php if($config->checkVersion):?>
           <iframe id='updater' class='hidden' frameborder='0' width='100%' height='45' scrolling='no' allowtransparency='true' src="<?php echo $this->createLink('misc', 'checkUpdate', "sn=$s");?>"></iframe>
@@ -124,7 +129,7 @@ if(empty($config->notMd5Pwd))js::import($jsRoot . 'md5.js');
   </div>
 </main>
 <?php
-if($unsafeSites)
+if($unsafeSites and !empty($unsafeSites[$zentaodirName]))
 {
     $paths     = array();
     $databases = array();

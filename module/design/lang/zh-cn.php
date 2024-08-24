@@ -2,7 +2,7 @@
 /**
  * The zh-cn file of design module.
  *
- * @copyright   Copyright 2009-2020 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2020 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Shujie Tian <tianshujie@easycorp.ltd>
  * @package     design
@@ -20,12 +20,12 @@ $lang->design->version       = '版本号';
 $lang->design->assignedTo    = '指派给';
 $lang->design->actions       = '操作';
 $lang->design->byQuery       = '搜索';
-$lang->design->products      = '所属产品';
+$lang->design->products      = "所属{$lang->productCommon}";
 $lang->design->story         = '相关需求';
 $lang->design->file          = '附件';
 $lang->design->desc          = '设计描述';
 $lang->design->range         = '影响范围';
-$lang->design->product       = '所属产品';
+$lang->design->product       = "所属{$lang->productCommon}";
 $lang->design->basicInfo     = '基础信息';
 $lang->design->commitBy      = '由谁提交';
 $lang->design->commitDate    = '提交时间';
@@ -33,10 +33,12 @@ $lang->design->affectedStory = "影响{$lang->SRCommon}";
 $lang->design->affectedTasks = '影响任务';
 $lang->design->reviewObject  = '评审对象';
 $lang->design->createdBy     = '由谁创建';
+$lang->design->createdByAB   = '创建者';
 $lang->design->createdDate   = '创建时间';
 $lang->design->basicInfo     = '基本信息';
 $lang->design->noAssigned    = '未指派';
 $lang->design->comment       = '注释';
+$lang->design->more          = '更多';
 
 /* 动作列表. */
 $lang->design->common       = '设计';
@@ -62,6 +64,8 @@ $lang->design->typeList['HLDS'] = '概要设计';
 $lang->design->typeList['DDS']  = '详细设计';
 $lang->design->typeList['DBDS'] = '数据库设计';
 $lang->design->typeList['ADS']  = '接口设计';
+
+$lang->design->plusTypeList = $lang->design->typeList;
 
 $lang->design->rangeList           = array();
 $lang->design->rangeList['all']    = '全部记录';

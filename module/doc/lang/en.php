@@ -2,7 +2,7 @@
 /**
  * The doc module english file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     doc
@@ -47,7 +47,7 @@ $lang->doclib->nameList['custom'] = 'Custom Name';
 $lang->doc->common       = 'Document';
 $lang->doc->id           = 'ID';
 $lang->doc->product      = $lang->productCommon;
-$lang->doc->project      = 'Project';
+$lang->doc->project      = $lang->projectCommon;
 $lang->doc->execution    = $lang->execution->common;
 $lang->doc->lib          = 'Library';
 $lang->doc->module       = 'Catalog';
@@ -61,9 +61,11 @@ $lang->doc->keywords     = 'Tags';
 $lang->doc->url          = 'URL';
 $lang->doc->files        = 'Files';
 $lang->doc->addedBy      = 'Author';
+$lang->doc->addedByAB    = 'Added';
 $lang->doc->addedDate    = 'Added';
 $lang->doc->editedBy     = 'UpdatedBy';
 $lang->doc->editedDate   = 'Updated';
+$lang->doc->lastEditedBy = 'Last Editor';
 $lang->doc->version      = 'Version';
 $lang->doc->basicInfo    = 'Basic Information';
 $lang->doc->deleted      = 'Deleted';
@@ -94,6 +96,7 @@ $lang->doc->main         = 'Main Document Library';
 $lang->doc->order        = 'Order';
 $lang->doc->doc          = 'Document';
 $lang->doc->updateOrder  = 'Update Order';
+$lang->doc->nextStep     = 'Next';
 
 $lang->doc->moduleDoc     = 'By Module';
 $lang->doc->searchDoc     = 'Search';
@@ -136,29 +139,33 @@ $lang->doc->menuTitle        = 'Direcotory';
 
 $lang->doc->collectAction = 'Add Favorite';
 
-$lang->doc->libName        = 'Document Library';
-$lang->doc->libType        = 'Category';
-$lang->doc->custom         = 'Custom Document Library';
-$lang->doc->customAB       = 'Custom Doc Lib';
-$lang->doc->createLib      = 'Document Library';
-$lang->doc->allLibs        = 'Library List';
-$lang->doc->objectLibs     = "Document View of Library";
-$lang->doc->showFiles      = 'Attachments';
-$lang->doc->editLib        = 'Edit Document Library';
-$lang->doc->deleteLib      = 'Delete Document Library';
-$lang->doc->fixedMenu      = 'Fix to Menu';
-$lang->doc->removeMenu     = 'Remove from Menu';
-$lang->doc->search         = 'Search';
-$lang->doc->allCollections = 'All Collections';
-$lang->doc->keywordsTips   = 'Please use commas to separate keywords.';
+$lang->doc->libName          = 'Document Library';
+$lang->doc->libType          = 'Category';
+$lang->doc->custom           = 'Custom Document Library';
+$lang->doc->customAB         = 'Custom Doc Lib';
+$lang->doc->createLib        = 'Document Library';
+$lang->doc->allLibs          = 'Library List';
+$lang->doc->objectLibs       = "Document View of Library";
+$lang->doc->showFiles        = 'Attachments';
+$lang->doc->editLib          = 'Edit Document Library';
+$lang->doc->deleteLib        = 'Delete Document Library';
+$lang->doc->fixedMenu        = 'Fix to Menu';
+$lang->doc->removeMenu       = 'Remove from Menu';
+$lang->doc->search           = 'Search';
+$lang->doc->allCollections   = 'All Collections';
+$lang->doc->keywordsTips     = 'Please use commas to separate keywords.';
+$lang->doc->sortLibs         = 'Sort Libs';
+$lang->doc->titlePlaceholder = 'Please enter the title';
+$lang->doc->confirm          = 'Confirm';
 
 global $config;
 /* Query condition list. */
 $lang->doc->allProduct    = 'All' . $lang->productCommon . 's';
 $lang->doc->allExecutions = 'All' . $lang->executionCommon . 's';
+$lang->doc->allProjects   = 'All' . $lang->projectCommon . 's';
 
 $lang->doc->libTypeList['product']   = $lang->productCommon . ' Library';
-if($config->systemMode == 'new') $lang->doc->libTypeList['project'] = 'Project Library';
+$lang->doc->libTypeList['project']   = 'Project Library';
 $lang->doc->libTypeList['execution'] = $lang->execution->common . ' Library';
 $lang->doc->libTypeList['api']       = 'API Library';
 $lang->doc->libTypeList['custom']    = 'Custom Library';
@@ -242,15 +249,16 @@ $lang->doc->errorEmptyLib        = 'No data in document library.';
 $lang->doc->confirmUpdateContent = 'You have a document that is not saved from last time. Do you want to continue editing it?';
 $lang->doc->selectLibType        = 'Please select a type of doc library.';
 $lang->doc->noLibreOffice        = 'You does not have access to office conversion settings!';
+$lang->doc->errorParentChapter   = 'The parent chapter cannot be its own chapter or sub chapter!';
 
-$lang->doc->noticeAcl['lib']['product']['default']   = 'Users who can access the selected product can access it.';
-$lang->doc->noticeAcl['lib']['product']['custom']    = 'Users who can access the selected product or users in the whiltelist can access it.';
-$lang->doc->noticeAcl['lib']['project']['default']   = 'Users who can access the selected project can access it.';
-$lang->doc->noticeAcl['lib']['project']['open']      = 'Users who can access the selected project can access it.';
-$lang->doc->noticeAcl['lib']['project']['private']   = 'Users who can access the selected project or users in the whiltelist can access it.';
-$lang->doc->noticeAcl['lib']['project']['custom']    = 'Users in the whiltelist can access it.';
-$lang->doc->noticeAcl['lib']['execution']['default'] = "Users who can access the selected {$lang->executionCommon} can access it.";
-$lang->doc->noticeAcl['lib']['execution']['custom']  = "Users who can access the selected {$lang->executionCommon} or users in the whiltelist can access it.";
+$lang->doc->noticeAcl['lib']['product']['default']   = "Users who can access the selected {$lang->productCommon} can access it.";
+$lang->doc->noticeAcl['lib']['product']['custom']    = "Users who can access the selected {$lang->productCommon} or users in the whiltelist can access it.";
+$lang->doc->noticeAcl['lib']['project']['default']   = "Users who can access the selected {$lang->projectCommon} can access it.";
+$lang->doc->noticeAcl['lib']['project']['open']      = "Users who can access the selected {$lang->projectCommon} can access it.";
+$lang->doc->noticeAcl['lib']['project']['private']   = "Users who can access the selected {$lang->projectCommon} or users in the whiltelist can access it.";
+$lang->doc->noticeAcl['lib']['project']['custom']    = "Users who can access the selected {$lang->projectCommon} or users in the whiltelist can access it.";
+$lang->doc->noticeAcl['lib']['execution']['default'] = "Users who can access the selected {$lang->execution->common} can access it.";
+$lang->doc->noticeAcl['lib']['execution']['custom']  = "Users who can access the selected {$lang->execution->common} or users in the whiltelist can access it.";
 $lang->doc->noticeAcl['lib']['api']['open']          = 'All users can access it.';
 $lang->doc->noticeAcl['lib']['api']['custom']        = 'Users in the whitelist can access it.';
 $lang->doc->noticeAcl['lib']['api']['private']       = 'Only the one who created it can access it.';

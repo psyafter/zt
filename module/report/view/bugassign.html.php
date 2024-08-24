@@ -13,7 +13,6 @@
       <div class="table-empty-tip">
         <p><span class="text-muted"><?php echo $lang->error->noData;?></span></p>
       </div>
-    </div>
     <?php else:?>
     <div class='cell'>
       <div class='panel'>
@@ -39,7 +38,10 @@
                 <?php $id = 1;?>
                 <?php foreach($assign['bug'] as $product => $count):?>
                 <?php if($id != 1) echo '<tr class="a-center text-center">';?>
-                <td><?php echo html::a($this->createLink('product', 'view', "product={$count['productID']}"), $product);?></td>
+                <td>
+                  <?php $viewLink = empty($count['projectID']) ? $this->createLink('product', 'view', "product={$count['productID']}") : $this->createLink('project', 'view', "projectID={$count['projectID']}");?>
+                  <?php echo html::a($viewLink, $product);?>
+                </td>
                 <td><?php echo $count['count'];?></td>
                 <?php if($id == 1):?>
                 <td rowspan="<?php echo count($assign['bug']);?>">
@@ -54,7 +56,6 @@
           </table>
         </div>
       </div>
-    </div>
     <?php endif;?>
   </div>
 </div>

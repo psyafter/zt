@@ -47,6 +47,15 @@ class router extends baseRouter
     public $isFlow = false;
 
     /**
+     * Fetch的模块名。
+     * The fetched module name.
+     *
+     * @var string
+     * @access public
+     */
+    public $fetchModule;
+
+    /**
      * Get the $moduleRoot var.
      *
      * @param  string $appName
@@ -92,39 +101,76 @@ class router extends baseRouter
         global $lang;
         if(!is_object($lang)) $lang = new language();
 
-        $appName = '';
-
         /* Set productCommon and projectCommon for flow. */
         if($moduleName == 'common') $this->setCommonLang();
 
         parent::loadLang($moduleName, $appName);
+
+        /* Replace main nav lang. */
+        if($moduleName == 'common' and $this->dbh and !empty($this->config->db->name))
+        {
+            $customMenus = array();
+            try
+            {
+                $customMenus = $this->dbh->query('SELECT * FROM' . TABLE_LANG . "WHERE `module`='common' AND `section`='mainNav' AND `lang`='{$this->clientLang}' AND `vision`='{$this->config->vision}'")->fetchAll();
+            }
+            catch(PDOException $exception){}
+
+            foreach($customMenus as $menu)
+            {
+                $menuKey = $menu->key;
+                if(isset($lang->mainNav->$menuKey)) $lang->mainNav->$menuKey = zget($lang->navIcons, $menuKey, '') . " {$menu->value}" . substr($lang->mainNav->$menuKey, strpos($lang->mainNav->$menuKey, '|'));
+            }
+        }
 
         /* Merge from the db lang. */
         if($moduleName != 'common' and isset($lang->db->custom[$moduleName]))
         {
             foreach($lang->db->custom[$moduleName] as $section => $fields)
             {
-                if(isset($lang->{$moduleName}->{$section}['']))
+                if(in_array($section, array('featureBar', 'moreSelects')))
                 {
-                    $nullKey   = '';
-                    $nullValue = $lang->{$moduleName}->{$section}[$nullKey];
+                    foreach($fields as $featureBarMethod => $featureBarValues)
+                    {
+                        foreach($featureBarValues as $featureBarKey => $featureBarValue)
+                        {
+                            if(is_array($featureBarValue))
+                            {
+                                foreach($featureBarValue as $key => $value) $lang->{$moduleName}->{$section}[$featureBarMethod][$featureBarKey][$key] = $value;
+                            }
+                            else
+                            {
+                                $lang->{$moduleName}->{$section}[$featureBarMethod][$featureBarKey] = $featureBarValue;
+                            }
+                        }
+                    }
                 }
-                elseif(isset($lang->{$moduleName}->{$section}[0]))
+                else
                 {
-                    $nullKey   = 0;
-                    $nullValue = $lang->{$moduleName}->{$section}[0];
-                }
-                unset($lang->{$moduleName}->{$section});
+                    if(isset($lang->{$moduleName}->{$section}['']))
+                    {
+                        $nullKey   = '';
+                        $nullValue = $lang->{$moduleName}->{$section}[$nullKey];
+                    }
+                    elseif(isset($lang->{$moduleName}->{$section}[0]))
+                    {
+                        $nullKey   = 0;
+                        $nullValue = $lang->{$moduleName}->{$section}[0];
+                    }
+                    unset($lang->{$moduleName}->{$section});
 
-                if(isset($nullKey))$lang->{$moduleName}->{$section}[$nullKey] = $nullValue;
-                foreach($fields as $key => $value)
-                {
-                    if(!isset($lang->{$moduleName})) $lang->{$moduleName} = new stdclass();
-                    if(!isset($lang->{$moduleName}->{$section})) $lang->{$moduleName}->{$section} = array();
-                    $lang->{$moduleName}->{$section}[$key] = $value;
+                    if(isset($nullKey))$lang->{$moduleName}->{$section}[$nullKey] = $nullValue;
+                    foreach($fields as $key => $value)
+                    {
+                        if($section == 'priList' and $key > 0 and trim($value) === '') continue; // Fix bug #23538.
+
+                        if(!isset($lang->{$moduleName})) $lang->{$moduleName} = new stdclass();
+                        if(!isset($lang->{$moduleName}->{$section})) $lang->{$moduleName}->{$section} = array();
+                        $lang->{$moduleName}->{$section}[$key] = $value;
+                    }
+                    unset($nullKey);
+                    unset($nullValue);
                 }
-                unset($nullKey);
-                unset($nullValue);
             }
         }
 
@@ -160,7 +206,7 @@ class router extends baseRouter
 
             try
             {
-                $commonSettings = $this->dbh->query('SELECT section, `key`, value FROM' . TABLE_CONFIG . "WHERE `owner`='system' AND (`module`='custom' or `module`='common') and `key` in ('sprintConcept', 'hourPoint', 'URSR', 'mode', 'URAndSR', 'scoreStatus')")->fetchAll();
+                $commonSettings = $this->dbh->query('SELECT section, `key`, value FROM' . TABLE_CONFIG . "WHERE `owner`='system' AND (`module`='custom' or `module`='common') and `key` in ('sprintConcept', 'hourPoint', 'URSR', 'mode', 'URAndSR', 'scoreStatus', 'disabledFeatures', 'closedFeatures')")->fetchAll();
             }
             catch (PDOException $exception)
             {
@@ -170,26 +216,31 @@ class router extends baseRouter
 
         $hourKey = $planKey = $URSR = $URAndSR = 0;
 
-        $mode       = 'new';
-        $score      = '0';
-        $projectKey = ITERATION_KEY;
+        $mode             = 'ALM';
+        $score            = '0';
+        $projectKey       = ITERATION_KEY;
+        $disabledFeatures = '';
+        $closedFeatures   = '';
 
         foreach($commonSettings as $setting)
         {
-            if($setting->key == 'sprintConcept') $projectKey = $setting->value;
-            if($setting->key == 'hourPoint')     $hourKey    = $setting->value;
-            if($setting->key == 'URSR')          $URSR       = $setting->value;
-            if($setting->key == 'URAndSR')       $URAndSR    = $setting->value;
-            if($setting->key == 'mode' and $setting->section == 'global') $mode = $setting->value;
-            if($setting->key == 'scoreStatus' and $setting->section == 'global') $score = $setting->value;
+            if($setting->key == 'sprintConcept')                                 $projectKey       = $setting->value;
+            if($setting->key == 'hourPoint')                                     $hourKey          = $setting->value;
+            if($setting->key == 'URSR')                                          $URSR             = $setting->value;
+            if($setting->key == 'URAndSR')                                       $URAndSR          = $setting->value;
+            if($setting->key == 'mode' and $setting->section == 'global')        $mode             = $setting->value;
+            if($setting->key == 'scoreStatus' and $setting->section == 'global') $score            = $setting->value;
+            if($setting->key == 'disabledFeatures')                              $disabledFeatures = $setting->value;
+            if($setting->key == 'closedFeatures')                                $closedFeatures   = $setting->value;
         }
 
         /* Lite Version is compatible with classic modes */
-        if($config->vision == 'lite') $mode = 'new';
+        if($config->vision == 'lite') $mode = 'ALM';
 
         /* Record system mode. */
         $config->systemMode = $mode;
-        if($config->systemMode == 'classic') $this->config->executionCommonList = $this->config->projectCommonList;
+
+        $config->disabledFeatures = $disabledFeatures . ',' . $closedFeatures;
 
         /* Record system score.*/
         $config->systemScore = $score;
@@ -210,7 +261,7 @@ class router extends baseRouter
 
         /* User preference init. */
         $config->URSR          = $URSR;
-        $config->URAndSR       = $URAndSR;
+        $config->URAndSR       = ($URAndSR and strpos(",{$config->disabledFeatures},", ',productUR,') === false);
         $config->programLink   = 'program-browse';
         $config->productLink   = 'product-all';
         $config->projectLink   = 'project-browse';
@@ -268,6 +319,15 @@ class router extends baseRouter
                 $lang->URCommon = isset($URPairs[$config->URSR]) ? $URPairs[$config->URSR] : reset($URPairs);
                 $lang->SRCommon = isset($SRPairs[$config->URSR]) ? $SRPairs[$config->URSR] : reset($SRPairs);
             }
+
+            /* Replace common lang. */
+            $customMenus = array();
+            try
+            {
+                $customMenus = $this->dbh->query('SELECT * FROM' . TABLE_LANG . "WHERE `module`='common' AND `lang`='{$this->clientLang}' AND `section`='' AND `vision`='{$config->vision}'")->fetchAll();
+            }
+            catch(PDOException $exception){}
+            foreach($customMenus as $menu) if(isset($lang->{$menu->key})) $lang->{$menu->key} = $menu->value;
         }
     }
 
@@ -299,16 +359,12 @@ class router extends baseRouter
      *
      * @param   string $moduleName     module name
      * @param   string $appName        app name
-     * @param   bool   $exitIfNone     exit or not
      * @access  public
-     * @return  object|bool the config object or false.
+     * @return  void
      */
     public function loadModuleConfig($moduleName, $appName = '')
     {
         global $config;
-
-        $appName = '';
-
         if($config and (!isset($config->$moduleName) or !is_object($config->$moduleName))) $config->$moduleName = new stdclass();
 
         /* 初始化数组。Init the variables. */
@@ -518,6 +574,13 @@ class router extends baseRouter
             /* Remove module and method. */
             $params = array_slice($params, 2);                              // $params = array(1);
 
+            if($moduleName == 'flow' and $methodName == 'browse')
+            {
+                $mode = 'browse';
+                if(count($params) > 0 and !is_numeric($params[0])) $mode = array_shift($params);
+                array_unshift($params, $mode);
+            }
+
             array_unshift($params, $methodName);                            // $params = array('operate', 1);
             array_unshift($params, $moduleName);                            // $params = array('flow', 'operate', 1);
 
@@ -537,6 +600,16 @@ class router extends baseRouter
 
             $params = array_reverse($params);                       // $params = array('id' => 1);
 
+            if($moduleName == 'flow' and $methodName == 'browse')
+            {
+                $mode = zget($params, 'mode', 'browse');
+                if(is_numeric($mode)) $mode = 'browse';
+                $params['mode'] = $mode;
+
+                $get = array_reverse($_GET);
+                $get['mode'] = $mode;
+                $_GET = array_reverse($get);
+            }
             $params[$this->config->methodVar] = $methodName;        // $param = array('id' => 1, 'f' => 'operate');
             $params[$this->config->moduleVar] = $moduleName;        // $param = array('id' => 1, 'f' => 'operate', 'm' => 'flow');
 

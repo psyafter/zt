@@ -8,19 +8,29 @@ $lang->conference->enabledTip     = '开启会议功能';
 $lang->conference->serverAddr     = '音视频服务器地址';
 $lang->conference->serverAddrTip  = '';
 $lang->conference->apiPort        = '音视频 API 端口';
-$lang->conference->apiPortTip     = 'OWT 下默认为 3004，SRS 下默认为 1985。';
+$lang->conference->apiPortOwtTip  = '默认为 3004';
+$lang->conference->apiPortSrsTip  = '默认为 1985';
 $lang->conference->mgmtPort       = 'OWT 管理端口';
 $lang->conference->mgmtPortTip    = '默认为 3300';
 $lang->conference->rtcPort        = 'SRS 信令端口';
 $lang->conference->rtcPortTip     = '默认为 1989';
 $lang->conference->https          = '是否启用 HTTPS';
-$lang->conference->httpsTip       = '默认启用，请确保该选项与音视频服务器设置一致';
+$lang->conference->httpsTip       = 'SRS 默认部署关闭 HTTPS';
 $lang->conference->serviceId      = 'OWT ID';
 $lang->conference->serviceIdTip   = '';
 $lang->conference->serviceKey     = 'OWT 密钥';
 $lang->conference->serviceKeyTip  = '';
 $lang->conference->configGuideTip = '';
 $lang->conference->backendTypeTip = '';
+
+$lang->conference->setupTitle       = '音视频服务器部署指南';
+$lang->conference->setupDescription = '喧喧提供音频会议功能，需要部署额外的音视频服务端。音视频服务器端分为 OWT 和 SRS ，推荐使用 SRS 音视频服务端。';
+$lang->conference->setupDoc         = '部署文档';
+$lang->conference->configDoc        = '配置文档';
+$lang->conference->download         = '下载地址';
+$lang->conference->srsSetupTitle    = 'SRS 音视频服务端';
+$lang->conference->owtSetupTitle    = 'OWT 音视频服务端';
+
 
 $lang->conference->backend = new stdclass();
 $lang->conference->backend->type  = '后端类型';

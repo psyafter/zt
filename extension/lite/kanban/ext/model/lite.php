@@ -5,7 +5,18 @@ public function __construct($appName = '')
     if($this->app->getModuleName() == 'kanban') $this->lang->kanban->menu = new stdclass();
 }
 
-public function getKanban4Group($executionID, $browseType, $groupBy)
+/**
+ * Get kanban group by execution id.
+ *
+ * @param  int    $executionID
+ * @param  int    $browseType
+ * @param  int    $groupBy
+ * @param  string $searchValue
+ * @param  string $orderBy
+ * @access public
+ * @return array
+ */
+public function getKanban4Group($executionID, $browseType, $groupBy, $searchValue = '', $orderBy = 'pri_asc')
 {
     /* Get card  data. */
     $cardList = array();
@@ -13,7 +24,8 @@ public function getKanban4Group($executionID, $browseType, $groupBy)
     if($browseType == 'bug')   $cardList = $this->loadModel('bug')->getExecutionBugs($executionID);
     if($browseType == 'task')  $cardList = $this->loadModel('execution')->getKanbanTasks($executionID, "id");
 
-    $lanes = $this->getLanes4Group($executionID, $browseType, $groupBy, $cardList);
+    if($groupBy == 'story' and $browseType == 'task' and !isset($this->lang->kanban->orderList[$orderBy])) $orderBy = 'pri_asc';
+    $lanes = $this->getLanes4Group($executionID, $browseType, $groupBy, $cardList, $orderBy);
     if(empty($lanes)) return array();
 
     $execution = $this->loadModel('execution')->getByID($executionID);
@@ -39,6 +51,7 @@ public function getKanban4Group($executionID, $browseType, $groupBy)
         if(empty($column->cards)) continue;
         foreach($cardList as $card)
         {
+            if($card->assignedTo == '') $card->assignedTo = 0;
             if(strpos($column->cards, ",$card->id,") !== false) $cardGroup[$column->columnType][$card->id] = $card;
         }
     }
@@ -56,12 +69,40 @@ public function getKanban4Group($executionID, $browseType, $groupBy)
         $laneData['name']            = (($groupBy == 'pri' or $groupBy == 'severity') and $laneID) ? $this->lang->$browseType->$groupBy . ':' . $lane->name : $lane->name;
         $laneData['color']           = $lane->color;
         $laneData['order']           = $lane->order;
+        $laneData['type']            = $browseType;
         $laneData['defaultCardType'] = $browseType;
+
+        if($browseType == 'task' and $groupBy == 'story')
+        {
+            $columnData[0]['id']         = 0;
+            $columnData[0]['type']       = 'story';
+            $columnData[0]['name']       = zget($this->lang->kanban->orderList, $orderBy, '');
+            $columnData[0]['color']      = '#333';
+            $columnData[0]['limit']      = '-1';
+            $columnData[0]['laneType']   = $browseType;
+            $columnData[0]['asParent']   = false;
+            $columnData[0]['parentType'] = '';
+            $columnData[0]['actions']    = array();
+
+            if(empty($searchValue) or strpos($lane->name, $searchValue) !== false)
+            {
+                $cardData = array();
+                $cardData['id']         = $laneID;
+                $cardData['title']      = $lane->name;
+                $cardData['order']      = 1;
+                $cardData['pri']        = $lane->pri;
+                $cardData['estimate']   = '';
+                $cardData['assignedTo'] = $lane->assignedTo;
+                $cardData['deadline']   = '';
+                $cardData['severity']   = '';
+                $laneData['cards']['story'][] = $cardData;
+            }
+        }
 
         /* Construct kanban column data. */
         foreach($columns as $column)
         {
-            $columnID   = $column->column;
+            $columnID   = $column->columnType;
             $columnName = $column->columnName;
             $parentColumn = '';
             if(in_array($columnID, array('testing', 'tested')))       $parentColumn = 'test';
@@ -74,7 +115,7 @@ public function getKanban4Group($executionID, $browseType, $groupBy)
                 if($this->isClickable($column, $action)) $column->actions[] = $action;
             }
 
-            $columnData[$columnID]['id']         = $columnID;
+            $columnData[$columnID]['id']         = $column->column;
             $columnData[$columnID]['type']       = $columnID;
             $columnData[$columnID]['name']       = $columnName;
             $columnData[$columnID]['color']      = '#333';
@@ -85,14 +126,15 @@ public function getKanban4Group($executionID, $browseType, $groupBy)
             $columnData[$columnID]['actions']    = $column->actions;
 
             $cardOrder = 1;
-            $objects   = zget($cardGroup, $columnID, array());
+            $objects   = zget($cardGroup, $column->columnType, array());
             foreach($objects as $object)
             {
                 if(empty($object)) continue;
 
                 $cardData = array();
+
                 if(in_array($groupBy, array('module', 'story', 'pri', 'severity')) and (int)$object->$groupBy !== $laneID) continue;
-                if(in_array($groupBy, array('assignedTo', 'type', 'category', 'source')) and $object->$groupBy != $laneID) continue;
+                if(in_array($groupBy, array('assignedTo', 'type', 'category', 'source')) and $object->$groupBy !== $laneID) continue;
 
                 $cardData['id']         = $object->id;
                 $cardData['order']      = $cardOrder;
@@ -104,10 +146,14 @@ public function getKanban4Group($executionID, $browseType, $groupBy)
 
                 if($browseType == 'task')
                 {
-                    $cardData['name'] = $object->name;
+                    if($searchValue != '' and strpos($object->name, $searchValue) === false) continue;
+                    $cardData['name']   = $object->name;
+                    $cardData['status'] = $object->status;
+                    $cardData['left']   = $object->left;
                 }
                 else
                 {
+                    if($searchValue != '' and strpos($object->name, $searchValue) === false) continue;
                     $cardData['title'] = $object->title;
                 }
 
@@ -132,10 +178,11 @@ public function getKanban4Group($executionID, $browseType, $groupBy)
  * @param  int    $kanbanID
  * @param  string $browseType all|task|bug|story
  * @param  string $orderBy
+ * @param  string $searchValue
  * @access public
  * @return array
  */
-public function getCardGroupByExecution($executionID, $browseType = 'all', $orderBy = 'id_asc')
+public function getCardGroupByExecution($executionID, $browseType = 'all', $orderBy = 'id_asc', $searchValue = '')
 {
     $cards = $this->dao->select('t1.*, t2.type as columnType')
         ->from(TABLE_KANBANCELL)->alias('t1')
@@ -180,9 +227,10 @@ public function getCardGroupByExecution($executionID, $browseType = 'all', $orde
 
                 if($cell->type == 'task')
                 {
-                    $cardData['name']   = $object->name;
-                    $cardData['status'] = $object->status;
-                    $cardData['left']   = $object->left;
+                    $cardData['name']       = $object->name;
+                    $cardData['status']     = $object->status;
+                    $cardData['left']       = $object->left;
+                    $cardData['estStarted'] = $object->estStarted;
                 }
                 else
                 {

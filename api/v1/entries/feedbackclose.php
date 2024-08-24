@@ -2,21 +2,21 @@
 /**
  * The feedback close entry point of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2021 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     entries
  * @version     1
  * @link        https://www.zentao.pm
  */
-class feedbackCloseEntry extends Entry
+class feedbackCloseEntry extends entry
 {
     /**
      * POST method.
      *
      * @param  int    $feedbackID
      * @access public
-     * @return void
+     * @return string
      */
     public function post($feedbackID)
     {
@@ -24,6 +24,8 @@ class feedbackCloseEntry extends Entry
 
         $fields = 'closedReason,comment';
         $this->batchSetPost($fields);
+
+        if(empty($_POST)) $this->setPost('status', 'closed');
 
         $control = $this->loadController('feedback', 'close');
         $control->close($feedbackID);
@@ -34,6 +36,6 @@ class feedbackCloseEntry extends Entry
 
         $feedback = $this->loadModel('feedback')->getById($feedbackID);
 
-        $this->send(200, $feedback);
+        return $this->send(200, $feedback);
     }
 }

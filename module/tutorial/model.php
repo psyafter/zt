@@ -2,7 +2,7 @@
 /**
  * The model file of tutorial module of ZenTaoCMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     tutorial
@@ -71,6 +71,7 @@ class tutorialModel extends model
         $product->type           = 'normal';
         $product->status         = 'normal';
         $product->desc           = '';
+        $product->shadow         = '0';
         $product->PO             = $this->app->user->account;
         $product->QD             = '';
         $product->RD             = '';
@@ -98,24 +99,30 @@ class tutorialModel extends model
     {
         $product = $this->getProduct();
         $product->stories = array();
-        $product->stories[0]         = '';
-        $product->stories[1]         = 'draft';
-        $product->stories[2]         = 'active';
-        $product->stories[3]         = 'closed';
-        $product->stories[4]         = 'changed';
-        $product->stories['']        = 0;
-        $product->stories['draft']   = 0;
-        $product->stories['active']  = 0;
-        $product->stories['closed']  = 0;
-        $product->stories['changed'] = 0;
-        $product->requirements       = $product->stories;
-        $product->plans              = 0;
-        $product->releases           = 0;
-        $product->bugs               = 0;
-        $product->unResolved         = 0;
-        $product->closedBugs         = 0;
-        $product->fixedBugs          = 0;
-        $product->assignToNull       = 0;
+        $product->stories[0]              = '';
+        $product->stories[1]              = 'draft';
+        $product->stories[2]              = 'reviewing';
+        $product->stories[3]              = 'active';
+        $product->stories[4]              = 'closed';
+        $product->stories[5]              = 'changing';
+        $product->stories[6]              = 'finishClosed';
+        $product->stories[7]              = 'unclosed';
+        $product->stories['']             = 0;
+        $product->stories['draft']        = 0;
+        $product->stories['reviewing']    = 0;
+        $product->stories['active']       = 0;
+        $product->stories['closed']       = 0;
+        $product->stories['changing']     = 0;
+        $product->stories['finishClosed'] = 0;
+        $product->stories['unclosed']     = 0;
+        $product->requirements            = $product->stories;
+        $product->plans                   = 0;
+        $product->releases                = 0;
+        $product->bugs                    = 0;
+        $product->unResolved              = 0;
+        $product->closedBugs              = 0;
+        $product->fixedBugs               = 0;
+        $product->assignToNull            = 0;
 
         $productStat[$product->program][$product->line]['products'][$product->id] = $product;
         return $productStat;
@@ -160,6 +167,9 @@ class tutorialModel extends model
         $project->displayCards = 0;
         $project->fluidBoard   = 0;
         $project->deleted      = '0';
+        $project->hasProduct   = '1';
+        $project->multiple     = '';
+        $project->division     = 0;
 
         return $project;
     }
@@ -196,6 +206,36 @@ class tutorialModel extends model
 
         $projectStat[$project->id] = $project;
         return $projectStat;
+    }
+
+    /**
+     * Get execution stats for tutorial.
+     *
+     * @param  string $browseType
+     * @access public
+     * @return array
+     */
+    public function getExecutionStats($browseType = '')
+    {
+        $execution = $this->getProject();
+        $emptyHour = array('totalEstimate' => 0, 'totalConsumed' => 0, 'totalLeft' => 0, 'progress' => 0);
+
+        $execution->hours        = (object)$emptyHour;
+        $execution->leftTasks    = '—';
+        $execution->teamMembers  = array_keys($this->getTeamMembers());
+        $execution->teamCount    = count($execution->teamMembers);
+        $execution->hasProduct   = '1';
+        $execution->multiple     = '';
+        $execution->order        = 1;
+        $execution->burns        = array('');
+        $execution->type         = 'sprint';
+        $execution->projectName  = '';
+        $execution->projectModel = '';
+
+        if($browseType and $browseType != 'all') $execution->name .= '-' . $browseType; // Fix bug #21096
+
+        $executionStat[0] = $execution;
+        return $executionStat;
     }
 
     /**
@@ -314,6 +354,10 @@ class tutorialModel extends model
         $execution->fluidBoard    = 0;
         $execution->hours         = $hours;
         $execution->burns         = array(35, 35);
+        $execution->hasProduct    = '1';
+        $execution->multiple      = '';
+        $execution->colWidth      = '200';
+
         return $execution;
     }
 

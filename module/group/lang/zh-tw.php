@@ -2,7 +2,7 @@
 /**
  * The group module zh-tw file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禪道軟件（青島）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     group
@@ -20,29 +20,34 @@ $lang->group->managePriv         = '權限維護';
 $lang->group->managePrivByGroup  = '權限維護';
 $lang->group->managePrivByModule = '按模組分配權限';
 $lang->group->byModuleTips       = '<span class="tips">（可以按住Shift或者Ctrl鍵進行多選）</span>';
+$lang->group->allTips            = '勾選此項後，管理員可管理系統中所有對象，包括後續創建的對象。';
 $lang->group->manageMember       = '成員維護';
-$lang->group->manageProjectAdmin = '維護項目管理員';
+$lang->group->manageProjectAdmin = "維護{$lang->projectCommon}管理員";
 $lang->group->confirmDelete      = '您確定刪除“%s”用戶分組嗎？';
 $lang->group->successSaved       = '成功保存';
 $lang->group->errorNotSaved      = '沒有保存，請確認選擇了權限數據。';
 $lang->group->viewList           = '可訪問視圖';
-$lang->group->manageProject      = '可管理項目';
+$lang->group->object             = '可管理對象';
+$lang->group->manageProgram      = '可管理項目集';
+$lang->group->manageProject      = '可管理' . $lang->projectCommon;
+$lang->group->manageExecution    = '可管理' . $lang->execution->common;
+$lang->group->manageProduct      = '可管理' . $lang->productCommon;
 $lang->group->programList        = '可訪問項目集';
 $lang->group->productList        = '可訪問' . $lang->productCommon;
-$lang->group->projectList        = '可訪問項目';
+$lang->group->projectList        = '可訪問' . $lang->projectCommon;
 $lang->group->executionList      = "可訪問{$lang->execution->common}";
 $lang->group->dynamic            = '可查看動態';
 $lang->group->noticeVisit        = '空代表沒有訪問限制';
 $lang->group->noneProgram        = "暫時沒有項目集";
 $lang->group->noneProduct        = "暫時沒有{$lang->productCommon}";
 $lang->group->noneExecution      = "暫時沒有{$lang->execution->common}";
-$lang->group->project            = '項目';
+$lang->group->project            = $lang->projectCommon;
 $lang->group->group              = '分組';
 $lang->group->more               = '更多';
-
-global $config;
-if($config->systemMode == 'new') $lang->group->noneProject = '暫時沒有項目';
-if($config->systemMode == 'classic') $lang->group->noneProject = "暫時沒有{$lang->executionCommon}";
+$lang->group->allCheck           = '全部';
+$lang->group->noGroup            = '暫時沒有分組。';
+$lang->group->repeat             = "『%s』已經有『%s』這條記錄了，請調整後再試。";
+$lang->group->noneProject        = '暫時沒有' . $lang->projectCommon;
 
 $lang->group->id       = '編號';
 $lang->group->name     = '分組名稱';
@@ -59,6 +64,7 @@ $lang->group->outside  = '組外用戶';
 $lang->group->limited  = '受限用戶組';
 $lang->group->other    = '其他模組';
 $lang->group->all      = '所有權限';
+$lang->group->config   = '配置';
 
 $lang->group->copyOptions['copyPriv'] = '複製權限';
 $lang->group->copyOptions['copyUser'] = '複製用戶';

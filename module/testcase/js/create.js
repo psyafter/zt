@@ -36,9 +36,15 @@ $(function()
             $searchInput.focus();
         });
     };
+
     $(document).on('change', '#story', function()
     {
         if($(this).val() === 'showmore') showSearchModal();
+    });
+
+    $(document).on('click', '#priRequiredBox', function()
+    {
+        $('#priSelect').removeClass('required');
     });
 
     $(document).on('click', '#story_chosen .chosen-results > li.no-results', showSearchModal);
@@ -156,4 +162,16 @@ $(function()
     });
 
     $('#subNavbar li[data-id="testcase"]').addClass('active');
+
+    $('#customField').click(function()
+    {
+        hiddenRequireFields();
+    });
+
+    /* Implement a custom form without feeling refresh. */
+    $('#formSettingForm .btn-primary').click(function()
+    {
+        saveCustomFields('createFields');
+        return false;
+    });
 });

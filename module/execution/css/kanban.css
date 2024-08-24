@@ -36,6 +36,9 @@
 .region .kanban-header-col > .title {max-width: 80% !important;}
 .region .kanban-header-col > .title {margin: 0}
 .region .kanban-header-col > .title > span {display: inline-block; overflow: hidden; padding-right:2px; position: initial; max-width: 85px !important;}
+.region .kanban-header-col > .title > .storyColumn {margin-right: 30px;}
+.region .kanban-header-col > .title > .storyColumn .text {font-weight: 700; color:rgb(51, 51, 51);}
+.region .kanban-header-col > .title > .storyColumn + .dropdown-menu {top: 45px; left: auto;}
 .region .kanban-header-col > .title > .text-grey {opacity: .5; font-weight: bold; color: #8b91a2;}
 .region .kanban-header-col > .title > .count {opacity: .5; font-weight: bold; color: #8b91a2;}
 .region .kanban-header-col > .title > .error {color: #333333; padding-left: 2px; font-size: 10px; padding-top: 1px; padding-right: 2px;}
@@ -80,7 +83,7 @@
 #kanbanScaleControl > .input-group-btn:first-child > .btn {border-radius: 16px 0 0 16px; border-right-color: transparent;}
 #kanbanScaleControl > .input-group-btn:last-child > .btn {border-radius: 0 16px 16px 0; border-left-color: transparent;}
 #kanbanScaleControl > .input-group-btn > .btn:hover {border-color: #b8bfce;}
-#kanbanActionMenu {top: 24px; right: auto;}
+#kanbanActionMenu {top: 24px; right: 57px;}
 
 .kanban + .kanban {margin-top: 15px}
 .kanban-card > .title {display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis}
@@ -110,3 +113,12 @@
 #mainMenu .divider {margin: 10px}
 
 .modal-header {padding: 15px 0;}
+#rdKanbanSearch.input-group {float: left; width: min-content;}
+#rdKanbanSearchInput {width: 150px;}
+#rdSearchBox {display: none; width: 150px;}
+.btn-link.querybox-toggle {background-color: rgba(0,0,0,0);}
+
+#kanban .kanban-affixed .kanban-header-col .title.action-dbc {pointer-events: none;}
+#kanban .kanban-affixed .kanban-header-col .title.action-dbc .storyColumn .text {color: #fff;}
+#kanban .kanban-affixed .kanban-header-col .title.action-dbc .storyColumn .caret {display: none;}
+.kanban-card a[disabled] {color: #313c52;}

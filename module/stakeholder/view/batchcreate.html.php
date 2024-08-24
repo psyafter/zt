@@ -2,7 +2,7 @@
 /**
  * The batch create stakeholder view of stakeholder module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     product
@@ -21,7 +21,7 @@
       <span class='input-group-addon'><?php echo $lang->execution->selectDept?></span>
       <?php echo html::select('dept', $depts, $dept, "class='form-control chosen' onchange='setDeptUsers(this)' data-placeholder='{$lang->execution->selectDeptTitle}'");?>
     </div>
-    <?php if($project->parent and $config->systemMode == 'new'):?>
+    <?php if($project->parent):?>
     <?php echo html::a($this->createLink('stakeholder', 'batchcreate', "projectID={$projectID}&dept=&parent=$project->parent"), $lang->program->importStakeholder, '', 'class="btn btn-primary"');?>
     <?php endif;?>
   </div>

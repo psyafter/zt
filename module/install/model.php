@@ -2,7 +2,7 @@
 /**
  * The model file of install module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     install
@@ -49,24 +49,6 @@ class installModel extends model
     public function getPhpVersion()
     {
         return PHP_VERSION;
-    }
-
-    /**
-     * Get latest release.
-     *
-     * @access public
-     * @return string or bool
-     */
-    public function getLatestRelease()
-    {
-        if(!function_exists('json_decode')) return false;
-        $result = file_get_contents('https://www.zentao.pm/misc-getlatestrelease.json');
-        if($result)
-        {
-            $result = json_decode($result);
-            if(isset($result->release) and $this->config->version != $result->release->version) return $result->release;
-        }
-        return false;
     }
 
     /**
@@ -515,6 +497,15 @@ class installModel extends model
                 return false;
             }
         }
+
+        $this->loadModel('user');
+        $this->app->loadConfig('admin');
+        /* Check password. */
+        if(!validater::checkReg($this->post->password, '|(.){6,}|')) dao::$errors['password'][] = $this->lang->error->passwordrule;
+        if($this->user->computePasswordStrength($this->post->password) < 1) dao::$errors['password'][] = $this->lang->user->placeholder->passwordStrengthCheck[1];
+        if(!isset($this->config->safe->weak)) $this->app->loadConfig('admin');
+        if(strpos(",{$this->config->safe->weak},", ",{$this->post->password},") !== false) dao::$errors['password'] = sprintf($this->lang->user->errorWeak, $this->config->safe->weak);
+        if(dao::isError()) return false;
 
         /* Insert a company. */
         $company = new stdclass();

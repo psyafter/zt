@@ -2,7 +2,7 @@
 /**
  * The edit view of productplan module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     productplan
@@ -17,6 +17,7 @@
 <?php js::set('today', helper::today());?>
 <?php js::set('productID', $productID);?>
 <?php js::set('oldBranch', $oldBranch);?>
+<?php js::set('planID', $plan->id);?>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
     <div class='main-header'>
@@ -25,23 +26,29 @@
     <form class='load-indicator main-form form-ajax' method='post' target='hiddenwin' id='dataform'>
       <table class='table table-form'>
         <tbody>
+          <?php if(!$product->shadow):?>
           <tr>
             <th><?php echo $lang->productplan->product;?></th>
             <td class='muted'><?php echo $product->name;?></td><td></td><td></td>
           </tr>
-          <?php if($product->type != 'normal' and $plan->parent != '-1'):?>
+          <?php endif;?>
+          <?php if($plan->parent == '-1'):?>
+              <?php echo html::hidden('parent', $plan->parent);?>
+          <?php else:?>
+          <tr>
+            <th><?php echo $lang->productplan->parent;?></th>
+            <td><?php echo html::select('parent', array(0 => '') + $parentPlanPairs, $plan->parent, "class='form-control chosen'");?>
+          </tr>
+          <?php endif;?>
+          <?php if(!$product->shadow and $product->type != 'normal'):?>
           <tr>
             <th><?php echo $lang->product->branch;?></th>
-            <td><?php echo html::select('branch', $branchTagOption, $plan->branch, "onchange='getConflictStories($plan->id, this.value); 'class='form-control'");?></td><td></td><td></td>
+            <td class='required'><?php echo html::select('branch[]', $branchTagOption, $plan->branch, "class='form-control chosen' multiple");?></td><td></td><td></td>
           </tr>
           <?php endif;?>
           <tr>
             <th><?php echo $lang->productplan->title;?></th>
             <td><?php echo html::input('title', $plan->title, "class='form-control' required");?></td><td></td><td></td>
-          </tr>
-          <tr <?php echo $plan->parent == '-1' ? "class='hidden'": '';?>>
-            <th><?php echo $lang->productplan->parent;?></th>
-            <td><?php echo html::select('parent', array('0' => '') + $parentPlanPairs, $plan->parent, "class='form-control chosen'");?>
           </tr>
           <tr>
             <th><?php echo $lang->productplan->status;?></th>

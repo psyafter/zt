@@ -2,14 +2,13 @@
 /**
  * The api module zh-tw file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禪道軟件（青島）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     api
  * @version     $Id: zh-tw.php 5129 2013-07-15 00:16:07Z zhujinyonging@gmail.com $
  * @link        https://www.zentao.pm
  */
-$lang->api = new stdclass();
 $lang->api->common   = 'API介面';
 $lang->api->getModel = '超級model調用介面';
 $lang->api->sql      = 'SQL查詢介面';
@@ -60,6 +59,8 @@ $lang->api->confirmDeleteLib = "您確定刪除該介面庫嗎？";
 $lang->api->filterStruct     = "使用資料結構填充";
 $lang->api->defaultVersion   = "當前版本";
 $lang->api->zentaoAPI        = "禪道API文檔v1";
+$lang->api->search           = "搜索";
+$lang->api->allLibs          = "全部介面庫";
 
 /* Common access control lang. */
 $lang->api->whiteList          = '白名單';
@@ -124,6 +125,12 @@ $lang->api->query              = '請求參數';
 $lang->api->params             = '請求體';
 $lang->api->response           = '請求響應';
 $lang->api->responseExample    = '響應示例';
+$lang->api->id                 = '介面編號';
+$lang->api->addedBy            = '由誰添加';
+$lang->api->addedDate          = '添加時間';
+$lang->api->editedBy           = '由誰更新';
+$lang->api->editedDate         = '更新時間';
+$lang->api->version            = '版本號';
 $lang->api->res                = new stdClass();
 $lang->api->res->name          = '名稱';
 $lang->api->res->desc          = '描述';
@@ -208,3 +215,4 @@ $lang->api_lib_release->version = '版本';
 $lang->api->error             = new stdclass();
 $lang->api->error->onlySelect = 'SQL查詢介面只允許SELECT查詢';
 $lang->api->error->disabled   = '因為安全原因，該功能被禁用。可以到config目錄，修改配置項 %s，打開此功能。';
+$lang->api->error->notInput   = '因欄位參數類型限制，暫不支持調試';

@@ -2,7 +2,7 @@
 /**
  * The project view file of my module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     my
@@ -16,30 +16,39 @@
   <div class="btn-toolbar pull-left">
     <?php
     $recTotalLabel = " <span class='label label-light label-badge'>{$pager->recTotal}</span>";
-    echo html::a(inlink($app->rawMethod, "mode=doc&type=openedbyme"), "<span class='text'>{$lang->doc->openedByMe}</span>" . ($type == 'openedbyme' ? $recTotalLabel : ''), '', "class='btn btn-link" . ($type == 'openedbyme' ? ' btn-active-text' : '') . "'");
-    echo html::a(inlink($app->rawMethod, "mode=doc&type=editedbyme"), "<span class='text'>{$lang->doc->editedByMe}</span>" . ($type == 'editedbyme' ? $recTotalLabel : ''), '', "class='btn btn-link" . ($type == 'editedbyme' ? ' btn-active-text' : '') . "'");
+    foreach($lang->my->featureBar[$app->rawMethod]['doc'] as $typeKey => $name)
+    {
+        echo html::a(inlink($app->rawMethod, "mode=doc&type=$typeKey"), "<span class='text'>{$name}</span>" . ($type == $typeKey ? $recTotalLabel : ''), '', "class='btn btn-link" . ($type == $typeKey ? ' btn-active-text' : '') . "'");
+    }
     ?>
   </div>
+  <a class="btn btn-link querybox-toggle" id='bysearchTab'><i class="icon icon-search muted"></i> <?php echo $lang->my->byQuery;?></a>
 </div>
-<div id="mainContent" class='main-table'>
+<div id="mainContent">
   <?php if(empty($docs)):?>
+  <div class="cell<?php if($type == 'bySearch') echo ' show';?>" id="queryBox" data-module=<?php echo 'contributeDoc';?>></div>
   <div class="table-empty-tip">
     <p>
       <span class="text-muted"><?php echo $lang->doc->noDoc;?></span>
     </p>
   </div>
   <?php else:?>
-  <form id='projectForm' method='post' data-ride='table' data-checkable='false'>
+  <div class="cell<?php if($type == 'bySearch') echo ' show';?>" id="queryBox" data-module=<?php echo 'contributeDoc';?>></div>
+  <form id='projectForm' class="main-table" method='post' data-ride='table' data-checkable='false'>
     <table class='table table-fixed' id='docList'>
       <thead>
         <tr>
+          <th class="c-id"><?php echo $lang->doc->id;?></th>
           <th class="c-name"><?php echo $lang->doc->title;?></th>
           <th class="c-name c-object"><?php echo $lang->doc->object;?></th>
           <th class="c-num"><?php echo $lang->doc->size;?></th>
           <?php if($type != 'openedbyme'):?>
-          <th class="c-user"><?php echo $lang->doc->addedBy;?></th>
+          <th class="c-user"><?php echo $lang->doc->addedByAB;?></th>
           <?php endif;?>
           <th class="c-datetime"><?php echo $lang->doc->addedDate;?></th>
+          <?php if($type == 'openedbyme'):?>
+          <th class="c-user"><?php echo $lang->doc->lastEditedBy;?></th>
+          <?php endif;?>
           <th class="c-datetime"><?php echo $lang->doc->editedDate;?></th>
           <th class="c-actions-3 text-center"><?php echo $lang->actions;?></th>
         </tr>
@@ -49,6 +58,7 @@
         <?php $star = strpos($doc->collector, ',' . $this->app->user->account . ',') !== false ? 'icon-star text-yellow' : 'icon-star-empty';?>
         <?php $collectTitle = strpos($doc->collector, ',' . $this->app->user->account . ',') !== false ? $lang->doc->cancelCollection : $lang->doc->collect;?>
         <tr>
+          <td class="c-id"><?php echo $doc->id;?></td>
           <td class="c-name"><?php echo html::a($this->createLink('doc', 'view', "docID=$doc->id&version=0&from={$lang->navGroup->doc}", '', true), "<i class='icon icon-file-text text-muted'></i> &nbsp;" . $doc->title, '', "title='{$doc->title}' class='iframe' data-width='90%'");?></td>
           <td class='c-name'>
             <?php if(!empty($doc->objectType)):?>
@@ -63,13 +73,16 @@
           <td class="c-user"><?php echo zget($users, $doc->addedBy);?></td>
           <?php endif;?>
           <td class="c-datetime"><?php echo formatTime($doc->addedDate, 'y-m-d');?></td>
+          <?php if($type == 'openedbyme'):?>
+          <td class="c-user"><?php echo zget($users, $doc->editedBy);?></td>
+          <?php endif;?>
           <td class="c-datetime"><?php echo formatTime($doc->editedDate, 'y-m-d');?></td>
           <td class="c-actions">
             <?php if(common::canBeChanged('doc', $doc)):?>
             <?php if(common::hasPriv('doc', 'collect')):?>
             <a data-url="<?php echo $this->createLink('doc', 'collect', "objectID=$doc->id&objectType=doc");?>" title="<?php echo $collectTitle;?>" class='btn btn-link ajaxCollect'><i class='icon <?php echo $star;?>'></i></a>
             <?php endif;?>
-            <?php common::printLink('doc', 'edit', "docID=$doc->id&comment=false&from={$lang->navGroup->doc}", "<i class='icon icon-edit'></i>", '', "title='{$lang->edit}' class='btn btn-link iframe'", true, true)?>
+            <?php common::printLink('doc', 'edit', "docID=$doc->id&comment=false&from={$lang->navGroup->doc}", "<i class='icon icon-edit'></i>", '', "title='{$lang->edit}' class='btn btn-link' data-app='doc'", true, false)?>
             <?php common::printLink('doc', 'delete', "docID=$doc->id&confirm=no&from={$lang->navGroup->doc}", "<i class='icon icon-trash'></i>", 'hiddenwin', "title='{$lang->delete}' class='btn btn-link'")?>
             <?php endif;?>
           </td>

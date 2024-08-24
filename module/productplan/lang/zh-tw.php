@@ -2,7 +2,7 @@
 /**
  * The productplan module zh-tw file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禪道軟件（青島）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     productplan
@@ -27,7 +27,7 @@ $lang->productplan->view       = "計劃詳情";
 $lang->productplan->bugSummary = "本頁共 <strong>%s</strong> 個Bug";
 $lang->productplan->basicInfo  = '基本信息';
 $lang->productplan->batchEdit  = '批量編輯';
-$lang->productplan->project    = '項目';
+$lang->productplan->project    = $lang->projectCommon;
 $lang->productplan->plan       = '計劃';
 $lang->productplan->allAB      = '所有';
 $lang->productplan->to         = '至';
@@ -56,6 +56,7 @@ $lang->productplan->batchUnlinkBug   = "批量移除Bug";
 $lang->productplan->linkedBugs       = 'Bug';
 $lang->productplan->unlinkedBugs     = '未關聯Bug';
 $lang->productplan->unexpired        = "未過期";
+$lang->productplan->noAssigned       = '未指派';
 $lang->productplan->all              = "所有計劃";
 $lang->productplan->setDate          = "設置計划起止時間";
 $lang->productplan->expired          = "已過期";
@@ -70,9 +71,14 @@ $lang->productplan->confirmClose       = "您確認關閉該計劃嗎？";
 $lang->productplan->confirmActivate    = "您確認激活該計劃嗎？";
 $lang->productplan->noPlan             = "暫時沒有計劃。";
 $lang->productplan->cannotDeleteParent = "不能刪除父計劃";
-$lang->productplan->selectProjects     = "請選擇所屬項目";
-$lang->productplan->projectNotEmpty    = '所屬項目不能為空。';
+$lang->productplan->selectProjects     = "請選擇所屬" . $lang->projectCommon;
+$lang->productplan->projectNotEmpty    = "所屬{$lang->projectCommon}不能為空。";
 $lang->productplan->nextStep           = "下一步";
+$lang->productplan->summary            = "本頁共 <strong>%s</strong> 個計劃，父計劃 <strong>%s</strong>，子計劃 <strong>%s</strong>，獨立計劃 <strong>%s</strong>。";
+$lang->productplan->checkedSummary     = "共選中 <strong>%total%</strong> 個計劃，父計劃 <strong>%parent%</strong>，子計劃 <strong>%child%</strong>，獨立計劃 <strong>%independent%</strong>。";
+$lang->productplan->confirmChangePlan  = "分支『%s』解除關聯後，分支下的%s個{$lang->SRCommon}和%s個Bug將同步從計劃中移除，是否解除？";
+$lang->productplan->confirmRemoveStory = "分支『%s』解除關聯後，分支下的%s個{$lang->SRCommon}將同步從計劃中移除，是否解除？";
+$lang->productplan->confirmRemoveBug   = "分支『%s』解除關聯後，分支下的%s個Bug將同步從計劃中移除，是否解除？";
 
 $lang->productplan->id         = '編號';
 $lang->productplan->product    = $lang->productCommon;
@@ -81,7 +87,7 @@ $lang->productplan->title      = '名稱';
 $lang->productplan->desc       = '描述';
 $lang->productplan->begin      = '開始日期';
 $lang->productplan->end        = '結束日期';
-$lang->productplan->status     = '計劃狀態';
+$lang->productplan->status     = '狀態';
 $lang->productplan->last       = "上次計劃";
 $lang->productplan->future     = '待定';
 $lang->productplan->stories    = "{$lang->SRCommon}數";
@@ -95,7 +101,6 @@ $lang->productplan->childrenAB = "子";
 $lang->productplan->order      = "排序";
 $lang->productplan->deleted    = "已刪除";
 $lang->productplan->mailto     = "抄送給";
-$lang->productplan->status     = "計劃狀態";
 $lang->productplan->planStatus = "狀態";
 
 $lang->productplan->statusList['wait']   = '未開始';
@@ -128,14 +133,16 @@ $lang->productplan->beginLetterParent    = "父計劃的開始日期：%s，開�
 $lang->productplan->endGreaterParent     = "父計劃的完成日期：%s，完成日期不能大於父計劃的完成日期";
 $lang->productplan->beginGreaterChild    = "子計劃的開始日期：%s，開始日期不能大於子計劃的開始日期";
 $lang->productplan->endLetterChild       = "子計劃的完成日期：%s，完成日期不能小於子計劃的完成日期";
-$lang->productplan->noLinkedProject      = "當前產品還未關聯項目，請進入產品的項目列表關聯或創建一個項目";
-$lang->productplan->enterProjectList     = "進入產品的項目列表";
+$lang->productplan->noLinkedProject      = "當前{$lang->productCommon}還未關聯{$lang->projectCommon}，請進入{$lang->productCommon}的{$lang->projectCommon}列表關聯或創建一個{$lang->projectCommon}";
+$lang->productplan->enterProjectList     = "進入{$lang->productCommon}的{$lang->projectCommon}列表";
 $lang->productplan->beginGreaterChildTip = "父計劃[%s]的開始日期：%s，不能大於子計劃的開始日期: %s";
 $lang->productplan->endLetterChildTip    = "父計劃[%s]的完成日期：%s，不能小於子計劃的完成日期: %s";
 $lang->productplan->beginLetterParentTip = "子計劃[%s]的開始日期：%s，不能小於父計劃的開始日期: %s";
 $lang->productplan->endGreaterParentTip  = "子計劃[%s]的完成日期：%s，不能大於父計劃的完成日期: %s";
+$lang->productplan->diffBranchesTip      = "父計劃的@branch@『%s』未被子計劃關聯，對應@branch@的需求和bug將自動從計劃中移除，是否保存？";
+$lang->productplan->deleteBranchTip      = "@branch@『%s』被子計劃關聯，無法修改。";
 
-$lang->productplan->featureBar['browse']['all']    = '所有';
+$lang->productplan->featureBar['browse']['all']    = '全部';
 $lang->productplan->featureBar['browse']['undone'] = '未完成';
 $lang->productplan->featureBar['browse']['wait']   = '未開始';
 $lang->productplan->featureBar['browse']['doing']  = '進行中';

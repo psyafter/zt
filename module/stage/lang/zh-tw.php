@@ -2,7 +2,7 @@
 /**
  * The stage module zh-tw file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禪道軟件（青島）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     stage
@@ -10,21 +10,22 @@
  * @link        https://www.zentao.pm
  */
 /* Actions. */
-$lang->stage->browse      = '階段列表';
+$lang->stage->browse      = '瀑布階段列表';
 $lang->stage->create      = '新建';
 $lang->stage->batchCreate = '批量新建';
 $lang->stage->edit        = '編輯';
 $lang->stage->delete      = '刪除';
 $lang->stage->view        = '階段詳情';
+$lang->stage->plusBrowse  = '融合瀑布階段列表';
 
 /* Fields. */
-$lang->stage->common  = '階段';
-$lang->stage->id      = '編號';
+$lang->stage->id      = 'ID';
 $lang->stage->name    = '階段名稱';
 $lang->stage->type    = '階段類型';
 $lang->stage->percent = '工作量占比';
 $lang->stage->setType = '階段類型';
 
+$lang->stage->typeList['mix']     = '綜合';
 $lang->stage->typeList['request'] = '需求';
 $lang->stage->typeList['design']  = '設計';
 $lang->stage->typeList['dev']     = '開發';

@@ -2,7 +2,7 @@
 /**
  * The browse view file of testtask module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testtask
@@ -19,21 +19,6 @@
 #action-divider{display: inline-block; line-height: 0px; border-right: 2px solid #ddd}
 </style>
 <div id='mainContent' class='main-row'>
-  <div id="sidebar" class="side-col">
-    <div class="sidebar-toggle">
-      <i class="icon icon-angle-left"></i>
-    </div>
-    <div class="cell">
-      <div class='panel-body'>
-        <div class='list-group'>
-        <?php foreach($lang->testtask->unitTag as $key => $label):?>
-        <?php echo html::a(inlink('browseUnits', "productID=$productID&browseType=$key&orderBy=$orderBy"), "<span class='text'>$label</span>", '', "id='{$key}UnitTab' class='btn btn-link' data-app='{$this->app->tab}'");?>
-        <?php endforeach;?>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="main-col main-table">
     <?php if(empty($tasks)):?>
     <div class="table-empty-tip">
@@ -94,8 +79,7 @@
 <script>
 $(function()
 {
-    $('#<?php echo $browseType?>UnitTab').addClass('selected');
-    $('#browseunitsTab').addClass('btn-active-text');
+    $('#<?php echo $browseType?>UnitTab').addClass('btn-active-text');
 })
 </script>
 <?php include '../../common/view/footer.html.php';?>

@@ -2,7 +2,7 @@
 /**
  * The burn view file of execution module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     execution
@@ -36,11 +36,9 @@
     if(common::canModify('execution', $execution)) common::printLink('execution', 'fixFirst', "execution=$execution->id", $lang->execution->fixFirst, '', "class='btn btn-link iframe' data-width='700'");
     echo $lang->execution->howToUpdateBurn;
     ?>
-    <?php if($config->systemMode == 'new'):?>
     <div class='input-control w-150px'>
       <?php echo html::select('burnBy', $lang->execution->burnByList, $burnBy, "class='form-control chosen'");?>
     </div>
-    <?php endif;?>
     <?php if($interval):?>
     <div class='input-control thWidth'>
       <?php echo html::select('interval', $dayList, $interval, "class='form-control chosen'");?>
@@ -52,7 +50,12 @@
   </div>
 </div>
 <div id='mainContent' class='main-content'>
-  <h2 class='text-center'><?php echo $executionName . ' ' . $this->lang->execution->burn . '(' . zget($lang->execution->burnByList, $burnBy) . ')';?></h2>
+  <h2 class='text-center'>
+    <?php echo $executionName . ' ' . $this->lang->execution->burn . '(' . zget($lang->execution->burnByList, $burnBy) . ')';?>
+    <?php if(isset($execution->delay)):?>
+    <span class="label label-danger label-outline"><?php echo $lang->execution->delayed;?></span>
+    <?php endif;?>
+  </h2>
   <div id="burnWrapper">
     <div id="burnChart">
       <canvas id="burnCanvas"></canvas>

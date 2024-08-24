@@ -2,7 +2,7 @@
 /**
  * The testsuite module zh-cn file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     testsuite
@@ -26,7 +26,7 @@ $lang->testsuite->successSaved     = '保存成功';
 $lang->testsuite->id             = '编号';
 $lang->testsuite->pri            = '优先级';
 $lang->testsuite->common         = '套件';
-$lang->testsuite->project        = '所属项目';
+$lang->testsuite->project        = '所属' . $lang->projectCommon;
 $lang->testsuite->product        = '所属' . $lang->productCommon;
 $lang->testsuite->name           = '名称';
 $lang->testsuite->type           = '类型';
@@ -48,9 +48,12 @@ $lang->testsuite->confirmUnlinkCase = '您确认要移除该用例吗？';
 $lang->testsuite->noticeNone        = '您还没有创建套件';
 $lang->testsuite->noModule          = '<div>您现在还没有模块信息</div><div>请维护用例库模块</div>';
 $lang->testsuite->noTestsuite       = '暂时没有套件。';
+$lang->testsuite->summary           = "本页共 <strong>%total%</strong> 个套件，公开 <strong>%public%</strong> 个，私有 <strong>%private%</strong> 个。";
 
 $lang->testsuite->lblCases      = '用例列表';
 $lang->testsuite->lblUnlinkCase = '移除用例';
 
 $lang->testsuite->authorList['private'] = '私有';
 $lang->testsuite->authorList['public']  = '公开';
+
+$lang->testsuite->featureBar['browse']['all'] = '套件列表';

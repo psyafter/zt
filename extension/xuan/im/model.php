@@ -12,7 +12,14 @@
 class imModel extends model
 {
     /**
-     * __construct function load chat, user, message, extension models.
+     * Sub-model list, these models are stored at im/model/.
+     *
+     * @access public
+     */
+    public $models = array('chat', 'message', 'user', 'conference', 'bot');
+
+    /**
+     * __construct loads and inits sub-models.
      *
      * @access public
      * @return void
@@ -21,17 +28,16 @@ class imModel extends model
     {
         parent::__construct();
 
+        if((isset($_SERVER['RR_RELAY']) || isset($_SERVER['RR_MODE'])) && !commonModel::isLicensedMethod('im', 'roadrunner')) die;
+
         $modelPath = dirname(__FILE__) . DS . "model" . DS;
 
-        helper::import($modelPath . 'chat.php');
-        helper::import($modelPath . 'message.php');
-        helper::import($modelPath . 'user.php');
-        helper::import($modelPath . 'conference.php');
-
-        $this->chat = new chat();
-        $this->user = new user();
-        $this->message = new message();
-        $this->conference = new conference();
+        foreach($this->models as $model)
+        {
+            helper::import($modelPath . "$model.php");
+            $className = "im$model";
+            $this->$model = new $className($this->appName, $this);
+        }
     }
 
     /**
@@ -214,8 +220,8 @@ class imModel extends model
      */
     public static function batchEncodeOutput($array, $map)
     {
-        if(empty($array)) return array();
         $data = array();
+        if(empty($array)) return $data;
         foreach($array as $output) $data[] = self::encodeOutput($output, $map);
         return $data;
     }
@@ -242,7 +248,7 @@ class imModel extends model
         $lang   = $this->app->input['lang'];
         if(!isset($from) || empty($from)) $from = $this->app->input['userID'];
 
-        $response = "{$to}\n";
+        $response  = "{$to}\n";
         $response .= "{$from}\n";
         $response .= "$method\n";
         $response .= "success\n";
@@ -437,12 +443,14 @@ class imModel extends model
         $data->enableAES       = $setting->aes == 'off' ? 0 : 1;
         $data->uploadPath      = 'files/';
         $data->uploadFileSize  = $setting->uploadFileSize ?: '20';
-        $data->pollingInterval = isset($this->config->xuanxuan->pollingInterval) ? $this->config->xuanxuan->pollingInterval : 60;
+        $data->pollingInterval = isset($this->config->xuanxuan->pollingInterval) ? $this->config->xuanxuan->pollingInterval : 15;
         $data->maxOnlineUser   = isset($setting->maxOnlineUser) ? $setting->maxOnlineUser : 0;
         $data->logPath         = 'log/';
         $data->certPath        = 'cert/';
         $data->debug           = 0;
         $data->key             = $this->config->xuanxuan->key;
+        $data->syncConfig      = 1;
+        $data->thumbnail       = 1;
 
         if($downloadType == 'config')
         {
@@ -886,9 +894,7 @@ class imModel extends model
      */
     public function __call($function, $arguments)
     {
-        $modelList = array('chat', 'user', 'message', 'conference');
-
-        foreach($modelList as $model)
+        foreach($this->models as $model)
         {
             if(strpos(strtolower($function), $model) === 0)
             {

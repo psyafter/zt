@@ -38,7 +38,7 @@
       <td></td>
     </tr>
     <tr>
-      <th><?php echo $lang->client->download?></th>
+      <th><?php echo $lang->client->links?></th>
       <td>
         <?php foreach($lang->client->zipList as $os => $name):?>
         <div class="form-group">
@@ -55,6 +55,9 @@
       <th><?php echo $lang->client->releaseStatus?></th>
       <td><?php echo html::radio('status', $lang->client->status, 'wait')?></td>
       <td></td>
+    </tr>
+    <tr>
+      <th></th><td class="text-warning"><?php echo $lang->client->releaseTip?></td>
     </tr>
     <tr>
       <th></th>

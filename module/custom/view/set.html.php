@@ -2,7 +2,7 @@
 /**
  * The set view file of custom module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Congzhi Chen <congzhi@cnezsoft.com>
  * @package     custom
@@ -10,7 +10,7 @@
  * @link        https://www.zentao.pm
  */
 ?>
-<?php include 'header.html.php';?>
+<?php include $app->getModuleRoot() . 'common/view/header.html.php';?>
 <?php
 $itemRow = <<<EOT
   <tr class='text-center'>
@@ -21,21 +21,21 @@ $itemRow = <<<EOT
     <td>
       <input type='text' class="form-control" value="" autocomplete="off" name="values[]">
     </td>
-    <td class='c-actions'>
+    <td class='c-actions text-left'>
       <a href="javascript:void(0)" class='btn btn-link' onclick="addItem(this)"><i class='icon-plus'></i></a>
       <a href="javascript:void(0)" class='btn btn-link' onclick="delItem(this)"><i class='icon-close'></i></a>
     </td>
   </tr>
 EOT;
 ?>
+<style>
+.checkbox-primary {width: 170px; margin: 0 10px 10px 0; display: inline-block;}
+</style>
 <?php js::set('itemRow', $itemRow)?>
 <?php js::set('module',  $module)?>
 <?php js::set('field',   $field)?>
 <?php js::set('confirmReviewCase', $lang->custom->notice->confirmReviewCase)?>
 <?php js::set('stopSubmit', true)?>
-<style>
-.checkbox-primary {width: 170px; margin: 0 10px 10px 0; display: inline-block;}
-</style>
 <?php if($module == 'story' and $field == 'review'):?>
 <style>
 .table-form>tbody>tr>th {width: 120px !important}
@@ -48,23 +48,12 @@ EOT;
 </style>
 <?php endif;?>
 <div id='mainContent' class='main-row'>
-  <div class='side-col' id='sidebar'>
-    <div class='cell'>
-      <div class='list-group'>
-        <?php
-        foreach($lang->custom->{$module}->fields as $key => $value)
-        {
-            echo html::a(inlink('set', "module=$module&field=$key"), $value, '', " id='{$key}Tab'");
-        }
-        ?>
-      </div>
-    </div>
-  </div>
+  <?php if(!in_array($module, array('block', 'baseline'))) include 'sidebar.html.php';?>
   <div class='main-col main-content'>
     <form class="load-indicator main-form form-ajax" method='post'>
       <div class='main-header'>
         <div class='heading'>
-          <strong><?php echo $lang->custom->object[$module] . $lang->arrow . $lang->custom->$module->fields[$field]?></strong>
+          <strong><?php echo $lang->custom->$module->fields[$field]?></strong>
         </div>
       </div>
       <?php if($module == 'project' and $field == 'unitList'):?>
@@ -92,7 +81,7 @@ EOT;
         </tr>
         <tr>
           <th class="thWidth"><?php echo $lang->custom->superReviewers;?></th>
-          <td><?php echo html::select('superReviewers[]', $users, $superReviewers, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('superReviewers[]', $users, $superReviewers, "class='form-control picker-select' multiple");?></td>
         </tr>
         <tr>
           <td colspan='2' class='text-center'><?php echo html::submitButton();?></td>
@@ -112,57 +101,42 @@ EOT;
         </tr>
         <tr id='userBox' class='forceReview<?php if($needReview) echo " hidden"?>'>
           <th><?php echo $lang->custom->forceReview . $space . $lang->custom->account;?></th>
-          <td><?php echo html::select('forceReview[]', $users, $forceReview, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('forceReview[]', $users, $forceReview, "class='form-control picker-select' multiple");?></td>
         </tr>
         <tr id='roleBox' class='forceReview<?php if($needReview) echo " hidden"?>'>
           <th><?php echo $lang->custom->forceReview . $space . $lang->custom->role;?></th>
-          <td><?php echo html::select('forceReviewRoles[]', $lang->user->roleList, $forceReviewRoles, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('forceReviewRoles[]', $lang->user->roleList, $forceReviewRoles, "class='form-control picker-select' multiple");?></td>
         </tr>
         <tr id='deptBox' class='forceReview<?php if($needReview) echo " hidden"?>'>
           <th><?php echo $lang->custom->forceReview . $space . $lang->custom->dept;?></th>
-          <td><?php echo html::select('forceReviewDepts[]', $depts, $forceReviewDepts, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('forceReviewDepts[]', $depts, $forceReviewDepts, "class='form-control picker-select' multiple");?></td>
         </tr>
         <tr id='userBox' class='forceNotReview<?php if(!$needReview) echo " hidden"?>'>
           <th><?php echo $lang->custom->forceNotReview . $space . $lang->custom->account;?></th>
-          <td><?php echo html::select('forceNotReview[]', $users, $forceNotReview, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('forceNotReview[]', $users, $forceNotReview, "class='form-control picker-select' multiple");?></td>
         </tr>
         <tr id='roleBox' class='forceNotReview<?php if(!$needReview) echo " hidden"?>'>
           <th><?php echo $lang->custom->forceNotReview . $space . $lang->custom->role;?></th>
-          <td><?php echo html::select('forceNotReviewRoles[]', $lang->user->roleList, $forceNotReviewRoles, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('forceNotReviewRoles[]', $lang->user->roleList, $forceNotReviewRoles, "class='form-control picker-select' multiple");?></td>
         </tr>
         <tr id='deptBox' class='forceNotReview<?php if(!$needReview) echo " hidden"?>'>
           <th><?php echo $lang->custom->forceNotReview . $space . $lang->custom->dept;?></th>
-          <td><?php echo html::select('forceNotReviewDepts[]', $depts, $forceNotReviewDepts, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('forceNotReviewDepts[]', $depts, $forceNotReviewDepts, "class='form-control picker-select' multiple");?></td>
         </tr>
         <?php endif;?>
         <?php if($module == 'testcase'):?>
         <?php js::set('oldNeedReview', $needReview);?>
         <tr <?php if($needReview) echo "class='hidden'"?>>
           <th><?php echo $lang->custom->forceReview;?></th>
-          <td><?php echo html::select('forceReview[]', $users, $forceReview, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('forceReview[]', $users, $forceReview, "class='form-control picker-select' multiple");?></td>
           <td style='width:300px'><?php printf($lang->custom->notice->forceReview, $lang->$module->common);?></td>
         </tr>
         <tr <?php if(!$needReview) echo "class='hidden'"?>>
           <th><?php echo $lang->custom->forceNotReview;?></th>
-          <td><?php echo html::select('forceNotReview[]', $users, $forceNotReview, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('forceNotReview[]', $users, $forceNotReview, "class='form-control picker-select' multiple");?></td>
           <td style='width:300px'><?php printf($lang->custom->notice->forceNotReview, $lang->$module->common);?></td>
         </tr>
         <?php endif;?>
-        <tr>
-          <td colspan='2' class='text-center'><?php echo html::submitButton();?></td>
-        </tr>
-      </table>
-      <?php elseif($module == 'task' and $field == 'hours'):?>
-      <table class='table table-form mw-600px'>
-        <tr>
-          <th class='w-150px'><?php echo $lang->custom->workingHours;?></th>
-          <td><?php echo html::input('defaultWorkhours', $workhours, "class='form-control w-80px'");?></td>
-          <td></td>
-        </tr>
-        <tr>
-          <th><?php echo $lang->custom->weekend;?></th>
-          <td><?php echo html::radio('weekend', $lang->custom->weekendList, $weekend);?></td>
-        </tr>
         <tr>
           <td colspan='2' class='text-center'><?php echo html::submitButton();?></td>
         </tr>
@@ -212,11 +186,11 @@ EOT;
       <table class='table table-form mw-800px'>
         <tr>
           <th class='w-150px'><?php echo $lang->custom->user->fields['contactField'];?></th>
-          <td><?php echo html::select('contactField[]', $lang->user->contactFieldList, $config->user->contactField, "class='form-control chosen' multiple");?></td>
+          <td><?php echo html::select('contactField[]', $lang->user->contactFieldList, $config->user->contactField, "class='form-control picker-select' multiple");?></td>
         </tr>
         <tr>
           <td></td>
-          <td>
+          <td class="form-actions">
             <?php echo html::submitButton();?>
             <?php if(common::hasPriv('custom', 'restore')) echo html::linkButton($lang->custom->restore, inlink('restore', "module=user&field=contactField"), 'hiddenwin', '', 'btn btn-wide');?>
           </td>
@@ -234,6 +208,7 @@ EOT;
         </tr>
       </table>
       <?php else:?>
+      <?php if(!empty($fieldList) && is_array($fieldList)):?>
       <table class='table table-form active-disabled table-condensed mw-600px'>
         <tr class='text-center'>
           <td class='w-120px'><strong><?php echo $lang->custom->key;?></strong></td>
@@ -248,7 +223,7 @@ EOT;
             <?php echo html::input("values[]", isset($dbFields[$key]) ? $dbFields[$key]->value : $value, "class='form-control' " . (empty($key) ? 'readonly' : ''));?>
           </td>
           <?php if($canAdd):?>
-          <td class='c-actions'>
+          <td class='c-actions text-left'>
             <a href="javascript:void(0)" onclick="addItem(this)" class='btn btn-link'><i class='icon-plus'></i></a>
             <a href="javascript:void(0)" onclick="delItem(this)" class='btn btn-link'><i class='icon-close'></i></a>
           </td>
@@ -268,6 +243,7 @@ EOT;
       </table>
       <?php if(!$canAdd):?>
       <div class='alert alert-warning alert-block'><?php echo $lang->custom->notice->canNotAdd;?></div>
+      <?php endif;?>
       <?php endif;?>
       <?php endif;?>
     </form>

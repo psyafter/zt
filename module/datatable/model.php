@@ -2,7 +2,7 @@
 /**
  * The view file of datatable module of ZenTaoPMS.
  *
- * @copyright   Copyright 2014-2014 青岛易软天创网络科技有限公司 (QingDao Nature Easy Soft Network Technology Co,LTD www.cnezsoft.com)
+ * @copyright   Copyright 2014-2014 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     business(商业软件)
  * @author      Hao sun <sunhao@cnezsoft.com>
  * @package     datatable
@@ -23,6 +23,12 @@ class datatableModel extends model
     public function getFieldList($module)
     {
         if(!isset($this->config->$module)) $this->loadModel($module);
+        if($this->session->hasProduct == 0 and (strpos($this->config->datatable->noProductModule, ",$module,") !== false))
+        {
+            $productIndex = array_search('product', $this->config->$module->datatable->defaultField);
+            if($productIndex) unset($this->config->$module->datatable->defaultField[$productIndex]);
+            if(isset($this->config->$module->datatable->fieldList['product'])) unset($this->config->$module->datatable->fieldList['product']);
+        }
         if($this->session->currentProductType === 'normal') unset($this->config->$module->datatable->fieldList['branch']);
         foreach($this->config->$module->datatable->fieldList as $field => $items)
         {
@@ -158,7 +164,7 @@ class datatableModel extends model
             $title = (isset($col->name) and $col->name) ? "title='$col->name'" : $title;
             if($id == 'id' and (int)$width < 90) $width = '90px';
             $align = $id == 'actions' ? 'text-center' : '';
-            $align = in_array($id, array('budget', 'teamCount', 'estimate', 'consume')) ? 'text-right' : $align;
+            $align = in_array($id, array('budget', 'teamCount', 'estimate', 'consume', 'consumed', 'left')) ? 'text-right' : $align;
 
             $style  = '';
             $data   = '';

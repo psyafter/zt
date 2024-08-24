@@ -2,7 +2,7 @@
 /**
  * The index view file of doc module of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     doc
@@ -20,7 +20,7 @@
           <div class="panel-heading">
           <div class="panel-title"><?php echo $lang->doc->orderByEdit;?></div>
             <nav class="panel-actions nav nav-default">
-              <li><?php echo html::a($this->createLink('doc', 'browse', "browseType=byediteddate"), '<i class="icon icon-more icon-sm"></i>', '', "title='{$lang->more}'");?></li>
+              <li><?php echo html::a($this->createLink('doc', 'browse', "browseType=byediteddate"), strtoupper($lang->more), '', "title='{$lang->more}'");?></li>
             </nav>
           </div>
           <?php if(empty($latestEditedDocs)):?>
@@ -33,8 +33,8 @@
               <thead>
                 <tr>
                   <th class="c-name"><?php echo $lang->doc->title;?></th>
-                  <th class="c-num text-right"><?php echo $lang->doc->size;?></th>
-                  <th class="c-user"><?php echo $lang->doc->addedBy;?></th>
+                  <th class="c-num text-right" title="<?php echo $lang->doc->size?>"><?php echo $lang->doc->size;?></th>
+                  <th class="c-user" title="<?php echo $lang->doc->addedBy;?>"><?php echo $lang->doc->addedBy;?></th>
                   <th class="c-datetime"><?php echo $lang->doc->editedDate;?></th>
                 </tr>
               </thead>
@@ -132,7 +132,7 @@
           <div class="panel-heading">
           <div class="panel-title"><?php echo $lang->doc->myDoc;?></div>
             <nav class="panel-actions nav nav-default">
-              <li><?php echo html::a($this->createLink('doc', 'browse', "browseType=openedbyme"), '<i class="icon icon-more icon-sm"></i>', '', "title='{$lang->more}'");?></li>
+              <li><?php echo html::a($this->createLink('doc', 'browse', "browseType=openedbyme"), strtoupper($lang->more), '', "title='{$lang->more}'");?></li>
             </nav>
           </div>
           <?php if(empty($myDocs)):?>
@@ -170,7 +170,7 @@
           <div class="panel-heading">
           <div class="panel-title"><?php echo $lang->doc->myCollection;?></div>
             <nav class="panel-actions nav nav-default">
-              <li><?php echo html::a($this->createLink('doc', 'browse', "browseType=collectedbyme"), '<i class="icon icon-more icon-sm"></i>', '', "title='{$lang->more}'");?></li>
+              <li><?php echo html::a($this->createLink('doc', 'browse', "browseType=collectedbyme"), strtoupper($lang->more), '', "title='{$lang->more}'");?></li>
             </nav>
           </div>
           <?php if(empty($collectedDocs)):?>

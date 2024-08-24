@@ -2,7 +2,7 @@
 /**
  * The common simplified chinese file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     ZenTaoPMS
@@ -49,43 +49,49 @@ $lang->runInfo        = "<div class='row'><div class='u-1 a-center' id='debugbar
 $lang->agreement      = "已阅读并同意。<span class='text-danger'>未经许可，不得去除、隐藏或遮掩禅道软件的任何标志及链接。</span>";
 $lang->designedByAIUX = "<a href='https://api.zentao.pm/goto.php?item=aiux' class='link-aiux' target='_blank'><i class='icon icon-aiux'></i> 艾体验设计</a>";
 
-$lang->reset          = '重填';
-$lang->cancel         = '取消';
-$lang->refresh        = '刷新';
-$lang->create         = '新建';
-$lang->edit           = '编辑';
-$lang->delete         = '删除';
-$lang->activate       = '激活';
-$lang->close          = '关闭';
-$lang->unlink         = '移除';
-$lang->import         = '导入';
-$lang->export         = '导出';
-$lang->setFileName    = '文件名：';
-$lang->submitting     = '稍候...';
-$lang->save           = '保存';
-$lang->confirm        = '确认';
-$lang->preview        = '查看';
-$lang->goback         = '返回';
-$lang->goPC           = 'PC版';
-$lang->more           = '更多';
-$lang->moreLink       = 'More';
-$lang->day            = '天';
-$lang->customConfig   = '自定义';
-$lang->public         = '公共';
-$lang->trunk          = '主干';
-$lang->sort           = '排序';
-$lang->required       = '必填';
-$lang->noData         = '暂无';
-$lang->fullscreen     = '全屏';
-$lang->retrack        = '收起';
-$lang->whitelist      = '访问白名单';
-$lang->globalSetting  = '全局设置';
-$lang->waterfallModel = '瀑布模型';
-$lang->all            = '所有';
-$lang->viewDetails    = '查看详情';
+$lang->reset              = '重填';
+$lang->cancel             = '取消';
+$lang->refresh            = '刷新';
+$lang->refreshIcon        = "<i title='$lang->refresh' class='icon icon-refresh'></i>";
+$lang->create             = '新建';
+$lang->edit               = '编辑';
+$lang->delete             = '删除';
+$lang->activate           = '激活';
+$lang->close              = '关闭';
+$lang->unlink             = '移除';
+$lang->import             = '导入';
+$lang->export             = '导出';
+$lang->setFileName        = '文件名：';
+$lang->submitting         = '稍候...';
+$lang->save               = '保存';
+$lang->confirm            = '确认';
+$lang->preview            = '查看';
+$lang->goback             = '返回';
+$lang->goPC               = 'PC版';
+$lang->more               = '更多';
+$lang->moreLink           = 'More';
+$lang->day                = '天';
+$lang->customConfig       = '自定义';
+$lang->public             = '公共';
+$lang->trunk              = '主干';
+$lang->sort               = '排序';
+$lang->required           = '必填';
+$lang->noData             = '暂无';
+$lang->fullscreen         = '全屏';
+$lang->retrack            = '收起';
+$lang->whitelist          = '访问白名单';
+$lang->globalSetting      = '通用';
+$lang->waterfallModel     = '瀑布模型';
+$lang->scrumModel         = '敏捷模型';
+$lang->agilePlusModel     = '融合敏捷模型';
+$lang->waterfallPlusModel = '融合瀑布模型';
+$lang->all                = '全部';
+$lang->viewDetails        = '查看详情';
 
 $lang->actions         = '操作';
 $lang->restore         = '恢复默认';
+$lang->confirmDraft    = '有未保存的%name%表单，是否恢复？';
+$lang->resume          = '恢复';
 $lang->comment         = '备注';
 $lang->history         = '历史记录';
 $lang->attatch         = '附件';
@@ -144,26 +150,32 @@ $lang->workingHour = '工时';
 $lang->idAB         = 'ID';
 $lang->priAB        = 'P';
 $lang->statusAB     = '状态';
-$lang->openedByAB   = '创建';
+$lang->openedByAB   = '创建者';
 $lang->assignedToAB = '指派';
 $lang->typeAB       = '类型';
 $lang->nameAB       = '名称';
+$lang->code         = '代号';
 
 $lang->pri     = '优先级';
 $lang->delayed = '已延期';
 
 $lang->common->common     = '公有模块';
+$lang->common->story      = '需求';
 $lang->my->common         = '地盘';
+$lang->todo->common       = '待办';
+$lang->block->common      = '区块';
 $lang->program->common    = '项目集';
-$lang->product->common    = '产品';
-$lang->project->common    = '项目';
-$lang->execution->common  = $config->systemMode == 'new' ? '执行' : $lang->executionCommon;
+$lang->product->common    = $lang->productCommon;
+$lang->project->common    = $lang->projectCommon;
+$lang->execution->common  = '执行';
 $lang->kanban->common     = '看板';
 $lang->qa->common         = '测试';
 $lang->devops->common     = 'DevOps';
 $lang->doc->common        = '文档';
 $lang->repo->common       = '代码';
-$lang->report->common     = '统计';
+$lang->repo->codeRepo     = '代码库';
+$lang->screen->common     = '大屏';
+$lang->report->common     = 'BI';
 $lang->system->common     = '组织';
 $lang->admin->common      = '后台';
 $lang->story->common      = $lang->SRCommon;
@@ -178,10 +190,13 @@ $lang->automation->common = '自动化';
 $lang->team->common       = '团队';
 $lang->user->common       = '用户';
 $lang->custom->common     = '自定义';
+$lang->custom->mode       = '模式';
+$lang->custom->flow       = '流程设置';
 $lang->extension->common  = '插件';
 $lang->company->common    = '公司';
 $lang->dept->common       = '部门';
 $lang->upgrade->common    = '升级';
+$lang->editor->common     = '编辑器';
 $lang->program->list      = '项目集列表';
 $lang->program->kanban    = '项目集看板';
 $lang->design->common     = '设计';
@@ -190,11 +205,19 @@ $lang->design->DDS        = '详细设计';
 $lang->design->DBDS       = '数据库设计';
 $lang->design->ADS        = '接口设计';
 $lang->stage->common      = '阶段';
+$lang->stage->type        = '阶段类型';
 $lang->stage->list        = '阶段列表';
+$lang->stage->percent     = '工作量占比';
 $lang->execution->list    = "{$lang->executionCommon}列表";
+$lang->execution->CFD     = "累积流图";
 $lang->kanban->common     = '看板';
 $lang->backup->common     = '备份';
 $lang->action->trash      = '回收站';
+$lang->app->common        = '应用';
+$lang->app->serverLink    = '服务器链接';
+$lang->review->common     = '审批';
+$lang->zahost->common     = '宿主机';
+$lang->zanode->common     = '执行节点';
 
 $lang->personnel->common     = '人员';
 $lang->personnel->invest     = '投入人员';
@@ -237,15 +260,17 @@ $lang->model           = '模型';
 $lang->redev           = '二次开发';
 $lang->browser         = '浏览器';
 $lang->db              = '数据库';
-$lang->editor          = '编辑器';
+$lang->langItem        = '语言项';
+$lang->api->doc        = '接口文档';
+$lang->database        = '数据字典';
 $lang->timezone        = '时区';
 $lang->security        = '安全';
 $lang->calendar        = '日程';
 
 $lang->my->work = '待处理';
 
-$lang->project->list   = '项目列表';
-$lang->project->kanban = '项目看板';
+$lang->project->list   = $lang->projectCommon . '列表';
+$lang->project->kanban = $lang->projectCommon . '看板';
 
 $lang->execution->executionKanban = "{$lang->execution->common}看板";
 $lang->execution->all             = "{$lang->execution->common}列表";
@@ -253,8 +278,8 @@ $lang->execution->all             = "{$lang->execution->common}列表";
 $lang->doc->recent    = '最近文档';
 $lang->doc->my        = '我的文档';
 $lang->doc->favorite  = '我的收藏';
-$lang->doc->product   = '产品库';
-$lang->doc->project   = '项目库';
+$lang->doc->product   = $lang->productCommon . '库';
+$lang->doc->project   = $lang->projectCommon . '库';
 $lang->doc->api       = '接口库';
 $lang->doc->execution = "{$lang->execution->common}库";
 $lang->doc->custom    = '自定义库';
@@ -269,6 +294,7 @@ $lang->project->report = '报告';
 
 $lang->report->weekly       = '周报';
 $lang->report->annual       = '年度总结';
+$lang->report->pivotTable   = '透视表';
 $lang->report->notice       = new stdclass();
 $lang->report->notice->help = '注：统计报表的数据来源于列表页面的检索结果，生成统计报表前请先在列表页面进行检索。比如列表页面我们检索的是%tab%，那么报表就是基于之前检索的%tab%的结果集进行统计。';
 
@@ -276,17 +302,20 @@ $lang->testcase->case      = '用例';
 $lang->testcase->testsuite = '套件';
 $lang->testcase->caselib   = '用例库';
 
-$lang->devops->compile  = '构建';
+$lang->devops->compile  = '流水线';
 $lang->devops->mr       = '合并请求';
-$lang->devops->repo     = '版本库';
+$lang->devops->repo     = '代码库';
 $lang->devops->rules    = '指令';
 $lang->devops->settings = '合并请求设置';
+$lang->devops->set      = '设置';
 
-$lang->admin->system     = '系统';
-$lang->admin->entry      = '应用';
-$lang->admin->data       = '数据';
-$lang->admin->cron       = '定时';
-$lang->admin->buildIndex = '重建索引';
+$lang->admin->module      = '功能配置';
+$lang->admin->system      = '系统';
+$lang->admin->entry       = '接入禅道';
+$lang->admin->data        = '数据';
+$lang->admin->cron        = '定时';
+$lang->admin->buildIndex  = '重建索引';
+$lang->admin->tableEngine = '表引擎';
 
 $lang->convert->importJira = '导入Jira数据';
 
@@ -310,8 +339,8 @@ $lang->searchObjects['doc']         = '文档';
 $lang->searchObjects['caselib']     = '用例库';
 $lang->searchObjects['testreport']  = '测试报告';
 $lang->searchObjects['program']     = '项目集';
-$lang->searchObjects['project']     = '项目';
-$lang->searchObjects['execution']   = $lang->executionCommon;
+$lang->searchObjects['project']     = $lang->projectCommon;
+$lang->searchObjects['execution']   = $lang->execution->common;
 $lang->searchObjects['user']        = '用户';
 $lang->searchTips                   = '编号(ctrl+g)';
 
@@ -330,17 +359,17 @@ $lang->exportTypeList['selected'] = '选中记录';
 
 $lang->visionList = array();
 $lang->visionList['rnd']  = '研发综合界面';
-$lang->visionList['lite'] = '迅捷界面';
+$lang->visionList['lite'] = '运营管理界面';
 
 $lang->createObjects['todo']        = '待办';
 $lang->createObjects['effort']      = '日志';
 $lang->createObjects['bug']         = 'Bug';
-$lang->createObjects['story']       = '需求';
+$lang->createObjects['story']       = $lang->SRCommon;
 $lang->createObjects['task']        = '任务';
 $lang->createObjects['testcase']    = '用例';
 $lang->createObjects['execution']   = $lang->execution->common;
-$lang->createObjects['project']     = '项目';
-$lang->createObjects['product']     = '产品';
+$lang->createObjects['project']     = $lang->projectCommon;
+$lang->createObjects['product']     = $lang->productCommon;
 $lang->createObjects['program']     = '项目集';
 $lang->createObjects['doc']         = '文档';
 $lang->createObjects['kanbanspace'] = '空间';
@@ -367,6 +396,7 @@ $lang->error->companyNotFound = "您访问的域名 %s 没有对应的公司。"
 $lang->error->length          = array("『%s』长度错误，应当为『%s』", "『%s』长度应当不超过『%s』，且大于『%s』。");
 $lang->error->reg             = "『%s』不符合格式，应当为:『%s』。";
 $lang->error->unique          = "『%s』已经有『%s』这条记录了。如果您确定该记录已删除，请到后台-系统-数据-回收站还原。";
+$lang->error->repeat          = "『%s』已经有『%s』这条记录了。";
 $lang->error->gt              = "『%s』应当大于『%s』。";
 $lang->error->ge              = "『%s』应当不小于『%s』。";
 $lang->error->lt              = "『%s』应当小于『%s』。";
@@ -424,6 +454,7 @@ $lang->colorPicker->errorTip = '不是有效的颜色值';
 $lang->downNotify     = "下载桌面提醒";
 $lang->clientName     = "客户端";
 $lang->downloadClient = "下载客户端";
+$lang->downloadMobile = "下载移动端";
 $lang->clientHelp     = "客户端使用说明";
 $lang->clientHelpLink = "https://www.zentao.pm/book/zentaopmshelp/302.html#2";
 $lang->website        = "https://www.zentao.pm";
@@ -444,19 +475,21 @@ $lang->pasteImgFail      = "贴图失败，请稍后重试。";
 $lang->pasteImgUploading = "正在上传图片，请稍后...";
 
 /* 时间格式设置。*/
-if(!defined('DT_DATETIME1'))  define('DT_DATETIME1', 'Y-m-d H:i:s');
-if(!defined('DT_DATETIME2'))  define('DT_DATETIME2', 'y-m-d H:i');
-if(!defined('DT_MONTHTIME1')) define('DT_MONTHTIME1', 'n/d H:i');
-if(!defined('DT_MONTHTIME2')) define('DT_MONTHTIME2', 'n月d日 H:i');
-if(!defined('DT_DATE1'))      define('DT_DATE1', 'Y-m-d');
-if(!defined('DT_DATE2'))      define('DT_DATE2', 'Ymd');
-if(!defined('DT_DATE3'))      define('DT_DATE3', 'Y年m月d日');
-if(!defined('DT_DATE4'))      define('DT_DATE4', 'n月j日');
-if(!defined('DT_DATE5'))      define('DT_DATE5', 'j/n');
-if(!defined('DT_TIME1'))      define('DT_TIME1', 'H:i:s');
-if(!defined('DT_TIME2'))      define('DT_TIME2', 'H:i');
-if(!defined('LONG_TIME'))     define('LONG_TIME', '2059-12-31');
-if(!defined('BRANCH_MAIN'))   define('BRANCH_MAIN', '0');
+if(!defined('DT_DATETIME1'))      define('DT_DATETIME1', 'Y-m-d H:i:s');
+if(!defined('DT_DATETIME2'))      define('DT_DATETIME2', 'y-m-d H:i');
+if(!defined('DT_MONTHTIME1'))     define('DT_MONTHTIME1', 'n/d H:i');
+if(!defined('DT_MONTHTIME2'))     define('DT_MONTHTIME2', 'n月d日 H:i');
+if(!defined('DT_DATE1'))          define('DT_DATE1', 'Y-m-d');
+if(!defined('DT_DATE2'))          define('DT_DATE2', 'Ymd');
+if(!defined('DT_DATE3'))          define('DT_DATE3', 'Y年m月d日');
+if(!defined('DT_DATE4'))          define('DT_DATE4', 'n月j日');
+if(!defined('DT_DATE5'))          define('DT_DATE5', 'j/n');
+if(!defined('DT_TIME1'))          define('DT_TIME1', 'H:i:s');
+if(!defined('DT_TIME2'))          define('DT_TIME2', 'H:i');
+if(!defined('LONG_TIME'))         define('LONG_TIME', '2059-12-31');
+if(!defined('BRANCH_MAIN'))       define('BRANCH_MAIN', '0');
+if(!defined('DEFAULT_CARDCOUNT')) define('DEFAULT_CARDCOUNT', '2');
+if(!defined('MAX_CARDCOUNT'))     define('MAX_CARDCOUNT', '100');
 
 /* datepicker 时间*/
 $lang->datepicker = new stdclass();

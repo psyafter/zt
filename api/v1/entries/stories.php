@@ -2,7 +2,7 @@
 /**
  * The stories entry point of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2021 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     entries
@@ -16,7 +16,7 @@ class storiesEntry extends entry
      *
      * @param  int    $productID
      * @access public
-     * @return void
+     * @return string
      */
     public function get($productID = 0)
     {
@@ -60,7 +60,7 @@ class storiesEntry extends entry
      *
      * @param  int    $productID
      * @access public
-     * @return void
+     * @return string
      */
     public function post($productID = 0)
     {
@@ -68,7 +68,7 @@ class storiesEntry extends entry
         if(!$productID and isset($this->requestBody->product)) $productID = $this->requestBody->product;
         if(!$productID) return $this->sendError(400, 'Need product id.');
 
-        $fields = 'title,spec,verify,reviewer,type,parent,plan,module,moduleOptionMenu,source,sourceNote,category,pri,estimate,mailto,keywords,notifyemail,uid,URS';
+        $fields = 'title,spec,verify,reviewer,type,parent,plan,module,moduleOptionMenu,source,sourceNote,category,pri,estimate,mailto,keywords,notifyemail,uid,URS,status';
         $this->batchSetPost($fields);
 
         /* If reviewer is not post, set needNotReview. */
@@ -76,6 +76,7 @@ class storiesEntry extends entry
         if(empty($reviewer)) $this->setPost('needNotReview', 1);
         $this->setPost('product', $productID);
         $this->setPost('type', $this->param('type', 'story'));
+        $this->setPost('status', $this->param('status', 'draft'));
 
         $control = $this->loadController('story', 'create');
         $this->requireFields('title,spec,pri,category');
@@ -87,6 +88,6 @@ class storiesEntry extends entry
         if(isset($data->result) and !isset($data->id)) return $this->sendError(400, $data->message);
 
         $story = $this->loadModel('story')->getByID($data->id);
-        $this->send(200, $this->format($story, 'openedBy:user,openedDate:time,assignedTo:user,assignedDate:time,reviewedBy:user,reviewedDate:time,lastEditedBy:user,lastEditedDate:time,closedBy:user,closedDate:time,deleted:bool,mailto:userList'));
+        return $this->send(200, $this->format($story, 'openedBy:user,openedDate:time,assignedTo:user,assignedDate:time,reviewedBy:user,reviewedDate:time,lastEditedBy:user,lastEditedDate:time,closedBy:user,closedDate:time,deleted:bool,mailto:userList'));
     }
 }

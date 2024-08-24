@@ -2,7 +2,7 @@
 /**
 * The config file of zentaophp.  Don't modify this file directly, copy the item to my.php and change it.
 *
-* @copyright   Copyright 2009-2017 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+* @copyright   Copyright 2009-2017 禅道软件（青岛）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
 * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
 * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
 * @package     config
@@ -154,7 +154,7 @@ $config->hourPointCommonList['pt'][0] = 'horas de trabalho';
 $config->hourPointCommonList['pt'][1] = 'Ponto da história';
 $config->hourPointCommonList['pt'][2] = 'Ponto de função';
 
-$config->manualUrl['home'] = 'https://www.zentao.pm/book/zentaopmshelp.html?fullScreen=zentao';
+$config->manualUrl['home'] = 'https://www.zentao.pm/book/zentaopms/38.html?fullScreen=zentao';
 $config->manualUrl['int']  = 'https://www.zentao.pm/book/zentaomanual/zentao-installation-11.html?fullScreen=zentao';
 
 /* Supported charsets. */
@@ -186,7 +186,9 @@ $config->openMethods[] = 'user.login';
 $config->openMethods[] = 'user.logout';
 $config->openMethods[] = 'user.deny';
 $config->openMethods[] = 'user.reset';
+$config->openMethods[] = 'user.forgetpassword';
 $config->openMethods[] = 'user.refreshrandom';
+$config->openMethods[] = 'user.resetpassword';
 $config->openMethods[] = 'api.getsessionid';
 $config->openMethods[] = 'misc.checktable';
 $config->openMethods[] = 'misc.qrcode';
@@ -214,11 +216,24 @@ $config->openMethods[] = 'kanban.importplan';
 $config->openMethods[] = 'kanban.importrelease';
 $config->openMethods[] = 'kanban.importexecution';
 $config->openMethods[] = 'kanban.importbuild';
+$config->openMethods[] = 'kanban.importticket';
 $config->openMethods[] = 'kanban.activatecard';
 $config->openMethods[] = 'kanban.finishcard';
 $config->openMethods[] = 'kanban.deleteobjectcard';
 $config->openMethods[] = 'admin.ignore';
 $config->openMethods[] = 'personnel.unbindwhitelist';
+$config->openMethods[] = 'tree.viewhistory';
+$config->openMethods[] = 'doc.createbasicinfo';
+$config->openMethods[] = 'project.createguide';
+$config->openMethods[] = 'task.editteam';
+$config->openMethods[] = 'feedback.mergeproductmodule';
+$config->openMethods[] = 'zanode.nodelist';
+$config->openMethods[] = 'action.restoreStages';
+
+$config->openModules = array();
+$config->openModules[] = 'install';
+$config->openModules[] = 'upgrade';
+$config->openModules[] = 'im';
 
 /* Define the tables. */
 define('TABLE_COMPANY',       '`' . $config->db->prefix . 'company`');
@@ -240,6 +255,11 @@ define('TABLE_TESTTASK',      '`' . $config->db->prefix . 'testtask`');
 define('TABLE_TESTRUN',       '`' . $config->db->prefix . 'testrun`');
 define('TABLE_TESTRESULT',    '`' . $config->db->prefix . 'testresult`');
 define('TABLE_USERTPL',       '`' . $config->db->prefix . 'usertpl`');
+define('TABLE_ZAHOST',        '`' . $config->db->prefix . 'host`');
+define('TABLE_IMAGE',         '`' . $config->db->prefix . 'image`');
+define('TABLE_AUTOMATION',    '`' . $config->db->prefix . 'automation`');
+
+if(!defined('TABLE_ASSET'))  define('TABLE_ASSET', '`' . $config->db->prefix . 'asset`');
 
 define('TABLE_PRODUCT',       '`' . $config->db->prefix . 'product`');
 define('TABLE_BRANCH',        '`' . $config->db->prefix . 'branch`');
@@ -260,13 +280,16 @@ define('TABLE_PROJECT',       '`' . $config->db->prefix . 'project`');
 define('TABLE_EXECUTION',     '`' . $config->db->prefix . 'project`');
 define('TABLE_TASK',          '`' . $config->db->prefix . 'task`');
 define('TABLE_TASKSPEC',      '`' . $config->db->prefix . 'taskspec`');
+define('TABLE_TASKTEAM',      '`' . $config->db->prefix . 'taskteam`');
 define('TABLE_TEAM',          '`' . $config->db->prefix . 'team`');
+define('TABLE_PROJECTADMIN',  '`' . $config->db->prefix . 'projectadmin`');
 define('TABLE_PROJECTPRODUCT','`' . $config->db->prefix . 'projectproduct`');
 define('TABLE_PROJECTSTORY',  '`' . $config->db->prefix . 'projectstory`');
 define('TABLE_PROJECTCASE',   '`' . $config->db->prefix . 'projectcase`');
 define('TABLE_TASKESTIMATE',  '`' . $config->db->prefix . 'taskestimate`');
 define('TABLE_EFFORT',        '`' . $config->db->prefix . 'effort`');
 define('TABLE_BURN',          '`' . $config->db->prefix . 'burn`');
+define('TABLE_CFD',           '`' . $config->db->prefix . 'cfd`');
 define('TABLE_BUILD',         '`' . $config->db->prefix . 'build`');
 define('TABLE_ACL',           '`' . $config->db->prefix . 'acl`');
 
@@ -326,6 +349,13 @@ if(!defined('TABLE_PROJECTSPEC')) define('TABLE_PROJECTSPEC', '`' . $config->db-
 if(!defined('TABLE_SEARCHINDEX')) define('TABLE_SEARCHINDEX', $config->db->prefix . 'searchindex');
 if(!defined('TABLE_SEARCHDICT'))  define('TABLE_SEARCHDICT',  $config->db->prefix . 'searchdict');
 
+define('TABLE_SCREEN',    '`' . $config->db->prefix . 'screen`');
+define('TABLE_CHART',     '`' . $config->db->prefix . 'chart`');
+define('TABLE_DASHBOARD', '`' . $config->db->prefix . 'dashboard`');
+define('TABLE_DATASET',   '`' . $config->db->prefix . 'dataset`');
+define('TABLE_DATAVIEW',  '`' . $config->db->prefix . 'dataview`');
+define('TABLE_DIMENSION', '`' . $config->db->prefix . 'dimension`');
+
 $config->objectTables['product']      = TABLE_PRODUCT;
 $config->objectTables['productplan']  = TABLE_PRODUCTPLAN;
 $config->objectTables['story']        = TABLE_STORY;
@@ -367,16 +397,47 @@ $config->objectTables['kanbanorder']  = TABLE_KANBANORDER;
 $config->objectTables['kanbangroup']  = TABLE_KANBANGROUP;
 $config->objectTables['kanbancard']   = TABLE_KANBANCARD;
 $config->objectTables['sonarqube']    = TABLE_PIPELINE;
+$config->objectTables['gitea']        = TABLE_PIPELINE;
+$config->objectTables['gogs']         = TABLE_PIPELINE;
 $config->objectTables['gitlab']       = TABLE_PIPELINE;
 $config->objectTables['jebkins']      = TABLE_PIPELINE;
 $config->objectTables['stage']        = TABLE_STAGE;
 $config->objectTables['apistruct']    = TABLE_APISTRUCT;
+$config->objectTables['repo']         = TABLE_REPO;
+$config->objectTables['dataview']     = TABLE_DATAVIEW;
+$config->objectTables['zahost']       = TABLE_ZAHOST;
+$config->objectTables['zanode']       = TABLE_ZAHOST;
+$config->objectTables['automation']   = TABLE_AUTOMATION;
+$config->objectTables['stepResult']   = TABLE_TESTRUN;
 
-$config->newFeatures = array('introduction', 'tutorial', 'youngBlueTheme', 'visions');
+$config->newFeatures      = array('introduction', 'tutorial', 'youngBlueTheme', 'visions');
+$config->disabledFeatures = '';
+$config->closedFeatures   = '';
+
+$config->pipelineTypeList = array('gitlab', 'gogs', 'gitea', 'jenkins', 'sonarqube');
 
 /* Program privs.*/
 $config->programPriv = new stdclass();
-$config->programPriv->scrum     = array('story', 'projectstory', 'projectrelease', 'project', 'execution', 'build', 'bug', 'testcase', 'testreport', 'doc', 'repo', 'meeting', 'stakeholder', 'testtask');
-$config->programPriv->waterfall = array_merge($config->programPriv->scrum, array('task', 'workestimation', 'durationestimation', 'budget', 'programplan', 'review', 'reviewissue', 'weekly', 'cm', 'milestone', 'design', 'issue', 'risk', 'opportunity', 'measrecord', 'auditplan', 'trainplan', 'gapanalysis', 'pssp', 'researchplan', 'researchreport'));
+$config->programPriv->noSprint      = array('task', 'story', 'tree', 'project', 'execution', 'build', 'bug', 'testcase', 'testreport', 'doc', 'repo', 'stakeholder', 'projectrelease', 'requirement');
+$config->programPriv->scrum         = array('story', 'requirement', 'productplan', 'tree', 'projectplan', 'projectstory', 'projectrelease', 'project', 'execution', 'build', 'bug', 'testcase', 'testreport', 'doc', 'repo', 'meeting', 'stakeholder', 'testtask');
+$config->programPriv->waterfall     = array_merge($config->programPriv->scrum, array('workestimation', 'durationestimation', 'budget', 'programplan', 'review', 'reviewissue', 'weekly', 'cm', 'milestone', 'design', 'issue', 'risk', 'opportunity', 'measrecord', 'auditplan', 'trainplan', 'gapanalysis', 'pssp', 'researchplan', 'researchreport'));
+$config->programPriv->agileplus     = $config->programPriv->scrum;
+$config->programPriv->waterfallplus = $config->programPriv->waterfall;
 
+$config->safeFileTimeout  = 3600;
 $config->waterfallModules = array('workestimation', 'durationestimation', 'budget', 'programplan', 'review', 'reviewissue', 'weekly', 'cm', 'milestone', 'design', 'opportunity', 'auditplan', 'trainplan', 'gapanalysis', 'pssp', 'researchplan', 'researchreport');
+
+$config->showMainMenu = true;
+$config->maxPriValue  = '256';
+
+$config->importWhiteList = array('user', 'task', 'story', 'bug', 'testcase', 'feedback', 'ticket');
+
+$config->featureGroup = new stdclass();
+$config->featureGroup->my            = array('score');
+$config->featureGroup->product       = array('roadmap', 'track', 'UR');
+$config->featureGroup->scrum         = array();
+$config->featureGroup->waterfall     = array();
+$config->featureGroup->agileplus     = array();
+$config->featureGroup->waterfallplus = array();
+$config->featureGroup->assetlib      = array();
+$config->featureGroup->other         = array('devops', 'kanban');

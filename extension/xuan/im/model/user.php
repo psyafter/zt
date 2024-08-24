@@ -1,5 +1,5 @@
 <?php
-class user extends model
+class imUser extends model
 {
     /**
      * Extends identify a user with plain password function,
@@ -21,10 +21,10 @@ class user extends model
         $user = $this->loadModel('user')->identify($account, $password);
         if(empty($user))
         {
-            if($this->loadModel('ldap') !== false)
+            if($this->loadModel('ldap') !== false && method_exists($this->ldap, 'getConfiguration'))
             {
                 $ldap = $this->ldap->getConfiguration();
-                if(isset($ldap->enabled) && $ldap->enabled) $user = $this->userIdentifyWithLDAP($account, $originPassword);
+                if(isset($ldap->enabled) && $ldap->enabled) $user = $this->identifyWithLDAP($account, $originPassword);
             }
         }
         if(is_object($user))
@@ -80,6 +80,16 @@ class user extends model
                 $tokenLifetime *= 24 * 60 * 60;
                 if(strtotime($userToken->validUntil) - time() < $tokenLifetime / 3) $userToken->tokenNeedRenew = true;
 
+                /* Update user data. */
+                $updateUser=new stdclass();
+                $updateUser->ip     = helper::getRemoteIp();
+                $updateUser->last   = helper::now();
+                $updateUser->fails  = 0;
+                $updateUser->visits = ++ $userToken->visits;
+
+                /* Update password when create password by oldCreatePassword function. */
+                $this->dao->update(TABLE_USER)->data($updateUser)->where('account')->eq($account)->exec();
+
                 unset($userToken->password);
                 unset($userToken->device);
                 unset($userToken->token);
@@ -97,7 +107,7 @@ class user extends model
      * @param string $password
      * @return object|bool
      */
-    public function userIdentifyWithLDAP($account, $password)
+    public function identifyWithLDAP($account, $password)
     {
         $ldapConfig = $this->loadModel('ldap')->getConfiguration();
         if(empty($ldapConfig) || empty($ldapConfig->enabled)) return false;
@@ -108,26 +118,26 @@ class user extends model
         $ldapBind = @ldap_bind($ldapConn, $ldapConfig->admin, $ldapConfig->password);
         if(!$ldapBind)
         {
-            $this->userUnbindLDAP($ldapConn, false);
+            $this->unbindLDAP($ldapConn, false);
             return false;
         }
         $searchList  = ldap_search($ldapConn, $ldapConfig->baseDN, "({$ldapConfig->account}=$account)");
         $infos       = ldap_get_entries($ldapConn, $searchList);
         if(!isset($infos[0]))
         {
-            $this->userUnbindLDAP($ldapConn, $searchList);
+            $this->unbindLDAP($ldapConn, $searchList);
             return false;
         }
         $info = $infos[0];
         if(empty($info['dn']))
         {
-            $this->userUnbindLDAP($ldapConn, $searchList);
+            $this->unbindLDAP($ldapConn, $searchList);
             return false;
         }
         $ldapBind = @ldap_bind($ldapConn, $info['dn'], $password);
         if(!$ldapBind)
         {
-            $this->userUnbindLDAP($ldapConn, $searchList);
+            $this->unbindLDAP($ldapConn, $searchList);
             return false;
         }
         $user = $this->loadModel('user')->getByAccount($account);
@@ -138,19 +148,19 @@ class user extends model
                 $user           = new stdClass();
                 $user->account  = $account;
                 $user->password = $password;
-                if(isset($info['mail'][0]))       $user->email    = $info['mail'][0];
-                if(isset($info['mobile'][0]))     $user->mobile   = $info['mobile'][0];
-                if(isset($info['name'][0]))       $user->realname = $info['name'][0];
-                if(isset($info['postalcode'][0])) $user->zipcode  = $info['postalcode'][0];
+                if(isset($info['mail'][0]))                   $user->email    = $info['mail'][0];
+                if(isset($info['mobile'][0]))                 $user->mobile   = $info['mobile'][0];
+                if(isset($info[$ldapConfig->displayName][0])) $user->realname = $info[$ldapConfig->displayName][0];
+                if(isset($info['postalcode'][0]))             $user->zipcode  = $info['postalcode'][0];
                 $result = $this->user->apiCreate($user, false);
-                $this->userUnbindLDAP($ldapConn, $searchList);
+                $this->unbindLDAP($ldapConn, $searchList);
                 if($result) return $this->loadModel('user')->getByAccount($account);
                 return false;
             }
-            $this->userUnbindLDAP($ldapConn, $searchList);
+            $this->unbindLDAP($ldapConn, $searchList);
             return false;
         }
-        $this->userUnbindLDAP($ldapConn, $searchList);
+        $this->unbindLDAP($ldapConn, $searchList);
 
         if($user->deleted == '0') return $user;
         return false;
@@ -162,7 +172,7 @@ class user extends model
      * @param \LDAP\Result|array|false $searchList
      * @return void
      */
-    public function userUnbindLDAP($ldapConn, $searchList)
+    public function unbindLDAP($ldapConn, $searchList)
     {
         if(!empty($searchList)) ldap_free_result($searchList);
         if(!empty($ldapConn)) ldap_unbind($ldapConn);
@@ -178,7 +188,7 @@ class user extends model
      */
     public function getByID($id = 0)
     {
-		$user = $this->dao->select('id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted')
+		$user = $this->dao->select('id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted, address, weixin')
 			->from(TABLE_USER)
 			->where('id')->eq($id)
 			->fetch();
@@ -198,7 +208,7 @@ class user extends model
      */
     public function getList($status = '', $characters = array(), $idAsKey = true)
     {
-        $dao = $this->dao->select('id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted')
+        $dao = $this->dao->select('id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted, address, weixin')
             ->from(TABLE_USER)
             ->where(1)
             ->beginIF(empty($characters))
@@ -262,11 +272,21 @@ class user extends model
         if(empty($user->id)) return null;
 
         $data = array();
-        foreach($this->config->im->user->canEditFields as $field)
-        {
-            if(!empty($user->$field)) $data[$field] = $user->$field;
-        }
+
+        /* Updates status. */
+        if(isset($user->clientStatus) && !empty($user->clientStatus)) $data['clientStatus'] = $user->clientStatus;
+
+        /* Changes password. */
         if(!empty($user->account) && !empty($user->password)) $data['password'] = $user->password;
+
+        /* Updates contact info. */
+        if(empty($data))
+        {
+            foreach($this->config->im->user->canEditFields as $field)
+            {
+                if(isset($user->$field)) $data[$field] = $user->$field;
+            }
+        }
         if(empty($data)) return null;
 
         $data['clientLang'] = $this->session->clientLang;
@@ -290,6 +310,7 @@ class user extends model
             $users    = array($users);
         }
 
+$admins = $this->dao->select('admins')->from(TABLE_COMPANY)->where('id')->eq($this->app->company->id)->fetch('admins');$adminArray = explode(',', $admins);
         foreach($users as $user)
         {
             $user->id      = (int)$user->id;
@@ -299,6 +320,7 @@ class user extends model
 
             if(isset($user->avatar))  $user->avatar  = (!empty($user->avatar) && substr($user->avatar, 0, 7) !== 'http://' && substr($user->avatar, 0, 8) !== 'https://') ? $this->loadModel('im')->getServer() . $user->avatar : $user->avatar;
             if(!isset($user->signed)) $user->signed  = 0;
+$user->admin = in_array($user->account, $adminArray) ? 'super' : '';
         }
 
         if($isObject) return reset($users);
@@ -441,7 +463,7 @@ class user extends model
         }
         if(property_exists($options, 'exclude')) $exclude = $options->exclude;
 
-        $result = $this->dao->select($returnID ? 'id' : 'id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted')->from(TABLE_USER)
+        $result = $this->dao->select($returnID ? 'id' : 'id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted, address, weixin')->from(TABLE_USER)
             ->where('deleted')->eq('0')
             ->beginIF(!empty($depts))->andWhere('dept')->in($depts)->fi()
             ->beginIF(!empty($chatMembers))->andWhere('id')->in($chatMembers)->fi()
@@ -596,24 +618,18 @@ class user extends model
         $passwordChangeActions = $this->loadModel('action')->getListSinceLastPoll('changepassword');
         $loginHistoryActions   = $this->loadModel('action')->getListSinceLastPoll('loginxuanxuan');
 
-        foreach($passwordChangeActions as $pAction)
+        foreach($passwordChangeActions as $passwordChange)
         {
             $loginExist = false;
-            foreach($loginHistoryActions as $lAction)
+            foreach($loginHistoryActions as $login)
             {
-                if ($pAction->objectID === $lAction->objectID)
+                if ($passwordChange->objectID === $login->objectID)
                 {
                     $loginExist = true;
-                    if( strtotime($lAction->date) < strtotime($pAction->date))
-                    {
-                        $actionObjectIDs[] = (int)$pAction->objectID;
-                    }
+                    if( strtotime($login->date) < strtotime($passwordChange->date)) $actionObjectIDs[] = (int)$passwordChange->objectID;
                 }
             }
-            if(!$loginExist)
-            {
-                $actionObjectIDs[] = (int)$pAction->objectID;
-            }
+            if(!$loginExist) $actionObjectIDs[] = (int)$passwordChange->objectID;
         }
 
         return $actionObjectIDs;
@@ -644,7 +660,7 @@ class user extends model
     public function getOnlineForbidden()
     {
         $userIDs = $this->dao->select('id')->from(TABLE_USER)
-            ->where('locked')->ne('0000-00-00 00:00:00')
+            ->where('locked')->ge(helper::now())
             ->andWhere('clientStatus')->ne('offline')
             ->fetchAll('id');
         if(dao::isError()) return array();

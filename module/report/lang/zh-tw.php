@@ -2,23 +2,25 @@
 /**
  * The report module zh-tw file of ZenTaoPMS.
  *
- * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
+ * @copyright   Copyright 2009-2015 禪道軟件（青島）有限公司(ZenTao Software (Qingdao) Co., Ltd. www.cnezsoft.com)
  * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     report
  * @version     $Id: zh-tw.php 5080 2013-07-10 00:46:59Z wyd621@gmail.com $
  * @link        https://www.zentao.pm
  */
-$lang->report->index      = '統計首頁';
-$lang->report->list       = '統計報表';
-$lang->report->item       = '條目';
-$lang->report->value      = '值';
-$lang->report->percent    = '百分比';
-$lang->report->undefined  = '未設定';
-$lang->report->query      = '查詢';
-$lang->report->annual     = '年度總結';
-$lang->report->project    = '項目';
-$lang->report->PO         = 'PO';
+$lang->report->index              = '統計首頁';
+$lang->report->list               = '透視表';
+$lang->report->preview            = '查看透視表';
+$lang->report->item               = '條目';
+$lang->report->value              = '值';
+$lang->report->percent            = '百分比';
+$lang->report->undefined          = '未設定';
+$lang->report->query              = '查詢';
+$lang->report->annual             = '年度總結';
+$lang->report->project            = $lang->projectCommon;
+$lang->report->PO                 = 'PO';
+$lang->report->viewEveryoneAnnual = '查看所有人年度總結';
 
 $lang->report->colors[]   = 'AFD8F8';
 $lang->report->colors[]   = 'F6BD0F';
@@ -52,13 +54,13 @@ $lang->report->dept             = '部門';
 $lang->report->deviationChart   = "{$lang->execution->common}偏差曲綫";
 
 $lang->reportList = new stdclass();
-$lang->reportList->project = new stdclass();
 $lang->reportList->product = new stdclass();
+$lang->reportList->project = new stdclass();
 $lang->reportList->test    = new stdclass();
 $lang->reportList->staff   = new stdclass();
 
-$lang->reportList->project->lists[10] = "{$lang->execution->common}偏差報表|report|projectdeviation";
 $lang->reportList->product->lists[10] = $lang->productCommon . '彙總表|report|productsummary';
+$lang->reportList->project->lists[10] = "{$lang->execution->common}偏差報表|report|projectdeviation";
 $lang->reportList->test->lists[10]    = 'Bug創建表|report|bugcreate';
 $lang->reportList->test->lists[13]    = 'Bug指派表|report|bugassign';
 $lang->reportList->staff->lists[10]   = '員工負載表|report|workload';
@@ -209,8 +211,8 @@ $lang->report->annualData->todoStatus['all']    = '所有待辦';
 $lang->report->annualData->todoStatus['undone'] = '未完成';
 $lang->report->annualData->todoStatus['done']   = '已完成';
 
-$lang->report->annualData->radarItems['product']   = '產品管理';
-$lang->report->annualData->radarItems['execution'] = '項目管理';
+$lang->report->annualData->radarItems['product']   = "{$lang->productCommon}管理";
+$lang->report->annualData->radarItems['execution'] = "{$lang->projectCommon}管理";
 $lang->report->annualData->radarItems['devel']     = "研發";
 $lang->report->annualData->radarItems['qa']        = "測試";
 $lang->report->annualData->radarItems['other']     = "其他";
@@ -226,8 +228,8 @@ $lang->report->taskOutput          = "任務產出";
 $lang->report->bugOutput           = "Bug產出";
 $lang->report->caseOutput          = "用例產出";
 $lang->report->bugProgress         = "Bug進展";
-$lang->report->productProgress     = "產品進展";
+$lang->report->productProgress     = "{$lang->productCommon}進展";
 $lang->report->executionProgress   = "執行進展";
-$lang->report->projectProgress     = "項目進展";
-$lang->report->yearProjectOverview = "年度項目總覽";
-$lang->report->projectOverview     = "截止目前項目總覽";
+$lang->report->projectProgress     = "{$lang->projectCommon}進展";
+$lang->report->yearProjectOverview = "年度{$lang->projectCommon}總覽";
+$lang->report->projectOverview     = "截止目前{$lang->projectCommon}總覽";

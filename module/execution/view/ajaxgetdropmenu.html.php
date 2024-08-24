@@ -31,18 +31,19 @@
 <?php
 $executionCounts      = array();
 $executionNames       = array();
+$currentExecution     = '';
 $tabActive            = '';
 $myExecutions         = 0;
 $others               = 0;
 $dones                = 0;
 
-foreach($executions as $projectID => $projectExecutions)
+foreach($projectExecutions as $projectID => $executions)
 {
     $executionCounts[$projectID]['myExecution'] = 0;
     $executionCounts[$projectID]['others']      = 0;
     $executionCounts[$projectID]['closed']      = 0;
 
-    foreach($projectExecutions as $execution)
+    foreach($executions as $execution)
     {
         if($execution->status != 'done' and $execution->status != 'closed' and ($execution->PM == $this->app->user->account or isset($execution->teams[$this->app->user->account]))) $executionCounts[$projectID]['myExecution'] ++;
         if($execution->status != 'done' and $execution->status != 'closed' and $execution->PM != $this->app->user->account and !isset($execution->teams[$this->app->user->account])) $executionCounts[$projectID]['others'] ++;
@@ -57,14 +58,16 @@ foreach($executions as $projectID => $projectExecutions)
 }
 $executionsPinYin = common::convert2Pinyin($executionNames);
 
-$myExecutionsHtml     = $config->systemMode == 'new' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="noProject">';
-$normalExecutionsHtml = $config->systemMode == 'new' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="noProject">';
-$closedExecutionsHtml = $config->systemMode == 'new' ? '<ul class="tree tree-angles" data-ride="tree">' : '<ul class="noProject">';
+$myExecutionsHtml     = '<ul class="tree tree-angles" data-ride="tree">';
+$normalExecutionsHtml = '<ul class="tree tree-angles" data-ride="tree">';
+$closedExecutionsHtml = '<ul class="tree tree-angles" data-ride="tree">';
 
-foreach($executions as $projectID => $projectExecutions)
+$kanbanLink = $this->createLink('execution', 'kanban', "executionID=%s");
+$taskLink   = $this->createLink('execution', 'task', "executionID=%s");
+foreach($projectExecutions as $projectID => $executions)
 {
     /* Adapt to the old version. */
-    if($projectID and $config->systemMode == 'new')
+    if($projectID)
     {
         $projectName = zget($projects, $projectID);
 
@@ -73,71 +76,48 @@ foreach($executions as $projectID => $projectExecutions)
         if($executionCounts[$projectID]['closed']) $closedExecutionsHtml  .= '<li><div class="hide-in-search"><a class="text-muted not-list-item" title="' . $projectName . '">' . $projectName . '</a> <label class="label">' . $lang->project->common . '</label></div><ul>';
     }
 
-    foreach($projectExecutions as $index => $execution)
+    foreach($executions as $index => $execution)
     {
-        $kanbanLink = $this->createLink('execution', 'kanban', "executionID=%s");
-        $taskLink   = $this->createLink('execution', 'task', "executionID=%s");
-        if($execution->type != 'kanban' and $link == $kanbanLink) $link = $taskLink;
-        if($execution->type == 'kanban' and $link != $kanbanLink) $link = $kanbanLink;
-
-        $selected = $execution->id == $executionID ? 'selected' : '';
-        if(!empty($execution->children))
+        $executionLink  = $link;
+        $isKanbanMethod = ((in_array($method, $config->execution->kanbanMethod) and $module == 'execution') or (strpos(',create,edit,', ",$method,") !== false and $module == 'build'));
+        if(isset($execution->type) and $execution->type == 'kanban' and !$isKanbanMethod) $executionLink = $kanbanLink;
+        if(isset($execution->type) and $execution->type != 'kanban' and strpos(',kanban,cfd,', ",$method,") !== false) $executionLink = $taskLink;
+        if(isset($execution->type) and $execution->type == 'stage' and in_array($module, array('issue', 'risk', 'opportunity', 'pssp', 'auditplan', 'meeting'))) $executionLink = $taskLink;
+        if(isset($execution->attribute) and in_array($execution->attribute, array('request', 'review')))
         {
-            foreach($execution->children as $id)
-            {
-                $selected = $id == $executionID ? 'selected' : '';
-                if($execution->status != 'done' and $execution->status != 'closed' and ($execution->PM == $this->app->user->account or isset($execution->teams[$this->app->user->account])))
-                {
-                    $myExecutionsHtml .= '<li>' . html::a(sprintf($link, $id), $executionNames[$id], '', "class='$selected clickable' title='{$executionNames[$id]}' data-key='" . zget($executionsPinYin, $executionNames[$id], '') . "' data-app='{$this->app->tab}'") . '</li>';
-
-                    if($selected == 'selected') $tabActive = 'myExecution';
-
-                    $myExecutions ++;
-                }
-                else if($execution->status != 'done' and $execution->status != 'closed' and $execution->PM != $this->app->user->account and !isset($execution->teams[$this->app->user->account]))
-                {
-                    $normalExecutionsHtml .= '<li>' . html::a(sprintf($link, $id), $executionNames[$id], '', "class='$selected clickable' title='{$executionNames[$id]}' data-key='" . zget($executionsPinYin, $executionNames[$id], '') . "' data-app='{$this->app->tab}'") . '</li>';
-
-                    if($selected == 'selected') $tabActive = 'other';
-
-                    $others ++;
-                }
-                else if($execution->status == 'done' or $execution->status == 'closed')
-                {
-                    $closedExecutionsHtml .= '<li>' . html::a(sprintf($link, $id), $executionNames[$id], '', "class='$selected clickable' title='{$executionNames[$id]}' data-key='" . zget($executionsPinYin, $executionNames[$id], '') . "' data-app='{$this->app->tab}'") . '</li>';
-
-                    if($selected == 'selected') $tabActive = 'closed';
-                }
-            }
+            $changeLink = false;
+            if(in_array($module, array('repo', 'issue', 'risk', 'opportunity', 'pssp', 'auditplan', 'meeting'))) $changeLink = true;
+            if($module == 'execution' and in_array($method, array('story', 'bug', 'testcase', 'testtask', 'build', 'grouptask', 'tree', 'manageproducts'))) $changeLink = true;
+            if($changeLink) $executionLink = (isset($execution->type) and $execution->type == 'kanban') ? $kanbanLink : $taskLink;
         }
-        else if($execution->grade == 1 or $config->systemMode == 'classic')
+
+        if($execution->id == $executionID) $currentExecution = $execution;
+        $selected = $execution->id == $executionID ? 'selected' : '';
+        if($execution->status != 'done' and $execution->status != 'closed' and ($execution->PM == $this->app->user->account or isset($execution->teams[$this->app->user->account])))
         {
-            if($execution->status != 'done' and $execution->status != 'closed' and ($execution->PM == $this->app->user->account or isset($execution->teams[$this->app->user->account])))
-            {
-                $myExecutionsHtml .= '<li>' . html::a(sprintf($link, $execution->id), $executionNames[$execution->id], '', "class='$selected clickable' title='{$executionNames[$execution->id]}' data-key='" . zget($executionsPinYin, $execution->name, '') . "' data-app='{$this->app->tab}'") . '</li>';
+            $myExecutionsHtml .= '<li>' . html::a(sprintf($executionLink, $execution->id), $executionNames[$execution->id], '', "class='$selected clickable' title='{$executionNames[$execution->id]}' data-key='" . zget($executionsPinYin, $execution->name, '') . "' data-app='{$this->app->tab}'") . '</li>';
 
-                if($selected == 'selected') $tabActive = 'myExecution';
+            if($selected == 'selected') $tabActive = 'myExecution';
 
-                $myExecutions ++;
-            }
-            else if($execution->status != 'done' and $execution->status != 'closed' and $execution->PM != $this->app->user->account and !isset($execution->teams[$this->app->user->account]))
-            {
-                $normalExecutionsHtml .= '<li>' . html::a(sprintf($link, $execution->id), $executionNames[$execution->id], '', "class='$selected clickable' title='{$executionNames[$execution->id]}' data-key='" . zget($executionsPinYin, $execution->name, '') . "' data-app='{$this->app->tab}'") . '</li>';
+            $myExecutions ++;
+        }
+        else if($execution->status != 'done' and $execution->status != 'closed' and $execution->PM != $this->app->user->account and !isset($execution->teams[$this->app->user->account]))
+        {
+            $normalExecutionsHtml .= '<li>' . html::a(sprintf($executionLink, $execution->id), $executionNames[$execution->id], '', "class='$selected clickable' title='{$executionNames[$execution->id]}' data-key='" . zget($executionsPinYin, $execution->name, '') . "' data-app='{$this->app->tab}'") . '</li>';
 
-                if($selected == 'selected') $tabActive = 'other';
+            if($selected == 'selected') $tabActive = 'other';
 
-                $others ++;
-            }
-            else if($execution->status == 'done' or $execution->status == 'closed')
-            {
-                $closedExecutionsHtml .= '<li>' . html::a(sprintf($link, $execution->id), $executionNames[$execution->id], '', "class='$selected clickable' title='{$executionNames[$execution->id]}' data-key='" . zget($executionsPinYin, $execution->name, '') . "' data-app='{$this->app->tab}'") . '</li>';
+            $others ++;
+        }
+        else if($execution->status == 'done' or $execution->status == 'closed')
+        {
+            $closedExecutionsHtml .= '<li>' . html::a(sprintf($executionLink, $execution->id), $executionNames[$execution->id], '', "class='$selected clickable' title='{$executionNames[$execution->id]}' data-key='" . zget($executionsPinYin, $execution->name, '') . "' data-app='{$this->app->tab}'") . '</li>';
 
-                if($selected == 'selected') $tabActive = 'closed';
-            }
+            if($selected == 'selected') $tabActive = 'closed';
         }
 
         /* If the execution is the last one in the project, print the closed label. */
-        if(!isset($projectExecutions[$index + 1]))
+        if(!isset($executions[$index + 1]))
         {
             if($executionCounts[$projectID]['myExecution']) $myExecutionsHtml     .= '</ul></li>';
             if($executionCounts[$projectID]['others'])      $normalExecutionsHtml .= '</ul></li>';
@@ -178,10 +158,14 @@ $closedExecutionsHtml .= '</ul>';
    <div class='list-group executions'><?php echo $closedExecutionsHtml;?></div>
   </div>
 </div>
-<script>scrollToSelected();</script>
 <script>
 $(function()
 {
+    <?php if($currentExecution and ($currentExecution->status == 'done' or $currentExecution->status == 'closed')):?>
+    $('.col-footer .toggle-right-col').click(function(){ scrollToSelected(); })
+    <?php else:?>
+    scrollToSelected();
+    <?php endif;?>
     $('.nav-tabs li span').hide();
     $('.nav-tabs li.active').find('span').show();
 
@@ -222,22 +206,22 @@ $(function()
         }
     });
 
-    $('#swapper #dropMenu').on('onSearchComplete', function(event, value)
+    $('#swapper #dropMenu').on('onSearchComplete', function()
     {
-        if($('.list-group.executions').height() == 0)
-        {
-            $('#closed').attr("hidden", true);
-            $('#gray-line').attr("hidden", true);
-        }
-
         var listItem = $(this).find('.has-list');
-        listItem.each(function ()
+        listItem.each(function()
         {
             $(this).css('display','')
             var $hidden = $(this).find('.hidden');
             var $item   = $(this).find('.search-list-item');
             if($hidden.length == $item.length) $(this).css('display','none');
         });
+
+        if($('.list-group.executions').height() == 0)
+        {
+            $('#closed').attr("hidden", true);
+            $('#gray-line').attr("hidden", true);
+        }
     });
 })
 </script>

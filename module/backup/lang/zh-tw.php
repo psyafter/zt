@@ -1,5 +1,5 @@
 <?php
-$lang->backup->common      = '系統備份';
+$lang->backup->common      = '備份';
 $lang->backup->index       = '備份首頁';
 $lang->backup->history     = '備份歷史';
 $lang->backup->delete      = '刪除備份';
@@ -48,3 +48,4 @@ $lang->backup->error->restoreSQL  = "資料庫還原失敗，錯誤：%s";
 $lang->backup->error->restoreFile = "附件還原失敗，錯誤：%s";
 $lang->backup->error->backupFile  = "附件備份失敗，錯誤：%s";
 $lang->backup->error->backupCode  = "代碼備份失敗，錯誤：%s";
+$lang->backup->error->timeout     = "備份超時";

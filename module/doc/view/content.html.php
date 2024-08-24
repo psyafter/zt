@@ -12,10 +12,11 @@
             <?php endif;?>
           </div>
           <div class="info">
-            <div class="version">
+            <?php $version = $version ? $version : $doc->version;?>
+            <div class="version" data-version='<?php echo $version;?>'>
               <div class='btn-group'>
                 <a href='javascript:;' class='btn btn-link btn-limit text-ellipsis' data-toggle='dropdown' style="max-width: 120px;">
-                  #<?php echo $version ? $version : $doc->version;?>
+                  #<?php echo $version;?>
                   <span class="caret"></span>
                 </a>
                 <ul class='dropdown-menu doc-version-menu' style='max-height:240px; max-width: 300px; overflow-y:auto'>
@@ -45,12 +46,12 @@
 
             <?php if($this->config->edition == 'max' and $this->app->tab == 'project'):?>
             <?php
-            $canImportToPracticeLib  = common::hasPriv('doc', 'importToPracticeLib');
-            $canImportToComponentLib = common::hasPriv('doc', 'importToComponentLib');
+            $canImportToPracticeLib  = (common::hasPriv('doc', 'importToPracticeLib')  and helper::hasFeature('practicelib'));
+            $canImportToComponentLib = (common::hasPriv('doc', 'importToComponentLib') and helper::hasFeature('componentlib'));
 
             if($canImportToPracticeLib or $canImportToComponentLib)
             {
-                echo "<div class='btn-group' id='more'>";
+                echo "<div class='btn-group' id='more' title='{$lang->import}'>";
                 echo html::a('javascript:;', "<i class='icon icon-diamond'></i>", '', "data-toggle='dropdown' class='btn btn-link'");
                 echo "<ul class='dropdown-menu pull-right'>";
                 if($canImportToPracticeLib) echo '<li>' . html::a('#importToPracticeLib', $lang->doc->importToPracticeLib, '', 'data-toggle="modal"') . '</li>';
@@ -102,7 +103,7 @@
             }
             elseif($doc->contentType == 'markdown')
             {
-                echo "<textarea id='markdownContent' /></textarea>";
+                echo "<textarea id='markdownContent'>{$doc->content}</textarea>";
             }
             else
             {
@@ -290,7 +291,7 @@
 <?php if($doc->contentType == 'markdown'):?>
 <?php css::import($jsRoot . "markdown/simplemde.min.css");?>
 <?php js::import($jsRoot . 'markdown/simplemde.min.js'); ?>
-<?php js::set('markdownText', $doc->content);?>
+<?php js::set('markdownText', htmlspecialchars($doc->content));?>
 <script>
 $(function()
 {
