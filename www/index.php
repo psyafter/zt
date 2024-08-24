@@ -22,16 +22,16 @@ ob_start();
 ini_set("session.cookie_httponly", 1);
 
 /* Load the framework. */
-include '../framework/router.class.php';
-include '../framework/control.class.php';
-include '../framework/model.class.php';
-include '../framework/helper.class.php';
+include 'framework/router.class.php';
+include 'framework/control.class.php';
+include 'framework/model.class.php';
+include 'framework/helper.class.php';
 
 /* Log the time and define the run mode. */
 $startTime = getTime();
 
 /* Instance the app. */
-$app = router::createApp('pms', dirname(dirname(__FILE__)), 'router');
+$app = router::createApp('pms', dirname(__FILE__), 'router');
 
 /* installed or not. */
 if(!isset($config->installed) or !$config->installed) die(header('location: install.php'));

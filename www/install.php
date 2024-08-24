@@ -13,13 +13,13 @@ error_reporting(0);
 define('IN_INSTALL', true);
 
 /* Load the framework. */
-include '../framework/router.class.php';
-include '../framework/control.class.php';
-include '../framework/model.class.php';
-include '../framework/helper.class.php';
+include 'framework/router.class.php';
+include 'framework/control.class.php';
+include 'framework/model.class.php';
+include 'framework/helper.class.php';
 
 /* Instance the app. */
-$app = router::createApp('pms', dirname(dirname(__FILE__)), 'router');
+$app = router::createApp('pms', dirname(__FILE__), 'router');
 
 /* Check installed or not. */
 if(!isset($_SESSION['installing']) and isset($config->installed) and $config->installed) die(header('location: index.php'));

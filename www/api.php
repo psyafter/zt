@@ -18,17 +18,17 @@ define('RUN_MODE', 'api');
 ob_start();
 
 /* Load the framework. */
-include '../framework/api/router.class.php';
-include '../framework/api/entry.class.php';
-include '../framework/api/helper.class.php';
-include '../framework/control.class.php';
-include '../framework/model.class.php';
+include 'framework/api/router.class.php';
+include 'framework/api/entry.class.php';
+include 'framework/api/helper.class.php';
+include 'framework/control.class.php';
+include 'framework/model.class.php';
 
 /* Log the time and define the run mode. */
 $startTime = getTime();
 
 /* Instance the app. */
-$app = router::createApp('pms', dirname(dirname(__FILE__)), 'api');
+$app = router::createApp('pms', dirname(__FILE__), 'api');
 
 /* Run the app. */
 $common = $app->loadCommon();

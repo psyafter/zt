@@ -20,9 +20,9 @@ define('RUN_MODE', $runMode);
 $routerFile = (RUN_MODE == 'api') ? '../framework/router.class.php' : '../framework/xuanxuan.class.php';
 include $routerFile;
 
-include '../framework/control.class.php';
-include '../framework/model.class.php';
-include '../framework/helper.class.php';
+include 'framework/control.class.php';
+include 'framework/model.class.php';
+include 'framework/helper.class.php';
 
 /* Log the time and define the run mode. */
 $startTime = getTime();
@@ -31,8 +31,8 @@ $startTime = getTime();
 if(RUN_MODE == 'api') $_COOKIE = array();
 
 /* Run the app. */
-if(RUN_MODE == 'api') $app = router::createApp('xxb', dirname(dirname(__FILE__)));
-if(RUN_MODE != 'api') $app = router::createApp('xxb', dirname(dirname(__FILE__)), 'xuanxuan');
+if(RUN_MODE == 'api') $app = router::createApp('xxb', dirname(__FILE__));
+if(RUN_MODE != 'api') $app = router::createApp('xxb', dirname(__FILE__), 'xuanxuan');
 
 /* Load common model. */
 $common = $app->loadCommon();

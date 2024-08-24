@@ -11,7 +11,7 @@
  */
 /* Judge my.php exists or not. */
 define('IN_UPGRADE', true);
-$basePath = dirname(dirname(__FILE__));
+$basePath = dirname(__FILE__);
 $dbConfig = $basePath . '/config/db.php';
 $myConfig = $basePath . '/config/my.php';
 if(file_exists($dbConfig))
@@ -47,13 +47,13 @@ if(file_exists("{$basePath}/config/ext/secret.php") and !unlink("{$basePath}/con
 error_reporting(0);
 
 /* Load the framework. */
-include '../framework/router.class.php';
-include '../framework/control.class.php';
-include '../framework/model.class.php';
-include '../framework/helper.class.php';
+include 'framework/router.class.php';
+include 'framework/control.class.php';
+include 'framework/model.class.php';
+include 'framework/helper.class.php';
 
 /* Instance the app. */
-$app = router::createApp('pms', dirname(dirname(__FILE__)), 'router');
+$app = router::createApp('pms', dirname(__FILE__), 'router');
 $common = $app->loadCommon();
 
 /* Reset the config params to make sure the install program will be lauched. */
