@@ -11,7 +11,6 @@ $(document).on('click', '.task-toggle', function(e)
 
 $(function()
 {
-    if(viewType != 'kanban') toggleFold('#productplanForm', unfoldPlans, productID, 'productplan');
     $('#productplanList tbody tr').each(function()
     {
         var $content = $(this).find('td.content');
@@ -33,7 +32,7 @@ $(function()
         }
         else
         {
-            $.apps.open(createLink('execution', 'create', 'projectID=' + projectID + '&executionID=&copyExecutionID=&planID=' + planID + '&confirm=&productID=' + productID), 'execution')
+            $.apps.open(createLink('execution', 'create', 'projectID=' + projectID + '&executionID=&copyExecutionID=&planID=' + planID + '&confirm=&productID=' + productID), 'project')
         }
         $('#projects').modal('hide');
     });
@@ -58,8 +57,8 @@ $(function()
         $('#kanban').kanban(
         {
             data:         kanbanData,
-            minColWidth:  typeof window.minColWidth === 'number' ? window.minColWidth: defaultMinColWidth,
-            maxColWidth:  typeof window.maxColWidth === 'number' ? window.maxColWidth: defaultMaxColWidth,
+            minColWidth:  290,
+            maxColWidth:  290,
             maxColHeight: 460,
             minColHeight: 190,
             cardHeight:   80,
@@ -99,27 +98,6 @@ $(function()
     $(window).on('scroll', function()
     {
         $.zui.ContextMenu.hide();
-    });
-
-    $('.execution-popover').on('click', function(e)
-    {
-        e.stopPropagation();
-        var showPopover = $(this).next().css('display') == 'block';
-        $('.popover.right').hide();
-        if(!showPopover) $(this).next().show();
-    });
-
-    $('.execution-link').on('click', function()
-    {
-        $('.popover.right').hide();
-    });
-
-    /* Hide popover tip. */
-    $(document).on('mousedown', function(e)
-    {
-        var $target = $(e.target);
-        var $toggle = $target.closest('.popover, .execution-popover');
-        if(!$toggle.length) $('.popover.right').hide();
     });
 });
 

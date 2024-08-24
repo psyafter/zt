@@ -61,10 +61,6 @@ $lang->im->logLevelSimple  = 'Simple';
 $lang->im->logLevelDetail  = 'Detail';
 $lang->im->logLevelOptions = array($lang->im->logLevelSimple, $lang->im->logLevelDetail);
 
-$lang->im->mobileClient         = 'Mobile Client';
-$lang->im->mobileOptions['on']  = $lang->im->enabled;
-$lang->im->mobileOptions['off'] = $lang->im->disabled;
-
 $lang->im->notAdmin         = 'You are not admin of chat.';
 $lang->im->notGroupCreator  = 'You are not creator of chat.';
 $lang->im->notSystemChat    = 'It is not a system chat.';
@@ -86,47 +82,42 @@ $lang->im->noFopen          = 'Function fopen disabled. Find the following file 
 $lang->im->defaultKey       = 'Do not use default <strong>key</strong>.';
 $lang->im->owtIsDisabled    = 'Conference functionality is disabled.';
 $lang->im->chatNameTooLong  = 'Chat name is too long.';
-$lang->im->adminCanInvite   = 'Only administrators can invite members into this group.';
-$lang->im->userNotInGroup   = 'You are no longer in this group and cannot do anything about it.';
-$lang->im->canNotDelOwner   = 'Cannot remove group owners.';
 
-$lang->im->xxdServerTip             = 'XXD server address contains protocol and host and port, such as http://192.168.1.35 or http://www.backend.com, that can not be 127.0.0.1.';
-$lang->im->iceServersTip            = 'The iceServer used for point-to-point transmission, such as: stun:stun.l.google.com:19302, multiple servers can be separated by a newline, optional';
-$lang->im->xxdServerEmpty           = 'XXD server address is empty.';
-$lang->im->xxdServerError           = 'XXD server address can not be 127.0.0.1.';
-$lang->im->xxdSchemeError           = 'Server address should started with http:// or https://.';
-$lang->im->xxdPortError             = 'Server address should contain valid port and the default is <strong>11443</strong>.';
-$lang->im->xxdPollIntTip            = 'Polling interval should be a number equal to or greater than 5, the default value is 60 for 60 seconds.';
-$lang->im->xxdPollIntErr            = 'Polling interval should be a number equal to or greater than 5.';
-$lang->im->xxdFileSizeErr           = 'File size should be equal to or greater than 0.';
-$lang->im->tokenLifetimeErr         = 'Token lifetime should be equal to or greater than 1.';
-$lang->im->tokenAuthWindowErr       = 'Token auth time window should be equal to or greater than 20.';
-$lang->im->iceServersErr            = 'iceServer address is invalid';
-$lang->im->errorSSLCrt              = 'SSL certificate cannot be empty';
-$lang->im->errorSSLKey              = 'SSL key cannot be empty';
-$lang->im->xxdAESTip                = 'This only affects server-side AES encryption between XXB and XXD.';
-$lang->im->xxdFileEncryptTip        = 'Encrypt files uploaded in chats. Cannot disable once enabled.';
-$lang->im->xxdMessageEncryptTip     = 'Encrypt chat messages in chats. Cannot disable once enabled.';
+$lang->im->xxdServerTip       = 'XXD server address contains protocol and host and port，such as http://192.168.1.35 or http://www.backend.com, that can not be 127.0.0.1.';
+$lang->im->iceServersTip      = 'The iceServer used for point-to-point transmission, such as: stun:stun.l.google.com:19302, multiple servers can be separated by a newline, optional';
+$lang->im->xxdServerEmpty     = 'XXD server address is empty.';
+$lang->im->xxdServerError     = 'XXD server address can not be 127.0.0.1.';
+$lang->im->xxdSchemeError     = 'Server address should started with http:// or https://.';
+$lang->im->xxdPortError       = 'Server address should contain valid port and the default is <strong>11443</strong>.';
+$lang->im->xxdPollIntTip      = 'Polling interval should be a number equal to or greater than 5, the default value is 60 for 60 seconds.';
+$lang->im->xxdPollIntErr      = 'Polling interval should be a number equal to or greater than 5.';
+$lang->im->xxdFileSizeErr     = 'File size should be equal to or greater than 0.';
+$lang->im->tokenLifetimeErr   = 'Token lifetime should be equal to or greater than 1.';
+$lang->im->tokenAuthWindowErr = 'Token auth time window should be equal to or greater than 20.';
+$lang->im->iceServersErr      = 'iceServer address is invalid';
+$lang->im->errorSSLCrt        = 'SSL certificate cannot be empty';
+$lang->im->errorSSLKey        = 'SSL key cannot be empty';
+$lang->im->xxdAESTip          = 'This only affects server-side AES encryption between XXB and XXD.';
+$lang->im->xxdFileEncryptTip  = 'Encrypt files uploaded in chats. Cannot disable once enabled.';
 
-$lang->im->errorClientVersionNotSupport = 'The client version (%s) is too low, Please upgrade version to at least 6.0.https://xuanim.com';
+$lang->im->errorClientVersionNotSupport = 'The client version is too low (%s), and the minimum version supported by the current server is %s. Please download the latest version from the official website.https://xuanim.com';
 
 $lang->im->broadcast = new stdclass();
-$lang->im->broadcast->createChat                 = '%s created the group [%s](#/chats/groups/%s).';
-$lang->im->broadcast->changeChatOwnership        = 'Group [%s](#/chats/groups/%s) owner changed to %s.';
-$lang->im->broadcast->changeChatOwnershipByAdmin = 'System Administrator changed owner of group [%s](#/chats/groups/%s) to %s.';
-$lang->im->broadcast->joinChat                   = '%s joined.';
-$lang->im->broadcast->leaveChat                  = '%s quited.';
-$lang->im->broadcast->renameChat                 = '%s renamed the group to [%s](#/chats/groups/%s).';
-$lang->im->broadcast->renamePrivate              = 'Chat is renamed to [%s](#/chats/recents/%s)。';
-$lang->im->broadcast->inviteUser                 = '%s invited %s to join.';
-$lang->im->broadcast->dismissChat                = '%s dismissed the group.';
-$lang->im->broadcast->mergeChat                  = 'Chat %s has been merged into this chat, message history can be viewed from the history of this chat.';
-$lang->im->broadcast->mergeChatWithMembers       = 'Chat %s has been merged into this chat, message history can be viewed from the history of this chat. %s joined.';
-$lang->im->broadcast->chatMerged                 = 'Chat %s has been merged into %s.';
+$lang->im->broadcast->createChat           = '%s created the group [%s](#/chats/groups/%s).';
+$lang->im->broadcast->changeChatOwnership  = 'Group [%s](#/chats/groups/%s) owner changed to %s.';
+$lang->im->broadcast->joinChat             = '%s joined.';
+$lang->im->broadcast->leaveChat            = '%s quited.';
+$lang->im->broadcast->renameChat           = '%s renamed the group to [%s](#/chats/groups/%s).';
+$lang->im->broadcast->renamePrivate        = 'Chat is renamed to [%s](#/chats/recents/%s)。';
+$lang->im->broadcast->inviteUser           = '%s invited %s to join.';
+$lang->im->broadcast->dismissChat          = '%s dismissed the group.';
+$lang->im->broadcast->mergeChat            = 'Chat %s has been merged into this chat, message history can be viewed from the history of this chat.';
+$lang->im->broadcast->mergeChatWithMembers = 'Chat %s has been merged into this chat, message history can be viewed from the history of this chat. %s joined.';
+$lang->im->broadcast->chatMerged           = 'Chat %s has been merged into %s.';
 
 $lang->im->broadcast->createConference           = '%s started a conference.';
 $lang->im->broadcast->closeConference            = '%s closed the conference.';
-$lang->im->broadcast->createConferenceInvitation = '%s invited %s to join the conference. If you are not in the conference, you can join it in the upper right corner.';
+$lang->im->broadcast->createConferenceInvitation = '%s invited %s to join the conference.';
 $lang->im->broadcast->conferenceInviteeOccupied  = '%s is busy, try again later.';
 
 $lang->im->conference = new stdclass();
@@ -134,19 +125,18 @@ $lang->im->conference->userBusy    = 'Line busy, try again later.';
 $lang->im->conference->userOffline = 'User is offline.';
 
 $lang->im->xxd = new stdclass();
-$lang->im->xxd->os                  = 'OS';
-$lang->im->xxd->ip                  = 'Listen IP';
-$lang->im->xxd->chatPort            = 'Chat Port';
-$lang->im->xxd->commonPort          = 'Common Port';
-$lang->im->xxd->https               = 'HTTPS';
-$lang->im->xxd->aes                 = 'Server-side AES';
-$lang->im->xxd->uploadFileSize      = 'File Size';
-$lang->im->xxd->maxOnlineUser       = 'Max Online User Counts';
-$lang->im->xxd->sslcrt              = 'SSL Crt';
-$lang->im->xxd->sslkey              = 'SSL Key';
-$lang->im->xxd->max                 = 'Max';
-$lang->im->xxd->fileEncryption      = 'File Encryption';
-$lang->im->xxd->messageEncryption   = 'Chat Message Encryption';
+$lang->im->xxd->os             = 'OS';
+$lang->im->xxd->ip             = 'Listen IP';
+$lang->im->xxd->chatPort       = 'Chat Port';
+$lang->im->xxd->commonPort     = 'Common Port';
+$lang->im->xxd->https          = 'HTTPS';
+$lang->im->xxd->aes            = 'Server-side AES';
+$lang->im->xxd->uploadFileSize = 'File Size';
+$lang->im->xxd->maxOnlineUser  = 'Max Online User Counts';
+$lang->im->xxd->sslcrt         = 'SSL Crt';
+$lang->im->xxd->sslkey         = 'SSL Key';
+$lang->im->xxd->max            = 'Max';
+$lang->im->xxd->fileEncryption = 'File Encryption';
 
 $lang->im->httpsOptions['on']  = $lang->im->enabled;
 $lang->im->httpsOptions['off'] = $lang->im->disabled;
@@ -156,9 +146,6 @@ $lang->im->aesOptions['off'] = $lang->im->disabled;
 
 $lang->im->fileEncryptOptions['on']  = $lang->im->enabled;
 $lang->im->fileEncryptOptions['off'] = $lang->im->disabled;
-
-$lang->im->messageEncryptOptions['on']  = $lang->im->enabled;
-$lang->im->messageEncryptOptions['off'] = $lang->im->disabled;
 
 $lang->im->placeholder = new stdclass();
 $lang->im->placeholder->xxd = new stdclass();
@@ -187,5 +174,4 @@ $lang->im->osList['darwin_x86_64'] = 'macOS';
 $lang->pinnedMessages = new stdclass();
 $lang->pinnedMessages->limit = 'The number of pinned messages has reached the limit';
 
-$lang->im->IPInvalid     ='Login IP is not in the specified network segment';
-$lang->im->mobileLimited ='The administrator has restricted the access of the mobile terminal';
+$lang->im->IPInvalid ='Login IP is not in the specified network segment';

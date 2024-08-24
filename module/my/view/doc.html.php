@@ -20,33 +20,26 @@
     echo html::a(inlink($app->rawMethod, "mode=doc&type=editedbyme"), "<span class='text'>{$lang->doc->editedByMe}</span>" . ($type == 'editedbyme' ? $recTotalLabel : ''), '', "class='btn btn-link" . ($type == 'editedbyme' ? ' btn-active-text' : '') . "'");
     ?>
   </div>
-  <a class="btn btn-link querybox-toggle" id='bysearchTab'><i class="icon icon-search muted"></i> <?php echo $lang->my->byQuery;?></a>
 </div>
-<div id="mainContent">
+<div id="mainContent" class='main-table'>
   <?php if(empty($docs)):?>
-  <div class="cell<?php if($type == 'bySearch') echo ' show';?>" id="queryBox" data-module=<?php echo 'contributeDoc';?>></div>
   <div class="table-empty-tip">
     <p>
       <span class="text-muted"><?php echo $lang->doc->noDoc;?></span>
     </p>
   </div>
   <?php else:?>
-  <div class="cell<?php if($type == 'bySearch') echo ' show';?>" id="queryBox" data-module=<?php echo 'contributeDoc';?>></div>
-  <form id='projectForm' class="main-table" method='post' data-ride='table' data-checkable='false'>
+  <form id='projectForm' method='post' data-ride='table' data-checkable='false'>
     <table class='table table-fixed' id='docList'>
       <thead>
         <tr>
-          <th class="c-id"><?php echo $lang->doc->id;?></th>
           <th class="c-name"><?php echo $lang->doc->title;?></th>
           <th class="c-name c-object"><?php echo $lang->doc->object;?></th>
           <th class="c-num"><?php echo $lang->doc->size;?></th>
           <?php if($type != 'openedbyme'):?>
-          <th class="c-user"><?php echo $lang->doc->addedByAB;?></th>
+          <th class="c-user"><?php echo $lang->doc->addedBy;?></th>
           <?php endif;?>
           <th class="c-datetime"><?php echo $lang->doc->addedDate;?></th>
-          <?php if($type == 'openedbyme'):?>
-          <th class="c-user"><?php echo $lang->doc->lastEditedBy;?></th>
-          <?php endif;?>
           <th class="c-datetime"><?php echo $lang->doc->editedDate;?></th>
           <th class="c-actions-3 text-center"><?php echo $lang->actions;?></th>
         </tr>
@@ -56,7 +49,6 @@
         <?php $star = strpos($doc->collector, ',' . $this->app->user->account . ',') !== false ? 'icon-star text-yellow' : 'icon-star-empty';?>
         <?php $collectTitle = strpos($doc->collector, ',' . $this->app->user->account . ',') !== false ? $lang->doc->cancelCollection : $lang->doc->collect;?>
         <tr>
-          <td class="c-id"><?php echo $doc->id;?></td>
           <td class="c-name"><?php echo html::a($this->createLink('doc', 'view', "docID=$doc->id&version=0&from={$lang->navGroup->doc}", '', true), "<i class='icon icon-file-text text-muted'></i> &nbsp;" . $doc->title, '', "title='{$doc->title}' class='iframe' data-width='90%'");?></td>
           <td class='c-name'>
             <?php if(!empty($doc->objectType)):?>
@@ -71,9 +63,6 @@
           <td class="c-user"><?php echo zget($users, $doc->addedBy);?></td>
           <?php endif;?>
           <td class="c-datetime"><?php echo formatTime($doc->addedDate, 'y-m-d');?></td>
-          <?php if($type == 'openedbyme'):?>
-          <td class="c-user"><?php echo zget($users, $doc->editedBy);?></td>
-          <?php endif;?>
           <td class="c-datetime"><?php echo formatTime($doc->editedDate, 'y-m-d');?></td>
           <td class="c-actions">
             <?php if(common::canBeChanged('doc', $doc)):?>

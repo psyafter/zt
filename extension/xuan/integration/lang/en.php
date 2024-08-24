@@ -15,7 +15,6 @@ $lang->integration->error->officeNotEnabled         = 'Office integration is dis
 $lang->integration->error->userNotFoundForRequest   = 'Cannot find corresponding user.';
 $lang->integration->error->fileNotFoundForRequest   = 'Cannot find corresponding file.';
 $lang->integration->error->filePreviewNotSupported  = 'Unable to preview this file.';
-$lang->integration->error->buildIdentifierFail      = 'Unable to build preview parameters.';
 
 $lang->integration->placeholder = new stdclass();
 $lang->integration->placeholder->collabora = 'Collabora Online URL, e.g., https://192.168.1.2:9980';

@@ -8,13 +8,12 @@
  */
 function setMailto(field, value)
 {
-    var link = createLink('kanban', 'ajaxGetContactUsers', 'field=' + field + '&listID=' + value);
+    var link = createLink('kanban', 'ajaxGetContactUsers', "listID=" + value);
     $.post(link, function(data)
     {
-        $('#' + field).replaceWith(data);
-        $('#' + field + '_chosen').remove();
-        $('#' + field).siblings('.picker').remove();
-        $('#' + field).picker();
+        $('#team').replaceWith(data);
+        $('#team_chosen').remove();
+        $('#team').chosen();
     })
 }
 
@@ -108,43 +107,4 @@ function changeType(type)
         $('#teamBox').removeClass('hidden');
         $('#whitelistBox').addClass('hidden');
     }
-}
-
-/**
- * Load all users.
- *
- * @access public
- * @return void
- */
-function loadAllUsers()
-{
-    var link = createLink('kanban', 'ajaxLoadUsers', 'spaceID=0&field=owner&selectedUser=' + $('#owner').val() + "&type=all");
-
-    $.get(link, function(data)
-    {
-        $('#owner').replaceWith(data);
-        $('#owner' + "_chosen").remove();
-        $('#owner').next('.picker').remove();
-        $('#owner').chosen();
-    });
-}
-
-/**
- * The owners that loads kanban.
- *
- * @oaram  int    spaceID
- * @access public
- * @return void
- */
-function loadOwners(spaceID)
-{
-    var link = createLink('kanban', 'ajaxLoadUsers', 'spaceID='+ spaceID + '&field=owner&selectedUser=' + $('#owner').val());
-
-    $.get(link, function(data)
-    {
-        $('#owner').replaceWith(data);
-        $('#owner' + "_chosen").remove();
-        $('#owner').next('.picker').remove();
-        $('#owner').chosen();
-    });
 }

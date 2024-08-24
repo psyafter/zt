@@ -103,7 +103,14 @@ class personnel extends control
      */
     public function whitelist($objectID = 0, $module = 'personnel', $objectType = 'program', $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1, $programID = 0, $from = '')
     {
-        if($this->app->tab == 'program') $this->loadModel('program')->setMenu($objectID);
+        if($this->app->tab == 'program')
+        {
+            $this->loadModel('program')->setMenu($objectID);
+        }
+        else if($this->app->tab == 'project')
+        {
+            $this->loadModel('project')->setMenu($objectID);
+        }
 
         /* Load lang and set session. */
         $this->app->loadLang('user');
@@ -148,7 +155,14 @@ class personnel extends control
      */
     public function addWhitelist($objectID = 0, $deptID = 0, $copyID = 0, $objectType = 'program', $module = 'personnel', $programID = 0, $from = '')
     {
-        if($this->app->tab == 'program') $this->loadModel('program')->setMenu($objectID);
+        if($this->app->tab == 'program')
+        {
+            $this->loadModel('program')->setMenu($objectID);
+        }
+        else if($this->app->tab == 'project')
+        {
+            $this->loadModel('project')->setMenu($objectID);
+        }
 
         $this->app->loadLang('execution');
 
@@ -171,7 +185,7 @@ class personnel extends control
         if($copyObjectType == 'sprint')
         {
             $object = $this->loadModel('project')->getByID($copyID);
-            if(!empty($object->type) and $object->type == 'project') $copyObjectType = 'project';
+            if(!empty($object)) $copyObjectType = 'project';
         }
         $copyUsers   = empty($copyID) ? array() : $this->personnel->getWhitelistAccount($copyID, $copyObjectType);
         $appendUsers = array_unique($deptUsers + $copyUsers);
@@ -182,12 +196,6 @@ class personnel extends control
         if($objectType == 'product')           $objectName = $this->lang->productCommon;
         if($objectType == 'project')           $objectName = $this->lang->projectCommon;
         $this->lang->personnel->selectObjectTips = sprintf($this->lang->personnel->selectObjectTips, $objectName);
-
-        if($objectType == 'sprint' and $module == 'execution')
-        {
-            $execution = $this->loadModel('execution')->getByID($objectID);
-            $this->lang->personnel->selectObjectTips = (!empty($execution) and $execution->type == 'kanban') ? str_replace($this->lang->execution->common, $this->lang->execution->kanban, $this->lang->personnel->selectObjectTips) : $this->lang->personnel->selectObjectTips;
-        }
 
         $this->view->title      = $this->lang->personnel->addWhitelist;
         $this->view->position[] = $this->lang->personnel->addWhitelist;

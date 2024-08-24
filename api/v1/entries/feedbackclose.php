@@ -25,8 +25,6 @@ class feedbackCloseEntry extends Entry
         $fields = 'closedReason,comment';
         $this->batchSetPost($fields);
 
-        if(empty($_POST)) $this->setPost('status', 'closed');
-
         $control = $this->loadController('feedback', 'close');
         $control->close($feedbackID);
 

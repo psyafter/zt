@@ -61,13 +61,10 @@ class projectrelease extends control
      * @param  int    $executionID
      * @param  string $type
      * @param  string $orderBy
-     * @param  int    $recTotal
-     * @param  int    $recPerPage
-     * @param  int    $pageID
      * @access public
      * @return void
      */
-    public function browse($projectID = 0, $executionID = 0, $type = 'all', $orderBy = 't1.date_desc', $recTotal = 0, $recPerPage = 15, $pageID = 1)
+    public function browse($projectID = 0, $executionID = 0, $type = 'all', $orderBy = 't1.date_desc')
     {
         $this->session->set('releaseList', $this->app->getURI(true), 'project');
         $project   = $this->project->getById($projectID);
@@ -78,24 +75,16 @@ class projectrelease extends control
 
         $objectName = isset($project->name) ? $project->name : $execution->name;
 
-        /* Load pager. */
-        $this->app->loadClass('pager', $static = true);
-        $pager = new pager($recTotal, $recPerPage, $pageID);
-
         $this->view->title       = $objectName . $this->lang->colon . $this->lang->release->browse;
         $this->view->position[]  = $this->lang->release->browse;
         $this->view->execution   = $execution;
         $this->view->project     = $project;
         $this->view->products    = $this->loadModel('product')->getProducts($projectID);
-        $this->view->releases    = $this->projectrelease->getList($projectID, $type, $orderBy, $pager);
+        $this->view->releases    = $this->projectrelease->getList($projectID, $type, $orderBy);
         $this->view->projectID   = $projectID;
         $this->view->executionID = $executionID;
         $this->view->type        = $type;
         $this->view->from        = $this->app->tab;
-        $this->view->recTotal    = $recTotal;
-        $this->view->recPerPage  = $recPerPage;
-        $this->view->pageID      = $pageID;
-        $this->view->pager       = $pager;
         $this->display();
     }
 
@@ -141,7 +130,7 @@ class projectrelease extends control
         $this->view->projectID   = $projectID;
         $this->view->builds      = $builds;
         $this->view->lastRelease = $this->projectrelease->getLast($projectID);
-        $this->view->users       = $this->loadModel('user')->getPairs('noclosed');
+        $this->view->users       = $this->loadModel('user')->getPairs('noletter|noclosed');
         $this->view->confirmLink = $this->lang->release->confirmLink;
         $this->display();
     }
@@ -203,7 +192,7 @@ class projectrelease extends control
         $this->view->release    = $release;
         $this->view->build      = $build;
         $this->view->builds     = $builds;
-        $this->view->users      = $this->loadModel('user')->getPairs('noclosed');
+        $this->view->users      = $this->loadModel('user')->getPairs('noletter|noclosed');
 
         $this->display();
     }
@@ -241,37 +230,27 @@ class projectrelease extends control
             return print(js::error($this->lang->notFound) . js::locate('back'));
         }
 
-        $sort = common::appendOrder($orderBy);
-        if(strpos($sort, 'pri_') !== false) $sort = str_replace('pri_', 'priOrder_', $sort);
-
         $storyPager = new pager($type == 'story' ? $recTotal : 0, $recPerPage, $type == 'story' ? $pageID : 1);
-        $stories    = $this->dao->select("*, IF(`pri` = 0, {$this->config->maxPriValue}, `pri`) as priOrder")->from(TABLE_STORY)
-            ->where('id')->in($release->stories)
-            ->andWhere('deleted')->eq(0)
-            ->beginIF($type == 'story')->orderBy($sort)->fi()
+        $stories    = $this->dao->select('t1.*, t2.stage')->from(TABLE_STORY)->alias('t1')
+            ->leftJoin(TABLE_STORYSTAGE)->alias('t2')->on('t1.id = t2.story')
+            ->where('t1.id')->in($release->stories)
+            ->andWhere('t1.deleted')->eq(0)
+            ->beginIF($type == 'story')->orderBy("t1.$orderBy")->fi()
             ->page($storyPager)
             ->fetchAll('id');
+
         $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'story');
 
-        $stages = $this->dao->select('*')->from(TABLE_STORYSTAGE)->where('story')->in(array_keys($stories))->andWhere('branch')->eq($release->branch)->fetchPairs('story', 'stage');
-        foreach($stages as $storyID => $stage) $stories[$storyID]->stage = $stage;
-
         $bugPager = new pager($type == 'bug' ? $recTotal : 0, $recPerPage, $type == 'bug' ? $pageID : 1);
-        $bugs = $this->dao->select('*')->from(TABLE_BUG)
-            ->where('id')->in($release->bugs)
-            ->andWhere('deleted')->eq(0)
-            ->beginIF($type == 'bug')->orderBy($sort)->fi()
+        $bugs = $this->dao->select('*')->from(TABLE_BUG)->where('id')->in($release->bugs)->andWhere('deleted')->eq(0)
+            ->beginIF($type == 'bug')->orderBy($orderBy)->fi()
             ->page($bugPager)
             ->fetchAll();
         $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'linkedBug');
 
         $leftBugPager = new pager($type == 'leftBug' ? $recTotal : 0, $recPerPage, $type == 'leftBug' ? $pageID : 1);
-        if($type == 'leftBug' and strpos($orderBy, 'severity_') !== false) $sort = str_replace('severity_', 'severityOrder_', $sort);
-
-        $leftBugs = $this->dao->select("*, IF(`severity` = 0, {$this->config->maxPriValue}, `severity`) as severityOrder")->from(TABLE_BUG)
-            ->where('id')->in($release->leftBugs)
-            ->andWhere('deleted')->eq(0)
-            ->beginIF($type == 'leftBug')->orderBy($sort)->fi()
+        $leftBugs = $this->dao->select('*')->from(TABLE_BUG)->where('id')->in($release->leftBugs)->andWhere('deleted')->eq(0)
+            ->beginIF($type == 'leftBug')->orderBy($orderBy)->fi()
             ->page($leftBugPager)
             ->fetchAll();
         $this->loadModel('common')->saveQueryCondition($this->dao->get(), 'leftBugs');

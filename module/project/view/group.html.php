@@ -23,13 +23,6 @@
   </div>
 </div>
 <div id='mainContent' class='main-table'>
-  <?php if(empty($groups)):?>
-  <div class="table-empty-tip">
-    <p>
-      <span class="text-muted"><?php echo $lang->group->noGroup;?></span>
-    </p>
-  </div>
-  <?php else:?>
   <table class='table tablesorter' id='groupList'>
     <thead>
       <tr>
@@ -59,9 +52,8 @@
           <?php
           if(common::hasPriv('group', 'delete') and $group->role != 'limited')
           {
-              $deleteURL     = $this->createLink('group', 'delete', "groupID=$group->id&confirm=yes");
-              $confirmDelete = htmlspecialchars(sprintf($lang->group->confirmDelete, $group->name));
-              echo html::a("###", '<i class="icon icon-trash"></i>', '', "onclick='ajaxDelete(\"$deleteURL\", \"groupList\", \"$confirmDelete\")' title='{$lang->group->delete}' class='btn btn-icon'");
+              $deleteURL = $this->createLink('group', 'delete', "groupID=$group->id&confirm=yes");
+              echo html::a("###", '<i class="icon icon-trash"></i>', '', "onclick='ajaxDelete(\"$deleteURL\", \"groupList\", confirmDelete)' title='{$lang->group->delete}' class='btn btn-icon'");
           }
           else
           {
@@ -73,6 +65,5 @@
       <?php endforeach;?>
     </tbody>
   </table>
-  <?php endif;?>
 </div>
 <?php include '../../common/view/footer.html.php';?>

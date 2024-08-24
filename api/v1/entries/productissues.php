@@ -30,7 +30,7 @@ class productIssuesEntry extends entry
 
         $storyFields = 'id,status';
         $storyStatus = array('' => '');
-        $storyStatus['opened'] = 'draft,reviewing,active,changing';
+        $storyStatus['opened'] = 'draft,active,changed';
         $storyStatus['closed'] = 'closed';
 
         $bugFields = 'id,status';

@@ -24,14 +24,11 @@ $lang->testsuite->deleted          = 'gelöscht';
 $lang->testsuite->successSaved     = 'Saved';
 
 $lang->testsuite->id             = 'ID';
-$lang->testsuite->pri            = 'Priority';
 $lang->testsuite->common         = 'Test Suite';
-$lang->testsuite->project        = 'Project';
 $lang->testsuite->product        = $lang->productCommon;
 $lang->testsuite->name           = 'Name';
 $lang->testsuite->type           = 'Type';
 $lang->testsuite->desc           = 'Beschreibung';
-$lang->testsuite->mailto         = 'Mailto';
 $lang->testsuite->author         = 'Zugriffskontrolle';
 $lang->testsuite->addedBy        = 'Ersteller';
 $lang->testsuite->addedDate      = 'Datum';
@@ -48,12 +45,9 @@ $lang->testsuite->confirmUnlinkCase = 'Möchten Sie diese Verknüpfung aufheben?
 $lang->testsuite->noticeNone        = 'Sie haben noch keine Suite erstellt.';
 $lang->testsuite->noModule          = '<div>Sie haben keine Module</div><div>Jetzt verwalten</div>';
 $lang->testsuite->noTestsuite       = 'Keine Suite. ';
-$lang->testsuite->summary           = "Total suites: <strong>%total%</strong>, public: <strong>%public%</strong>, private: <strong>%private%</strong>.";
 
 $lang->testsuite->lblCases      = 'Fälle';
 $lang->testsuite->lblUnlinkCase = 'Unverknüpfte Fälle';
 
 $lang->testsuite->authorList['private'] = 'Privat';
 $lang->testsuite->authorList['public']  = 'Öffentlich';
-
-$lang->testsuite->featureBar['browse']['all'] = 'Suite List';

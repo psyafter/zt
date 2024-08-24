@@ -20,7 +20,7 @@
     <table class='table table-form'>
       <tr>
         <th><?php echo $lang->kanbanspace->type;?></th>
-        <td><?php echo html::radio('type', $typeList, $type, "onchange='changeType(this.value)'");?></td>
+        <td><?php echo html::select('type', $typeList, $type, "onchange='changeType(this.value)' class='form-control chosen'");?></td>
         <td></td>
       </tr>
       <tr>
@@ -35,20 +35,21 @@
         <th><?php echo $lang->kanbanspace->team;?></th>
         <td colspan='2'>
           <div class="input-group">
-            <?php echo html::select('team[]', $users, '', "class='form-control picker-select' multiple data-drop-direction='bottom'");?>
-            <?php echo $this->fetch('my', 'buildContactLists', "dropdownName=team");?>
+            <?php echo html::select('team[]', $users, '', "class='form-control chosen' multiple data-drop_direction='down'");?>
+            <?php echo $this->fetch('my', 'buildContactLists');?>
           </div>
         </td>
       </tr>
       <tr>
         <th><?php echo $lang->kanbanspace->desc;?></th>
         <td colspan='2'>
+          <?php echo $this->fetch('user', 'ajaxPrintTemplates', 'type=kanbanSpace&link=desc');?>
           <?php echo html::textarea('desc', '', "rows='10' class='form-control'");?>
         </td>
       </tr>
       <tr id="whitelistBox" class="<?php echo $type == 'private' ? '' : 'hidden';?>">
         <th><?php echo $lang->whitelist;?></th>
-        <td colspan='2'><?php echo html::select('whitelist[]', $users, '', 'class="form-control picker-select" multiple data-drop-direction="top"');?></td>
+        <td><?php echo html::select('whitelist[]', $users, '', 'class="form-control chosen" multiple');?></td>
       </tr>
       <tr>
         <td colspan='3' class='text-center form-actions'>

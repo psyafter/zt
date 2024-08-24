@@ -11,7 +11,6 @@
  */
 ?>
 <?php include './header.html.php';?>
-<?php js::set('lastReviewer', explode(',', $lastReviewer))?>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
     <div class='main-header'>
@@ -21,13 +20,13 @@
         <small><?php echo $lang->arrow . ' ' . $lang->story->change;?></small>
       </h2>
     </div>
-    <form class="main-form" method='post' enctype='multipart/form-data' target='hiddenwin' id='dataform'>
+    <form class="main-form" method='post' enctype='multipart/form-data' target='hiddenwin'>
       <table class='table table-form'>
         <tr>
           <th class='w-80px'><?php echo $lang->story->reviewedBy;?></th>
-          <td id='reviewerBox'>
+          <td colspan="2">
             <div class="input-group">
-              <?php echo html::select('reviewer[]', $productReviewers, $reviewer, "class='form-control picker-select' multiple" . ($this->story->checkForceReview() ? ' required' : ''));?>
+              <?php echo html::select('reviewer[]', $productReviewers, $reviewer, 'class="form-control chosen" multiple');?>
               <?php if(!$this->story->checkForceReview()):?>
               <span class="input-group-addon">
               <?php echo html::checkbox('needNotReview', $lang->story->needNotReview, '', "id='needNotReview' {$needReview}");?>
@@ -43,7 +42,7 @@
         <?php $this->printExtendFields($story, 'table');?>
         <tr>
           <th><?php echo $lang->story->title;?></th>
-          <td>
+          <td colspan='2'>
             <div class="colorpicker">
               <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown" title="<?php echo $lang->task->colorTag ?>"><span class="cp-title"></span><span class="color-bar"></span><i class="ic"></i></button>
               <ul class="dropdown-menu clearfix">
@@ -56,34 +55,30 @@
         </tr>
         <tr>
           <th><?php echo $lang->story->spec;?></th>
-          <td><?php echo html::textarea('spec', htmlSpecialString($story->spec), 'rows=8 class="form-control"');?><span class='help-block'><?php echo $lang->story->specTemplate;?></span></td>
+          <td colspan='2'><?php echo html::textarea('spec', htmlSpecialString($story->spec), 'rows=8 class="form-control"');?><span class='help-block'><?php echo $lang->story->specTemplate;?></span></td>
         </tr>
         <tr>
           <th><?php echo $lang->story->verify;?></th>
-          <td><?php echo html::textarea('verify', htmlSpecialString($story->verify), 'rows=6 class="form-control"');?></td>
+          <td colspan='2'><?php echo html::textarea('verify', htmlSpecialString($story->verify), 'rows=6 class="form-control"');?></td>
         </tr>
         <tr>
           <th><?php echo $lang->story->comment;?></th>
-          <td><?php echo html::textarea('comment', '', 'rows=5 class="form-control"');?></td>
+          <td colspan='2'><?php echo html::textarea('comment', '', 'rows=5 class="form-control"');?></td>
         </tr>
         <tr>
           <th><?php echo $lang->attatch;?></th>
-          <td>
-          <?php echo $this->fetch('file', 'printFiles', array('files' => $story->files, 'fieldset' => 'false', 'object' => $story, 'method' => 'edit'));?>
-          <?php echo $this->fetch('file', 'buildform');?>
-          </td>
+          <td colspan='2'><?php echo $this->fetch('file', 'buildform');?></td>
         </tr>
         <tr>
           <th><?php echo $lang->story->checkAffection;?></th>
-          <td><?php include './affected.html.php';?></td>
+          <td colspan='2'><?php include './affected.html.php';?></td>
         </tr>
         <tr>
           <td></td>
-          <td class='text-center form-actions'>
+          <td colspan='2' class='text-center form-actions'>
             <?php
             echo html::hidden('lastEditedDate', $story->lastEditedDate);
-            echo html::commonButton($lang->save, "id='saveButton'", 'btn btn-primary btn-wide');
-            echo html::commonButton($lang->story->doNotSubmit, "id='saveDraftButton'", 'btn btn-secondary btn-wide');
+            echo html::submitButton();
             if(!isonlybody()) echo html::backButton();
             ?>
           </td>
@@ -103,5 +98,4 @@
 <?php js::set('changed', 0);?>
 <?php js::set('storyType', $story->type);?>
 <?php js::set('rawModule', $this->app->rawModule);?>
-<?php js::set('page', $this->app->rawMethod);?>
 <?php include '../../common/view/footer.html.php';?>

@@ -24,4 +24,3 @@ $(function()
 
     $('tr:first').click();
 });
-

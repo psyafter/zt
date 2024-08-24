@@ -35,13 +35,12 @@
             <?php if(common::hasPriv('product', 'manageLine') and ($config->systemMode == 'classic' or $programID)):?>
             <td>
               <div class='input-group'>
-                <?php $checkedNewLine = count($lines) > 1 ? '' : 'checked';?>
                 <?php echo html::select("line", $lines, '', "class='form-control hidden line-exist chosen'");?>
                 <?php echo html::input("lineName", '', "class='form-control line-no-exist'");?>
                 <?php if(count($lines)):?>
                 <span class='input-group-addon'>
                   <div class="checkbox-primary">
-                  <input type="checkbox" name="newLine" value="0" <?php echo $checkedNewLine;?> onchange="toggleLine(this)" id="newLine0" />
+                    <input type="checkbox" name="newLine" value="0" checked onchange="toggleLine(this)" id="newLine0" />
                     <label for="newLine0"><?php echo $lang->product->newLine;?></label>
                   </div>
                 </span>
@@ -56,12 +55,10 @@
             <th><?php echo $lang->product->name;?></th>
             <td><?php echo html::input('name', '', "class='form-control input-product-title' required");?></td><td></td>
           </tr>
-          <?php if(!isset($config->setCode) or $config->setCode == 1):?>
           <tr>
             <th><?php echo $lang->product->code;?></th>
             <td><?php echo html::input('code', '', "class='form-control' required");?></td>
           </tr>
-          <?php endif;?>
           <tr>
             <th><?php echo $lang->product->PO;?></th>
             <td><?php echo html::select('PO', $poUsers, $this->app->user->account, "class='form-control chosen'");?></td>
@@ -76,7 +73,7 @@
           </tr>
           <tr>
             <th><?php echo $lang->product->reviewer;?></th>
-            <td><?php echo html::select('reviewer[]', $users, '', "class='form-control picker-select' multiple");?></td>
+            <td><?php echo html::select('reviewer[]', $users, '', "class='form-control chosen' multiple");?></td>
           </tr>
           <tr>
             <th><?php echo $lang->product->type;?></th>
@@ -110,7 +107,7 @@
             <th><?php echo $lang->whitelist;?></th>
             <td colspan='1'>
               <div class='input-group'>
-                <?php echo html::select('whitelist[]', $users, '', 'class="form-control picker-select" multiple');?>
+                <?php echo html::select('whitelist[]', $users, '', 'class="form-control chosen" multiple');?>
                 <?php echo $this->fetch('my', 'buildContactLists', "dropdownName=whitelist");?>
               </div>
             </td>

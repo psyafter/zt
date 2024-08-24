@@ -3,18 +3,13 @@ $(function()
     $('#needNotReview').on('change', function()
     {
         $('#reviewer').attr('disabled', $(this).is(':checked') ? 'disabled' : null).trigger('chosen:updated');
-
         if($(this).is(':checked'))
         {
-            $('#reviewerBox').closest('tr').addClass('hidden');
             $('#reviewerBox').removeClass('required');
-            $('#dataform #needNotReview').val(1);
         }
         else
         {
-            $('#reviewerBox').closest('tr').removeClass('hidden');
             $('#reviewerBox').addClass('required');
-            $('#dataform #needNotReview').val(0);
         }
 
         getStatus('create', "product=" + $('#product').val() + ",execution=" + executionID + ",needNotReview=" + ($(this).prop('checked') ? 1 : 0));
@@ -38,47 +33,15 @@ $(function()
         if($.inArray(source, feedbackSource) != -1)
         {
             $('#feedbackBox').removeClass('hidden');
-            $('#source, #sourceNoteBox').closest('td').attr('colspan', 1);
+            $('#reviewerBox').attr('colspan', 2);
         }
         else
         {
             $('#feedbackBox').addClass('hidden');
-            $('#source, #sourceNoteBox').closest('td').attr('colspan', 2);
+            $('#reviewerBox').attr('colspan', 4);
         }
     });
-
-    $('#customField').click(function()
-    {
-        hiddenRequireFields();
-    });
-
-    /* Implement a custom form without feeling refresh. */
-    $('#formSettingForm .btn-primary').click(function()
-    {
-        saveCustomFields('createFields');
-        return false;
-    });
-
-    $(document).on('change', '#module', loadURS);
 });
-
-/**
- * Load assignedTo.
- *
- * @access public
- * @return void
- */
-function loadAssignedTo()
-{
-    var assignees = $('#reviewer').val();
-    var link      = createLink('story', 'ajaxGetAssignedTo', 'type=create&storyID=0&assignees=' + assignees);
-    $.post(link, function(data)
-    {
-        $('#assignedTo').replaceWith(data);
-        $('#assignedToBox .picker').remove();
-        $('#assignedTo').picker();
-    });
-}
 
 function refreshPlan()
 {

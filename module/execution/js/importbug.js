@@ -9,23 +9,10 @@ $(function()
 /**
  * Go back.
  *
- * @param  int $executionID
  * @access public
  * @return void
  */
-function goback(executionID)
+function goback()
 {
-    var link = createLink('execution', 'ajaxGetExecutionKanban', "executionID=" + executionID);
-    $.get(link, function(data)
-    {
-        if(data)
-        {
-            kanbanData = $.parseJSON(data);
-            parent.updateKanban(kanbanData);
-        }
-        else
-        {
-            parent.location.reload();
-        }
-    });
+    parent.location.reload();
 }

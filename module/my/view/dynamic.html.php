@@ -48,24 +48,19 @@
       <ul class="timeline timeline-tag-left <?php if($type == 'all') echo 'margin-l-50px';?>">
         <?php if($direction == 'next') $actions = array_reverse($actions);?>
         <?php foreach($actions as $i => $action):?>
-        <?php if($action->action == 'adjusttasktowait') continue;?>
         <?php if(empty($firstAction)) $firstAction = $action;?>
         <li <?php if($action->major) echo "class='active'";?>>
           <div>
             <span class="timeline-tag"><?php echo $action->time?></span>
             <span class="timeline-text">
               <?php echo $app->user->realname;?>
-              <span class='label-action'><?php echo $action->actionLabel;?></span>
+              <span class='label-action'><?php echo ' ' . $action->actionLabel;?></span>
               <?php if($action->action != 'login' and $action->action != 'logout'):?>
-              <?php echo $action->objectLabel;?>
-              <?php if($action->objectID):?>
-              <span class="label label-id"><?php echo $action->objectID;?></span>
-              <?php endif;?>
+              <span class="text-muted"><?php echo $action->objectLabel;?></span>
               <?php $tab = '';?>
               <?php if($action->objectType == 'meeting') $tab = $action->project ? "data-app='project'" : "data-app='my'";?>
-              <span class='label-name'>
               <?php
-              if(($config->edition == 'max' and strpos($config->action->assetType, ",{$action->objectType},") !== false) and empty($action->objectName))
+              if(($config->edition == 'max' and strpos($config->action->assetType, $action->objectType) !== false) and empty($action->objectName))
               {
                   echo '#' . $action->objectID;
               }
@@ -82,7 +77,9 @@
                   echo html::a($action->objectLink, $action->objectName, '', $tab);
               }
               ?>
-              </span>
+              <?php if($action->objectID):?>
+              <span class="label label-id"><?php echo $action->objectID;?></span>
+              <?php endif;?>
               <?php endif;?>
             </span>
           </div>

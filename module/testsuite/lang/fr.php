@@ -24,14 +24,11 @@ $lang->testsuite->deleted          = 'Supprimé';
 $lang->testsuite->successSaved     = 'Sauvé';
 
 $lang->testsuite->id             = 'ID';
-$lang->testsuite->pri            = 'Priority';
 $lang->testsuite->common         = 'Cahier de Recette';
-$lang->testsuite->project        = 'Project';
 $lang->testsuite->product        = $lang->productCommon;
 $lang->testsuite->name           = 'Nom';
 $lang->testsuite->type           = 'Type';
 $lang->testsuite->desc           = 'Description';
-$lang->testsuite->mailto         = 'Mailto';
 $lang->testsuite->author         = "Contrôle d'Accès";
 $lang->testsuite->addedBy        = 'Créé par';
 $lang->testsuite->addedDate      = 'Créé le';
@@ -48,12 +45,9 @@ $lang->testsuite->confirmUnlinkCase = 'Voulez-vous retirer ce CasTest ?';
 $lang->testsuite->noticeNone        = "Vous n'avez pas encore créé de Cahier de Recette pour l'instant.";
 $lang->testsuite->noModule          = '<div>Vous avez aucun Module.</div><div>Gérer les Modules maintenant.</div>';
 $lang->testsuite->noTestsuite       = 'Aucun Cahier de Recette.';
-$lang->testsuite->summary           = "Total suites: <strong>%total%</strong>, public: <strong>%public%</strong>, private: <strong>%private%</strong>.";
 
 $lang->testsuite->lblCases      = 'CasTests';
 $lang->testsuite->lblUnlinkCase = 'Retirer CasTest';
 
 $lang->testsuite->authorList['private'] = 'Privé';
 $lang->testsuite->authorList['public']  = 'Public';
-
-$lang->testsuite->featureBar['browse']['all'] = 'Suite List';

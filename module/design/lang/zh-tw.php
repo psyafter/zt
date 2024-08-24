@@ -33,12 +33,10 @@ $lang->design->affectedStory = "影響{$lang->SRCommon}";
 $lang->design->affectedTasks = '影響任務';
 $lang->design->reviewObject  = '評審對象';
 $lang->design->createdBy     = '由誰創建';
-$lang->design->createdByAB   = '創建者';
 $lang->design->createdDate   = '創建時間';
 $lang->design->basicInfo     = '基本信息';
 $lang->design->noAssigned    = '未指派';
 $lang->design->comment       = '註釋';
-$lang->design->more          = '更多';
 
 /* 動作列表. */
 $lang->design->common       = '設計';

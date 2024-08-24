@@ -1,36 +1,7 @@
 $(function()
 {
-    $name = $('#batchCreateForm table thead tr th.col-name');
-    if($name.width() < 200) $name.width(200);
-
-    $('#customField').click(function()
-    {
-        hiddenRequireFields();
-    });
-
-    /* Implement a custom form without feeling refresh. */
-    $('#formSettingForm .btn-primary').click(function()
-    {
-        saveCustomFields('batchCreateFields', 8, $name, 200);
-        return false;
-    });
-
-    $('#saveButton').on('click', function()
-    {
-        $('#saveButton').attr('disabled', true);
-        $('#saveDraftButton').attr('disabled', true);
-        $('#batchCreateForm').submit();
-    });
-
-    $('#saveDraftButton').on('click', function()
-    {
-        $('#saveButton').attr('disabled', true);
-        $('#saveDraftButton').attr('disabled', true);
-        $('<input />').attr('type', 'hidden').attr('name', 'status').attr('value', 'draft').appendTo('#batchCreateForm');
-        $('#batchCreateForm').submit();
-    });
+    if($('#batchCreateForm table thead tr th.col-name').width() < 200) $('#batchCreateForm table thead tr th.col-name').width(200);
 });
-
 $(document).on('click', '.chosen-with-drop', function()
 {
     var select = $(this).prev('select');

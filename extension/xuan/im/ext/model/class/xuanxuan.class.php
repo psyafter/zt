@@ -207,22 +207,14 @@ class xuanxuanIm extends imModel
             foreach($userMessages as $message)
             {
                 /* Group by $message->content->content->objectType, ...->parentType, ...->action, ...->actor */
-                $contentDataOuter = json_decode($message->content);
-                $contentData = json_decode($contentDataOuter->content);
+                $contentData = json_decode($message->content);
+                $contentData = json_decode($contentData->content);
                 if(isset($contentData->contentType) && $contentData->contentType == 'text')
                 {
                     $messageGroups[$contentData->contentType][] = $message;
                     continue;
                 }
-                if ($contentData->objectType == 'story' && $contentData->action == 'reviewed')
-                {
-                    $extra = explode(',', $contentDataOuter->extra)[0];
-                    $messageGroups["$contentData->objectType-$contentData->parentType-$contentData->action-$contentData->actor-$extra"][] = $message;
-                }
-                else
-                {
-                    $messageGroups["$contentData->objectType-$contentData->parentType-$contentData->action-$contentData->actor"][] = $message;
-                }
+                $messageGroups["$contentData->objectType-$contentData->parentType-$contentData->action-$contentData->actor"][] = $message;
             }
             foreach($messageGroups as $groupKey => $messages)
             {
@@ -233,24 +225,25 @@ class xuanxuanIm extends imModel
                 $notificationContent = json_decode($notification->content);
                 $notificationInnerContent = json_decode($notificationContent->content);
 
-                /* Inner content: array($id => array($content1, $content2)) */
-                $objectGroups = array($notificationInnerContent->id => array($notificationInnerContent));
+                /* Inner content: array($parentID => array($content1, $content2)) */
+                $objectGroups = array($notificationInnerContent->parent => array($notificationInnerContent));
                 foreach($messages as $message)
                 {
                     $messageContent = json_decode($message->content);
                     $messageInnerContent = json_decode($messageContent->content);
-                    $objectGroups[$messageInnerContent->id][] = $messageInnerContent;
+                    $objectGroups[$messageInnerContent->parent][] = $messageInnerContent;
                 }
-                foreach($objectGroups as $id => $objectGroup)
+                $objectTotal = 0;
+                foreach($objectGroups as $parent => $objectGroup)
                 {
                     $object = current($objectGroup);
                     $object->count = count($objectGroup);
                     $object->url   = $object->parentURL;
                     unset($object->title);
 
-                    $objectGroups[$id] = $object;
+                    $objectGroups[$parent] = $object;
+                    $objectTotal += $object->count;
                 }
-                $objectTotal = count($objectGroups);
                 $notificationContent->content = json_encode(array_values($objectGroups));
                 /* Hack alert: title count replacement currently assumes that default count is 1. */
                 $notification->title = substr_replace($notification->title, "$objectTotal", strrpos($notification->title, '1'), 1);

@@ -11,27 +11,27 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
-<div id='mainContent' class='main-content main-row'>
+<div id='mainContent' class='main-content <?php if($mode == 'edit') echo ' main-row';?>'>
+  <?php if($mode == 'edit'):?>
   <div class='side-col'>
-  <div class='main-header'><h2 class='contactListTitle'><?php echo $lang->my->contactList;?></h2></div>
-    <div class="list-group">
-    <?php echo html::a(inlink('managecontacts', "listID=0&mode=new"), '<i class="icon icon-plus"></i> ' . $lang->user->contacts->createList, '', "class='btn btn-secondary createBtn'"); ?>
     <?php
     foreach($lists as $id => $listName)
     {
-        $listClass = ($id == $listID and $mode == 'edit') ? 'btn btn-block active' : 'btn btn-block';
-        echo html::a(inlink('managecontacts', "listID=$id&mode=edit"), $listName, '', "class='{$listClass}' title='$listName'");
+        $listClass = ($id == $listID) ? 'btn btn-block active' : 'btn btn-block';
+        $shareIcon = in_array($id, $globalContacts) ? '<i class="icon icon-share-sign"></i> ' : '';
+        echo html::a(inlink('managecontacts', "listID=$id&mode=edit"), $shareIcon . $listName, '', "class='{$listClass}' title='$listName'");
     }
     ?>
-    </div>
+    <?php echo html::a(inlink('managecontacts', "listID=0&mode=new"), '<i class="icon icon-plus"></i> ' . $lang->user->contacts->createList, '', "class='btn btn-block'"); ?>
   </div>
   <div class='main-col'>
+  <?php endif;?>
     <div class='main-header'>
-      <h2 class='title'>
+      <h2>
         <?php if($mode == 'new'):?>
-        <strong><?php echo $lang->user->contacts->createList;?></strong>
+        <i class='icon-plus'></i> <strong><?php echo $lang->user->contacts->createList;?></strong>
         <?php else:?>
-        <strong><?php echo $lang->user->contacts->manage;?></strong>
+        <i class='icon-cogs'></i> <strong><?php echo $lang->user->contacts->manage;?></strong>
         <?php endif;?>
       </h2>
     </div>

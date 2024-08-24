@@ -37,7 +37,8 @@
             <td><?php echo html::password('password', isset($sonarqube->password) ? $sonarqube->password : '', "class='form-control'");?></td>
           </tr>
           <tr>
-            <td colspan='2' class='text-center form-actions'>
+            <th></th>
+            <td class='text-center form-actions'>
               <?php echo html::submitButton();?>
               <?php if(!isonlybody()) echo html::a(inlink('browse', ""), $lang->goback, '', 'class="btn btn-wide"');?>
             </td>

@@ -122,7 +122,7 @@
             }
         }
         if(moduleName === 'story' && vision === 'lite') return 'project'
-        if(moduleName === 'testcase' && methodLowerCase === 'zerocase')
+        if(moduleName === 'story' && methodLowerCase === 'zerocase')
         {
             return link.params.from == 'project' ? 'project' : 'qa';
         }
@@ -187,7 +187,7 @@
      * @param {string} [appCode] The code of target app to open
      * @return {void}
      */
-    function openTab(url, appCode, forceReload)
+    function openTab(url, appCode)
     {
         /* Check params */
         if(!appCode)
@@ -234,7 +234,7 @@
                     'style="width: 100%; height: 100%; left: 0px;"',
                 '/>'
             ].join(' '));
-            var $app = $('<div class="app-container load-indicator" id="app-' + appCode + '"></div>')
+            var $app = $('<div class="app-container" id="app-' + appCode + '"></div>')
                 .append($iframe)
                 .appendTo('#apps');
 
@@ -247,7 +247,7 @@
             var iframe = $iframe.get(0);
             iframe.onload = iframe.onreadystatechange = function(e)
             {
-                $app.removeClass('loading').trigger('loadapp', app);
+                $app.trigger('loadapp', app);
             };
         }
 
@@ -264,13 +264,7 @@
         }
 
         /* Show page app and update iframe source */
-        var iframe = app.$iframe[0];
-        var isSameUrl = iframe && url && iframe.contentWindow.location.href.endsWith(url);
-        if (url && (!isSameUrl || forceReload !== false))
-        {
-            app.$app.toggleClass('open-from-hidden', app.$app.is(':hidden'))
-            reloadApp(appCode, url, true);
-        }
+        if(url) reloadApp(appCode, url, true);
         app.zIndex = openedAppZIndex++;
         app.$app.show().css('z-index', app.zIndex);
 
@@ -443,8 +437,7 @@
         if(url === true) url = app.url;
         else if($.tabSession) url = $.tabSession.convertUrlWithTid(url);
 
-        var iframe    = app.$iframe[0];
-        var isSameUrl = iframe && url && iframe.contentWindow.location.href.endsWith(url);
+        var iframe = app.$iframe[0];
 
         /* Add hook to page before reload it */
         if (iframe && iframe.contentWindow.beforeAppReload)
@@ -454,7 +447,7 @@
 
         try
         {
-            if(url && !isSameUrl) iframe.contentWindow.location.assign(url);
+            if(url) iframe.contentWindow.location.assign(url);
             else iframe.contentWindow.location.reload(true);
         }
         catch(_)
@@ -463,14 +456,6 @@
         }
 
         if(!notTriggerEvent) app.$app.trigger('reloadapp', app);
-
-        if(!isSameUrl) app.$app.addClass('loading');
-        if(app._loadTimer) clearTimeout(app._loadTimer);
-        app._loadTimer = setTimeout(function()
-        {
-            app.$app.removeClass('loading');
-            app._loadTimer = null;
-        }, 15000);
     }
 
     /**
@@ -753,8 +738,8 @@ $.extend(
                 var searchModule = types[0];
                 var searchMethod = typeof(types[1]) == 'undefined' ? 'view' : types[1];
                 var searchLink   = createLink(searchModule, searchMethod, "id=" + objectValue);
-                var assetType    = ',story,issue,risk,opportunity,doc,';
-                if(assetType.indexOf(',' + searchModule + ',') > -1)
+                var assetType    = 'story,issue,risk,opportunity,doc';
+                if(assetType.indexOf(searchModule) > -1)
                 {
                     var link = createLink('index', 'ajaxGetViewMethod' , 'objectID=' + objectValue + '&objectType=' + searchModule);
                     $.get(link, function(data)

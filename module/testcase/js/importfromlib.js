@@ -52,14 +52,14 @@ function updateModules(productID, branch, caseID)
     var tr = $('#module' + caseID).closest('tr');
     if(branch !== 'ditto')
     {
-        loadModules(tr, caseID, moduleLink, undefined, branch);
+        loadModules(tr, caseID, moduleLink);
         tr.nextAll().each(function()
         {
             var nextCaseID = $(this).attr('id');
             var nextBranch = $('#branch' + nextCaseID + ' option:selected').val();
             if(nextBranch !== 'ditto') return false;
             var nextTr = $('#module' + nextCaseID).closest('tr');
-            loadModules(nextTr, nextCaseID, moduleLink, true, branch);
+            loadModules(nextTr, nextCaseID, moduleLink, true);
         });
     }
     else
@@ -76,14 +76,14 @@ function updateModules(productID, branch, caseID)
             }
         });
         link = createLink('tree', 'ajaxGetOptionMenu', 'productID=' + productID + '&viewtype=case&branch=' + branchID + '&rootModuleID=0&returnType=html&fieldID=&needManage=true');
-        loadModules(tr, caseID, link, true, branchID);
+        loadModules(tr, caseID, link, true);
         tr.nextAll().each(function()
         {
             var nextCaseID = $(this).attr('id');
             var nextBranch = $('#branch' + nextCaseID + ' option:selected').val();
             if(nextBranch !== 'ditto') return false;
             var nextTr = $('#module' + nextCaseID).closest('tr');
-            loadModules(nextTr, nextCaseID, link, true, branchID);
+            loadModules(nextTr, nextCaseID, link, true);
         });
     }
 }
@@ -95,31 +95,17 @@ function updateModules(productID, branch, caseID)
  * @param  int     $caseID
  * @param  string  $link
  * @param  boolean $isAddDitto
- * @param  int     $branch
  * @access public
  * @return void
  */
-function loadModules(tr, caseID, link, isAddDitto, branch)
+function loadModules(tr, caseID, link, isAddDitto)
 {
     var isAddDitto = (typeof(isAddDitto) === 'undefined') ? false : true;
 
     $('#module' + caseID).parent('td').load(link, function(data)
     {
-        if(canImportModules[branch][caseID] != undefined && Object.keys(canImportModules[branch][caseID]).length > 0)
-        {
-            $('tr select#module').children().each(function()
-            {
-                moduleID = $(this).val();
-                if(canImportModules[branch][caseID][moduleID] == undefined)
-                {
-                    $(this).remove();
-                }
-            })
-        }
-
         tr.find('#module').chosen();
         tr.find('#module').attr({"id": 'module' + caseID, "name": 'module[' + caseID + ']'});
-        tr.find('#module' + caseID).removeAttr('onchange');
         if(isAddDitto == true) addDittoOption(caseID);
     });
 }

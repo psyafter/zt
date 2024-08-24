@@ -33,7 +33,8 @@
             <td><?php echo html::input('token', isset($gitlab->token) ? $gitlab->token : '', "class='form-control' placeholder='{$lang->gitlab->placeholder->token}'");?></td>
           </tr>
           <tr>
-            <td colspan='2' class='text-center form-actions'>
+            <th></th>
+            <td class='text-center form-actions'>
               <?php echo html::submitButton();?>
               <?php if(!isonlybody()) echo html::a(inlink('browse', ""), $lang->goback, '', 'class="btn btn-wide"');?>
             </td>

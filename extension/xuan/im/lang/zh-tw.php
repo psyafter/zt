@@ -42,10 +42,6 @@ $lang->im->logLevelSimple  = '簡單';
 $lang->im->logLevelDetail  = '詳細';
 $lang->im->logLevelOptions = array($lang->im->logLevelSimple, $lang->im->logLevelDetail);
 
-$lang->im->mobileClient         = '手機客戶端';
-$lang->im->mobileOptions['on']  = $lang->im->enabled;
-$lang->im->mobileOptions['off'] = $lang->im->disabled;
-
 $lang->im->day    = '天';
 $lang->im->hours  = '小時';
 $lang->im->minute = '分鐘';
@@ -72,47 +68,42 @@ $lang->im->noLogFile        = '沒有日誌檔案。';
 $lang->im->noFopen          = '未啟用fopen函數，請按以下路逕自行查看日誌檔案：%s。';
 $lang->im->owtIsDisabled    = '未啟用會議功能，無法進行會議。';
 $lang->im->chatNameTooLong  = '會話名稱過長。';
-$lang->im->adminCanInvite   = '本群中只有管理員能夠邀請成員';
-$lang->im->userNotInGroup   = '您已不在此討論組內，無法進行相關操作。';
-$lang->im->canNotDelOwner   = '不能移除群主。';
 
-$lang->im->xxdServerTip             = '喧喧伺服器地址為完整的協議+地址+連接埠，示例：http://192.168.1.35 或 http://www.xxb.com ，不能使用127.0.0.1。';
-$lang->im->iceServersTip            = '點對點傳輸時使用的 ICE 伺服器，如： stun:stun.l.google.com:19302，多個伺服器之間可用換行分隔，可選';
-$lang->im->xxdServerEmpty           = '喧喧伺服器地址為空。';
-$lang->im->xxdServerError           = '喧喧伺服器地址不能為 127.0.0.1。';
-$lang->im->xxdSchemeError           = '伺服器地址應該以<strong>http://</strong>或<strong>https://</strong>開頭。';
-$lang->im->xxdPortError             = '伺服器地址應該包含有效的連接埠號，預設為<strong>11443</strong>。';
-$lang->im->xxdPollIntTip            = '輪詢間隔單位為秒，最小為 5 秒，預設為 60 秒，示例：60。';
-$lang->im->xxdPollIntErr            = '輪詢間隔應為一個最小為 5 的整數。';
-$lang->im->xxdFileSizeErr           = '檔案大小應大於等於 0。';
-$lang->im->tokenLifetimeErr         = 'Token 有效期應為一個最小為 1 的整數。';
-$lang->im->tokenAuthWindowErr       = 'Token 驗證窗口時間應為一個最小為 20 的整數。';
-$lang->im->iceServersErr            = 'ICE 伺服器地址不合法';
-$lang->im->errorSSLCrt              = 'SSL證書內容不能為空';
-$lang->im->errorSSLKey              = 'SSL證書私鑰不能為空';
-$lang->im->xxdAESTip                = '該設置僅針對 XXB 和 XXD 之間的通訊加密，不影響客戶端通訊加密。';
-$lang->im->xxdFileEncryptTip        = '啟用後將加密存儲聊天產生的附件檔案，一旦啟用，無法關閉。';
-$lang->im->xxdMessageEncryptTip     = '啟用後將加密存儲聊天消息，一旦啟用，無法關閉。';
+$lang->im->xxdServerTip       = '喧喧伺服器地址為完整的協議+地址+連接埠，示例：http://192.168.1.35 或 http://www.xxb.com ，不能使用127.0.0.1。';
+$lang->im->iceServersTip      = '點對點傳輸時使用的 ICE 伺服器，如： stun:stun.l.google.com:19302，多個伺服器之間可用換行分隔，可選';
+$lang->im->xxdServerEmpty     = '喧喧伺服器地址為空。';
+$lang->im->xxdServerError     = '喧喧伺服器地址不能為 127.0.0.1。';
+$lang->im->xxdSchemeError     = '伺服器地址應該以<strong>http://</strong>或<strong>https://</strong>開頭。';
+$lang->im->xxdPortError       = '伺服器地址應該包含有效的連接埠號，預設為<strong>11443</strong>。';
+$lang->im->xxdPollIntTip      = '輪詢間隔單位為秒，最小為 5 秒，預設為 60 秒，示例：60。';
+$lang->im->xxdPollIntErr      = '輪詢間隔應為一個最小為 5 的整數。';
+$lang->im->xxdFileSizeErr     = '檔案大小應大於等於 0。';
+$lang->im->tokenLifetimeErr   = 'Token 有效期應為一個最小為 1 的整數。';
+$lang->im->tokenAuthWindowErr = 'Token 驗證窗口時間應為一個最小為 20 的整數。';
+$lang->im->iceServersErr      = 'ICE 伺服器地址不合法';
+$lang->im->errorSSLCrt        = 'SSL證書內容不能為空';
+$lang->im->errorSSLKey        = 'SSL證書私鑰不能為空';
+$lang->im->xxdAESTip          = '該設置僅針對 XXB 和 XXD 之間的通訊加密，不影響客戶端通訊加密。';
+$lang->im->xxdFileEncryptTip  = '啟用後將加密存儲聊天產生的附件檔案，一旦啟用，無法關閉。';
 
-$lang->im->errorClientVersionNotSupport = '客戶端版本 %s 過低，請升級到 5.0 及以上版本。https://xuanim.com';
+$lang->im->errorClientVersionNotSupport = '客戶端版本太低（%s），當前伺服器支持的最低版本為 %s，請在喧喧官網下載最新版。https://xuanim.com';
 
 $lang->im->broadcast = new stdclass();
-$lang->im->broadcast->createChat                 = '%s 創建了討論組 [%s](#/chats/groups/%s)。';
-$lang->im->broadcast->changeChatOwnership        = '討論組 [%s](#/chats/groups/%s) 所有者更改為 %s。';
-$lang->im->broadcast->changeChatOwnershipByAdmin = '系統管理員將討論組 [%s](#/chats/groups/%s) 所有者更改為 %s。';
-$lang->im->broadcast->joinChat                   = '%s 加入了討論組。';
-$lang->im->broadcast->leaveChat                  = '%s 退出了當前討論組。';
-$lang->im->broadcast->renameChat                 = '%s 將討論組名稱更改為 [%s](#/chats/groups/%s)。';
-$lang->im->broadcast->renamePrivate              = '會話名稱更改為 [%s](#/chats/recents/%s)。';
-$lang->im->broadcast->inviteUser                 = '%s 邀請 %s 加入了討論組。';
-$lang->im->broadcast->dismissChat                = '%s 解散了當前討論組。';
-$lang->im->broadcast->mergeChat                  = '%s 討論組被合併到了當前討論組，歷史消息在消息記錄中顯示。';
-$lang->im->broadcast->mergeChatWithMembers       = '%s 討論組被合併到了當前討論組，歷史消息在消息記錄中顯示。%s 加入了討論組。';
-$lang->im->broadcast->chatMerged                 = '%s 討論組被合併到了 %s 討論組。';
+$lang->im->broadcast->createChat           = '%s 創建了討論組 [%s](#/chats/groups/%s)。';
+$lang->im->broadcast->changeChatOwnership  = '討論組 [%s](#/chats/groups/%s) 所有者更改為 %s。';
+$lang->im->broadcast->joinChat             = '%s 加入了討論組。';
+$lang->im->broadcast->leaveChat            = '%s 退出了當前討論組。';
+$lang->im->broadcast->renameChat           = '%s 將討論組名稱更改為 [%s](#/chats/groups/%s)。';
+$lang->im->broadcast->renamePrivate        = '會話名稱更改為 [%s](#/chats/recents/%s)。';
+$lang->im->broadcast->inviteUser           = '%s 邀請 %s 加入了討論組。';
+$lang->im->broadcast->dismissChat          = '%s 解散了當前討論組。';
+$lang->im->broadcast->mergeChat            = '%s 討論組被合併到了當前討論組，歷史消息在消息記錄中顯示。';
+$lang->im->broadcast->mergeChatWithMembers = '%s 討論組被合併到了當前討論組，歷史消息在消息記錄中顯示。%s 加入了討論組。';
+$lang->im->broadcast->chatMerged           = '%s 討論組被合併到了 %s 討論組。';
 
 $lang->im->broadcast->createConference           = '%s 發起了會議。';
 $lang->im->broadcast->closeConference            = '%s 結束了會議。';
-$lang->im->broadcast->createConferenceInvitation = '%s 邀請 %s 加入會議。若您未在會議中，可從右上角的會議入口加入。';
+$lang->im->broadcast->createConferenceInvitation = '%s 邀請 %s 加入會議。';
 $lang->im->broadcast->conferenceInviteeOccupied  = '%s 線路正忙。';
 
 $lang->im->conference = new stdclass();
@@ -120,19 +111,18 @@ $lang->im->conference->userBusy    = '對方線路正忙。';
 $lang->im->conference->userOffline = '對方不在綫。';
 
 $lang->im->xxd = new stdclass();
-$lang->im->xxd->os                  = '操作系統';
-$lang->im->xxd->ip                  = '監聽IP';
-$lang->im->xxd->chatPort            = '客戶端通訊連接埠';
-$lang->im->xxd->commonPort          = '通用連接埠';
-$lang->im->xxd->https               = 'HTTPS';
-$lang->im->xxd->aes                 = '服務端通信 AES';
-$lang->im->xxd->uploadFileSize      = '上傳檔案大小';
-$lang->im->xxd->maxOnlineUser       = '最大在綫人數';
-$lang->im->xxd->sslcrt              = '證書內容';
-$lang->im->xxd->sslkey              = '證書私鑰';
-$lang->im->xxd->max                 = '最大';
-$lang->im->xxd->fileEncryption      = '檔案加密';
-$lang->im->xxd->messageEncryption   = '消息加密';
+$lang->im->xxd->os             = '操作系統';
+$lang->im->xxd->ip             = '監聽IP';
+$lang->im->xxd->chatPort       = '客戶端通訊連接埠';
+$lang->im->xxd->commonPort     = '通用連接埠';
+$lang->im->xxd->https          = 'HTTPS';
+$lang->im->xxd->aes            = '服務端通信 AES';
+$lang->im->xxd->uploadFileSize = '上傳檔案大小';
+$lang->im->xxd->maxOnlineUser  = '最大在綫人數';
+$lang->im->xxd->sslcrt         = '證書內容';
+$lang->im->xxd->sslkey         = '證書私鑰';
+$lang->im->xxd->max            = '最大';
+$lang->im->xxd->fileEncryption = '檔案加密';
 
 $lang->im->httpsOptions['on']  = $lang->im->enabled;
 $lang->im->httpsOptions['off'] = $lang->im->disabled;
@@ -142,10 +132,6 @@ $lang->im->aesOptions['off'] = $lang->im->disabled;
 
 $lang->im->fileEncryptOptions['on']  = $lang->im->enabled;
 $lang->im->fileEncryptOptions['off'] = $lang->im->disabled;
-
-$lang->im->messageEncryptOptions['on']  = $lang->im->enabled;
-$lang->im->messageEncryptOptions['off'] = $lang->im->disabled;
-
 
 $lang->im->osList['win_i386']      = 'Windows 32位';
 $lang->im->osList['win_x86_64']    = 'Windows 64位';
@@ -214,17 +200,10 @@ $lang->im->xxdConfigNote['en']['certPath'] = '# Path of saved certificate.';
 $lang->im->xxdConfigNote['zh']['debug'] = '# Debug級別，可設置0|1|2';
 $lang->im->xxdConfigNote['en']['debug'] = '# Debug level，0|1|2';
 
-$lang->im->xxdConfigNote['zh']['thumbnail'] = '# 是否啟用圖片縮略圖';
-$lang->im->xxdConfigNote['en']['thumbnail'] = '# Image thumbnail';
-
-$lang->im->xxdConfigNote['zh']['syncConfig'] = '# 與後端伺服器同步配置信息，1 為開啟 0 為關閉。開啟後可能會丟失配置檔案的注視。';
-$lang->im->xxdConfigNote['en']['syncConfig'] = '# Sync config with xxb，0|1. Sync config enable may lost config comment.';
-
 $lang->im->xxdConfigNote['zh']['backend'] = "# xxd可以對接多個後台程序。每一個後台程序由入口檔案 + 私鑰組成。\n# 客戶端登錄時如果沒有指定後台程序，會預設登錄到第一個後台程序。";
 $lang->im->xxdConfigNote['en']['backend'] = "# xxd can integrate with multi backends. Every backend has an entry and a key. \n# The client will login to the first backend if the user doesn't specify the backend.";
 
 $lang->pinnedMessages = new stdclass();
 $lang->pinnedMessages->limit = '置頂消息數量已達到上限';
 
-$lang->im->IPInvalid     = '登錄 IP 不在規定網段內';
-$lang->im->mobileLimited = '管理員限制了移動端的訪問';
+$lang->im->IPInvalid = '登錄 IP 不在規定網段內';

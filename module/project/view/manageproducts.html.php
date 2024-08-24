@@ -71,6 +71,7 @@
       <div class="detail text-center form-actions">
         <?php echo html::hidden("post", 'post');?>
         <?php echo html::submitButton();?>
+        <?php echo html::backButton();?>
       </div>
     </form>
   </div>

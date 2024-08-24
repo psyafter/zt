@@ -18,21 +18,3 @@ function setAvatar()
         $(".avatar").removeClass('hidden');
     });
 }
-
-$(document).ready(function()
-{
-    $('#gitlabSearch').click(function()
-    {
-        triggerSearch();
-    });
-    $('#keyword').keypress(function(event)
-    {
-        if(event.which == 13) triggerSearch();
-    })
-
-});
-
-function triggerSearch()
-{
-    $("#gitlabForm").submit();
-}

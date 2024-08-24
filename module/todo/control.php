@@ -75,15 +75,12 @@ class todo extends control
         }
 
         unset($this->lang->todo->typeList['cycle']);
-
         $this->view->title      = $this->lang->todo->common . $this->lang->colon . $this->lang->todo->create;
         $this->view->position[] = $this->lang->todo->common;
         $this->view->position[] = $this->lang->todo->create;
         $this->view->date       = date("Y-m-d", strtotime($date));
         $this->view->times      = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
         $this->view->time       = date::now();
-        $this->view->users      = $this->loadModel('user')->getPairs('noclosed|nodeleted|noempty');
-
         $this->display();
     }
 
@@ -118,11 +115,9 @@ class todo extends control
             return print(js::locate($this->createLink('my', 'todo', "type=$date"), 'parent'));
         }
 
-        unset($this->lang->todo->typeList['cycle']);
-
         /* Set Custom*/
+        unset($this->lang->todo->typeList['cycle']);
         foreach(explode(',', $this->config->todo->list->customBatchCreateFields) as $field) $customFields[$field] = $this->lang->todo->$field;
-
         $this->view->customFields = $customFields;
         $this->view->showFields   = $this->config->todo->custom->batchCreateFields;
 
@@ -132,7 +127,6 @@ class todo extends control
         $this->view->date       = (int)$date == 0 ? $date : date('Y-m-d', strtotime($date));
         $this->view->times      = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
         $this->view->time       = date::now();
-        $this->view->users      = $this->loadModel('user')->getPairs('noclosed|nodeleted|noempty');
 
         $this->display();
     }
@@ -169,15 +163,12 @@ class todo extends control
         if($todo->private and $this->app->user->account != $todo->account) return print('private');
 
         unset($this->lang->todo->typeList['cycle']);
-
         $todo->date = date("Y-m-d", strtotime($todo->date));
         $this->view->title      = $this->lang->todo->common . $this->lang->colon . $this->lang->todo->edit;
         $this->view->position[] = $this->lang->todo->common;
         $this->view->position[] = $this->lang->todo->edit;
         $this->view->times      = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
         $this->view->todo       = $todo;
-        $this->view->users      = $this->loadModel('user')->getPairs('noclosed|nodeleted|noempty');
-
         $this->display();
     }
 
@@ -269,7 +260,6 @@ class todo extends control
             $this->view->time        = date::now();
             $this->view->title       = $title;
             $this->view->position    = $position;
-            $this->view->users       = $this->loadModel('user')->getPairs('noclosed|nodeleted|noempty');
 
             $this->display();
         }
@@ -367,7 +357,7 @@ class todo extends control
         }
 
         $this->view->todo    = $this->todo->getById($todoID);
-        $this->view->members = $this->loadModel('user')->getPairs('noclosed|noempty|nodeleted');
+        $this->view->members = $this->loadModel('user')->getPairs('noclosed');
         $this->view->times   = date::buildTimeList($this->config->todo->times->begin, $this->config->todo->times->end, $this->config->todo->times->delta);
         $this->view->actions = $this->loadModel('action')->getList('todo', $todoID);
         $this->view->users   = $this->user->getPairs('noletter');
@@ -603,7 +593,7 @@ class todo extends control
             {
                 $issues        = $this->loadModel('issue')->getUserIssuePairs($account);
                 $risks         = $this->loadModel('risk')->getUserRiskPairs($account);
-                $opportunities = $this->loadModel('opportunity')->getUserOpportunityPairs($account);
+                $opportunities = $this->loadModel('opprotunity')->getUserOpportunityPairs($account);
             }
             $testTasks = $this->loadModel('testtask')->getUserTesttaskPairs($account);
             if(isset($this->config->qcVersion)) $reviews = $this->loadModel('review')->getUserReviewPairs($account, 0, 'wait');

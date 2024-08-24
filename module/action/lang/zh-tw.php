@@ -23,7 +23,6 @@ $lang->action->actor         = '操作者';
 $lang->action->action        = '動作';
 $lang->action->actionID      = '記錄ID';
 $lang->action->date          = '日期';
-$lang->action->dateAB        = '操作日期';
 $lang->action->extra         = '附加值';
 $lang->action->system        = '系統';
 $lang->action->url           = '網址';
@@ -43,7 +42,6 @@ $lang->action->hideAll     = '全部隱藏';
 $lang->action->editComment = '修改備註';
 $lang->action->create      = '添加備註';
 $lang->action->comment     = '備註';
-$lang->action->byQuery     = '搜索';
 
 $lang->action->undeleteAction = '還原數據';
 $lang->action->hideOneAction  = '隱藏數據';
@@ -57,11 +55,6 @@ $lang->action->historyEdit        = '歷史記錄編輯不能為空。';
 $lang->action->noDynamic          = '暫時沒有動態。';
 $lang->action->undeletedTips      = '該數據在版本升級過程中未參與數據歸併流程，不支持還原。';
 $lang->action->executionNoProject = '該執行沒有所屬的項目，請先還原項目再還原執行';
-$lang->action->repoNoServer       = '該代碼庫沒有所屬的伺服器，請先還原伺服器再還原代碼庫';
-
-$lang->action->repeatChange     = '系統內已有同名、同代號的%s，恢復後名稱為\"%s\"、代號為\"%s\"。';
-$lang->action->nameRepeatChange = '系統內已有同名的%s，恢復後名稱為\"%s\"。';
-$lang->action->codeRepeatChange = '系統內已有同代號的%s，恢復後代號為\"%s\"。';
 
 $lang->action->history = new stdclass();
 $lang->action->history->action = '關聯日誌';
@@ -82,7 +75,7 @@ $lang->action->dynamic->all        = '所有';
 $lang->action->dynamic->hidden     = '已隱藏';
 $lang->action->dynamic->search     = '搜索';
 
-$lang->action->periods['all']       = '全部';
+$lang->action->periods['all']       = $lang->action->dynamic->all;
 $lang->action->periods['today']     = $lang->action->dynamic->today;
 $lang->action->periods['yesterday'] = $lang->action->dynamic->yesterday;
 $lang->action->periods['thisweek']  = $lang->action->dynamic->thisWeek;
@@ -128,8 +121,6 @@ $lang->action->objectTypes['team']             = '團隊';
 $lang->action->objectTypes['whitelist']        = '白名單';
 $lang->action->objectTypes['pipeline']         = 'GitLab伺服器';
 $lang->action->objectTypes['gitlab']           = 'GitLab伺服器';
-$lang->action->objectTypes['gitea']            = 'Gitea伺服器';
-$lang->action->objectTypes['gogs']             = 'Gogs伺服器';
 $lang->action->objectTypes['jenkins']          = 'Jenkins';
 $lang->action->objectTypes['mr']               = '合併請求';
 $lang->action->objectTypes['gitlabproject']    = 'GitLab項目';
@@ -139,8 +130,6 @@ $lang->action->objectTypes['gitlabbranch']     = 'GitLab分支';
 $lang->action->objectTypes['gitlabbranchpriv'] = 'GitLab保護分支';
 $lang->action->objectTypes['gitlabtag']        = 'GitLab標籤';
 $lang->action->objectTypes['gitlabtagpriv']    = 'GitLab標籤保護';
-$lang->action->objectTypes['giteauser']        = 'Gitea用戶';
-$lang->action->objectTypes['gogsuser']         = 'Gogs用戶';
 $lang->action->objectTypes['kanbanspace']      = '看板空間';
 $lang->action->objectTypes['kanban']           = '看板';
 $lang->action->objectTypes['kanbanregion']     = '看板區域';
@@ -151,7 +140,6 @@ $lang->action->objectTypes['sonarqube']        = 'SonarQube伺服器';
 $lang->action->objectTypes['sonarqubeproject'] = 'SonarQube項目';
 $lang->action->objectTypes['stage']            = '階段';
 $lang->action->objectTypes['patch']            = '補丁';
-$lang->action->objectTypes['repo']             = '代碼庫';
 
 /* 用來描述操作歷史記錄。*/
 $lang->action->desc = new stdclass();
@@ -215,15 +203,7 @@ $lang->action->desc->importedproductplan  = '$date, 由 <strong>$actor</strong> 
 $lang->action->desc->importedrelease      = '$date, 由 <strong>$actor</strong> 從產品發佈 <strong>$extra</strong> 導入。' . "\n";
 $lang->action->desc->importedexecution    = '$date, 由 <strong>$actor</strong> 從項目執行 <strong>$extra</strong> 導入。' . "\n";
 $lang->action->desc->importedbuild        = '$date, 由 <strong>$actor</strong> 從項目版本 <strong>$extra</strong> 導入。' . "\n";
-$lang->action->desc->importedticket       = '$date, 由 <strong>$actor</strong> 從反饋工單 <strong>$extra</strong> 導入。' . "\n";
 $lang->action->desc->fromsonarqube        = '$date, 由 <strong>$actor</strong> 從<strong>SonarQube問題</strong>轉化而來。' . "\n";
-$lang->action->desc->tolib                = '$date, 由 <strong>$actor</strong> 導入。' . "\n";
-$lang->action->desc->updatetolib          = '$date, 由 <strong>$actor</strong> 從' . $lang->testcase->common . '更新。' . "\n";
-$lang->action->desc->adjusttasktowait     = '$date, 系統判斷由於消耗工時調整為0，將任務狀態置為未開始。' . "\n";
-$lang->action->desc->reopen               = '$date, 由 <strong>$actor</strong> 重新打開。' . "\n";
-$lang->action->desc->merged               = '$date, 由 <strong>$actor</strong> 合併。' . "\n";
-$lang->action->desc->submitreview         = '$date, 由 <strong>$actor</strong> 提交評審。' . "\n";
-$lang->action->desc->ganttmove            = '$date, 由 <strong>$actor</strong> 排序。' . "\n";
 
 /* 用來描述和父子任務相關的操作歷史記錄。*/
 $lang->action->desc->createchildren     = '$date, 由 <strong>$actor</strong> 創建子任務 <strong>$extra</strong>。' . "\n";
@@ -246,8 +226,8 @@ $lang->action->desc->linkrelatedcase   = '$date, 由 <strong>$actor</strong> 關
 $lang->action->desc->unlinkrelatedcase = '$date, 由 <strong>$actor</strong> 移除相關用例 <strong>$extra</strong>。' . "\n";
 
 /* 用來描述計劃關聯和移除需求、bug時的歷史操作記錄。*/
-$lang->action->desc->linkstory   = '$date, 由 <strong>$actor</strong> 關聯需求 <strong>$extra</strong>。' . "\n";
-$lang->action->desc->linkbug     = '$date, 由 <strong>$actor</strong> 關聯BUG <strong>$extra</strong>。' . "\n";
+$lang->action->desc->linkstory   = '$date, 由 <strong>$actor</strong> 關聯需求 <strong>$extra</strong> 到計劃。' . "\n";
+$lang->action->desc->linkbug     = '$date, 由 <strong>$actor</strong> 關聯BUG <strong>$extra</strong> 到計劃。' . "\n";
 $lang->action->desc->unlinkstory = '$date, 由 <strong>$actor</strong> 從計劃移除需求 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->unlinkbug   = '$date, 由 <strong>$actor</strong> 從計劃移除BUG <strong>$extra</strong>。' . "\n";
 
@@ -277,7 +257,6 @@ $lang->action->label->blocked               = '阻塞了';
 $lang->action->label->resolved              = '解決了';
 $lang->action->label->reviewed              = '評審了';
 $lang->action->label->recalled              = '撤銷評審';
-$lang->action->label->recalledchange        = '撤銷變更';
 $lang->action->label->moved                 = '移動了';
 $lang->action->label->confirmed             = "確認了{$lang->SRCommon}";
 $lang->action->label->bugconfirmed          = '確認了';
@@ -285,7 +264,6 @@ $lang->action->label->tostory               = "轉{$lang->SRCommon}";
 $lang->action->label->frombug               = "轉{$lang->SRCommon}";
 $lang->action->label->fromlib               = '從用例庫導入';
 $lang->action->label->totask                = '轉任務';
-$lang->action->label->converttotask         = '轉任務';
 $lang->action->label->svncommited           = '提交代碼';
 $lang->action->label->gitcommited           = '提交代碼';
 $lang->action->label->linked2plan           = "關聯計劃";
@@ -380,7 +358,6 @@ $lang->action->label->importedproductplan   = '導入了';
 $lang->action->label->importedrelease       = '導入了';
 $lang->action->label->importedexecution     = '導入了';
 $lang->action->label->importedbuild         = '導入了';
-$lang->action->label->importedticket        = '導入了';
 $lang->action->label->fromsonarqube         = '由SonarQube問題創建';
 $lang->action->label->bind                  = '綁定了';
 $lang->action->label->unbind                = '取消綁定了';
@@ -388,10 +365,6 @@ $lang->action->label->linkstory             = '關聯需求到';
 $lang->action->label->linkbug               = '關聯BUG到';
 $lang->action->label->unlinkstory           = '移除需求從';
 $lang->action->label->unlinkbug             = '移除BUG從';
-$lang->action->label->tolib                 = '導入了';
-$lang->action->label->updatetolib           = '更新了';
-$lang->action->label->ganttmove             = '排序了';
-$lang->action->label->submitreview          = '提交了評審';
 
 /* 動態信息按照對象分組 */
 $lang->action->dynamicAction                    = new stdclass();
@@ -549,7 +522,6 @@ $lang->action->dynamicAction->task['undeleted']           = '還原任務';
 $lang->action->dynamicAction->task['hidden']              = '隱藏任務';
 $lang->action->dynamicAction->task['svncommited']         = 'SVN提交';
 $lang->action->dynamicAction->task['gitcommited']         = 'GIT提交';
-$lang->action->dynamicAction->task['ganttmove']           = '排序';
 
 $lang->action->dynamicAction->build['opened']  = '創建版本';
 $lang->action->dynamicAction->build['edited']  = '編輯版本';
@@ -584,16 +556,14 @@ $lang->action->dynamicAction->testtask['activated'] = '激活測試單';
 $lang->action->dynamicAction->testtask['closed']    = '完成測試單';
 $lang->action->dynamicAction->testtask['blocked']   = '阻塞測試單';
 
-$lang->action->dynamicAction->case['opened']      = '創建用例';
-$lang->action->dynamicAction->case['edited']      = '編輯用例';
-$lang->action->dynamicAction->case['deleted']     = '刪除用例';
-$lang->action->dynamicAction->case['undeleted']   = '還原用例';
-$lang->action->dynamicAction->case['hidden']      = '隱藏用例';
-$lang->action->dynamicAction->case['reviewed']    = '評審用例';
-$lang->action->dynamicAction->case['confirmed']   = "確認{$lang->SRCommon}變更";
-$lang->action->dynamicAction->case['fromlib']     = '從用例庫導入';
-$lang->action->dynamicAction->case['tolib']       = '導入';
-$lang->action->dynamicAction->case['updatetolib'] = '更新';
+$lang->action->dynamicAction->case['opened']    = '創建用例';
+$lang->action->dynamicAction->case['edited']    = '編輯用例';
+$lang->action->dynamicAction->case['deleted']   = '刪除用例';
+$lang->action->dynamicAction->case['undeleted'] = '還原用例';
+$lang->action->dynamicAction->case['hidden']    = '隱藏用例';
+$lang->action->dynamicAction->case['reviewed']  = '評審用例';
+$lang->action->dynamicAction->case['confirmed'] = "確認{$lang->SRCommon}變更";
+$lang->action->dynamicAction->case['fromlib']   = '從用例庫導入';
 
 $lang->action->dynamicAction->testreport['opened']    = '創建測試報告';
 $lang->action->dynamicAction->testreport['edited']    = '編輯測試報告';
@@ -646,32 +616,15 @@ $lang->action->dynamicAction->job['executed']  = '執行構建任務';
 $lang->action->dynamicAction->job['deleted']   = '刪除構建任務';
 $lang->action->dynamicAction->job['undeleted'] = '還原構建任務';
 
-$lang->action->dynamicAction->sonarqube['created']   = '創建SonarQube伺服器';
-$lang->action->dynamicAction->sonarqube['edited']    = '設置SonarQube伺服器';
-$lang->action->dynamicAction->sonarqube['deleted']   = '刪除SonarQube伺服器';
-$lang->action->dynamicAction->sonarqube['undeleted'] = '還原SonarQube伺服器';
+$lang->action->dynamicAction->sonarqube['created'] = '創建SonarQube伺服器';
+$lang->action->dynamicAction->sonarqube['edited']  = '設置SonarQube伺服器';
+$lang->action->dynamicAction->sonarqube['deleted'] = '刪除SonarQube伺服器';
 
 $lang->action->dynamicAction->sonarqubeproject['deleted'] = '刪除SonarQube項目';
 
-$lang->action->dynamicAction->gitlab['created']   = '創建GitLab伺服器';
-$lang->action->dynamicAction->gitlab['edited']    = '編輯GitLab伺服器';
-$lang->action->dynamicAction->gitlab['deleted']   = '刪除GitLab伺服器';
-$lang->action->dynamicAction->gitlab['undeleted'] = '還原GitLab伺服器';
-
-$lang->action->dynamicAction->gitea['created']   = '創建Gitea伺服器';
-$lang->action->dynamicAction->gitea['edited']    = '編輯Gitea伺服器';
-$lang->action->dynamicAction->gitea['deleted']   = '刪除Gitea伺服器';
-$lang->action->dynamicAction->gitea['undeleted'] = '還原Gitea伺服器';
-
-$lang->action->dynamicAction->gogs['created']   = '創建Gogs伺服器';
-$lang->action->dynamicAction->gogs['edited']    = '編輯Gogs伺服器';
-$lang->action->dynamicAction->gogs['deleted']   = '刪除Gogs伺服器';
-$lang->action->dynamicAction->gogs['undeleted'] = '還原Gogs伺服器';
-
-$lang->action->dynamicAction->repo['created']   = '創建代碼庫';
-$lang->action->dynamicAction->repo['edited']    = '編輯代碼庫';
-$lang->action->dynamicAction->repo['deleted']   = '刪除代碼庫';
-$lang->action->dynamicAction->repo['undeleted'] = '還原代碼庫';
+$lang->action->dynamicAction->gitlab['created'] = '創建GitLab伺服器';
+$lang->action->dynamicAction->gitlab['edited']  = '設置GitLab伺服器';
+$lang->action->dynamicAction->gitlab['deleted'] = '刪除GitLab伺服器';
 
 /* 用來生成相應對象的連結。*/
 $lang->action->label->product     = $lang->productCommon . '|product|view|productID=%s';
@@ -718,8 +671,6 @@ $lang->action->label->kanbancard   = '看板卡片|kanban|view|kanbanID=%s';
 $lang->action->label->mr           = '合併請求|mr|view|id=%s';
 $lang->action->label->gitlab       = 'GitLab伺服器|gitlab|view|id=%s';
 $lang->action->label->stage        = '瀑布模型的階段|stage|browse|';
-$lang->action->label->module       = '模組|tree|browse|productid=%s&type=story&currentModuleID=0&branch=all';
-$lang->action->label->ticket       = '工單|ticket|view|id=%s';
 
 /* Object type. */
 $lang->action->search = new stdclass();

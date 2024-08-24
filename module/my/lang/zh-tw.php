@@ -43,9 +43,6 @@ $lang->my->testcase        = '我的用例';
 $lang->my->storyConcept    = $config->URAndSR ? '預設需求概念組合' : '預設需求概念';
 $lang->my->pri             = '優先順序';
 $lang->my->alert           = '後續您可以點擊右上方的頭像，選擇“個性化設置”修改信息。';
-$lang->my->assignedToMe    = '指派給我';
-$lang->my->byQuery         = '搜索';
-$lang->my->contactList     = '聯繫人列表';
 
 $lang->my->indexAction      = '地盤儀表盤';
 $lang->my->calendarAction   = '我的日程';
@@ -61,7 +58,7 @@ $lang->my->projects     = '所屬項目';
 $lang->my->executions   = "所屬{$lang->executionCommon}";
 
 $lang->my->executionMenu = new stdclass();
-$lang->my->executionMenu->undone = '未完成';
+$lang->my->executionMenu->undone = '未結束';
 $lang->my->executionMenu->done   = '已完成';
 
 $lang->my->taskMenu = new stdclass();

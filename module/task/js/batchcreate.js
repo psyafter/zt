@@ -2,22 +2,9 @@
 $(function()
 {
     removeDitto();
-    $name = $('th.c-name');
-    if($name.width() < 165) $name.width(165);
+    if($('th.c-name').width() < 200) $('th.c-name').width(200);
     if(taskConsumed > 0) bootbox.alert(addChildTask);
     $('#customField').on('click', function(){$('#tableBody .chosen-with-drop').removeClass('chosen-with-drop chosen-container-active')});
-
-    $('#customField').click(function()
-    {
-        hiddenRequireFields();
-    });
-
-    /* Implement a custom form without feeling refresh. */
-    $('#formSettingForm .btn-primary').click(function()
-    {
-        saveCustomFields('batchCreateFields', 9, $name, 165);
-        return false;
-    });
 });
 
 $(document).on('change', "[name^='estStarted'], [name^='deadline']", function()
@@ -128,8 +115,7 @@ function setStoryRelated(num)
  */
 function setPreview(num)
 {
-    var storyID   = $('#story' + num).val();
-    var storyLink = '#';
+    var storyID = $('#story' + num).val();
     if(storyID != 0  && storyID != 'ditto')
     {
         var link = createLink('story', 'ajaxGetInfo', 'storyID=' + storyID);
@@ -149,16 +135,13 @@ function setPreview(num)
             var concat = storyLink.indexOf('?') >= 0 ? '&' : '?';
             storyLink  = storyLink + concat + 'onlybody=yes';
         }
-
         $('#preview' + num).removeAttr('disabled');
-        $('#preview' + num).modalTrigger({type:'iframe'});
-        $('#preview' + num).css('pointer-events', 'auto');
         $('#preview' + num).attr('href', storyLink);
     }
     else
     {
+        storyLink  = '#';
         $('#preview' + num).attr('disabled', true);
-        $('#preview' + num).css('pointer-events', 'none');
         $('#preview' + num).attr('href', storyLink);
     }
 }

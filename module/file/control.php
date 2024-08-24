@@ -127,13 +127,6 @@ class file extends control
             return print("<html><head><meta charset='utf-8'></head><body>{$this->lang->file->fileNotFound}</body></html>");
         }
 
-        if(!$this->file->checkPriv($file))
-        {
-            echo(js::alert($this->lang->file->accessDenied));
-            if(isonlybody()) return print(js::reload('parent.parent'));
-            return print(js::locate(helper::createLink('my', 'index')));
-        }
-
         /* Judge the mode, down or open. */
         $mode      = 'down';
         $fileTypes = 'txt|jpg|jpeg|gif|png|bmp|xml|html';
@@ -287,14 +280,9 @@ class file extends control
             $file = $this->file->getById($fileID);
             $this->dao->delete()->from(TABLE_FILE)->where('id')->eq($fileID)->exec();
             $this->loadModel('action')->create($file->objectType, $file->objectID, 'deletedFile', '', $extra=$file->title);
-
             /* Fix Bug #1518. */
             $fileRecord = $this->dao->select('id')->from(TABLE_FILE)->where('pathname')->eq($file->pathname)->fetch();
             if(empty($fileRecord)) @unlink($file->realPath);
-
-            /* Update test case version for test case synchronization. */
-            if($file->objectType == 'testcase') $this->file->updateTestcaseVersion($file);
-
             return print(js::reload('parent'));
         }
     }
@@ -305,20 +293,14 @@ class file extends control
      * @param  array  $files
      * @param  string $fieldset
      * @param  object $object
-     * @param  string $method
-     * @param  bool   $showDelete
      * @access public
      * @return void
      */
-    public function printFiles($files, $fieldset, $object = null, $method = 'view', $showDelete = true)
+    public function printFiles($files, $fieldset, $object = null)
     {
-        $this->view->files      = $files;
-        $this->view->fieldset   = $fieldset;
-        $this->view->object     = $object;
-        $this->view->method     = $method;
-        $this->view->showDelete = $showDelete;
-
-        if(strpos('view,edit', $method) !== false and $this->app->clientDevice != 'mobile') return $this->display('file', 'viewfiles');
+        $this->view->files    = $files;
+        $this->view->fieldset = $fieldset;
+        $this->view->object   = $object;
         $this->display();
     }
 
@@ -346,33 +328,14 @@ class file extends control
 
             $extension = "." . $file->extension;
             $actionID  = $this->loadModel('action')->create($file->objectType, $file->objectID, 'editfile', '', $fileName);
-            $changes[] = array('field' => 'fileName', 'old' => $file->title, 'new' => $fileName);
+            $changes[] = array('field' => 'fileName', 'old' => $file->title . $extension, 'new' => $fileName);
             $this->action->logHistory($actionID, $changes);
 
-            /* Update test case version for test case synchronization. */
-            if($file->objectType == 'testcase' and $file->title != $fileName) $this->file->updateTestcaseVersion($file);
-            $newFile = $this->file->getByID($fileID);
-
-            if($this->app->clientDevice == 'mobile') return print(js::reload('parent.parent'));
-            echo json_encode($newFile);
+            return print(js::reload('parent.parent'));
         }
 
-        if($this->app->clientDevice == 'mobile')
-        {
-            $file = $this->file->getById($fileID);
-            if(strrpos($file->title, '.') !== false)
-            {
-                /* Fix the file name exe.exe */
-                $title     = explode('.', $file->title);
-                $extension = end($title);
-                if($file->extension == 'txt' && $extension != $file->extension) $file->extension = $extension;
-                array_pop($title);
-                $file->title = join('.', $title);
-            }
-
-            $this->view->file = $file;
-            $this->display();
-         }
+        $this->view->file = $this->file->getById($fileID);
+        $this->display();
     }
 
     /**

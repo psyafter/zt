@@ -244,9 +244,7 @@ class customModel extends model
             {
                 $link = explode('|', $link);
                 list($label, $module, $method) = $link;
-
-                $params  = empty($link[3]) ? '' :  $link[3];
-                $hasPriv = commonModel::hasPriv($module, $method, null, $params);
+                $hasPriv = commonModel::hasPriv($module, $method);
 
                 /* Fix bug #20464 */
                 if(isset($vars)) unset($vars);
@@ -703,10 +701,8 @@ class customModel extends model
             }
         }
 
-        $vision = $this->config->vision;
-
         $this->loadModel('setting');
-        $this->setting->setItems("system.{$moduleName}@$vision", $requiredFields);
+        $this->setting->setItems("system.{$moduleName}", $requiredFields);
     }
 
     /**

@@ -11,8 +11,10 @@ function addItem(obj)
     $(obj).closest('tr').after('<tr class="addedItem">' + item  + '</tr>');
     var newItem = $('#names' + itemIndex).closest('tr');
     newItem.find('.form-date').datepicker();
-    $("#output" + itemIndex).picker();
-    $("#PM" + itemIndex).picker();
+    $("#output" + itemIndex).chosen();
+    $("#PM_i__chosen").remove();
+    $("#PM" + itemIndex).chosen();
+    $("#output_i__chosen").remove();
     itemIndex ++;
 }
 

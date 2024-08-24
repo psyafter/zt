@@ -51,10 +51,9 @@ $lang->execution->canceledBy          = 'CanceledBy';
 $lang->execution->canceledDate        = 'CanceledDate';
 $lang->execution->begin               = 'Planned Begin';
 $lang->execution->end                 = 'Planned End';
-$lang->execution->dateRange           = 'Plan Duration';
+$lang->execution->dateRange           = 'Duration';
 $lang->execution->realBeganAB         = 'Actual Begin';
 $lang->execution->realEndAB           = 'Actual End';
-$lang->execution->teamCount           = 'number of people';
 $lang->execution->realBegan           = 'Actual Begin';
 $lang->execution->realEnd             = 'Actual End';
 $lang->execution->to                  = 'To';
@@ -95,7 +94,6 @@ $lang->execution->viewBug             = 'Bugs';
 $lang->execution->noProduct           = "No {$lang->productCommon} yet.";
 $lang->execution->createStory         = "Create Story";
 $lang->execution->storyTitle          = "Story Name";
-$lang->execution->storyView           = "Story Detail";
 $lang->execution->all                 = "All {$lang->executionCommon}s";
 $lang->execution->undone              = 'Unfinished ';
 $lang->execution->unclosed            = 'Unclosed';
@@ -119,7 +117,6 @@ $lang->execution->relatedMember       = 'Team';
 $lang->execution->watermark           = 'Exported by ZenTao';
 $lang->execution->burnXUnit           = '(Date)';
 $lang->execution->burnYUnit           = '(Hours)';
-$lang->execution->count               = '(Count)';
 $lang->execution->waitTasks           = 'Waiting Tasks';
 $lang->execution->viewByUser          = 'By User';
 $lang->execution->oneProduct          = "Only one stage can be linked {$lang->productCommon}";
@@ -136,14 +133,11 @@ $lang->execution->sortColumn          = 'Kanban Card Sorting';
 $lang->execution->batchCreateStory    = "Batch create {$lang->SRCommon}";
 $lang->execution->batchCreateTask     = 'Batch create task';
 $lang->execution->kanbanNoLinkProduct = "Kanban not linked {$lang->productCommon}";
-$lang->execution->myTask              = "My Task";
-$lang->execution->list                = 'List';
-$lang->execution->allProject          = 'All';
 
 /* Fields of zt_team. */
 $lang->execution->root     = 'Root';
-$lang->execution->estimate = 'Estimate';
-$lang->execution->consumed = 'Consumed';
+$lang->execution->estimate = 'estimate';
+$lang->execution->consumed = 'consumed';
 $lang->execution->left     = 'Left';
 
 if($this->config->systemMode == 'new')     $lang->execution->copyTeamTip = "copy Project/{$lang->execution->common} team members";
@@ -155,7 +149,6 @@ $lang->execution->putoff   = 'Delay';
 $lang->execution->suspend  = 'Suspend';
 $lang->execution->close    = 'Close';
 $lang->execution->export   = 'Export';
-$lang->execution->next     = "Next";
 
 $lang->execution->endList[7]   = '1 Week';
 $lang->execution->endList[14]  = '2 Weeks';
@@ -169,13 +162,9 @@ $lang->execution->lifeTimeList['short'] = "Short-Term";
 $lang->execution->lifeTimeList['long']  = "Long-Term";
 $lang->execution->lifeTimeList['ops']   = "DevOps";
 
-$lang->execution->cfdTypeList['story'] = "View by {$lang->SRCommon}";
-$lang->execution->cfdTypeList['task']  = "View by task";
-$lang->execution->cfdTypeList['bug']   = "View By bug";
-
+$lang->team = new stdclass();
 $lang->team->account    = 'User';
 $lang->team->role       = 'Role';
-$lang->team->roleAB     = 'My Role';
 $lang->team->join       = 'Joined';
 $lang->team->hours      = 'Hours/day';
 $lang->team->days       = 'Day';
@@ -216,82 +205,78 @@ $lang->execution->burnByList['estimate']   = "View by plan hours";
 $lang->execution->burnByList['storyPoint'] = 'View by story point';
 
 /* Method list. */
-$lang->execution->index               = "{$lang->executionCommon} Home";
-$lang->execution->task                = 'Task List';
-$lang->execution->groupTask           = 'Group View';
-$lang->execution->story               = 'Story List';
-$lang->execution->qa                  = 'QA';
-$lang->execution->bug                 = 'Bug List';
-$lang->execution->testcase            = 'Testcase List';
-$lang->execution->dynamic             = 'Dynamics';
-$lang->execution->latestDynamic       = 'Dynamics';
-$lang->execution->build               = 'Build List';
-$lang->execution->testtask            = 'Request';
-$lang->execution->burn                = 'Burndown';
-$lang->execution->computeBurn         = 'Update';
-$lang->execution->CFD                 = 'Cumulative Flow diagrams';
-$lang->execution->computeCFD          = 'Compute Cumulative Flow diagrams';
-$lang->execution->burnData            = 'Burndown Data';
-$lang->execution->fixFirst            = 'Edit 1st-Day Estimates';
-$lang->execution->team                = 'Members';
-$lang->execution->doc                 = 'Document';
-$lang->execution->doclib              = 'Docoment Library';
-$lang->execution->manageProducts      = 'Linked ' . $lang->productCommon . 's';
-$lang->execution->linkStory           = 'Link Stories';
-$lang->execution->linkStoryByPlan     = 'Link Stories By Plan';
-$lang->execution->linkPlan            = 'Linked Plan';
-$lang->execution->unlinkStoryTasks    = 'Unlink';
-$lang->execution->linkedProducts      = "Linked {$lang->productCommon}s";
-$lang->execution->unlinkedProducts    = "Unlinked {$lang->productCommon}s";
-$lang->execution->view                = "Execution Detail";
-$lang->execution->startAction         = "Start Execution";
-$lang->execution->activateAction      = "Activate Execution";
-$lang->execution->delayAction         = "Delay Execution";
-$lang->execution->suspendAction       = "Suspend Execution";
-$lang->execution->closeAction         = "Close Execution";
-$lang->execution->testtaskAction      = "Execution Request";
-$lang->execution->teamAction          = "Execution Members";
-$lang->execution->kanbanAction        = "Execution Kanban";
-$lang->execution->printKanbanAction   = "Print Kanban";
-$lang->execution->treeAction          = "Execution Tree View";
-$lang->execution->exportAction        = "Export Execution";
-$lang->execution->computeBurnAction   = "Update Burndown";
-$lang->execution->create              = "Create {$lang->executionCommon}";
-$lang->execution->createExec          = "Create {$lang->execution->common}";
-$lang->execution->createAction        = "Create {$lang->execution->common}";
-$lang->execution->copyExec            = "Copy {$lang->execution->common}";
-$lang->execution->copy                = "Copy {$lang->executionCommon}";
-$lang->execution->delete              = "Delete {$lang->executionCommon}";
-$lang->execution->deleteAB            = "Delete Execution";
-$lang->execution->browse              = "{$lang->executionCommon} List";
-$lang->execution->edit                = "Edit {$lang->executionCommon}";
-$lang->execution->editAction          = "Edit Execution";
-$lang->execution->batchEdit           = "Edit";
-$lang->execution->batchEditAction     = "Batch Edit";
-$lang->execution->manageMembers       = 'Manage Team';
-$lang->execution->unlinkMember        = 'Remove Member';
-$lang->execution->unlinkStory         = 'Unlink Story';
-$lang->execution->unlinkStoryAB       = 'Unlink';
-$lang->execution->batchUnlinkStory    = 'Batch Unlink Stories';
-$lang->execution->importTask          = 'Transfer Task';
-$lang->execution->importPlanStories   = 'Link Stories By Plan';
-$lang->execution->importBug           = 'Import Bug';
-$lang->execution->tree                = 'Tree';
-$lang->execution->treeTask            = 'Show Task Only';
-$lang->execution->treeStory           = 'Show Story Only';
-$lang->execution->treeOnlyTask        = 'Show Task Only';
-$lang->execution->treeOnlyStory       = 'Show Story Only';
-$lang->execution->storyKanban         = 'Story Kanban';
-$lang->execution->storySort           = 'Rank Story';
-$lang->execution->importPlanStory     = $lang->executionCommon . ' is created!\nDo you want to import stories that have been linked to the plan? The stories in the draft will be automatically filtered out when imported.';
-$lang->execution->importEditPlanStory = $lang->executionCommon . ' is edited!\nDo you want to import stories that have been linked to the plan? The stories in the draft will be automatically filtered out when imported.';
-$lang->execution->needLinkProducts    = 'The execution has not been linked with any product, and the related functions cannot be used. Please link the product first and try again.';
-$lang->execution->iteration           = 'Iterations';
-$lang->execution->iterationInfo       = '%s Iterations';
-$lang->execution->viewAll             = 'View All';
-$lang->execution->testreport          = 'Test Report';
-$lang->execution->taskKanban          = 'Task Kanban';
-$lang->execution->RDKanban            = 'Research & Development Kanban';
+$lang->execution->index             = "{$lang->executionCommon} Home";
+$lang->execution->task              = 'Task List';
+$lang->execution->groupTask         = 'Group View';
+$lang->execution->story             = 'Story List';
+$lang->execution->qa                = 'QA';
+$lang->execution->bug               = 'Bug List';
+$lang->execution->testcase          = 'Testcase List';
+$lang->execution->dynamic           = 'Dynamics';
+$lang->execution->latestDynamic     = 'Dynamics';
+$lang->execution->build             = 'Build List';
+$lang->execution->testtask          = 'Request';
+$lang->execution->burn              = 'Burndown';
+$lang->execution->computeBurn       = 'Update';
+$lang->execution->burnData          = 'Burndown Data';
+$lang->execution->fixFirst          = 'Edit 1st-Day Estimates';
+$lang->execution->team              = 'Members';
+$lang->execution->doc               = 'Document';
+$lang->execution->doclib            = 'Docoment Library';
+$lang->execution->manageProducts    = 'Linked ' . $lang->productCommon . 's';
+$lang->execution->linkStory         = 'Link Stories';
+$lang->execution->linkStoryByPlan   = 'Link Stories By Plan';
+$lang->execution->linkPlan          = 'Linked Plan';
+$lang->execution->unlinkStoryTasks  = 'Unlink';
+$lang->execution->linkedProducts    = "Linked {$lang->productCommon}s";
+$lang->execution->unlinkedProducts  = "Unlinked {$lang->productCommon}s";
+$lang->execution->view              = "Execution Detail";
+$lang->execution->startAction       = "Start Execution";
+$lang->execution->activateAction    = "Activate Execution";
+$lang->execution->delayAction       = "Delay Execution";
+$lang->execution->suspendAction     = "Suspend Execution";
+$lang->execution->closeAction       = "Close Execution";
+$lang->execution->testtaskAction    = "Execution Request";
+$lang->execution->teamAction        = "Execution Members";
+$lang->execution->kanbanAction      = "Execution Kanban";
+$lang->execution->printKanbanAction = "Print Kanban";
+$lang->execution->treeAction        = "Execution Tree View";
+$lang->execution->exportAction      = "Export Execution";
+$lang->execution->computeBurnAction = "Update Burndown";
+$lang->execution->create            = "Create {$lang->executionCommon}";
+$lang->execution->createExec        = "Create {$lang->execution->common}";
+$lang->execution->createAction      = "Create {$lang->execution->common}";
+$lang->execution->copyExec          = "Copy {$lang->execution->common}";
+$lang->execution->copy              = "Copy {$lang->executionCommon}";
+$lang->execution->delete            = "Delete {$lang->executionCommon}";
+$lang->execution->deleteAB          = "Delete Execution";
+$lang->execution->browse            = "{$lang->executionCommon} List";
+$lang->execution->edit              = "Edit {$lang->executionCommon}";
+$lang->execution->editAction        = "Edit Execution";
+$lang->execution->batchEdit         = "Edit";
+$lang->execution->batchEditAction   = "Batch Edit";
+$lang->execution->manageMembers     = 'Manage Team';
+$lang->execution->unlinkMember      = 'Remove Member';
+$lang->execution->unlinkStory       = 'Unlink Story';
+$lang->execution->unlinkStoryAB     = 'Unlink';
+$lang->execution->batchUnlinkStory  = 'Batch Unlink Stories';
+$lang->execution->importTask        = 'Transfer Task';
+$lang->execution->importPlanStories = 'Link Stories By Plan';
+$lang->execution->importBug         = 'Import Bug';
+$lang->execution->tree              = 'Tree';
+$lang->execution->treeTask          = 'Show Task Only';
+$lang->execution->treeStory         = 'Show Story Only';
+$lang->execution->treeOnlyTask      = 'Show Task Only';
+$lang->execution->treeOnlyStory     = 'Show Story Only';
+$lang->execution->storyKanban       = 'Story Kanban';
+$lang->execution->storySort         = 'Rank Story';
+$lang->execution->importPlanStory   = $lang->executionCommon . ' is created!\nDo you want to import stories that have been linked to the plan?';
+$lang->execution->iteration         = 'Iterations';
+$lang->execution->iterationInfo     = '%s Iterations';
+$lang->execution->viewAll           = 'View All';
+$lang->execution->testreport        = 'Test Report';
+$lang->execution->taskKanban        = 'Task Kanban';
+$lang->execution->RDKanban          = 'Research & Development Kanban';
 
 /* Group browsing. */
 $lang->execution->allTasks     = 'All';
@@ -342,9 +327,6 @@ $lang->execution->stats                = 'Available: <strong>%s</strong>(h). Est
 $lang->execution->taskSummary          = "Total tasks on this page:<strong>%s</strong>. Waiting: <strong>%s</strong>. Doing: <strong>%s</strong>.  &nbsp;&nbsp;&nbsp;  Estimates: <strong>%s</strong>(h). Cost: <strong>%s</strong>(h). Left: <strong>%s</strong>(h).";
 $lang->execution->pageSummary          = "Total tasks: <strong>%total%</strong>. Waiting: <strong>%wait%</strong>. Doing: <strong>%doing%</strong>.    Estimates: <strong>%estimate%</strong>(h). Cost: <strong>%consumed%</strong>(h). Left: <strong>%left%</strong>(h).";
 $lang->execution->checkedSummary       = "Selected: <strong>%total%</strong>. Waiting: <strong>%wait%</strong>. Doing: <strong>%doing%</strong>.    Estimates: <strong>%estimate%</strong>(h). Cost: <strong>%consumed%</strong>(h). Left: <strong>%left%</strong>(h).";
-$lang->execution->executionSummary     = "Total {$lang->executionCommon}: <strong>%s</strong>.";
-$lang->execution->pageExecSummary      = "Total {$lang->executionCommon}: <strong>%total%</strong>. Waiting: <strong>%wait%</strong>. Doing: <strong>%doing%</strong>.";
-$lang->execution->checkedExecSummary   = "Selected: <strong>%total%</strong>. Waiting: <strong>%wait%</strong>. Doing: <strong>%doing%</strong>.";
 $lang->execution->memberHoursAB        = "%s has <strong>%s</ strong> hours.";
 $lang->execution->memberHours          = '<div class="table-col"><div class="clearfix segments"><div class="segment"><div class="segment-title">%s Available Hours</div><div class="segment-value">%s</div></div></div></div>';
 $lang->execution->countSummary         = '<div class="table-col"><div class="clearfix segments"><div class="segment"><div class="segment-title">Tasks</div><div class="segment-value">%s</div></div><div class="segment"><div class="segment-title">Doing</div><div class="segment-value"><span class="label label-dot label-primary"></span> %s</div></div><div class="segment"><div class="segment-title">Waiting</div><div class="segment-value"><span class="label label-dot label-primary muted"></span> %s</div></div></div></div>';
@@ -391,10 +373,8 @@ $lang->execution->errorSameProducts           = "{$lang->executionCommon} cannot
 $lang->execution->errorSameBranches           = "{$lang->executionCommon} cannot be linked to the same branch twice";
 $lang->execution->errorBegin                  = "The start time of {$lang->executionCommon} cannot be less than the start time of the project %s.";
 $lang->execution->errorEnd                    = "The end time of {$lang->executionCommon} cannot be greater than the end time %s of the project.";
-$lang->execution->errorLetterProject          = "The start time of {$lang->executionCommon} cannot be less than the start time of the project %s.";
-$lang->execution->errorGreaterProject         = "The end time of {$lang->executionCommon} cannot be greater than the end time %s of the project.";
-$lang->execution->errorCommonBegin            = 'The start date of ' . $lang->executionCommon . ' should be ≥ the start date of project : %s.';
-$lang->execution->errorCommonEnd              = 'The deadline of ' . $lang->executionCommon .  ' should be ≤ the deadline of project : %s.';
+$lang->execution->errorLetterProject          = "The start time of stage cannot be less than the start time of the project %s.";
+$lang->execution->errorGreaterProject         = "The end time of stage cannot be greater than the end time %s of the project.";
 $lang->execution->accessDenied                = "Your access to {$lang->executionCommon} is denied!";
 $lang->execution->tips                        = 'Note';
 $lang->execution->afterInfo                   = "{$lang->executionCommon} is created. Next you can ";
@@ -415,11 +395,7 @@ $lang->execution->unresolvedBug               = "[%s] unresolved bugs. ";
 $lang->execution->projectNotEmpty             = 'Project cannot be empty.';
 $lang->execution->confirmStoryToTask          = $lang->SRCommon . '%s are converted to tasks in the current. Do you want to convert them anyways?';
 $lang->execution->ge                          = "『%s』should be >= actual begin『%s』.";
-$lang->execution->storyDragError              = "The {$lang->SRCommon} is not active. Please activate and drag again.";
-$lang->execution->countTip                    = ' (%s member)';
-$lang->execution->pleaseInput                 = "Enter";
-$lang->execution->week                        = 'week';
-$lang->execution->checkedExecutions           = "Seleted %s {$lang->executionCommon}.";
+$lang->execution->storyDragError              = "The {$lang->SRCommon} is still a draft or has been changed, please drag it after the review";
 
 /* Statistics. */
 $lang->execution->charts = new stdclass();
@@ -437,22 +413,6 @@ $lang->execution->charts->burn->graph->reference    = 'Ideal';
 $lang->execution->charts->burn->graph->actuality    = 'Actual';
 $lang->execution->charts->burn->graph->delay        = 'Delay';
 
-$lang->execution->charts->cfd = new stdclass();
-$lang->execution->charts->cfd->cfdTip        = "<p>
-1. The CFD（Cumulative Flow Diagram）reflects the trend of accumulated workload at each stage over time.<br>
-2. The horizontal axis represents the date, and the vertical axis represents the number of work items.<br>
-3. To learn about the team's delivery, you can calculate the WIP quantity, delivery rate and average lead time through the CFD. <p>";
-$lang->execution->charts->cfd->cycleTime     = 'Average cycle time';
-$lang->execution->charts->cfd->cycleTimeTip  = 'Average cycle time of each card from development start to completion';
-$lang->execution->charts->cfd->throughput    = 'Throughput Rate';
-$lang->execution->charts->cfd->throughputTip = 'Throughput Rate = WIP / Average cycle time';
-
-$lang->execution->charts->cfd->begin          = 'Begin';
-$lang->execution->charts->cfd->end            = 'End';
-$lang->execution->charts->cfd->errorBegin     = 'The start time cannot be greater than the end time.';
-$lang->execution->charts->cfd->errorDateRange = 'The Cumulative Flow Diagram（CFD） only provides data display within 3 months.';
-$lang->execution->charts->cfd->dateRangeTip   = 'CFD only shows the data within 3 months';
-
 $lang->execution->placeholder = new stdclass();
 $lang->execution->placeholder->code      = "Abbreviation of {$lang->executionCommon} name";
 $lang->execution->placeholder->totalLeft = "Hours estimated on the first day of the {$lang->executionCommon}.";
@@ -469,9 +429,8 @@ $lang->execution->orderList['stage_desc'] = "Story Phase Descending";
 
 $lang->execution->kanban        = "Kanban";
 $lang->execution->kanbanSetting = "Settings";
-$lang->execution->setKanban     = "Set Kanban";
 $lang->execution->resetKanban   = "Reset";
-$lang->execution->printKanban   = "Print Kanban";
+$lang->execution->printKanban   = "Print";
 $lang->execution->fullScreen    = "Full Screen";
 $lang->execution->bugList       = "Bugs";
 
@@ -520,11 +479,6 @@ $lang->execution->featureBar['all']['doing']     = $lang->execution->statusList[
 $lang->execution->featureBar['all']['suspended'] = $lang->execution->statusList['suspended'];
 $lang->execution->featureBar['all']['closed']    = $lang->execution->statusList['closed'];
 
-$lang->execution->featureBar['bug']['all']        = 'All';
-$lang->execution->featureBar['bug']['unresolved'] = 'Active';
-
-$lang->execution->featureBar['build']['all'] = 'Build List';
-
 $lang->execution->myExecutions = 'Mine';
 $lang->execution->doingProject = 'Ongoing Projects';
 
@@ -540,19 +494,10 @@ $lang->execution->treeLevel['task']  = 'Stories&Tasks';
 $lang->execution->treeLevel['story'] = 'Only Stories';
 
 $lang->execution->action = new stdclass();
-$lang->execution->action->opened               = '$date, created by <strong>$actor</strong>. $extra' . "\n";
-$lang->execution->action->managed              = '$date, managed by <strong>$actor</strong>. $extra' . "\n";
-$lang->execution->action->edited               = '$date, edited by <strong>$actor</strong>. $extra' . "\n";
-$lang->execution->action->extra                = 'Linked products is %s.';
-$lang->execution->action->startbychildactivate = '$date, activating the sub stage sets the execution status as Ongoing.' . "\n";
-$lang->execution->action->waitbychilddelete    = '$date, deleting the sub stage sets the execution status as waitting.' . "\n";
-$lang->execution->action->closebychilddelete   = '$date, deleting the sub stage sets the execution status as closing.' . "\n";
-$lang->execution->action->closebychildclose    = '$date, closing the sub stage sets the execution status as closing.' . "\n";
-
-$lang->execution->startbychildactivate = 'activated';
-$lang->execution->waitbychilddelete    = 'stop';
-$lang->execution->closebychilddelete   = 'closed';
-$lang->execution->closebychildclose    = 'closed';
+$lang->execution->action->opened  = '$date, created by <strong>$actor</strong>. $extra' . "\n";
+$lang->execution->action->managed = '$date, managed by <strong>$actor</strong>. $extra' . "\n";
+$lang->execution->action->edited  = '$date, edited by <strong>$actor</strong>. $extra' . "\n";
+$lang->execution->action->extra   = 'Linked products is %s.';
 
 $lang->execution->statusColorList = array();
 $lang->execution->statusColorList['wait']      = '#0991FF';
@@ -561,37 +506,11 @@ $lang->execution->statusColorList['suspended'] = '#fdc137';
 $lang->execution->statusColorList['closed']    = '#838A9D';
 
 if(!isset($lang->execution->gantt)) $lang->execution->gantt = new stdclass();
-$lang->execution->gantt->progressColor[0] = '#B7B7B7';
-$lang->execution->gantt->progressColor[1] = '#FF8287';
-$lang->execution->gantt->progressColor[2] = '#FFC73A';
-$lang->execution->gantt->progressColor[3] = '#6BD5F5';
-$lang->execution->gantt->progressColor[4] = '#9DE88A';
-$lang->execution->gantt->progressColor[5] = '#9BA8FF';
-
-$lang->execution->gantt->color[0] = '#E7E7E7';
-$lang->execution->gantt->color[1] = '#FFDADB';
-$lang->execution->gantt->color[2] = '#FCECC1';
-$lang->execution->gantt->color[3] = '#D3F3FD';
-$lang->execution->gantt->color[4] = '#DFF5D9';
-$lang->execution->gantt->color[5] = '#EBDCF9';
-
-$lang->execution->gantt->textColor[0] = '#2D2D2D';
-$lang->execution->gantt->textColor[1] = '#8D0308';
-$lang->execution->gantt->textColor[2] = '#9D4200';
-$lang->execution->gantt->textColor[3] = '#006D8E';
-$lang->execution->gantt->textColor[4] = '#1A8100';
-$lang->execution->gantt->textColor[5] = '#660ABC';
-
-$lang->execution->gantt->stage = new stdclass();
-$lang->execution->gantt->stage->progressColor = '#70B8FE';
-$lang->execution->gantt->stage->color         = '#D2E7FC';
-$lang->execution->gantt->stage->textColor     = '#0050A7';
-
-$lang->execution->gantt->defaultColor         = '#EBDCF9';
-$lang->execution->gantt->defaultProgressColor = '#9BA8FF';
-$lang->execution->gantt->defaultTextColor     = '#660ABC';
-
-$lang->execution->gantt->bar_height = '24';
+$lang->execution->gantt->color[0] = 'bbb';
+$lang->execution->gantt->color[1] = 'ff5d5d';
+$lang->execution->gantt->color[2] = 'ff9800';
+$lang->execution->gantt->color[3] = '16a8f8';
+$lang->execution->gantt->color[4] = '00da88';
 
 $lang->execution->gantt->exportImg  = 'Export as Image';
 $lang->execution->gantt->exportPDF  = 'Export as PDF';

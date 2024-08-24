@@ -23,6 +23,24 @@
             <div><?php echo html::a('index.php', $lang->upgrade->tohome, '', "class='btn btn-primary btn-wide' id='tohome'")?></div>
           </div>
         </div>
+<!--
+        <div class='divider'></div>
+        <div class='col-md-6'>
+          <div class='panel adbox'>
+            <div class='panel-heading'><strong><?php echo $lang->install->promotion?></strong></div>
+            <div class='panel-body row'>
+              <?php foreach($lang->install->product as $product):?>
+              <a class="card ad ad-<?php echo $product;?>" href="<?php echo $lang->install->{$product}->url;?>" target="_blank">
+                <div class="img-wrapper"><img src="<?php echo $defaultTheme . $lang->install->{$product}->logo;?>" /> <?php echo $lang->install->{$product}->name;?></div>
+                <div class="card-reveal">
+                  <div class="card-content"><?php echo $lang->install->{$product}->desc?></div>
+                </div>
+              </a>
+              <?php endforeach;?>
+            </div>
+          </div>
+        </div>
+-->
       </div>
     </div>
   </div>
@@ -31,73 +49,15 @@
 $(function()
 {
     sessionStorage.removeItem('TID');
-    initHideHome();
-    finishedShow();
+    $.get('<?php echo inlink('afterExec', "fromVersion=$fromVersion&processed=yes&skipMoveFile=yes")?>');
 })
+
 <?php
-foreach($needProcess as $processKey => $processType)
-{
-    if($processType == 'notice') continue;
-    echo 'var ' . $processKey . "Finish = false;\n";
-}
-?>
-
-/**
- * Init hide message.
- *
- * @access public
- * @return void
- */
-function initHideHome()
-{
-    var hide = false;
-    <?php
-    foreach($needProcess as $processKey => $processType)
-    {
-        if($processType == 'notice') continue;
-        echo "hide = true;\n";
-        break;
-    }
-    ?>
-    if(hide)
-    {
-        $('a#tohome').closest('.message').hide();
-        $('.result-box').css('height', 'auto').css('position', 'relative').css('margin-top', '0px');
-    }
-}
-
-/**
- * Finished show message.
- *
- * @access public
- * @return void
- */
-function finishedShow()
-{
-    var show = true;
-    <?php
-    foreach($needProcess as $processKey => $processType)
-    {
-        if($processType == 'notice') continue;
-        echo "if({$processKey}Finish == false) show = false;\n";
-    }
-    ?>
-    if(show)
-    {
-        $.get('<?php echo inlink('afterExec', "fromVersion=$fromVersion&processed=yes&skipMoveFile=yes")?>');
-        $('a#tohome').closest('.message').show();
-    }
-}
-
-<?php if(isset($needProcess['changeEngine'])):?>
+foreach($needProcess as $processKey => $value) echo 'var ' . $processKey . "Finish = false;\n";
+if(isset($needProcess['updateFile'])):?>
 $(function()
 {
-    $('.col-md-6:first').append("<div class='alert alert-info'><p><?php echo $lang->upgrade->needChangeEngine;?></p></div>");
-})
-<?php endif;?>
-<?php if(isset($needProcess['updateFile'])):?>
-$(function()
-{
+    $('a#tohome').closest('.message').hide();
     $('.col-md-6:first').append("<div id='resultBox' class='alert alert-info'><p><?php echo $lang->upgrade->updateFile;?></p></div>");
     updateFile('<?php echo inlink('ajaxUpdateFile')?>');
 })
@@ -108,20 +68,22 @@ function updateFile(link)
         if(response == null)
         {
             updateFileFinish = true;
-            finishedShow();
+            $.get('<?php echo inlink('afterExec', "fromVersion=$fromVersion&processed=yes")?>');
+            $('a#tohome').closest('.message').show();
         }
         else if(response.result == 'finished')
         {
             $('#resultBox li span.' + response.type + '-num').html(num + response.count);
             updateFileFinish = true;
-            $('#resultBox').prepend("<li class='text-success'>" + response.message + "</li>");
-            finishedShow();
+            $('#resultBox').append("<li class='text-success'>" + response.message + "</li>");
+            $.get('<?php echo inlink('afterExec', "fromVersion=$fromVersion&processed=yes")?>');
+            $('a#tohome').closest('.message').show();
         }
         else
         {
             if($('#resultBox li span.' + response.type + '-num').size() == 0 || response.type != response.nextType)
             {
-                $('#resultBox').prepend("<li class='text-success'>" + response.message + "</li>");
+                $('#resultBox').append("<li class='text-success'>" + response.message + "</li>");
             }
             var num = parseInt($('#resultBox li span.' + response.type + '-num').html());
             $('#resultBox li span.' + response.type + '-num').html(num + response.count);
@@ -130,11 +92,13 @@ function updateFile(link)
     });
 }
 <?php endif;?>
+</script>
 <?php if(isset($needProcess['search'])):?>
+<script>
 $(function()
 {
     $('.col-md-6:first').append("<div class='alert alert-info'><p><?php echo $lang->upgrade->needBuild4Add;?></p></div>");
 })
-<?php endif;?>
 </script>
+<?php endif;?>
 <?php include '../../common/view/footer.lite.html.php';?>

@@ -76,7 +76,7 @@ class productModel extends model
     public function select($products, $productID, $currentModule, $currentMethod, $extra = '', $branch = '', $module = 0, $moduleType = '', $withBranch = true)
     {
         $isQaModule = (strpos(',project,execution,', ",{$this->app->tab},") !== false and strpos(',bug,testcase,testtask,ajaxselectstory,', ",{$this->app->rawMethod},") !== false and isset($products[0])) ? true : false;
-        $isFeedbackModel = strpos(',feedback,', ",{$this->app->tab},") !== false ? true : false;
+
         if(count($products) <= 2 and isset($products[0]))
         {
             unset($products[0]);
@@ -86,14 +86,13 @@ class productModel extends model
         if(empty($products)) return;
 
         $this->app->loadLang('product');
-        if(!$isQaModule and !$productID and !$isFeedbackModel)
+        if(!$isQaModule and !$productID)
         {
             unset($this->lang->product->menu->settings['subMenu']->branch);
             return;
         }
         $isMobile = $this->app->viewType == 'mhtml';
 
-        $productID = $productID == 'all' ? 0 : $productID;
         setcookie("lastProduct", $productID, $this->config->cookieLife, $this->config->webRoot, '', $this->config->cookieSecure, true);
         if($productID) $currentProduct = $this->getById($productID);
 
@@ -109,21 +108,12 @@ class productModel extends model
             $currentProduct->name = $products[$productID];
             $currentProduct->type = 'normal';
         }
-        if($isFeedbackModel and !$productID)
-        {
-            $currentProduct = new stdclass();
-            $currentProduct->name = isset($products[$productID]) ? $products[$productID] : current($products);
-            $currentProduct->type = 'normal';
-        }
         $this->session->set('currentProductType', $currentProduct->type);
 
         $output = '';
         if(!empty($products))
         {
-            $moduleName = 'product';
-            if($isQaModule) $moduleName = 'bug';
-            if($isFeedbackModel) $moduleName = 'feedback';
-            $dropMenuLink = helper::createLink($moduleName, 'ajaxGetDropMenu', "objectID=$productID&module=$currentModule&method=$currentMethod&extra=$extra");
+            $dropMenuLink = helper::createLink($isQaModule ? 'bug' : 'product', 'ajaxGetDropMenu', "objectID=$productID&module=$currentModule&method=$currentMethod&extra=$extra");
             $output  = "<div class='btn-group angle-btn'><div class='btn-group'><button data-toggle='dropdown' type='button' class='btn btn-limit' id='currentItem' title='{$currentProduct->name}'><span class='text'>{$currentProduct->name}</span> <span class='caret'></span></button><div id='dropMenu' class='dropdown-menu search-list' data-ride='searchList' data-url='$dropMenuLink'>";
             $output .= '<div class="input-control search-box has-icon-left has-icon-right search-example"><input type="search" class="form-control search-input" /><label class="input-control-icon-left search-icon"><i class="icon icon-search"></i></label><a class="input-control-icon-right search-clear-btn"><i class="icon icon-close icon-sm"></i></a></div>';
             $output .= "</div></div>";
@@ -136,7 +126,7 @@ class productModel extends model
                 $this->lang->product->menu->settings['subMenu']->branch = str_replace('@branch@', $this->lang->product->branch, $this->lang->product->menu->settings['subMenu']->branch);
 
                 $branches   = $this->loadModel('branch')->getPairs($productID, 'all');
-                $branchName = $branches[$branch];
+                $branchName = isset($branches[$branch]) ? $branches[$branch] : $branches[0];
                 if(!$isMobile)
                 {
                     $dropMenuLink = helper::createLink('branch', 'ajaxGetDropMenu', "objectID=$productID&branch=$branch&module=$currentModule&method=$currentMethod&extra=$extra");
@@ -280,7 +270,7 @@ class productModel extends model
             ->beginIF(!$this->app->user->admin)->andWhere('t1.id')->in($this->app->user->view->products)->fi()
             ->andWhere('t1.vision')->eq($this->config->vision)->fi()
             ->beginIF($status == 'noclosed')->andWhere('t1.status')->ne('closed')->fi()
-            ->beginIF(!in_array($status, array('all', 'noclosed', 'involved', 'review'), true))->andWhere('t1.status')->in($status)->fi()
+            ->beginIF($status != 'all' and $status != 'noclosed' and $status != 'involved')->andWhere('t1.status')->in($status)->fi()
             ->beginIF($status == 'involved')
             ->andWhere('t1.PO', true)->eq($this->app->user->account)
             ->orWhere('t1.QD')->eq($this->app->user->account)
@@ -288,11 +278,7 @@ class productModel extends model
             ->orWhere('t1.createdBy')->eq($this->app->user->account)
             ->markRight(1)
             ->fi()
-            ->beginIF($status == 'review')
-            ->andWhere("FIND_IN_SET('{$this->app->user->account}', t1.reviewers)")
-            ->andWhere('t1.reviewStatus')->eq('doing')
-            ->fi()
-            ->orderBy('t2.order_asc, t1.line_desc, t1.order_asc')
+            ->orderBy('t1.program_asc,t1.order_asc')
             ->beginIF($limit > 0)->limit($limit)->fi()
             ->fetchAll('id');
     }
@@ -353,35 +339,19 @@ class productModel extends model
 
         if(!empty($append) and is_array($append)) $append = implode(',', $append);
 
-        $views = empty($append) ? $this->app->user->view->products : $this->app->user->view->products . ",$append";
-        if($this->config->systemMode == 'new')
-        {
-            /* Order by program. */
-            return $this->dao->select('t1.*,  IF(INSTR(" closed", t1.status) < 2, 0, 1) AS isClosed')->from(TABLE_PRODUCT)->alias('t1')
-                ->leftJoin(TABLE_PROGRAM)->alias('t2')->on('t1.program = t2.id')
-                ->where(1)
-                ->beginIF(strpos($mode, 'all') === false)->andWhere('t1.deleted')->eq(0)->fi()
-                ->beginIF($programID)->andWhere('t1.program')->eq($programID)->fi()
-                ->beginIF(strpos($mode, 'noclosed') !== false)->andWhere('t1.status')->ne('closed')->fi()
-                ->beginIF(!$this->app->user->admin and $this->config->vision == 'rnd')->andWhere('t1.id')->in($views)->fi()
-                ->andWhere('t1.vision')->eq($this->config->vision)
-                ->orderBy('isClosed, t2.order_asc, t1.line_desc, t1.order_asc')
-                ->fetchPairs('id', 'name');
-        }
-        else
-        {
-            $orderBy = !empty($this->config->product->orderBy) ? $this->config->product->orderBy : 'isClosed';
-            return $this->dao->select('*,  IF(INSTR(" closed", status) < 2, 0, 1) AS isClosed')
-                ->from(TABLE_PRODUCT)
-                ->where(1)
-                ->beginIF(strpos($mode, 'all') === false)->andWhere('deleted')->eq(0)->fi()
-                ->beginIF($programID)->andWhere('program')->eq($programID)->fi()
-                ->beginIF(strpos($mode, 'noclosed') !== false)->andWhere('status')->ne('closed')->fi()
-                ->beginIF(!$this->app->user->admin and $this->config->vision == 'rnd')->andWhere('id')->in($views)->fi()
-                ->andWhere('vision')->eq($this->config->vision)
-                ->orderBy($orderBy)
-                ->fetchPairs('id', 'name');
-        }
+        $views    = empty($append) ? $this->app->user->view->products : $this->app->user->view->products . ",$append";
+        $orderBy  = !empty($this->config->product->orderBy) ? $this->config->product->orderBy : 'isClosed';
+        $products = $this->dao->select('*,  IF(INSTR(" closed", status) < 2, 0, 1) AS isClosed')
+            ->from(TABLE_PRODUCT)
+            ->where(1)
+            ->beginIF(strpos($mode, 'all') === false)->andWhere('deleted')->eq(0)->fi()
+            ->beginIF($programID)->andWhere('program')->eq($programID)->fi()
+            ->beginIF(strpos($mode, 'noclosed') !== false)->andWhere('status')->ne('closed')->fi()
+            ->beginIF(!$this->app->user->admin and $this->config->vision == 'rnd')->andWhere('id')->in($views)->fi()
+            ->andWhere('vision')->eq($this->config->vision)
+            ->orderBy($orderBy)
+            ->fetchPairs('id', 'name');
+        return $products;
     }
 
     /**
@@ -609,7 +579,7 @@ class productModel extends model
         /* Init currentModule and currentMethod for report and story. */
         if($currentModule == 'story')
         {
-            $storyMethods = ",create,batchcreate,batchclose,";
+            $storyMethods = ",track,create,batchcreate,batchclose,zerocase,";
             if(strpos($storyMethods, "," . $currentMethod . ",") === false) $currentModule = 'product';
             if($currentMethod == 'view' or $currentMethod == 'change' or $currentMethod == 'review') $currentMethod = 'browse';
         }
@@ -638,13 +608,12 @@ class productModel extends model
         if($notNormalProduct)
         {
             $isShowBranch = false;
-            if($currentModule == 'product' and $currentMethod == 'track') $isShowBranch = true;
+            if($currentModule == 'story' and $currentMethod == 'track') $isShowBranch = true;
             if($currentModule == 'tree' and $currentMethod == 'browse') $isShowBranch = true;
             if($currentModule == 'product' and strpos($this->config->product->showBranchMethod, $currentMethod) !== false) $isShowBranch = true;
             if($this->app->tab == 'qa' and strpos(',testsuite,testreport,testtask,', ",$currentModule,") === false) $isShowBranch = true;
             if($this->app->tab == 'qa' and $currentModule == 'testtask' and strpos(',create,edit,browseunits,importunitresult,unitcases,', ",$currentMethod,") === false) $isShowBranch = true;
             if($currentModule == 'testcase' and $currentMethod == 'showimport') $isShowBranch = false;
-            if($currentModule == 'release' and strpos(',browse,create,', $currentMethod) !== false) $isShowBranch = true;
             if($isShowBranch)
             {
                 $this->lang->product->branch = sprintf($this->lang->product->branch, $this->lang->product->branchName[$currentProduct->type]);
@@ -684,13 +653,12 @@ class productModel extends model
             ->remove('uid,newLine,lineName,contactListMenu')
             ->get();
 
-        $this->lang->error->unique = $this->lang->error->repeat;
         $product   = $this->loadModel('file')->processImgURL($product, $this->config->product->editor->create['id'], $this->post->uid);
         $programID = isset($product->program) ? $product->program : 0;
         $this->dao->insert(TABLE_PRODUCT)->data($product)->autoCheck()
             ->batchCheck($this->config->product->create->requiredFields, 'notempty')
-            ->checkIF(!empty($product->name), 'name', 'unique', "`program` = $programID and `deleted` = '0'")
-            ->checkIF(!empty($product->code), 'code', 'unique', "`deleted` = '0'")
+            ->checkIF((!empty($product->name) and $this->config->systemMode == 'new'), 'name', 'unique', "`program` = $programID")
+            ->checkIF(!empty($product->code), 'code', 'unique')
             ->checkFlow()
             ->exec();
 
@@ -763,26 +731,44 @@ class productModel extends model
     {
         $productID  = (int)$productID;
         $oldProduct = $this->dao->findById($productID)->from(TABLE_PRODUCT)->fetch();
+        if($oldProduct->bind) $this->config->product->edit->requiredFields = 'name';
 
         $product = fixer::input('post')
             ->add('id', $productID)
             ->callFunc('name', 'trim')
             ->setDefault('line', 0)
-            ->setDefault('whitelist', '')
-            ->setDefault('reviewer', '')
+            ->setIF(!isset($_POST['whitelist']), 'whitelist', '')
             ->join('whitelist', ',')
             ->join('reviewer', ',')
             ->stripTags($this->config->product->editor->edit['id'], $this->config->allowedTags)
             ->remove('uid,changeProjects,contactListMenu')
             ->get();
 
-        $this->lang->error->unique = $this->lang->error->repeat;
+        if($this->config->systemMode == 'new')
+        {
+            if($product->program != $oldProduct->program)
+            {
+                /* Link the projects stories under this product. */
+                $unmodifiableProjects = $this->dao->select('t1.*')->from(TABLE_PROJECTSTORY)->alias('t1')
+                    ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
+                    ->where('t1.product')->eq($productID)
+                    ->andWhere('t2.type')->eq('project')
+                    ->andWhere('t2.deleted')->eq('0')
+                    ->fetchPairs('project', 'product');
+                if(!empty($unmodifiableProjects))
+                {
+                    dao::$errors[] = $this->lang->product->changeProgramError;
+                    return false;
+                }
+            }
+        }
+
         $product   = $this->loadModel('file')->processImgURL($product, $this->config->product->editor->edit['id'], $this->post->uid);
-        $programID = isset($product->program) ? $product->program : 0;
+        $programID = isset($product->program) ? $product->program : '';
         $this->dao->update(TABLE_PRODUCT)->data($product)->autoCheck()
             ->batchCheck($this->config->product->edit->requiredFields, 'notempty')
-            ->checkIF(!empty($product->name), 'name', 'unique', "id != $productID and `program` = $programID and `deleted` = '0'")
-            ->checkIF(!empty($product->code), 'code', 'unique', "id != $productID and `deleted` = '0'")
+            ->checkIF((!empty($product->name) and $this->config->systemMode == 'new'), 'name', 'unique', "id != $productID and `program` = $programID")
+            ->checkIF(!empty($product->code), 'code', 'unique', "id != $productID")
             ->checkFlow()
             ->where('id')->eq($productID)
             ->exec();
@@ -845,7 +831,6 @@ class productModel extends model
 
         $unlinkProducts = array();
         $linkProducts   = array();
-        $this->lang->error->unique = $this->lang->error->repeat;
         foreach($products as $productID => $product)
         {
             $oldProduct = $oldProducts[$productID];
@@ -855,7 +840,7 @@ class productModel extends model
                 ->data($product)
                 ->autoCheck()
                 ->batchCheck($this->config->product->edit->requiredFields , 'notempty')
-                ->checkIF((!empty($product->name) and $this->config->systemMode == 'new'), 'name', 'unique', "id != $productID and `program` = $programID and `deleted` = '0'")
+                ->checkIF((!empty($product->name) and $this->config->systemMode == 'new'), 'name', 'unique', "id != $productID and `program` = $programID")
                 ->checkFlow()
                 ->where('id')->eq($productID)
                 ->exec();
@@ -887,14 +872,11 @@ class productModel extends model
     {
         $oldProduct = $this->getById($productID);
         $now        = helper::now();
-        $product    = fixer::input('post')
+        $product= fixer::input('post')
             ->add('id', $productID)
             ->setDefault('status', 'closed')
-            ->stripTags($this->config->product->editor->close['id'], $this->config->allowedTags)
-            ->remove('comment')
-            ->get();
+            ->remove('comment')->get();
 
-        $product = $this->loadModel('file')->processImgURL($product, $this->config->product->editor->close['id'], $this->post->uid);
         $this->dao->update(TABLE_PRODUCT)->data($product)
             ->autoCheck()
             ->checkFlow()
@@ -912,22 +894,7 @@ class productModel extends model
      */
     public function manageLine()
     {
-        $oldLines = $this->getLines();
-        $data     = fixer::input('post')->get();
-
-        /* When there are products under the line, the program cannot be modified  */
-        if($this->config->systemMode == 'new')
-        {
-            foreach($oldLines as $oldLine)
-            {
-                $oldLineID = 'id' . $oldLine->id;
-                if($data->programs[$oldLineID] != $oldLine->root)
-                {
-                    $product = $this->dao->select('*')->from(TABLE_PRODUCT)->where('line')->eq($oldLine->id)->fetch();
-                    if(!empty($product)) return print(js::error($this->lang->product->changeLineError));
-                }
-            }
-        }
+        $data = fixer::input('post')->get();
 
         $line = new stdClass();
         $line->type   = 'line';
@@ -1027,8 +994,7 @@ class productModel extends model
         if($browseType == 'closedbyme')   $stories = $this->story->getByClosedBy($productID, $branch, $modules, $this->app->user->account, $type, $sort, $pager);
         if($browseType == 'draftstory')   $stories = $this->story->getByStatus($productID, $branch, $modules, 'draft', $type, $sort, $pager);
         if($browseType == 'activestory')  $stories = $this->story->getByStatus($productID, $branch, $modules, 'active', $type, $sort, $pager);
-        if($browseType == 'changingstory') $stories = $this->story->getByStatus($productID, $branch, $modules, 'changing', $type, $sort, $pager);
-        if($browseType == 'reviewingstory') $stories = $this->story->getByStatus($productID, $branch, $modules, 'reviewing', $type, $sort, $pager);
+        if($browseType == 'changedstory') $stories = $this->story->getByStatus($productID, $branch, $modules, 'changed', $type, $sort, $pager);
         if($browseType == 'willclose')    $stories = $this->story->get2BeClosed($productID, $branch, $modules, $type, $sort, $pager);
         if($browseType == 'closedstory')  $stories = $this->story->getByStatus($productID, $branch, $modules, 'closed', $type, $sort, $pager);
         if($browseType == 'assignedbyme') $stories = $this->story->getByAssignedBy($productID, $branch, $modules, $this->app->user->account, $type, $sort, $pager);
@@ -1086,7 +1052,7 @@ class productModel extends model
                 $modules          = array();
                 $branchList       = $this->loadModel('branch')->getPairs($productID, '', $projectID);
                 $branchModuleList = $this->tree->getOptionMenu($productID, 'story', 0, array_keys($branchList));
-                foreach($branchModuleList as $branchID => $branchModules) $modules = array_merge($modules, $branchModules);
+                foreach($branchModuleList as $branchID => $branchModules) $modules[] = $branchModules;
             }
             else
             {
@@ -1165,18 +1131,16 @@ class productModel extends model
      * @param  int    $productID
      * @param  int    $branch
      * @param  int    $appendProject
-     * @param  string $status all|closed|unclosed
      * @access public
      * @return array
      */
-    public function getProjectPairsByProduct($productID, $branch = 0, $appendProject = 0, $status = '')
+    public function getProjectPairsByProduct($productID, $branch = 0, $appendProject = 0)
     {
         $product = $this->getById($productID);
 
         $projects = $this->dao->select('t2.id,t2.name')->from(TABLE_PROJECTPRODUCT)->alias('t1')
             ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
             ->where('t1.product')->eq($productID)
-            ->beginIF($status == 'closed')->andWhere('t2.status')->ne('closed')->fi()
             ->beginIF($this->config->systemMode == 'new')->andWhere('t2.type')->eq('project')->fi()
             ->beginIF($this->config->systemMode == 'classic')->andWhere('t2.type')->eq('sprint')->fi()
             ->beginIF(!$this->app->user->admin and $this->config->systemMode == 'new')->andWhere('t2.id')->in($this->app->user->view->projects)->fi()
@@ -1193,24 +1157,22 @@ class productModel extends model
     /**
      * Get project list by product.
      *
-     * @param  int    $productID
-     * @param  string $browseType
-     * @param  int    $branch
-     * @param  int    $involved
-     * @param  string $orderBy
-     * @param  object $pager
+     * @param  int       $productID
+     * @param  string    $browseType
+     * @param  int       $branch
+     * @param  int       $involved
+     * @param  string    $orderBy
      * @access public
      * @return array
      */
-    public function getProjectListByProduct($productID, $browseType = 'all', $branch = 0, $involved = 0, $orderBy = 'order_desc', $pager = null)
+    public function getProjectListByProduct($productID, $browseType = 'all', $branch = 0, $involved = 0, $orderBy = 'order_desc')
     {
         $projectList = $this->dao->select('t2.*')->from(TABLE_PROJECTPRODUCT)->alias('t1')
             ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
             ->where('t1.product')->eq($productID)
             ->beginIF($this->config->systemMode == 'new')->andWhere('t2.type')->eq('project')->fi()
             ->beginIF($this->config->systemMode == 'classic')->andWhere('t2.type')->eq('sprint')->fi()
-            ->beginIF($browseType == 'undone')->andWhere('t2.status')->in('wait,doing')->fi()
-            ->beginIF(strpos(",all,undone,", ",$browseType,") === false)->andWhere('t2.status')->eq($browseType)->fi()
+            ->beginIF($browseType != 'all')->andWhere('t2.status')->eq($browseType)->fi()
             ->beginIF(!$this->app->user->admin and $this->config->systemMode == 'new')->andWhere('t2.id')->in($this->app->user->view->projects)->fi()
             ->beginIF(!$this->app->user->admin and $this->config->systemMode == 'classic')->andWhere('t2.id')->in($this->app->user->view->sprints)->fi()
             ->beginIF($this->cookie->involved or $involved)
@@ -1221,7 +1183,6 @@ class productModel extends model
             ->beginIF($branch !== '' and $branch !== 'all')->andWhere('t1.branch')->in($branch)->fi()
             ->andWhere('t2.deleted')->eq('0')
             ->orderBy($orderBy)
-            ->page($pager, 't2.id')
             ->fetchAll('id');
 
         /* Determine how to display the name of the program. */
@@ -1243,13 +1204,12 @@ class productModel extends model
      * @param  int       $branch
      * @param  int       $involved
      * @param  string    $orderBy
-     * @param  object    $pager
      * @access public
      * @return array
      */
-    public function getProjectStatsByProduct($productID, $browseType = 'all', $branch = 0, $involved = 0, $orderBy = 'order_desc', $pager = null)
+    public function getProjectStatsByProduct($productID, $browseType = 'all', $branch = 0, $involved = 0, $orderBy = 'order_desc')
     {
-        $projects = $this->getProjectListByProduct($productID, $browseType, $branch, $involved, $orderBy, $pager);
+        $projects = $this->getProjectListByProduct($productID, $browseType, $branch, $involved, $orderBy);
         if(empty($projects)) return array();
 
         $projectKeys = array_keys($projects);
@@ -1293,14 +1253,13 @@ class productModel extends model
         }
 
         /* Compute totalReal and progress. */
-        $progressList = $this->loadModel('project')->getWaterfallProgress(array_keys($hours));
-        foreach($hours as $projectID => $hour)
+        foreach($hours as $hour)
         {
             $hour->totalEstimate = round($hour->totalEstimate, 1) ;
             $hour->totalConsumed = round($hour->totalConsumed, 1);
             $hour->totalLeft     = round($hour->totalLeft, 1);
             $hour->totalReal     = $hour->totalConsumed + $hour->totalLeft;
-            $hour->progress      = $projects[$projectID]->model == 'waterfall' ? $progressList[$projectID] : ($hour->totalReal ? round($hour->totalConsumed / $hour->totalReal, 2) * 100 : 0);
+            $hour->progress      = $hour->totalReal ? round($hour->totalConsumed / $hour->totalReal, 2) * 100 : 0;
         }
 
         /* Get the number of project teams. */
@@ -1345,7 +1304,7 @@ class productModel extends model
     public function getExecutionPairsByProduct($productID, $branch = 0, $orderBy = 'id_asc', $projectID = 0, $mode = '')
     {
         if(empty($productID)) return array();
-        if(empty($projectID) or $this->config->systemMode == 'classic') return $this->getAllExecutionPairsByProduct($productID, $branch, '', $mode);
+        if(empty($projectID) or $this->config->systemMode == 'classic') return $this->getAllExecutionPairsByProduct($productID, $branch);
 
         $project = $this->loadModel('project')->getByID($projectID);
         $orderBy = $project->model == 'waterfall' ? 'begin_asc,id_asc' : 'begin_desc,id_desc';
@@ -1400,14 +1359,13 @@ class productModel extends model
      * @param  int    $productID
      * @param  int    $branch
      * @param  int    $projectID
-     * @param  string $mode stagefilter or empty
      * @access public
      * @return array
      */
-    public function getAllExecutionPairsByProduct($productID, $branch = 0, $projectID = 0, $mode = '')
+    public function getAllExecutionPairsByProduct($productID, $branch = 0, $projectID = 0)
     {
         if(empty($productID)) return array();
-        $executions = $this->dao->select('t2.id,t2.project,t2.name,t2.grade,t2.parent,t2.attribute')->from(TABLE_PROJECTPRODUCT)->alias('t1')
+        $executions = $this->dao->select('t2.id,t2.project,t2.name,t2.grade,t2.parent')->from(TABLE_PROJECTPRODUCT)->alias('t1')
             ->leftJoin(TABLE_PROJECT)->alias('t2')->on('t1.project = t2.id')
             ->where('t1.product')->eq($productID)
             ->andWhere('t2.type')->in('stage,sprint,kanban')
@@ -1440,10 +1398,8 @@ class productModel extends model
                 $executionPairs = $executionPairs + $execution->children;
                 continue;
             }
-            /* Some stage of waterfall not need.*/
-            if(strpos($mode, 'stagefilter') !== false and in_array($execution->attribute, array('request', 'design', 'review'))) continue;
-            if($this->config->systemMode == 'new' and isset($projectPairs[$execution->project])) $executionPairs[$execution->id] = $projectPairs[$execution->project] . '/' . $execution->name;
-            if($this->config->systemMode == 'classic') $executionPairs[$execution->id] = $execution->name;
+           if($this->config->systemMode == 'new' and isset($projectPairs[$execution->project])) $executionPairs[$execution->id] = $projectPairs[$execution->project] . '/' . $execution->name;
+           if($this->config->systemMode == 'classic') $executionPairs[$execution->id] = $execution->name;
         }
 
         return $executionPairs;
@@ -1704,7 +1660,7 @@ class productModel extends model
             $products = $this->dao->select('t1.id as id, t1.*')->from(TABLE_PRODUCT)->alias('t1')
                 ->leftJoin(TABLE_PROGRAM)->alias('t2')->on('t1.program = t2.id')
                 ->where('t1.id')->in($productKeys)
-                ->orderBy('t2.order_asc, t1.line_desc, t1.order_asc')
+                ->orderBy('t2.order_asc, t1.line_desc, t1.order_desc')
                 ->page($pager)
                 ->fetchAll('id');
         }
@@ -1833,15 +1789,11 @@ class productModel extends model
         {
             $programKeys = array(0 => 0);
             foreach($products as $product) $programKeys[] = $product->program;
-            $programs = $this->dao->select('id,name,PM')->from(TABLE_PROGRAM)
+            $programs = $this->dao->select('id,name')->from(TABLE_PROGRAM)
                 ->where('id')->in(array_unique($programKeys))
-                ->fetchAll('id');
+                ->fetchPairs();
 
-            foreach($products as $product)
-            {
-                $product->programName = isset($programs[$product->program]) ? $programs[$product->program]->name : '';
-                $product->programPM   = isset($programs[$product->program]) ? $programs[$product->program]->PM : '';
-            }
+            foreach($products as $product) $product->programName = isset($programs[$product->program]) ? $programs[$product->program] : '';
         }
 
         $stats = array();
@@ -2065,7 +2017,6 @@ class productModel extends model
                 /* Init vars. */
                 /* Program name. */
                 $productStructure[$product->program]['programName'] = $product->programName;
-                $productStructure[$product->program]['programPM']   = $product->programPM;
                 $productStructure[$product->program] = $this->statisticData('program', $productStructure, $product);
             }
         }
@@ -2175,6 +2126,7 @@ class productModel extends model
         $menu .= $this->buildMenu('product', 'edit', $params, $product, $type);
 
         if($type == 'view') $menu .= $this->buildMenu('product', 'delete', $params, $product, $type, 'trash', 'hiddenwin');
+        if($type == 'browse' && common::hasPriv('product', 'updateOrder')) $menu .= "<i class='icon icon-move text-blue'></i>";
 
         return $menu;
     }
@@ -2206,7 +2158,7 @@ class productModel extends model
             {
                 $link = helper::createLink($module, $method, "productID=%s&type=$extra");
             }
-            elseif($module == 'product' && ($method == 'create' or $method == 'showimport'))
+            elseif($module == 'product' && $method == 'create')
             {
                 $link = helper::createLink($module, 'browse', "productID=%s&type=$extra");
             }
@@ -2252,7 +2204,7 @@ class productModel extends model
             {
                 $link = helper::createLink('testsuite', 'browse', "productID=%s");
             }
-            elseif($module == 'testcase' and in_array($method, array('groupCase', 'zeroCase')) and $this->app->tab == 'project')
+            elseif(($module == 'testcase' and $method == 'groupCase') or ($module == 'story' and $method == 'zeroCase') and $this->app->tab == 'project')
             {
                 parse_str($extra, $output);
                 $projectID = isset($output['projectID']) ? $output['projectID'] : 0;
@@ -2295,33 +2247,15 @@ class productModel extends model
         {
             return helper::createLink('design', 'browse', "productID=%s");
         }
-        elseif(strpos(',project,execution,', ",$module,") !== false and $method == 'bug')
-        {
-            $params = explode(',', $extra);
-            return helper::createLink($module, $method, "projectID={$params[0]}&productID=%s" . ($branch ? "&branch=%s" : ''));
-        }
         elseif($module == 'project' and $method == 'testcase')
         {
             $params = explode(',', $extra);
-            return helper::createLink('project', 'testcase', "projectID={$params[0]}&productID=%s&branch=" . ($branch ? "%s" : '0') . "&browseType={$params[1]}");
-        }
-        elseif($module == 'execution' and $method == 'testcase')
-        {
-            $params = explode(',', $extra);
-            return helper::createLink('execution', 'testcase', "executionID={$params[0]}&productID=%s" . ($branch ? "&branch=%s" : ''));
+            return helper::createLink('project', 'testcase', "projectID={$params[0]}&productID=%s&branch=all&browseType={$params[1]}");
         }
         elseif($module == 'project' or $module == 'execution')
         {
             $objectID = $module == 'project' ? 'projectID' : 'executionID';
             return helper::createLink($module, $method, "$objectID=$extra&productID=%s");
-        }
-        elseif($module == 'feedback')
-        {
-            return helper::createLink('feedback', 'admin', "browseType=byProduct&productID=%s");
-        }
-        elseif($module == 'ticket')
-        {
-            return helper::createLink('ticket', 'browse', "browseType=byProduct&productID=%s");
         }
 
         return $link;
@@ -2450,8 +2384,6 @@ class productModel extends model
             $this->lang->product->menu->settings['subMenu']->branch['link'] = str_replace('@branch@', $this->lang->product->branchName[$product->type], $branchLink);
             $this->lang->product->branch = sprintf($this->lang->product->branch, $this->lang->product->branchName[$product->type]);
         }
-
-        if(strpos($extra, 'requirement') !== false) unset($this->lang->product->moreSelects['willclose']);
     }
 
     /**

@@ -18,7 +18,6 @@ $lang->company->browse   = "Liste Utilisateurs";
 $lang->company->dynamic  = "Historique";
 $lang->company->orgView  = 'Vues';
 
-$lang->company->id       = 'ID';
 $lang->company->name     = "Nom de l'entreprise";
 $lang->company->phone    = 'Téléphone';
 $lang->company->fax      = 'Fax';
@@ -28,16 +27,11 @@ $lang->company->website  = 'Site Web';
 $lang->company->backyard = 'Intranet';
 $lang->company->guest    = 'Connexion Invités';
 $lang->company->admins   = 'Administrateur';
-$lang->company->deleted  = 'Deleted';
 
 $lang->company->product   = $lang->productCommon;
 $lang->company->project   = 'Project';
 $lang->company->execution = 'Execution';
 $lang->company->user      = 'Utilisateurs';
-$lang->company->empty     = 'No Dynamic';
 
 $lang->company->guestOptions[0] = 'Refusée';
 $lang->company->guestOptions[1] = 'Autorisée';
-
-$lang->company->order['date_desc'] = 'Descending';
-$lang->company->order['date_asc']  = 'Ascending';

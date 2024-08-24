@@ -14,7 +14,7 @@
 <div class='clearfix' id='mainMenu'>
   <div class='btn-toolbar pull-left'>
     <?php
-      foreach($lang->project->featureBar['browse'] as $label => $labelName)
+      foreach($lang->project->featureBar as $label => $labelName)
       {
           $active = $status == $label ? 'btn-active-text' : '';
           echo html::a($this->createLink('project', 'execution', "status=$label&projectID=$projectID"), '<span class="text">' . $labelName . '</span> ' . ($status == $label ? "<span class='label label-light label-badge'>" . (int)count($kanbanList) . '</span>' : ''), '', "class='btn btn-link $active'");
@@ -30,24 +30,24 @@
   <div class="table-empty-tip">
     <p>
       <span class="text-muted"><?php echo $lang->execution->noExecution;?></span>
-      <?php if(common::hasPriv('execution', 'create') and $allExecutionsNum):?>
+      <?php if(common::hasPriv('execution', 'create')):?>
       <?php echo html::a($this->createLink('execution', 'create', "projectID=$projectID"), "<i class='icon icon-plus'></i> " . $lang->project->createKanban, '', "class='btn btn-info' data-app='project'");?>
       <?php endif;?>
     </p>
   </div>
   <?php else:?>
     <div class='kanban-cards'>
-      <?php
+      <?php 
         $kanbanview = 'kanban';
         if($this->cookie->kanbanview) $kanbanview = $this->cookie->kanbanview;
-
+        
         if(!common::hasPriv('execution', $kanbanview))
         {
-            foreach (explode('|', 'kanban|task|calendar|gantt|tree|grouptask') as $view)
+            foreach (explode('|', 'kanban|task|calendar|gantt|tree|grouptask') as $view) 
             {
                 if(common::hasPriv('execution', $view))
                 {
-                    $kanbanview = $view;
+                    $kanbanview = $view; 
                     break;
                 }
             }
@@ -93,24 +93,24 @@
               </div>
               <div class="kanban-footer">
                 <div class='kanban-members pull-left'>
-                  <?php $teams = isset($memberGroup[$kanban->id]) ? $memberGroup[$kanban->id] : array();?>
+                  <?php $teams = $memberGroup[$kanban->id];?>
                   <?php $count = 0;?>
                   <?php foreach($teams as $member):?>
-                  <?php if($count > 2) break;?>
-                  <?php $count ++;?>
+                  <?php if($count > 2) break;?>   
+                  <?php $count ++;?>       
                   <div title="<?php echo zget($users, $member->account);?>">
                     <?php echo html::smallAvatar(array('avatar' => zget($usersAvatar, $member->account), 'account' => $member->account, 'name' => isset($member->realname) ? $member->realname : '')); ?>
                   </div>
                   <?php endforeach;?>
                   <?php if(count($teams) > 4):?>
-                  <?php echo '<span>… </span>';?>
-                  <?php endif;?>
+                  <?php echo '<span>… </span>';?> 
+                  <?php endif;?> 
                   <?php if(count($teams) > 3):?>
                   <?php $lastMember = end($teams);?>
-                  <div title="<?php echo $lastMember->realname;?>">
-                  <?php echo html::smallAvatar(array('avatar' => $usersAvatar[$lastMember->account], 'account' => $lastMember->account, 'name' => $lastMember->realname), 'avatar-circle avatar-' . key((array)$lastMember)); ?>
-                  </div>
-                  <?php endif;?>
+                  <div title="<?php echo $lastMember->realname;?>"> 
+                  <?php echo html::smallAvatar(array('avatar' => $usersAvatar[$lastMember->account], 'account' => $lastMember->account, 'name' => $lastMember->realname), 'avatar-circle avatar-' . key($lastMember)); ?>     
+                  </div>         
+                  <?php endif;?> 
                 </div>
                 <div class='kanban-members-count pull-left'><?php echo sprintf($lang->project->teamSumCount, count($teams));?></div>
                 <div class='kanban-acl pull-right'>

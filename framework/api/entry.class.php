@@ -18,8 +18,6 @@ class entry extends baseEntry
     {
         parent::__construct();
 
-        if($this->app->action == 'options') return $this->send(204);
-
         if(!isset($this->app->user) or $this->app->user->account == 'guest') $this->sendError(401, 'Unauthorized');
 
         $this->dao = $this->loadModel('common')->dao;
@@ -537,7 +535,7 @@ class baseEntry
 
             /* Format array. */
             $value = array();
-            if(is_array($object->$key) or is_object($object->$key))
+            if(is_array($object->$key))
             {
                 foreach($object->$key as $v) $value[] = $this->cast($v, $type);
             }

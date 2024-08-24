@@ -2,22 +2,18 @@
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
   <?php
-  $menuOrder = $lang->custom->menuOrder;
-  ksort($menuOrder);
-
-  foreach($menuOrder as $order => $object)
+  foreach($lang->custom->object as $object => $name)
   {
-      $name = $lang->custom->object[$object];
-      if(strpos($lang->custom->dividerMenu, $object) !== false) echo "<span class='divider'></span>";
-      if(strpos($lang->custom->separatePage, $object))
-      {
-          common::printLink('custom', $object, "", "<span class='text'>{$lang->custom->$object}</span>", '', "class='btn btn-link' id='{$object}Tab'");
-      }
-      else
-      {
-          common::printLink('custom', 'set', "module=$object&field=" . key($lang->custom->{$object}->fields), "<span class='text'>{$name}</span>", '', "class='btn btn-link' id='{$object}Tab'");
-      }
+      if(strpos('story|todo|block', $object) !== false) echo "<span class='divider'></span>";
+      if(strpos('execution|product|kanban', $object) !== false) common::printLink('custom', $object, "", "<span class='text'>{$lang->custom->$object}</span>", '', "class='btn btn-link' id='{$object}Tab'");
+      if(strpos('execution|product|kanban', $object) === false) common::printLink('custom', 'set', "module=$object&field=" . key($lang->custom->{$object}->fields), "<span class='text'>{$name}</span>", '', "class='btn btn-link' id='{$object}Tab'");
       if($object == 'user') common::printLink('custom', 'required', "", "<span class='text'>{$lang->custom->required}</span>", '', "class='btn btn-link' id='requiredTab'");
+  }
+
+  foreach($lang->custom->system as $sysObject)
+  {
+      if($sysObject == 'required') continue;
+      common::printLink('custom', $sysObject, "", "<span class='text'>{$lang->custom->$sysObject}</span>", '', "class='btn btn-link' id='{$sysObject}Tab'");
   }
 
   if($config->systemMode == 'classic') common::printLink('custom', 'mode', "", "<span class='text'>{$lang->custom->mode}</span>", '', "class='btn btn-link' id='modeTab'");

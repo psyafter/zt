@@ -28,8 +28,6 @@ class caselibModel extends model
         if(!empty($products) and $this->session->product) $this->loadModel('qa')->setMenu($products, $this->session->product);
         if(empty($products)) $this->loadModel('qa')->setMenu(array(0 => ''), 0);
 
-        $this->lang->qa->menu->caselib['subModule'] .= ',testcase';
-
         if($libraries)
         {
             $libName = '';
@@ -145,26 +143,24 @@ class caselibModel extends model
             ->where('product')->eq(0)
             ->andWhere('deleted')->eq(0)
             ->andWhere('type')->eq('library')
-            ->orderBy('order_desc, id_desc')
+            ->orderBy('id_desc')
             ->fetchPairs('id', 'name');
     }
 
     /**
      * Get library list.
      *
-     * @param  string $type
      * @param  string $orderBy
      * @param  object $pager
      * @access public
      * @return array
      */
-    public function getList($type = 'all', $orderBy = 'id_desc', $pager = null)
+    public function getList($orderBy = 'id_desc', $pager = null)
     {
         return $this->dao->select('*')->from(TABLE_TESTSUITE)
             ->where('product')->eq(0)
             ->andWhere('deleted')->eq(0)
             ->andWhere('type')->eq('library')
-            ->beginIF($type == 'review')->andWhere("FIND_IN_SET('{$this->app->user->account}', `reviewers`)")->fi()
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll('id');
@@ -222,14 +218,13 @@ class caselibModel extends model
         $browseType   = ($browseType == 'bymodule' and $this->session->libBrowseType and $this->session->libBrowseType != 'bysearch') ? $this->session->libBrowseType : $browseType;
 
         $cases = array();
-        if($browseType == 'bymodule' or $browseType == 'all' or $browseType == 'wait' or $browseType == 'review')
+        if($browseType == 'bymodule' or $browseType == 'all' or $browseType == 'wait')
         {
             $cases = $this->dao->select('*')->from(TABLE_CASE)
                 ->where('lib')->eq((int)$libID)
                 ->andWhere('product')->eq(0)
                 ->beginIF($moduleIdList)->andWhere('module')->in($moduleIdList)->fi()
                 ->beginIF($browseType == 'wait')->andWhere('status')->eq($browseType)->fi()
-                ->beginIF($browseType == 'review')->andWhere("FIND_IN_SET('{$this->app->user->account}', `reviewers`)")->fi()
                 ->andWhere('deleted')->eq('0')
                 ->orderBy($sort)->page($pager)->fetchAll('id');
         }
@@ -647,7 +642,7 @@ class caselibModel extends model
         $menu   = '';
         $params = "caseID=$case->id";
 
-        if($case->status == 'wait' and ($this->config->testcase->needReview or !empty($this->config->testcase->forceReview)))
+        if($this->config->testcase->needReview || !empty($this->config->testcase->forceReview))
         {
             $menu .= $this->buildMenu('testcase', 'review', $params, $case, 'browse', 'glasses', '', 'iframe');
         }

@@ -9,17 +9,16 @@
  * @version     $Id: zh-tw.php 5080 2013-07-10 00:46:59Z wyd621@gmail.com $
  * @link        https://www.zentao.pm
  */
-$lang->report->index              = '統計首頁';
-$lang->report->list               = '統計報表';
-$lang->report->item               = '條目';
-$lang->report->value              = '值';
-$lang->report->percent            = '百分比';
-$lang->report->undefined          = '未設定';
-$lang->report->query              = '查詢';
-$lang->report->annual             = '年度總結';
-$lang->report->project            = '項目';
-$lang->report->PO                 = 'PO';
-$lang->report->viewEveryoneAnnual = '查看所有人年度總結';
+$lang->report->index      = '統計首頁';
+$lang->report->list       = '統計報表';
+$lang->report->item       = '條目';
+$lang->report->value      = '值';
+$lang->report->percent    = '百分比';
+$lang->report->undefined  = '未設定';
+$lang->report->query      = '查詢';
+$lang->report->annual     = '年度總結';
+$lang->report->project    = '項目';
+$lang->report->PO         = 'PO';
 
 $lang->report->colors[]   = 'AFD8F8';
 $lang->report->colors[]   = 'F6BD0F';

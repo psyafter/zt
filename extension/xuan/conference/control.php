@@ -39,16 +39,15 @@ class conference extends control
 
         $conferenceConfig = $this->conference->getConfiguration();
 
-        $this->view->title            = $this->lang->conference->common;
         $this->view->type             = $type;
         $this->view->backendType      = isset($conferenceConfig->backendtype) ? $conferenceConfig->backendtype : 'owt';
         $this->view->enabled          = isset($conferenceConfig->enabled) && $conferenceConfig->enabled == 'true';
         $this->view->serviceId        = isset($conferenceConfig->serviceid) ? $conferenceConfig->serviceid : '';
         $this->view->serviceKey       = isset($conferenceConfig->servicekey) ? $conferenceConfig->servicekey : '';
         $this->view->serverAddr       = isset($conferenceConfig->serveraddr) ? $conferenceConfig->serveraddr : '';
-        $this->view->apiPort          = isset($conferenceConfig->apiport) ? $conferenceConfig->apiport : '3004';
-        $this->view->mgmtPort         = isset($conferenceConfig->mgmtport) ? $conferenceConfig->mgmtport : '3300';
-        $this->view->rtcPort          = isset($conferenceConfig->rtcport) ? $conferenceConfig->rtcport : '1989';
+        $this->view->apiPort          = isset($conferenceConfig->apiport) ? $conferenceConfig->apiport : '';
+        $this->view->mgmtPort         = isset($conferenceConfig->mgmtport) ? $conferenceConfig->mgmtport : '';
+        $this->view->rtcPort          = isset($conferenceConfig->rtcport) ? $conferenceConfig->rtcport : '';
         $this->view->https            = !isset($conferenceConfig->https) || $conferenceConfig->https == 'true';
         $this->view->resolutionWidth  = isset($conferenceConfig->resolutionwidth) ? $conferenceConfig->resolutionwidth : '';
         $this->view->resolutionHeight = isset($conferenceConfig->resolutionheight) ? $conferenceConfig->resolutionheight : '';

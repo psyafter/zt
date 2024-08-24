@@ -261,7 +261,6 @@ $lang->resource->story->delete             = 'deleteAction';
 $lang->resource->story->view               = 'view';
 $lang->resource->story->change             = 'changeAction';
 $lang->resource->story->review             = 'reviewAction';
-$lang->resource->story->submitReview       = 'submitReview';
 $lang->resource->story->batchReview        = 'batchReview';
 $lang->resource->story->recall             = 'recall';
 $lang->resource->story->assignTo           = 'assignAction';
@@ -290,7 +289,6 @@ $lang->story->methodOrder[25]  = 'delete';
 $lang->story->methodOrder[30]  = 'view';
 $lang->story->methodOrder[35]  = 'change';
 $lang->story->methodOrder[40]  = 'review';
-$lang->story->methodOrder[44]  = 'submitReview';
 $lang->story->methodOrder[45]  = 'batchReview';
 $lang->story->methodOrder[50]  = 'recall';
 $lang->story->methodOrder[55]  = 'close';
@@ -332,8 +330,7 @@ $lang->resource->kanban->sortRegion         = 'sortRegion';
 $lang->resource->kanban->sortGroup          = 'sortGroup';
 $lang->resource->kanban->deleteRegion       = 'deleteRegion';
 $lang->resource->kanban->createLane         = 'createLane';
-$lang->resource->kanban->editLaneName       = 'editLaneName';
-$lang->resource->kanban->editLaneColor      = 'editLaneColor';
+$lang->resource->kanban->setLane            = 'setLane';
 $lang->resource->kanban->sortLane           = 'sortLane';
 $lang->resource->kanban->deleteLane         = 'deleteLane';
 $lang->resource->kanban->createColumn       = 'createColumn';
@@ -553,8 +550,6 @@ $lang->resource->task->recordEstimate     = 'recordEstimateAction';
 $lang->resource->task->editEstimate       = 'editEstimate';
 $lang->resource->task->deleteEstimate     = 'deleteEstimate';
 $lang->resource->task->report             = 'reportChart';
-if($config->edition != 'open') $lang->resource->task->exportTemplate = 'exportTemplate';
-if($config->edition != 'open') $lang->resource->task->import        = 'import';
 
 $lang->task->methodOrder[5]   = 'create';
 $lang->task->methodOrder[10]  = 'batchCreate';
@@ -579,8 +574,6 @@ $lang->task->methodOrder[100] = 'editEstimate';
 $lang->task->methodOrder[105] = 'deleteEstimate';
 $lang->task->methodOrder[110] = 'report';
 $lang->task->methodOrder[115] = 'batchChangeModule';
-$lang->task->methodOrder[120] = 'exportTemplate';
-$lang->task->methodOrder[125] = 'import';
 
 /* Doc. */
 $lang->resource->doc = new stdclass();
@@ -976,7 +969,6 @@ if($config->edition == 'biz' or $config->edition == 'max')
     $lang->resource->feedback->delete     = 'delete';
     $lang->resource->feedback->close      = 'closeAction';
     $lang->resource->feedback->export     = 'exportAction';
-    $lang->resource->feedback->assignTo   = 'assignAction';
 
     if($config->visions == ',lite,') unset($lang->resource->feedback);
 

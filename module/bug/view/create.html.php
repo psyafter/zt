@@ -18,7 +18,7 @@ js::set('holders', $lang->bug->placeholder);
 js::set('page', 'create');
 js::set('createRelease', $lang->release->create);
 js::set('createBuild', $lang->build->create);
-js::set('refresh', $lang->refreshIcon);
+js::set('refresh', $lang->refresh);
 js::set('flow', $config->global->flow);
 js::set('stepsRequired', $stepsRequired);
 js::set('stepsNotEmpty', $lang->bug->stepsNotEmpty);
@@ -28,7 +28,6 @@ js::set('blockID', $blockID);
 js::set('moduleID', $moduleID);
 js::set('tab', $this->app->tab);
 js::set('requiredFields', $config->bug->create->requiredFields);
-js::set('showFields', $showFields);
 if($this->app->tab == 'execution') js::set('objectID', $executionID);
 if($this->app->tab == 'project')   js::set('objectID', $projectID);
 ?>
@@ -70,7 +69,7 @@ if($this->app->tab == 'project')   js::set('objectID', $projectID);
                     echo "<span class='input-group-addon'>";
                     echo html::a($this->createLink('tree', 'browse', "rootID=$productID&view=bug&currentModuleID=0&branch=$branch", '', true), $lang->tree->manage, '', "class='text-primary' data-toggle='modal' data-type='iframe' data-width='95%'");
                     echo '&nbsp; ';
-                    echo html::a("javascript:void(0)", $lang->refreshIcon, '', "class='refresh' title='$lang->refresh' onclick='loadProductModules($productID)'");
+                    echo html::a("javascript:void(0)", $lang->refresh, '', "class='refresh' onclick='loadProductModules($productID)'");
                     echo '</span>';
                 }
                 ?>
@@ -91,20 +90,12 @@ if($this->app->tab == 'project')   js::set('objectID', $projectID);
               <div class='input-group' id='bugTypeInputGroup'>
                 <?php echo html::select('type', $lang->bug->typeList, $type, "class='form-control'");?>
                 <?php if($showOS):?>
-                <div class='table-col'>
-                  <div class='input-group'>
-                    <span class='input-group-addon fix-border'><?php echo $lang->bug->os?></span>
-                    <?php echo html::select('os[]', $lang->bug->osList, $os, "class='form-control chosen' multiple");?>
-                  </div>
-                </div>
+                <span class='input-group-addon fix-border'><?php echo $lang->bug->os?></span>
+                <?php echo html::select('os', $lang->bug->osList, $os, "class='form-control'");?>
                 <?php endif;?>
                 <?php if($showBrowser):?>
-                <div class='table-col'>
-                  <div class='input-group'>
-                    <span class='input-group-addon fix-border'><?php echo $lang->bug->browser?></span>
-                    <?php echo html::select('browser[]', $lang->bug->browserList, $browser, "class='form-control chosen' multiple");?>
-                  </div>
-                </div>
+                <span class='input-group-addon fix-border'><?php echo $lang->bug->browser?></span>
+                <?php echo html::select('browser', $lang->bug->browserList, $browser, "class='form-control'");?>
                 <?php endif;?>
               </div>
             </td>
@@ -160,11 +151,11 @@ if($this->app->tab == 'project')   js::set('objectID', $projectID);
           <?php if($showNoticefeedbackBy):?>
           <tr>
             <th><nobr><?php echo $lang->bug->feedbackBy;?></nobr></th>
-            <td><?php echo html::input('feedbackBy', isset($feedbackBy) ? $feedbackBy : '', "class='form-control'");?></td>
+            <td><?php echo html::input('feedbackBy', '', "class='form-control'");?></td>
             <td id='notifyEmailTd'>
               <div class='input-group'>
                 <span class='input-group-addon'><?php echo $lang->bug->notifyEmail?></span>
-                <span><?php echo html::input('notifyEmail', isset($notifyEmail) ? $notifyEmail : '', "class='form-control'");?></span>
+                <span><?php echo html::input('notifyEmail', '', "class='form-control'");?></span>
               </div>
             </td>
           </tr>
@@ -173,9 +164,9 @@ if($this->app->tab == 'project')   js::set('objectID', $projectID);
             <td>
               <div class='input-group' id='feedback'>
               <span class="input-group-addon"><?php echo $lang->bug->feedbackBy?></span>
-              <?php echo html::input('feedbackBy', $feedbackBy, "class='form-control'");?>
+              <?php echo html::input('feedbackBy', '', "class='form-control'");?>
               <span class="input-group-addon"><?php echo $lang->bug->notifyEmail?></span>
-              <?php echo html::input('notifyEmail', $notifyEmail, "class='form-control'");?>
+              <?php echo html::input('notifyEmail', '', "class='form-control'");?>
               </div>
             </td>
           </tr>
@@ -194,7 +185,7 @@ if($this->app->tab == 'project')   js::set('objectID', $projectID);
                 <div class='table-col' id='osBox'>
                   <div class='input-group'>
                     <span class='input-group-addon fix-border'><?php echo $lang->bug->os?></span>
-                    <?php echo html::select('os[]', $lang->bug->osList, $os, "class='form-control chosen' multiple");?>
+                    <?php echo html::select('os', $lang->bug->osList, $os, "class='form-control chosen'");?>
                   </div>
                 </div>
                 <?php endif;?>
@@ -202,7 +193,7 @@ if($this->app->tab == 'project')   js::set('objectID', $projectID);
                 <div class='table-col'>
                   <div class='input-group'>
                     <span class='input-group-addon fix-border'><?php echo $lang->bug->browser?></span>
-                    <?php echo html::select('browser[]', $lang->bug->browserList, $browser, "class='form-control chosen' multiple");?>
+                    <?php echo html::select('browser', $lang->bug->browserList, $browser, "class='form-control chosen'");?>
                   </div>
                 </div>
                 <?php endif;?>
@@ -321,7 +312,7 @@ if($this->app->tab == 'project')   js::set('objectID', $projectID);
             <td>
               <div class='input-group'>
                 <?php if($showStory):?>
-                <span class='input-group-addon task'><?php echo $lang->bug->task?></span>
+                <span class='input-group-addon'><?php echo $lang->bug->task?></span>
                 <?php endif;?>
                 <?php echo html::select('task', '', $taskID, "class='form-control chosen'") . html::hidden('oldTaskID', $taskID);?>
               </div>
@@ -342,7 +333,7 @@ if($this->app->tab == 'project')   js::set('objectID', $projectID);
             <td>
               <div class='input-group' id='contactListGroup'>
                 <?php
-                echo html::select('mailto[]', $users, str_replace(' ', '', $mailto), "class='form-control picker-select' multiple");
+                echo html::select('mailto[]', $users, str_replace(' ', '', $mailto), "class='form-control chosen' multiple");
                 echo $this->fetch('my', 'buildContactLists');
                 ?>
               </div>

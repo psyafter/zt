@@ -12,27 +12,18 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/tablesorter.html.php';?>
-<?php if(!isonlybody()):?>
 <?php include './featurebar.html.php';?>
-<style>
-#mainContent {width: 60%; margin-left: 20%;}
-.cell .avatar {left: 45% !important;}
-.user-name, .user-role {padding-left: 47% !important;}
-</style>
-<?php endif;?>
-<?php if(!zget($lang->user->roleList, $user->role, '')):?>
-<style>.user-name {line-height: 40px;}</style>
+<?php if(!isonlybody()):?>
+<style>#mainContent{width: 60%; margin-left: 20%;}</style>
 <?php endif;?>
 <div id='mainContent'>
   <div class='cell'>
     <div class='main-header text-center'>
-      <div class="avatar avatar bg-secondary avatar-circle">
-        <?php echo $user->avatar ? html::image($user->avatar) : strtoupper($user->account[0]);?>
-      </div>
-      <div class='user-name'><?php echo $user->realname;?></div>
-      <?php if(zget($lang->user->roleList, $user->role, '')):?>
-      <div class='user-role'><?php echo zget($lang->user->roleList, $user->role, '');?></div>
-      <?php endif;?>
+      <span class="avatar avatar bg-secondary avatar-circle">
+      <?php echo $user->avatar ? html::image($user->avatar) : strtoupper($user->account[0]);?>
+      </span>
+      <span class='user-name'><?php echo $user->realname;?></span>
+      <span class='user-role'><?php echo zget($lang->user->roleList, $user->role, '');?></span>
     </div>
     <div class='row'>
       <table>
@@ -70,9 +61,9 @@
           <td><?php echo zget($lang->user->roleList, $user->role, '');?></td>
         </tr>
         <tr>
-          <th><?php echo $lang->user->joinAB;?></th>
+          <th><?php echo $lang->user->join;?></th>
           <td><?php echo formatTime($user->join);?></td>
-          <th><?php echo $lang->user->priv;?></th>
+          <th><?php echo $lang->group->priv;?></th>
           <td><?php foreach($groups as $group) echo $group->name . ' ';?></td>
         </tr>
       </table>
@@ -93,7 +84,7 @@
         <tr>
           <th><?php echo $lang->user->zipcode;?></th>
           <td><?php echo $user->zipcode;?></td>
-          <th><?php echo $lang->user->addressAB;?></th>
+          <th><?php echo $lang->user->address;?></th>
           <td title='<?php echo $user->address;?>'><?php echo $user->address;?></td>
         </tr>
       </table>

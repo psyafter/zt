@@ -28,7 +28,7 @@ include '../framework/helper.class.php';
 $startTime = getTime();
 
 /* Clear cookies for api requests. */
-if(RUN_MODE == 'api') $_COOKIE = array();
+if(RUN_MODE == 'api') unset($_COOKIE);
 
 /* Run the app. */
 if(RUN_MODE == 'api') $app = router::createApp('xxb', dirname(dirname(__FILE__)));

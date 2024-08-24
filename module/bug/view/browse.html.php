@@ -37,7 +37,6 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
   </div>
   <div class="btn-toolbar pull-left">
     <?php
-    common::sortFeatureMenu();
     $menus = customModel::getFeatureMenu($this->moduleName, $this->methodName);
     foreach($menus as $menuItem)
     {
@@ -71,16 +70,16 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
             {
                 $moreLabel       = $lang->more;
                 $moreLabelActive = '';
-                if(isset($lang->bug->moreSelects[$this->session->bugBrowseType]))
+                if(isset($lang->bug->moreSelects[$browseType]))
                 {
-                    $moreLabel       = "<span class='text'>{$lang->bug->moreSelects[$this->session->bugBrowseType]}</span> <span class='label label-light label-badge'>{$pager->recTotal}</span>";
+                    $moreLabel       = "<span class='text'>{$lang->bug->moreSelects[$browseType]}</span> <span class='label label-light label-badge'>{$pager->recTotal}</span>";
                     $moreLabelActive = 'btn-active-text';
                 }
                 echo "<div class='btn-group'><a href='javascript:;' data-toggle='dropdown' class='btn btn-link {$moreLabelActive}'>{$moreLabel} <span class='caret'></span></a>";
                 echo "<ul class='dropdown-menu'>";
                 foreach($lang->bug->moreSelects as $menuBrowseType => $label)
                 {
-                    $active = $menuBrowseType == $this->session->bugBrowseType ? 'btn-active-text' : '';
+                    $active = $menuBrowseType == $browseType ? 'btn-active-text' : '';
                     echo '<li>' . html::a($this->createLink('bug', 'browse', "productid=$productID&branch=$branch&browseType=$menuBrowseType"), "<span class='text'>{$label}</span>", '', "class='btn btn-link $active'") . '</li>';
                 }
                 echo '</ul></div>';
@@ -111,6 +110,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
       </ul>
     </div>
     <?php if(common::canModify('product', $product)):?>
+    <?php if(!common::checkNotCN()):?>
     <?php
       $createBugLink   = '';
       $batchCreateLink = '';
@@ -150,6 +150,38 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
       </ul>
       <?php endif;?>
     </div>
+    <?php else:?>
+    <div class='btn-group dropdown-hover'>
+      <?php
+      if(commonModel::isTutorialMode())
+      {
+          $wizardParams = helper::safe64Encode("productID=$productID&branch=$branch&extra=moduleID=$moduleID");
+          $link = $this->createLink('tutorial', 'wizard', "module=bug&method=create&params=$wizardParams");
+          echo html::a($link, "<i class='icon icon-plus'></i> {$lang->bug->create} </span><span class='caret'>", '', "class='btn btn-primary btn-bug-create'");
+      }
+      else
+      {
+          $link     = $this->createLink('bug', 'create', "productID=$productID&branch=$branch&extra=moduleID=$moduleID");
+          $disabled = '';
+          if(!common::hasPriv('bug', 'create'))
+          {
+              $link     = '###';
+              $disabled = "disabled";
+          }
+          echo html::a($link, "<i class='icon icon-plus'></i> {$lang->bug->create} </span><span class='caret'>", '', "class='btn btn-primary $disabled'");
+      }
+      ?>
+      <ul class='dropdown-menu'>
+        <?php $disabled = common::hasPriv('bug', 'batchCreate') ? '' : "class='disabled'";?>
+        <li <?php echo $disabled?>>
+        <?php
+          $batchLink = $this->createLink('bug', 'batchCreate', "productID=$productID&branch=$branch&executionID=0&moduleID=$moduleID");
+          echo "<li>" . html::a($batchLink, "<i class='icon icon-plus'></i> " . $lang->bug->batchCreate) . "</li>";
+        ?>
+        </li>
+      </ul>
+    </div>
+    <?php endif;?>
     <?php endif;?>
   </div>
   <?php endif;?>
@@ -160,6 +192,11 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
   <strong>
   <?php echo $this->product->getByID($productID)->name ?>
   </strong>
+  <div class="linkButton" onclick="handleLinkButtonClick()">
+    <span title="<?php echo $lang->viewDetails;?>">
+      <i class="icon icon-import icon-rotate-270"></i>
+    </span>
+  </div>
 </div>
 <?php endif;?>
 <div id="mainContent" class="main-row fade">
@@ -284,7 +321,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
           <div class='btn-group dropup'>
             <?php
             $actionLink = $this->createLink('bug', 'batchEdit', "productID=$productID&branch=$branch");
-            $misc       = $canBatchEdit ? "onclick=\"setFormAction('$actionLink', '', '#bugList')\"" : "disabled='disabled'";
+            $misc       = $canBatchEdit ? "onclick=\"setFormAction('$actionLink')\"" : "disabled='disabled'";
             echo html::commonButton($lang->edit, $misc);
             ?>
             <button type='button' class='btn dropdown-toggle' data-toggle='dropdown'><span class='caret'></span></button>
@@ -292,17 +329,17 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
               <?php
               $class      = $canBatchConfirm ? '' : "class='disabled'";
               $actionLink = $this->createLink('bug', 'batchConfirm');
-              $misc       = $canBatchConfirm ? "onclick=\"setFormAction('$actionLink', 'hiddenwin', '#bugList')\"" : '';
+              $misc       = $canBatchConfirm ? "onclick=\"setFormAction('$actionLink', 'hiddenwin')\"" : '';
               echo "<li $class>" . html::a('javascript:;', $lang->bug->confirmBug, '', $misc) . "</li>";
 
               $class      = $canBatchClose ? '' : "class='disabled'";
               $actionLink = $this->createLink('bug', 'batchClose');
-              $misc       = $canBatchClose ? "onclick=\"setFormAction('$actionLink', 'hiddenwin', '#bugList')\"" : '';
+              $misc       = $canBatchClose ? "onclick=\"setFormAction('$actionLink', 'hiddenwin')\"" : '';
               echo "<li $class>" . html::a('javascript:;', $lang->bug->close, '', $misc) . "</li>";
 
               $class      = $canBatchActivate ? '' : "class='disabled'";
               $actionLink = $this->createLink('bug', 'batchActivate', "productID=$productID&branch=$branch");
-              $misc       = $canBatchActivate ? "onclick=\"setFormAction('$actionLink', '', '#bugList')\"" : '';
+              $misc       = $canBatchActivate ? "onclick=\"setFormAction('$actionLink')\"" : '';
               echo "<li $class>" . html::a('javascript:;', $lang->bug->activate, '', $misc) . "</li>";
 
               $misc = $canBatchResolve ? "id='resolveItem'" : '';
@@ -328,7 +365,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
                           {
                               $actionLink = $this->createLink('bug', 'batchResolve', "resolution=fixed&resolvedBuild=$key");
                               echo "<li class='option' data-key='$key'>";
-                              echo html::a('javascript:;', $build, '', "onclick=\"setFormAction('$actionLink', 'hiddenwin', '#bugList')\"");
+                              echo html::a('javascript:;', $build, '', "onclick=\"setFormAction('$actionLink', 'hiddenwin')\"");
                               echo "</li>";
                           }
                           echo "</ul>";
@@ -337,7 +374,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
                       }
                       else
                       {
-                          echo '<li>' . html::a('javascript:;', $resolution, '', "onclick=\"setFormAction('$actionLink', 'hiddenwin', '#bugList')\"") . '</li>';
+                          echo '<li>' . html::a('javascript:;', $resolution, '', "onclick=\"setFormAction('$actionLink', 'hiddenwin')\"") . '</li>';
                       }
                   }
                   echo '</ul></li>';
@@ -366,14 +403,14 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
                 {
                     $searchKey = $withSearch ? ('data-key="' . zget($branchsPinYin, $branchName, '') . '"') : '';
                     $actionLink = $this->createLink('bug', 'batchChangeBranch', "branchID=$branchID");
-                    echo html::a('#', $branchName, '', "$searchKey onclick=\"setFormAction('$actionLink', 'hiddenwin', '#bugList')\" data-key='$branchID'");
+                    echo html::a('#', $branchName, '', "$searchKey onclick=\"setFormAction('$actionLink', 'hiddenwin')\" data-key='$branchID'");
                 }
                 ?>
               </div>
             </div>
           </div>
           <?php endif;?>
-          <?php if($canBatchChangeModule and ($product->type == 'normal' or $branch !== 'all')):?>
+          <?php if($canBatchChangeModule and $branch !== 'all'):?>
           <div class="btn-group dropup">
             <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->bug->moduleAB;?> <span class="caret"></span></button>
             <?php $withSearch = count($modules) > 6;?>
@@ -394,7 +431,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
                 {
                     $searchKey = $withSearch ? ('data-key="' . zget($modulesPinYin, $module, '') . '"') : '';
                     $actionLink = $this->createLink('bug', 'batchChangeModule', "moduleID=$moduleId");
-                    echo html::a('#', $module, '', "$searchKey onclick=\"setFormAction('$actionLink', 'hiddenwin', '#bugList')\" data-key='$moduleID'");
+                    echo html::a('#', $module, '', "$searchKey onclick=\"setFormAction('$actionLink', 'hiddenwin')\" data-key='$moduleID'");
                 }
                 ?>
               </div>
@@ -403,7 +440,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
           <?php endif;?>
           <?php if($canBatchAssignTo):?>
           <div class="btn-group dropup">
-            <button data-toggle="dropdown" type="button" class="btn" id="mulAssigned"><?php echo $lang->bug->assignedTo;?> <span class="caret"></span></button>
+            <button data-toggle="dropdown" type="button" class="btn"><?php echo $lang->bug->assignedTo;?> <span class="caret"></span></button>
             <?php $withSearch = count($memberPairs) > 6;?>
             <?php if($withSearch):?>
             <div class="dropdown-menu search-list search-box-sink" data-ride="searchList">
@@ -424,7 +461,7 @@ $currentBrowseType = isset($lang->bug->mySelects[$browseType]) && in_array($brow
                 {
                     if(empty($key)) continue;
                     $searchKey = $withSearch ? ('data-key="' . zget($membersPinYin, $value, '') . " @$key\"") : "data-key='@$key'";
-                    echo html::a("javascript:$(\"#assignedTo\").val(\"$key\");setFormAction(\"$actionLink\", \"hiddenwin\", \"#bugList\")", $value, '', $searchKey);
+                    echo html::a("javascript:$(\"#assignedTo\").val(\"$key\");setFormAction(\"$actionLink\", \"hiddenwin\")", $value, '', $searchKey);
                 }
                 ?>
               </div>
@@ -453,8 +490,10 @@ $(function(){$('#bugForm').table();})
 <?php if(isset($config->qa->homepage) and $config->qa->homepage != 'browse' and $config->global->flow == 'full'):?>
 $(function(){$('#modulemenu .nav li:last').after("<li class='right'><a style='font-size:12px' href='javascript:setHomepage(\"qa\", \"browse\")'><i class='icon icon-cog'></i> <?php echo $lang->homepage?></a></li>")});
 <?php endif;?>
-<?php if(count($bugs) <= 2):?>
-$('#bugForm .table-footer .table-actions #assignedTo').closest('.btn-group.dropup').removeClass('dropup').addClass('dropdown');
-<?php endif;?>
+function handleLinkButtonClick()
+{
+  var xxcUrl = "xxc:openInApp/zentao-integrated/" + encodeURIComponent(window.location.href.replace(/.display=card/, '').replace(/\.xhtml/, '.html'));
+  window.open(xxcUrl);
+}
 </script>
 <?php include '../../common/view/footer.html.php';?>

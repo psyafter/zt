@@ -20,7 +20,7 @@ class misc extends control
     public function ping()
     {
         if(mt_rand(0, 1) == 1) $this->loadModel('setting')->setSN();
-        echo "<html><head><meta http-equiv='refresh' content='600' /></head><body></body></html>";
+        echo "<html><head><meta http-equiv=refresh' content='600' /></head><body></body></html>";
     }
 
     /**
@@ -255,11 +255,6 @@ class misc extends control
         {
             $condition   = "owner={$account}&module={$objectType}&section=task&key=unfoldTasks";
             $settingPath = $account . ".{$objectType}.task.unfoldTasks";
-        }
-        elseif($objectType == 'productplan')
-        {
-            $condition   = "owner={$account}&module={$objectType}&section=browse&key=unfoldPlans";
-            $settingPath = $account . ".{$objectType}.browse.unfoldPlans";
         }
         else
         {

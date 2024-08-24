@@ -4,9 +4,4 @@ $('.ajaxCollect').click(function()
     {
         window.location.reload();
     }
-});
-
-$(function()
-{
-    $('ul.pager .pager-item').attr('data-app', appTab);
-});
+})

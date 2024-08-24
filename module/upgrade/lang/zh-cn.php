@@ -48,7 +48,6 @@ $lang->upgrade->fromVersion    = '原来的版本';
 $lang->upgrade->toVersion      = '升级到';
 $lang->upgrade->confirm        = '确认要执行的SQL语句';
 $lang->upgrade->sureExecute    = '确认执行';
-$lang->upgrade->upgradingTips  = '正在升级中，请耐心等待，切勿刷新页面、断电、关机！';
 $lang->upgrade->forbiddenExt   = '以下插件与新版本不兼容，已经自动禁用：';
 $lang->upgrade->updateFile     = '需要更新附件信息。';
 $lang->upgrade->noticeSQL      = '检查到你的数据库跟标准不一致，尝试修复失败。请执行以下SQL语句，再刷新页面检查。';
@@ -130,7 +129,6 @@ $lang->upgrade->mergeByProject     = "独立的{$lang->projectCommon}：可以�
 $lang->upgrade->mergeByMoreLink    = "关联多个{$lang->productCommon}的{$lang->projectCommon}：选择一个或多个{$lang->projectCommon}归并到一个项目集和项目中。";
 $lang->upgrade->mergeRepoTips      = "将选中的版本库归并到所选产品下。";
 $lang->upgrade->needBuild4Add      = '本次升级需要创建索引。请到 [后台->系统->重建索引] 页面，重新创建索引。';
-$lang->upgrade->needChangeEngine   = '本次升级需要更换表引擎， [后台->系统->表引擎] 页面更换引擎。';
 $lang->upgrade->errorEngineInnodb  = '您当前的数据库不支持使用InnoDB数据表引擎，请修改为MyISAM后重试。';
 $lang->upgrade->duplicateProject   = "同一个项目集内项目名称不能重复，请调整重名的项目名称";
 $lang->upgrade->upgradeTips        = "历史删除数据不参与升级，升级后将不支持还原，请知悉";
@@ -157,7 +155,3 @@ $lang->upgrade->createExecutionTip = <<<EOT
 EOT;
 
 include dirname(__FILE__) . '/version.php';
-
-$lang->upgrade->recoveryActions = new stdclass();
-$lang->upgrade->recoveryActions->cancel = '取消';
-$lang->upgrade->recoveryActions->review = '评审';

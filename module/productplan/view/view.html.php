@@ -20,9 +20,6 @@
 <?php js::set('storyPageID', $storyPager->pageID);?>
 <?php js::set('storyRecPerPage', $storyPager->recPerPage);?>
 <?php js::set('storyRecTotal', $storyPager->recTotal);?>
-<?php js::set('storySummary', $summary);?>
-<?php js::set('storyCommon', $lang->SRCommon);?>
-<?php js::set('checkedSummary', str_replace('%storyCommon%', $lang->SRCommon, $lang->product->checkedSummary));?>
 <div id='mainMenu' class='clearfix'>
   <div class='btn-toolbar pull-left'>
     <?php $browseLink = $this->session->productPlanList ? $this->session->productPlanList : inlink('browse', "planID=$plan->product");?>
@@ -48,6 +45,11 @@
   <div class='tabs' id='tabsNav'>
     <?php if($this->app->getViewType() == 'xhtml'):?>
     <div class="plan-title"><?php echo $product->name . ' ' . $plan->title ?></div>
+    <div class="linkButton" onclick="handleLinkButtonClick()">
+      <span title="<?php echo $lang->viewDetails;?>">
+        <i class="icon icon-import icon-rotate-270"></i>
+      </span>
+    </div>
     <div class='tab-btn-container'>
     <?php endif;?>
     <ul class='nav nav-tabs'>
@@ -86,7 +88,7 @@
               $createMisc = common::hasPriv('story', 'create') ? 'btn btn-secondary' : " btn btn-secondary disabled";
               echo html::a($createLink, "<i class='icon icon-plus'></i><span class='text'>" . $lang->story->create . "</span><span class='caret'>", '', "class='$createMisc'");
               ?>
-              <ul class='dropdown-menu pull-right'>
+              <ul class='dropdown-menu'>
                 <?php $disabled = common::hasPriv('story', 'batchCreate') ? '' : "class='disabled'";?>
                 <li <?php echo $disabled?>>
                   <?php
@@ -103,7 +105,7 @@
         <?php if(common::hasPriv('productplan', 'linkStory')):?>
         <div class='linkBox cell hidden'></div>
         <?php endif;?>
-        <form class='main-table table-story' data-ride="" method='post' target='hiddenwin' action="<?php echo inlink('batchUnlinkStory', "planID=$plan->id&orderBy=$orderBy");?>">
+        <form class='main-table table-story' data-ride="<?php echo $this->app->getViewType() == 'xhtml' ? '' : 'table' ?>" method='post' target='hiddenwin' action="<?php echo inlink('batchUnlinkStory', "planID=$plan->id&orderBy=$orderBy");?>">
           <table class='table has-sort-head' id='storyList'>
             <?php
             $canBatchUnlink       = common::hasPriv('productPlan', 'batchUnlinkStory');
@@ -161,7 +163,7 @@
               $viewLink = $this->createLink('story', 'view', "storyID=$story->id");
               $totalEstimate += $story->estimate;
               ?>
-              <tr data-id='<?php echo $story->id;?>' data-estimate='<?php echo $story->estimate?>' <?php if(!empty($story->children)) echo "data-children=" . count($story->children);?> data-cases='<?php echo zget($storyCases, $story->id, 0);?>'>
+              <tr data-id='<?php echo $story->id;?>'>
                 <?php if($this->app->getViewType() == 'xhtml'):?>
                 <td class='c-id text-left'>
                 <?php printf('%03d', $story->id);?>
@@ -192,7 +194,7 @@
                 <td class='text-left nobr' title='<?php echo $story->title?>'>
                   <?php
                   if($story->parent > 0) echo "<span class='label label-badge label-light' title={$lang->story->children}>{$lang->story->childrenAB}</span>";
-                  echo html::a($viewLink , $story->title, '', "style='color: $story->color'");
+                  echo html::a($viewLink , $story->title);
                   ?>
                 </td>
                 <td><?php echo zget($users, $story->openedBy);?></td>
@@ -208,8 +210,8 @@
                   <?php
                   if($canBeChanged and common::hasPriv('productplan', 'unlinkStory'))
                   {
-                      $unlinkURL = $this->createLink('productplan', 'unlinkStory', "story=$story->id&plan=$plan->id");
-                      echo html::a($unlinkURL, '<i class="icon-unlink"></i>', 'hiddenwin', "class='btn' title='{$lang->productplan->unlinkStory}'");
+                      $unlinkURL = $this->createLink('productplan', 'unlinkStory', "story=$story->id&plan=$plan->id&confirm=yes");
+                      echo html::a("javascript:ajaxDelete(\"$unlinkURL\", \"storyList\", confirmUnlinkStory)", '<i class="icon-unlink"></i>', '', "class='btn' title='{$lang->productplan->unlinkStory}'");
                   }
                   ?>
                 </td>
@@ -476,8 +478,8 @@
                   <?php
                   if($canBeChanged and common::hasPriv('productplan', 'unlinkBug'))
                   {
-                      $unlinkURL = $this->createLink('productplan', 'unlinkBug', "bugID=$bug->id&planID=$plan->id");
-                      echo html::a($unlinkURL, '<i class="icon-unlink"></i>', 'hiddenwin', "class='btn' title='{$lang->productplan->unlinkBug}'");
+                      $unlinkURL = $this->createLink('productplan', 'unlinkBug', "bugID=$bug->id&planID=$plan->id&confirm=yes");
+                      echo html::a("javascript:ajaxDelete(\"$unlinkURL\", \"bugList\", confirmUnlinkBug)", '<i class="icon-unlink"></i>', '', "class='btn' title='{$lang->productplan->unlinkBug}'");
                   }
                   ?>
                 </td>
@@ -605,6 +607,12 @@
 <?php js::set('type', $type)?>
 <?php if($this->app->getViewType() == 'xhtml'):?>
 <script>
+function handleLinkButtonClick()
+{
+    var xxcUrl = "xxc:openInApp/zentao-integrated/" + encodeURIComponent(window.location.href.replace(/.display=card/, '').replace(/\.xhtml/, '.html'));
+    window.open(xxcUrl, '_blank');
+}
+
 $(function()
 {
     function handleClientReady()

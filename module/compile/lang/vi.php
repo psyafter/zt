@@ -1,8 +1,7 @@
 <?php
-$lang->compile->common      = 'Compile';
-$lang->compile->browse      = 'Lịch sử';
-$lang->compile->logs        = 'Nhật ký';
-$lang->compile->syncCompile = 'Interface: Sync Compiles.';
+$lang->compile->common = 'Compile';
+$lang->compile->browse = 'Lịch sử';
+$lang->compile->logs   = 'Nhật ký';
 
 $lang->compile->id     = 'ID';
 $lang->compile->name   = 'Tên';

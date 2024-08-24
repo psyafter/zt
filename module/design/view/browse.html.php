@@ -13,8 +13,6 @@
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/sortable.html.php';?>
 <?php js::set('type', strtolower($type));?>
-<?php js::set('projectID', $projectID);?>
-<?php js::set('productID', $productID);?>
 <style>
 .btn-group a i.icon-plus {font-size: 16px;}
 .btn-group a.btn-primary {border-right: 1px solid rgba(255,255,255,0.3);}
@@ -32,12 +30,12 @@
       <?php $vars = "projectID=$projectID&productID=$productID&type=$type&param=$param&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}";?>
         <thead>
           <tr>
-            <th class="text-left w-60px">    <?php common::printOrderLink('id',          $orderBy, $vars, $lang->idAB);?></th>
-            <th class="text-left">           <?php common::printOrderLink('name',        $orderBy, $vars, $lang->design->name);?></th>
+            <th class="text-left w-60px">    <?php common::printOrderLink('id',          $orderBy, $vars, $lang->design->id);?></th>
             <th class="text-left w-100px">   <?php common::printOrderLink('type',        $orderBy, $vars, $lang->design->type);?></th>
-            <th class="c-assignedTo w-120px"><?php common::printOrderLink('assignedTo',  $orderBy, $vars, $lang->design->assignedTo);?></th>
-            <th class="text-left w-120px">   <?php common::printOrderLink('createdBy',   $orderBy, $vars, $lang->design->createdByAB);?></th>
+            <th class="text-left">           <?php common::printOrderLink('name',        $orderBy, $vars, $lang->design->name);?></th>
+            <th class="text-left w-120px">   <?php common::printOrderLink('createdBy',   $orderBy, $vars, $lang->design->createdBy);?></th>
             <th class="text-left w-150px">   <?php common::printOrderLink('createdDate', $orderBy, $vars, $lang->design->createdDate);?></th>
+            <th class="c-assignedTo w-120px"><?php common::printOrderLink('assignedTo',  $orderBy, $vars, $lang->design->assignedTo);?></th>
             <th class="text-center w-100px"> <?php echo $lang->design->actions;?></th>
           </tr>
         </thead>
@@ -45,11 +43,11 @@
           <?php foreach($designs as $design):?>
           <tr>
             <td calss="c-id">         <?php printf('%03d', $design->id);?></td>
-            <td class="c-name" title="<?php echo $design->name;?>"><?php echo common::hasPriv('design', 'view') ? html::a($this->createLink('design', 'view', "id={$design->id}"), $design->name) : $design->name;?></td>
             <td class="c-type">       <?php echo zget($lang->design->typeList, $design->type);?></td>
-            <td class="c-assignedTo"> <?php echo $this->design->printAssignedHtml($design, $users);?></td>
+            <td class="c-name" title="<?php echo $design->name;?>"><?php echo common::hasPriv('design', 'view') ? html::a($this->createLink('design', 'view', "id={$design->id}"), $design->name) : $design->name;?></td>
             <td class="c-createdBy">  <?php echo zget($users, $design->createdBy);?></td>
             <td class="c-createdDate"><?php echo substr($design->createdDate, 0, 11);?></td>
+            <td class="c-assignedTo"> <?php echo $this->design->printAssignedHtml($design, $users);?></td>
             <td class='c-actions text-center'>
               <?php
               $vars = "design={$design->id}";

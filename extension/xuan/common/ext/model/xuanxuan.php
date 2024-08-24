@@ -1,5 +1,5 @@
 <?php
 public static function getLicensePropertyValue($propertyName)
 {
-    return ',,';
+    return false;
 }

@@ -1,7 +1,6 @@
 <?php
 $lang->mr = new stdclass;
 $lang->mr->common       = "合併請求";
-$lang->mr->server       = "伺服器";
 $lang->mr->view         = "概況";
 $lang->mr->create       = "創建{$lang->mr->common}";
 $lang->mr->apiCreate    = "介面：創建{$lang->mr->common}";
@@ -14,7 +13,7 @@ $lang->mr->source       = '源項目分支';
 $lang->mr->target       = '目標項目分支';
 $lang->mr->viewDiff     = '比對代碼';
 $lang->mr->diff         = '比對代碼';
-$lang->mr->viewInGit    = '在應用中查看';
+$lang->mr->viewInGitlab = '在GitLab查看';
 $lang->mr->link         = '關聯需求、Bug、任務';
 $lang->mr->createAction = '%s, 由 <strong>%s</strong> 提交了 <a href="%s">合併請求</a>。';
 
@@ -30,7 +29,6 @@ $lang->mr->mriid       = "MR原始ID";
 $lang->mr->title       = '名稱';
 $lang->mr->status      = '狀態';
 $lang->mr->author      = '創建人';
-$lang->mr->createdDate = '創建時間';
 $lang->mr->assignee    = '指派給';
 $lang->mr->reviewer    = '評審人';
 $lang->mr->mergeStatus = '是否可合併';
@@ -77,7 +75,7 @@ $lang->mr->assignedToMe = '指派給我';
 $lang->mr->createdByMe  = '由我創建';
 
 $lang->mr->statusList = array();
-$lang->mr->statusList['all']    = '全部';
+$lang->mr->statusList['all']    = '所有';
 $lang->mr->statusList['opened'] = '開放中';
 $lang->mr->statusList['merged'] = '已合併';
 $lang->mr->statusList['closed'] = '已關閉';
@@ -118,19 +116,11 @@ $lang->mr->apiErrorMap[1] = "You can't use same project/branch for source and ta
 $lang->mr->apiErrorMap[2] = "/Another open merge request already exists for this source branch: !([0-9]+)/";
 $lang->mr->apiErrorMap[3] = "401 Unauthorized";
 $lang->mr->apiErrorMap[4] = "403 Forbidden";
-$lang->mr->apiErrorMap[5] = "/(pull request already exists for these targets).*/";
-$lang->mr->apiErrorMap[6] = "Invalid PullRequest: There are no changes between the head and the base";
-$lang->mr->apiErrorMap[7] = "/(user doesn't have access to repo).*/";
-$lang->mr->apiErrorMap[8] = "/(git apply).*/";
 
 $lang->mr->errorLang[1] = '源項目分支與目標項目分支不能相同';
 $lang->mr->errorLang[2] = '存在另外一個同樣的合併請求在源項目分支中: ID%u';
 $lang->mr->errorLang[3] = '權限不足';
 $lang->mr->errorLang[4] = '權限不足';
-$lang->mr->errorLang[5] = '存在另外一個同樣的合併請求在源項目分支中';
-$lang->mr->errorLang[6] = '源項目分支與目標項目分支不能相同';
-$lang->mr->errorLang[7] = '您無權合併改版本庫';
-$lang->mr->errorLang[8] = '當前源分支和目標分支無法合併';
 
 $lang->mr->from = "從";
 $lang->mr->to   = "合併到";
@@ -187,7 +177,7 @@ $lang->mr->commandDocument = <<< EOD
     git merge --no-ff "%s"</pre>
   </p>
   <p>
-    第 4 步. 將合併結果推送到Git
+    第 4 步. 將合併結果推送到GitLab
     <pre> git push origin "%s" </pre>
   </p>
 </div>
@@ -201,5 +191,3 @@ $lang->mr->linkedTasks       = '任務';
 $lang->mr->unlinkedTasks     = '未關聯任務';
 $lang->mr->confirmUnlinkTask = "您確認移除該任務嗎？";
 $lang->mr->taskSummary       = "本頁共 <strong>%s</strong> 個任務";
-$lang->mr->notDelbranch      = "源分支為受保護分支時不可刪除";
-$lang->mr->addForApp         = "該伺服器下沒有項目，是否前往添加？";

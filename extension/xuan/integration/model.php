@@ -58,49 +58,29 @@ class integrationModel extends model
     }
 
     /**
-     * Get identifiers for WOPI API on XXD.
+     * Get file identifier for WOPI API on XXD.
      *
      * @param  object $file
      * @param  string $serverName
-     * @param  bool   $enableWrite
-     * @param  string $messageID
      * @param  string $sessionID
-     * @param  string $userDisplayName
      * @param  int    $userID
      * @access public
-     * @return array
+     * @return string
      */
-    public function getOfficeIdentifiers($file, $serverName, $enableWrite = false, $messageID, $sessionID, $userDisplayName = '', $userID = 0)
+    public function getOfficeFileIdentifier($file, $serverName, $sessionID, $userID = 0)
     {
-        $fileName  = "$file->title.$file->extension";
-        $fileTime  = isset($file->addedDate) ? strtotime($file->addedDate) : strtotime($file->createdDate);
-        $fileOwner = $file->createdBy;
+        $user = $this->dao->select('account,realname')->from(TABLE_USER)->where('id')->eq($userID)->fetch();
+        if(!$user) die($this->lang->integration->error->userNotFoundForRequest);
 
-        if($enableWrite && !empty($messageID))
-        {
-            $enableWrite = false;
-            $message = $this->loadModel('im')->messageGetList('', array($messageID));
-            if(!empty($message)) $message = current($message);
-            if($message->contentType == 'file')
-            {
-                $content = json_decode($message->content);
-                if($content->id == $file->id && isset($content->editable) && $content->editable) $enableWrite = true;
-            }
-        }
+        $fileName      = "$file->title.$file->extension";
+        $fileTime      = isset($file->addedDate) ? strtotime($file->addedDate) : strtotime($file->createdDate);
+        $fileSessionID = md5($sessionID.$fileName);
 
-        $fileMode = $enableWrite ? 'rw' : 'ro';
+        $fileIdentifier = array($fileName, $fileTime, $file->id, $serverName, $fileSessionID, $userID);
+        foreach($fileIdentifier as $key => $identifier) $fileIdentifier[$key] = str_replace(array('/', '+'), array('_', '-'), base64_encode($identifier));
+        $fileIdentifier = implode(',', $fileIdentifier);
+        $fileIdentifier = str_replace(array('/', '+'), array('_', '-'), base64_encode($fileIdentifier));
 
-        $fileSession = md5($sessionID.$fileName);
-
-        $fileIdentifier = array($fileName, $fileTime, $file->id, $fileOwner, $serverName, $fileMode);
-        $userIdentifier = array($fileSession, $userDisplayName, $userID);
-
-        $identifiers = array('file' => $fileIdentifier, 'user' => $userIdentifier);
-        return (object)array_map(function($params)
-        {
-            foreach($params as $key => $param) $params[$key] = str_replace(array('/', '+'), array('_', '-'), base64_encode($param));
-            $params = implode(',', $params);
-            return str_replace(array('/', '+'), array('_', '-'), base64_encode($params));
-        }, $identifiers);
+        return $fileIdentifier;
     }
 }

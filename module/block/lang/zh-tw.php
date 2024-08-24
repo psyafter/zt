@@ -39,14 +39,11 @@ $lang->block->lblNum       = '條數';
 $lang->block->lblHtml      = 'HTML內容';
 $lang->block->dynamic      = '最新動態';
 $lang->block->assignToMe   = '待處理';
-$lang->block->wait         = '未開始';
-$lang->block->doing        = '進行中';
 $lang->block->done         = '已完成';
 $lang->block->lblFlowchart = '流程圖';
 $lang->block->welcome      = '歡迎總覽';
 $lang->block->lblTesttask  = '查看測試詳情';
 $lang->block->contribute   = '我的貢獻';
-$lang->block->finish       = '已完成';
 
 $lang->block->leftToday           = '今天剩餘工作總計';
 $lang->block->myTask              = '我的任務';
@@ -80,7 +77,6 @@ $lang->block->month               = '月';
 $lang->block->selectProduct       = '選擇產品';
 $lang->block->of                  = '的';
 $lang->block->remain              = '剩餘工時';
-$lang->block->allStories          = '總需求';
 
 $lang->block->createBlock        = '添加區塊';
 $lang->block->editBlock          = '編輯區塊';
@@ -94,8 +90,8 @@ $lang->block->remove             = '移除';
 $lang->block->refresh            = '刷新';
 $lang->block->nbsp               = '';
 $lang->block->hidden             = '隱藏';
-$lang->block->dynamicInfo        = "<span class='timeline-tag'>%s</span> <span class='timeline-text'>%s<em class='label-action'>%s</em>%s<a href='%s' title='%s'>%s</a></span>";
-$lang->block->noLinkDynamic      = "<span class='timeline-tag'>%s</span> <span class='timeline-text' title='%s'>%s<em class='label-action'>%s</em>%s<span class='label-name'>%s</span></span>";
+$lang->block->dynamicInfo        = "<span class='timeline-tag'>%s</span> <span class='timeline-text'>%s <em>%s</em> %s <a href='%s' title='%s'>%s</a></span>";
+$lang->block->noLinkDynamic      = "<span class='timeline-tag'>%s</span> <span class='timeline-text' title='%s'>%s <em>%s</em> %s %s</span>";
 $lang->block->cannotPlaceInLeft  = '此區塊無法放置在左側。';
 $lang->block->cannotPlaceInRight = '此區塊無法放置在右側。';
 
@@ -357,8 +353,6 @@ $lang->block->availableBlocks->testtask    = '測試版本列表';
 $lang->block->availableBlocks->risk        = '風險';
 $lang->block->availableBlocks->issue       = '問題';
 $lang->block->availableBlocks->meeting     = '會議';
-$lang->block->availableBlocks->feedback    = '反饋';
-$lang->block->availableBlocks->ticket      = '工單';
 
 if($config->systemMode == 'new') $lang->block->moduleList['project'] = '項目';
 $lang->block->moduleList['product']   = $lang->productCommon;
@@ -471,15 +465,13 @@ $lang->block->orderByList->story['status_desc'] = '狀態倒序';
 $lang->block->orderByList->story['stage_asc']   = '階段正序';
 $lang->block->orderByList->story['stage_desc']  = '階段倒序';
 
-$lang->block->todoCount     = '待辦數';
-$lang->block->taskCount     = '任務數';
-$lang->block->bugCount      = 'Bug數';
-$lang->block->riskCount     = '風險數';
-$lang->block->issueCount    = '問題數';
-$lang->block->storyCount    = '需求數';
-$lang->block->meetingCount  = '會議數';
-$lang->block->feedbackCount = '反饋數';
-$lang->block->ticketCount   = '工單數';
+$lang->block->todoCount    = '待辦數';
+$lang->block->taskCount    = '任務數';
+$lang->block->bugCount     = 'Bug數';
+$lang->block->riskCount    = '風險數';
+$lang->block->issueCount   = '問題數';
+$lang->block->storyCount   = '需求數';
+$lang->block->meetingCount = '會議數';
 
 $lang->block->typeList = new stdclass();
 

@@ -3,15 +3,14 @@ global $config;
 
 /* Method List。*/
 $lang->my->index           = 'Home';
-$lang->my->data            = 'My Data';
 $lang->my->todo            = 'My Todos';
 $lang->my->calendar        = 'Schedule';
 $lang->my->work            = 'Work';
 $lang->my->contribute      = 'Contribute';
 $lang->my->task            = 'My Tasks';
 $lang->my->bug             = 'My Bugs';
-$lang->my->myTestTask      = 'My Builds';
-$lang->my->myTestCase      = 'My Cases';
+$lang->my->testTask        = 'My Builds';
+$lang->my->testCase        = 'My Cases';
 $lang->my->story           = 'My Stories';
 $lang->my->doc             = "My Docs";
 $lang->my->createProgram   = 'Create Program';
@@ -41,18 +40,6 @@ $lang->my->requirement     = "My {$lang->URCommon}";
 $lang->my->testtask        = 'My Test Task';
 $lang->my->testcase        = 'My Case';
 $lang->my->storyConcept    = 'Story Concept';
-$lang->my->pri             = 'Priority';
-$lang->my->alert           = 'You can click on your profile at the top right and select "Preference" to modify your information. ';
-$lang->my->assignedToMe    = 'AssignedToMe';
-$lang->my->byQuery         = 'Search';
-$lang->my->contactList     = 'Contact List';
-
-$lang->my->indexAction      = 'My Index';
-$lang->my->calendarAction   = 'My Calendar';
-$lang->my->workAction       = 'My Work';
-$lang->my->contributeAction = 'My Contribute';
-$lang->my->profileAction    = 'Profile';
-$lang->my->dynamicAction    = 'Dynamic';
 
 $lang->my->myExecutions = "My Stage/Sprint/Iteration";
 $lang->my->name         = 'Name';
@@ -69,7 +56,6 @@ $lang->my->taskMenu->assignedToMe = 'AssignedToMe';
 $lang->my->taskMenu->openedByMe   = 'CreatedByMe';
 $lang->my->taskMenu->finishedByMe = 'FinishedByMe';
 $lang->my->taskMenu->closedByMe   = 'ClosedByMe';
-$lang->my->taskMenu->canceledByMe = 'CancelledByMe';
 $lang->my->taskMenu->assignedByMe = 'AssignedByMe';
 
 $lang->my->storyMenu = new stdclass();
@@ -78,7 +64,6 @@ $lang->my->storyMenu->reviewByMe   = 'ReviewByMe';
 $lang->my->storyMenu->openedByMe   = 'CreatedByMe';
 $lang->my->storyMenu->reviewedByMe = 'ReviewedByMe';
 $lang->my->storyMenu->closedByMe   = 'ClosedByMe';
-$lang->my->storyMenu->assignedByMe = 'AssignedByMe';
 
 $lang->my->projectMenu = new stdclass();
 $lang->my->projectMenu->doing      = 'Doing';
@@ -96,7 +81,7 @@ $lang->my->programLink   = 'Program Default Page';
 $lang->my->productLink   = 'Product Default Page';
 $lang->my->projectLink   = 'Project Default Page';
 if($config->systemMode == 'classic') $lang->my->executionLink = $lang->executionCommon . ' Default Page';
-if($config->systemMode == 'new') $lang->my->executionLink = $lang->executionCommon . ' Default Page';
+if($config->systemMode == 'new') $lang->my->executionLink = 'Execution Default Page';
 
 $lang->my->programLinkList = array();
 $lang->my->programLinkList['program-browse']  = 'By default, you go to the program list, where you can view all of the programs';
@@ -124,7 +109,7 @@ if($config->systemMode == 'new')
     $lang->my->executionLinkList['execution-task']            = 'By default, enter the list of the most recently executed task, and you can view the task information under the current iteration';
     $lang->my->executionLinkList['execution-executionkanban'] = 'By default, you can enter the execution Kanban to view the execution status of projects in progress';
 }
-if($config->systemMode == 'classic') $lang->my->executionLinkList['execution-task'] = 'By default, enter the list of the most recently executed task, and you can view the task information under the current iteration';
+if($config->systemMode == 'classic') $lang->my->executionLinkList['execution-task'] = "By default, enter the list of the most recently {$lang->executionCommon} task, and you can view the task information under the current {$lang->executionCommon}";
 
 $lang->my->guideChangeTheme = <<<EOT
 <p class='theme-title'><span style='color: #0c60e1'>"Young Blue"</span> theme is available now!</p>

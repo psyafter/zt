@@ -53,7 +53,7 @@ class buildsEntry extends entry
         $project = $this->loadModel('project')->getByID($projectID);
         if(!$project) return $this->send404();
 
-        $fields = 'execution,product,name,builder,date,scmPath,filePath,desc,branch';
+        $fields = 'execution,product,name,builder,date,scmPath,filePath,desc';
         $this->batchSetPost($fields);
 
         $control = $this->loadController('build', 'create');

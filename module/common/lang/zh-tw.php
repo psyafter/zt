@@ -52,7 +52,6 @@ $lang->designedByAIUX = "<a href='https://api.zentao.pm/goto.php?item=aiux' clas
 $lang->reset          = '重填';
 $lang->cancel         = '取消';
 $lang->refresh        = '刷新';
-$lang->refreshIcon    = "<i title='$lang->refresh' class='icon icon-refresh'></i>";
 $lang->create         = '新建';
 $lang->edit           = '編輯';
 $lang->delete         = '刪除';
@@ -82,7 +81,6 @@ $lang->retrack        = '收起';
 $lang->whitelist      = '訪問白名單';
 $lang->globalSetting  = '全局設置';
 $lang->waterfallModel = '瀑布模型';
-$lang->scrumModel     = '敏捷模型';
 $lang->all            = '所有';
 $lang->viewDetails    = '查看詳情';
 
@@ -146,11 +144,10 @@ $lang->workingHour = '工時';
 $lang->idAB         = 'ID';
 $lang->priAB        = 'P';
 $lang->statusAB     = '狀態';
-$lang->openedByAB   = '創建者';
+$lang->openedByAB   = '創建';
 $lang->assignedToAB = '指派';
 $lang->typeAB       = '類型';
 $lang->nameAB       = '名稱';
-$lang->code         = '代號';
 
 $lang->pri     = '優先順序';
 $lang->delayed = '已延期';
@@ -198,8 +195,6 @@ $lang->execution->list    = "{$lang->executionCommon}列表";
 $lang->kanban->common     = '看板';
 $lang->backup->common     = '備份';
 $lang->action->trash      = '資源回收筒';
-$lang->app->common        = '應用';
-$lang->app->serverLink    = '伺服器連結';
 
 $lang->personnel->common     = '人員';
 $lang->personnel->invest     = '投入人員';
@@ -283,17 +278,15 @@ $lang->testcase->caselib   = '用例庫';
 
 $lang->devops->compile  = '構建';
 $lang->devops->mr       = '合併請求';
-$lang->devops->repo     = '代碼庫';
+$lang->devops->repo     = '版本庫';
 $lang->devops->rules    = '指令';
 $lang->devops->settings = '合併請求設置';
-$lang->devops->set      = '設置';
 
-$lang->admin->system      = '系統';
-$lang->admin->entry       = '應用';
-$lang->admin->data        = '數據';
-$lang->admin->cron        = '定時';
-$lang->admin->buildIndex  = '重建索引';
-$lang->admin->tableEngine = '表引擎';
+$lang->admin->system     = '系統';
+$lang->admin->entry      = '應用';
+$lang->admin->data       = '數據';
+$lang->admin->cron       = '定時';
+$lang->admin->buildIndex = '重建索引';
 
 $lang->convert->importJira = '導入Jira數據';
 
@@ -374,7 +367,6 @@ $lang->error->companyNotFound = "您訪問的域名 %s 沒有對應的公司。"
 $lang->error->length          = array("『%s』長度錯誤，應當為『%s』", "『%s』長度應當不超過『%s』，且大於『%s』。");
 $lang->error->reg             = "『%s』不符合格式，應當為:『%s』。";
 $lang->error->unique          = "『%s』已經有『%s』這條記錄了。如果您確定該記錄已刪除，請到後台-系統-數據-資源回收筒還原。";
-$lang->error->repeat          = "『%s』已經有『%s』這條記錄了。";
 $lang->error->gt              = "『%s』應當大於『%s』。";
 $lang->error->ge              = "『%s』應當不小於『%s』。";
 $lang->error->lt              = "『%s』應當小於『%s』。";
@@ -432,7 +424,6 @@ $lang->colorPicker->errorTip = '不是有效的顏色值';
 $lang->downNotify     = "下載桌面提醒";
 $lang->clientName     = "客戶端";
 $lang->downloadClient = "下載客戶端";
-$lang->downloadMobile = "下載移動端";
 $lang->clientHelp     = "客戶端使用說明";
 $lang->clientHelpLink = "https://www.zentao.pm/book/zentaopmshelp/302.html#2";
 $lang->website        = "https://www.zentao.pm";
@@ -453,21 +444,19 @@ $lang->pasteImgFail      = "貼圖失敗，請稍後重試。";
 $lang->pasteImgUploading = "正在上傳圖片，請稍後...";
 
 /* 時間格式設置。*/
-if(!defined('DT_DATETIME1'))      define('DT_DATETIME1', 'Y-m-d H:i:s');
-if(!defined('DT_DATETIME2'))      define('DT_DATETIME2', 'y-m-d H:i');
-if(!defined('DT_MONTHTIME1'))     define('DT_MONTHTIME1', 'n/d H:i');
-if(!defined('DT_MONTHTIME2'))     define('DT_MONTHTIME2', 'n月d日 H:i');
-if(!defined('DT_DATE1'))          define('DT_DATE1', 'Y-m-d');
-if(!defined('DT_DATE2'))          define('DT_DATE2', 'Ymd');
-if(!defined('DT_DATE3'))          define('DT_DATE3', 'Y年m月d日');
-if(!defined('DT_DATE4'))          define('DT_DATE4', 'n月j日');
-if(!defined('DT_DATE5'))          define('DT_DATE5', 'j/n');
-if(!defined('DT_TIME1'))          define('DT_TIME1', 'H:i:s');
-if(!defined('DT_TIME2'))          define('DT_TIME2', 'H:i');
-if(!defined('LONG_TIME'))         define('LONG_TIME', '2059-12-31');
-if(!defined('BRANCH_MAIN'))       define('BRANCH_MAIN', '0');
-if(!defined('DEFAULT_CARDCOUNT')) define('DEFAULT_CARDCOUNT', '2');
-if(!defined('MAX_CARDCOUNT'))     define('MAX_CARDCOUNT', '32767');
+if(!defined('DT_DATETIME1'))  define('DT_DATETIME1', 'Y-m-d H:i:s');
+if(!defined('DT_DATETIME2'))  define('DT_DATETIME2', 'y-m-d H:i');
+if(!defined('DT_MONTHTIME1')) define('DT_MONTHTIME1', 'n/d H:i');
+if(!defined('DT_MONTHTIME2')) define('DT_MONTHTIME2', 'n月d日 H:i');
+if(!defined('DT_DATE1'))      define('DT_DATE1', 'Y-m-d');
+if(!defined('DT_DATE2'))      define('DT_DATE2', 'Ymd');
+if(!defined('DT_DATE3'))      define('DT_DATE3', 'Y年m月d日');
+if(!defined('DT_DATE4'))      define('DT_DATE4', 'n月j日');
+if(!defined('DT_DATE5'))      define('DT_DATE5', 'j/n');
+if(!defined('DT_TIME1'))      define('DT_TIME1', 'H:i:s');
+if(!defined('DT_TIME2'))      define('DT_TIME2', 'H:i');
+if(!defined('LONG_TIME'))     define('LONG_TIME', '2059-12-31');
+if(!defined('BRANCH_MAIN'))   define('BRANCH_MAIN', '0');
 
 /* datepicker 時間*/
 $lang->datepicker = new stdclass();

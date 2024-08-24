@@ -21,13 +21,7 @@
           <label class="radio-inline"><input type="radio" name="product" value="<?php echo $key?>"<?php echo $key == $checkedKey ? " checked='checked'" : ''?> id="product<?php echo $key;?>"><?php echo $value;?></label>
           <?php endforeach;?>
         </td>
-        <td></td>
-      </tr>
-      <tr>
-        <th></th>
-        <td colspan="2" id="readOnlyOfProduct">
-          <i class="icon-exclamation-sign"></i>&nbsp;<?php echo $lang->custom->notice->readOnlyOfProduct;?>
-        </td>
+        <td><div class='alert alert-info no-margin'><?php echo $lang->custom->notice->readOnlyOfProduct;?></div></td>
       </tr>
       <tr>
         <th></th>

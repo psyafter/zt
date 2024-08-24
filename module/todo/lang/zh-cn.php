@@ -36,7 +36,6 @@ $lang->todo->cycleConfig  = "周期设置";
 $lang->todo->project      = "所属项目";
 $lang->todo->product      = "所属产品";
 $lang->todo->execution    = "所属{$lang->execution->common}";
-$lang->todo->changeDate   = "修改日期";
 
 $lang->todo->reasonList['story'] = "转{$lang->SRCommon}";
 $lang->todo->reasonList['task']  = "转任务";
@@ -71,7 +70,6 @@ $lang->todo->closedBy     = '由谁关闭';
 $lang->todo->closedDate   = '关闭时间';
 $lang->todo->deadline     = '过期时间';
 $lang->todo->deleted      = '已删除';
-$lang->todo->ditto        = '同上';
 
 $lang->todo->cycleDaysLabel  = '间隔天数';
 $lang->todo->beforeDaysLabel = '提前天数';
@@ -83,12 +81,9 @@ $lang->todo->beforeDays   = "<span class='input-group-addon'>提前</span>%s<spa
 $lang->todo->dayNames     = array(1 => '星期一', 2 => '星期二', 3 => '星期三', 4 => '星期四', 5 => '星期五', 6 => '星期六', 0 => '星期日');
 $lang->todo->specifiedDay = array(1 => 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
 
-$lang->todo->confirmBug     = '该待办关联的是Bug #%s，需要修改它吗？';
-$lang->todo->confirmTask    = '该待办关联的是Task #%s，需要修改它吗？';
-$lang->todo->confirmStory   = '该待办关联的是Story #%s，需要修改它吗？';
-$lang->todo->noOptions      = '您暂时没有待处理的%s，请重新选择待办类型。';
-$lang->todo->summary        = '本页共 <strong>%s</strong> 项待办，未开始 <strong>%s</strong>，进行中 <strong>%s</strong>。';
-$lang->todo->checkedSummary = '共选择 <strong>%total%</strong> 项待办，未开始 <strong>%wait%</strong>，进行中 <strong>%doing%</strong>。';
+$lang->todo->confirmBug   = '该待办关联的是Bug #%s，需要修改它吗？';
+$lang->todo->confirmTask  = '该待办关联的是Task #%s，需要修改它吗？';
+$lang->todo->confirmStory = '该待办关联的是Story #%s，需要修改它吗？';
 
 $lang->todo->statusList['wait']   = '未开始';
 $lang->todo->statusList['doing']  = '进行中';

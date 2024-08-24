@@ -49,7 +49,7 @@ class projectreleaseModel extends model
      * @access public
      * @return array
      */
-    public function getList($projectID, $type = 'all', $orderBy = 't1.date_desc', $pager = null)
+    public function getList($projectID, $type = 'all', $orderBy = 't1.date_desc')
     {
         return $this->dao->select('t1.*, t2.name as productName, t3.id as buildID, t3.name as buildName, t3.execution, t4.name as executionName')
             ->from(TABLE_RELEASE)->alias('t1')
@@ -57,11 +57,9 @@ class projectreleaseModel extends model
             ->leftJoin(TABLE_BUILD)->alias('t3')->on('t1.build = t3.id')
             ->leftJoin(TABLE_EXECUTION)->alias('t4')->on('t3.execution = t4.id')
             ->where('t1.project')->eq((int)$projectID)
-            ->beginIF($type != 'all' && $type != 'review')->andWhere('t1.status')->eq($type)->fi()
-            ->beginIF($type == 'review')->andWhere("FIND_IN_SET('{$this->app->user->account}', t1.reviewers)")->fi()
+            ->beginIF($type != 'all')->andWhere('t1.status')->eq($type)->fi()
             ->andWhere('t1.deleted')->eq(0)
             ->orderBy($orderBy)
-            ->page($pager)
             ->fetchAll();
     }
 
@@ -116,7 +114,6 @@ class projectreleaseModel extends model
 
         $release = fixer::input('post')->stripTags($this->config->release->editor->edit['id'], $this->config->allowedTags)
             ->add('branch',  (int)$branch)
-            ->setDefault('mailto', '')
             ->join('mailto', ',')
             ->setIF(!$this->post->marker, 'marker', 0)
             ->cleanInt('product')

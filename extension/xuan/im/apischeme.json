@@ -1,5 +1,5 @@
 {
-    "$version": "6.5",
+    "$version": "5.6",
 
     "date":
     {
@@ -136,18 +136,6 @@
                 "name": "deleted",
                 "type": "boolean",
                 "default": false
-            },{
-                "name": "weixin",
-                "type": "string",
-                "default": ""
-            },{
-                "name": "address",
-                "type": "string",
-                "default": ""
-            },{
-                "name": "qq",
-                "type": "string",
-                "default": ""
             }
         ]
     },
@@ -166,37 +154,6 @@
                 "type": "memberStatus"
             }, {
                 "name": "password",
-                "type": "string",
-                "default": ""
-            }, {
-                "name": "address",
-                "type": "string",
-                "default": ""
-            }, {
-                "name": "gender",
-                "type": "string"
-            }, {
-                "name": "mobile",
-                "type": "string",
-                "default": ""
-            }, {
-                "name": "phone",
-                "type": "string",
-                "default": ""
-            }, {
-                "name": "qq",
-                "type": "string",
-                "default": ""
-            }, {
-                "name": "realname",
-                "type": "string",
-                "default": ""
-            }, {
-                "name": "weixin",
-                "type": "string",
-                "default": ""
-            }, {
-                "name": "email",
                 "type": "string",
                 "default": ""
             }
@@ -353,10 +310,6 @@
                 "type": "number",
                 "default": 0
             }, {
-                "name": "index",
-                "type": "number",
-                "default": 0
-            },{
                 "name": "data",
                 "type": "any",
                 "default": ""
@@ -391,39 +344,6 @@
                 "type": "array",
                 "arrType": "number",
                 "required": true
-            }
-        ]
-    },
-    "chatMemberDetail": {
-        "type": "object",
-        "props": [
-            {
-                "name": "id",
-                "type": "number"
-            },
-            {
-                "name": "account",
-                "type": "string"
-            },
-            {
-                "name": "join",
-                "type": "date"
-            },
-            {
-                "name": "lastSeen",
-                "type": "date"
-            },
-            {
-                "name": "lastPost",
-                "type": "date"
-            },
-            {
-                "name": "isOwner",
-                "type": "boolean"
-            },
-            {
-                "name": "isAdmin",
-                "type": "boolean"
             }
         ]
     },
@@ -601,26 +521,6 @@
                 "type": "array",
                 "arrType": "string",
                 "default": []
-            },
-            {
-                "name": "lastReadMessageIndex",
-                "type": "number",
-                "default": 0
-            },
-            {
-                "name": "lastMessageInfo",
-                "type": "any",
-                "default": null
-            },
-            {
-                "name": "adminInvite",
-                "type": "boolean",
-                "default": false
-            },
-            {
-                "name": "avatar",
-                "type": "any",
-                "default": null
             }
         ]
     },
@@ -664,7 +564,7 @@
             }, {
                 "name": "method",
                 "type": "string",
-                "map": ["messagesend", "syssessionid", "usergetlist", "chatgetlist", "userlogin", "userlogout", "userupdate", "usersyncsettings", "userkickoff", "messageretract", "messageupdate", "chattyping", "chatcreate", "chatrename", "chatinvite", "chatkick", "chatjoin", "chatleave", "chatstar", "chatunstar", "chatmute", "chatunmute", "chatfreeze", "chatunfreeze", "chathide", "chatdismiss", "chatgethistory", "chatgetpubliclist", "chatsetcategory", "chatrenamecategory", "chatdeletecategory", "chataddadmins", "chatremoveadmins", "chatsetcommitters", "chatsetvisibility", "chatsetconfig", "chatsearch", "chatsetavatar", "chatsetlastreadmessage", "chatsetlastreadmessagebyindex", "syncusers", "syncnotifications", "syncofflinemessages", "extensiongetlist", "fileupload", "filedownload", "usersetdevicetoken", "sysgetserverinfo", "sysserverstart", "ping"],
+                "map": ["messagesend", "syssessionid", "usergetlist", "chatgetlist", "userlogin", "userlogout", "userupdate", "usersyncsettings", "userkickoff", "messageretract", "messageupdate", "chattyping", "chatcreate", "chatrename", "chatinvite", "chatkick", "chatjoin", "chatleave", "chatstar", "chatunstar", "chatmute", "chatunmute", "chatfreeze", "chatunfreeze", "chathide", "chatdismiss", "chatgethistory", "chatgetpubliclist", "chatsetcategory", "chatrenamecategory", "chatdeletecategory", "chataddadmins", "chatremoveadmins", "chatsetcommitters", "chatsetvisibility", "chatsetlastreadmessage", "syncusers", "syncnotifications", "syncofflinemessages", "extensiongetlist", "fileupload", "filedownload", "usersetdevicetoken", "sysgetserverinfo", "sysserverstart", "ping"],
                 "default": "messageSend"
             }, {
                 "name": "module",
@@ -846,56 +746,15 @@
             }
         ]
     },
-    "chatSearchResult": {
-        "type": "object",
-        "props": [
-            {
-                "name": "id",
-                "type": "number"
-            },
-            {
-                "name": "gid",
-                "type": "string"
-            },
-            {
-                "name": "name",
-                "type": "string"
-            },
-            {
-                "name": "public",
-                "type": "boolean"
-            },
-            {
-                "name": "groupOwner",
-                "type": "number"
-            },
-            {
-                "name": "createdDate",
-                "type": "date"
-            },
-            {
-                "name": "lastActiveTime",
-                "type": "date"
-            },
-            {
-                "name": "userCount",
-                "type": "number"
-            }
-        ]
-    },
-    "chatsearchResponse": {
+    "usergetlistbydeptResponse":
+    {
         "type": "object",
         "extend": "responsePack",
-        "props": [
-            {
-                "name": "data",
-                "type": "array",
-                "arrType": "chatSearchResult"
-            }, {
-                "name": "pager",
-                "type": "pager"
-            }
-        ]
+        "props":
+        [{
+            "name": "pager",
+            "type": "pager"
+        }]
     },
     "usergetbasiclistResponse": {
         "type": "object",
@@ -957,20 +816,6 @@
             "type": "chatMembers"
         }]
     },
-    "chatgetmemberdetailsResponse": {
-        "type": "object",
-        "extend": "responsePack",
-        "props": [
-            {
-                "name": "data",
-                "type": "array",
-                "arrType": "chatMemberDetail"
-            }, {
-                "name": "pager",
-                "type": "pager"
-            }
-        ]
-    },
     "chatstarResponse": {
         "type": "object",
         "extend": "responsePack",
@@ -1005,22 +850,11 @@
             "type": "chatMessageInfoPack"
         }]
     },
-    "usergetlistbydeptResponse":
-    {
-        "type": "object",
-        "extend": "responsePack",
-        "props":
-        [{
-            "name": "pager",
-            "type": "pager"
-        }]
-    },
     "messagesendRequest": {"type": "messageListRequestPack"},
     "messagesendResponse": {"type": "messageListResponsePack"},
     "messageretractRequest": {"type": "messageListRequestPack"},
     "messageretractResponse": {"type": "messageListResponsePack"},
     "messagegetlistResponse": {"type": "messageListResponsePack"},
-    "messagegetlistbyindexesResponse": {"type": "messageListResponsePack"},
     "messagesyncResponse": {"type": "messageListResponsePack"},
     "messagesyncidResponse": {
         "type": "object",
@@ -1092,12 +926,10 @@
     "chatkickResponse": {"type": "chatResponsePack"},
     "chatchangeownershipResponse": {"type": "chatResponsePack"},
     "chatsetvisibilityResponse": {"type": "chatResponsePack"},
-    "chatsetconfigResponse": {"type": "chatResponsePack"},
     "chataddadminsResponse": {"type": "chatResponsePack"},
     "chatremoveadminsResponse": {"type": "chatResponsePack"},
     "chatsetcommittersResponse": {"type": "chatResponsePack"},
     "chatdismissResponse": {"type": "chatResponsePack"},
-    "chatsetavatarResponse": {"type": "chatResponsePack"},
     "chatgetbygidResponse": {"type": "chatResponsePack"},
     "chatgethistoryResponse":
     {

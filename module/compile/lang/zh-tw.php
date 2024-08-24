@@ -1,8 +1,7 @@
 <?php
-$lang->compile->common      = '構建';
-$lang->compile->browse      = '構建歷史';
-$lang->compile->logs        = '構建日誌';
-$lang->compile->syncCompile = '介面：同步構建記錄';
+$lang->compile->common = '構建';
+$lang->compile->browse = '構建歷史';
+$lang->compile->logs   = '構建日誌';
 
 $lang->compile->id          = 'ID';
 $lang->compile->name        = '構建名稱';

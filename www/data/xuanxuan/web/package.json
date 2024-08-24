@@ -2,15 +2,15 @@
     "name": "zentaoclient",
     "productName": "zentaoclient",
     "displayName": "禅道",
-    "version": "6.5.0",
-    "displayVersion": "6.5",
+    "version": "5.6.0",
+    "displayVersion": "5.6",
     "description": "专注于协同的聊天软件",
     "main": "./main.js",
     "author": {
         "name": "青岛易软天创网络科技有限公司",
         "email": "sunhao@cnezsoft.com"
     },
-    "homepage": "https://www.zentao.pm/",
+    "homepage": "https://www.zentao.net/",
     "company": "青岛易软天创网络科技有限公司",
     "license": "ZOSL 1.0 (http://zpl.pub/page/zoslv1.html)",
     "bugs": {
@@ -23,7 +23,7 @@
         "immutable": "^3.7.6",
         "jquery": "^3.5.1",
         "nodejs-traceroute": "^1.2.0",
-        "ping": "^0.4.2",
+        "ping": "^0.2.2",
         "react-chatview": "^0.2.5",
         "react-electron-web-view": "^2.0.1",
         "remove-markdown": "^0.3.0",
@@ -31,8 +31,8 @@
         "pretty-format": "^27.0.6",
         "js-beautify": "^1.14.0"
     },
-    "commit": "98cd8bbbfb207082933705116d831377f63e178c",
-    "buildTime": "2022-10-19T01:55:49.001Z",
+    "commit": "b230572e31662243426d29d4d8ac5ba752bce5ac",
+    "buildTime": "2022-05-26T00:03:31.749Z",
     "buildVersion": "",
     "buildTypes": {
         "beta": false,
@@ -54,7 +54,7 @@
             },
             "en": {
                 "app.title": "禅道",
-                "app.homepage": "https://www.zentao.pm/",
+                "app.homepage": "http://www.zentao.pm/",
                 "common.notification": "通知中心",
                 "login.serverUrl.hint": "请输入服务器地址",
                 "common.notificationIconLabel": "通"
@@ -62,7 +62,6 @@
         },
         "ui": {
             "app.windowDefaultWidth": 1280,
-            "app.windowMinWidth": 1280,
             "defaultThemeColor": "#0c64eb",
             "login.skipHTTPSecurityAlert": true,
             "todo.enable": false,

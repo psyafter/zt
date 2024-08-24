@@ -14,7 +14,7 @@ $(function()
                 return window.compareVersions(v2.xxcVersion, v1.xxcVersion);
             });
             var lastestVersion = serverVersions[0];
-            if(currentVersion && window.compareVersions(currentVersion.version, lastestVersion.xxcVersion) > 0)
+            if(currentVersion && window.compareVersions(currentVersion.version, lastestVersion.xxcVersion) >= 0)
             {
                 isNewVersion = true;
                 lastestVersion = null;

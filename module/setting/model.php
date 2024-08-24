@@ -194,8 +194,6 @@ class settingModel extends model
             ->fetchAll('id');
         if(!$records) return array();
 
-        $vision = $this->config->vision;
-
         /* Group records by owner and module. */
         $config = array();
         foreach($records as $record)
@@ -203,9 +201,6 @@ class settingModel extends model
             if(!isset($config[$record->owner])) $config[$record->owner] = new stdclass();
             if(!isset($record->module)) return array();    // If no module field, return directly. Since 3.2 version, there's the module field.
             if(empty($record->module)) continue;
-
-            /* If it`s lite vision unset config requiredFields */
-            if($vision == 'lite' and $record->key == 'requiredFields' and $record->vision == '') continue;
 
             $config[$record->owner]->{$record->module}[] = $record;
         }

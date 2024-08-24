@@ -1,5 +1,5 @@
 <?php
-class imConference extends model
+class conference extends model
 {
     /**
      * Get conference by the id of chat.
@@ -141,7 +141,7 @@ class imConference extends model
     public function close($chatID, $userID)
     {
         $conference = $this->getByChatID($chatID);
-        if($conference->status == 'closed') return true;
+        if($conference->status == 'closed') return false;
 
         $this->dao->update(TABLE_IM_CONFERENCE)
             ->set('status')->eq('closed')

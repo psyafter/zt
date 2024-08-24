@@ -2,8 +2,6 @@ $(function()
 {
     $('input[name*=from]').change(function()
     {
-        $('#userLabel').remove();
-
         if($(this).val() == 'team')
         {
             $('.user-info').addClass('hidden');

@@ -8,30 +8,21 @@ $lang->conference->enabledTip     = 'Enable conference';
 $lang->conference->serverAddr     = 'Server Address';
 $lang->conference->serverAddrTip  = '';
 $lang->conference->apiPort        = 'API Port';
-$lang->conference->apiPortOwtTip  = '3004 by default.';
-$lang->conference->apiPortSrsTip  = '1985 by default.';
+$lang->conference->apiPortTip     = 'For OWT, if HTTPS is enabled 3004 by default, otherwise 3001 by default';
 $lang->conference->mgmtPort       = 'OWT Management Port';
 $lang->conference->mgmtPortTip    = '3300 by default';
 $lang->conference->rtcPort        = 'SRS Signaling Port';
 $lang->conference->rtcPortTip     = '1989 by default';
 $lang->conference->https          = 'Enable HTTPS';
-$lang->conference->httpsTip       = 'This feature is disabled by default on SRS server';
+$lang->conference->httpsTip       = 'Enabled by default, make sure OWT server has the same setting';
 $lang->conference->serviceId      = 'OWT ID';
 $lang->conference->serviceIdTip   = '';
 $lang->conference->serviceKey     = 'OWT Key';
 $lang->conference->serviceKeyTip  = '';
 $lang->conference->configGuideTip = '';
 
-$lang->conference->setupTitle       = 'Conference Server Setup';
-$lang->conference->setupDescription = 'Xuanxuan need to setup conference server for providing conference feature. The conference server has two types: OWT and SRS. For now SRS is recommended.';
-$lang->conference->setupDoc         = 'Setup';
-$lang->conference->configDoc        = 'Configuration';
-$lang->conference->download         = 'Download';
-$lang->conference->srsSetupTitle    = 'SRS Server';
-$lang->conference->owtSetupTitle    = 'OWT Server';
-
 $lang->conference->backend = new stdclass();
-$lang->conference->backend->type  = 'Backend Type';
+$lang->conference->backend->type  = '后端类型';
 $lang->conference->backend->types = array('owt' => 'OWT', 'srs' => 'SRS');
 
 $lang->conference->inputError = new stdClass();

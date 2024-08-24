@@ -10,10 +10,6 @@
  * @link        https://www.zentao.pm
  */
 $lang->search->common        = 'Rechercher';
-$lang->search->id            = 'ID';
-$lang->search->editedDate    = 'Edited Date';
-$lang->search->key           = 'Key';
-$lang->search->value         = 'Value';
 $lang->search->reset         = 'Réinitialiser';
 $lang->search->saveQuery     = 'Sauver Query';
 $lang->search->myQuery       = 'Mes Query';
@@ -29,8 +25,6 @@ $lang->search->me            = 'Moi';
 $lang->search->noQuery       = 'Aucune query de sauvegardée !';
 $lang->search->onMenuBar     = 'Montrer dans le Menu';
 $lang->search->custom        = 'Personnalisation';
-$lang->search->setCommon     = 'Set as public query criteria';
-$lang->search->saveCondition = 'Save search options';
 
 $lang->search->account  = 'Compte';
 $lang->search->module   = 'Module';
@@ -75,7 +69,6 @@ $lang->search->result            = 'Search Results';
 $lang->search->buildSuccessfully = 'Search index initialized.';
 $lang->search->executeInfo       = '%s search results for you in %s seconds.';
 $lang->search->buildResult       = "Create index %s and created <strong class='%scount'>%s</strong> records.";
-$lang->search->queryTips         = "Separate ids with comma";
 
 $lang->search->modules['all']         = 'All';
 $lang->search->modules['task']        = 'Task';
@@ -95,13 +88,11 @@ $lang->search->modules['productplan'] = 'Plan';
 $lang->search->modules['program']     = 'Program';
 $lang->search->modules['project']     = 'Project';
 $lang->search->modules['execution']   = $lang->executionCommon;
-$lang->search->modules['story']       = $lang->SRCommon;
-$lang->search->modules['requirement'] = $lang->URCommon;
+$lang->search->modules['story']       = 'Story';
 
 $lang->search->objectTypeList['story']            = $lang->SRCommon;
 $lang->search->objectTypeList['requirement']      = $lang->URCommon;
 $lang->search->objectTypeList['stage']            = 'stage';
 $lang->search->objectTypeList['sprint']           = $lang->executionCommon;
-$lang->search->objectTypeList['kanban']           = 'kanban';
 $lang->search->objectTypeList['commonIssue']      = 'Issue';
 $lang->search->objectTypeList['stakeholderIssue'] = 'Stakeholder Issue';

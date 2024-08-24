@@ -69,7 +69,7 @@ class devModel extends model
             $type     = substr($rawField->type, 0, $firstPOS > 0 ? $firstPOS : strlen($rawField->type));
             $type     = str_replace(array('big', 'small', 'medium', 'tiny'), '', $type);
             $field    = array();
-            $field['name'] = (isset($this->lang->$module->{$rawField->field}) and is_string($this->lang->$module->{$rawField->field})) ? sprintf($this->lang->$module->{$rawField->field}, $this->lang->dev->tableList[$module]) : '';
+            $field['name'] = isset($this->lang->$module->{$rawField->field}) ? sprintf($this->lang->$module->{$rawField->field}, $this->lang->dev->tableList[$module]) : '';
             if((empty($field['name']) or !is_string($field['name'])) and $aliasModule) $field['name'] = isset($this->lang->$aliasModule->{$rawField->field}) ? $this->lang->$aliasModule->{$rawField->field} : '';
             if($subLang) $field['name'] = isset($this->lang->$aliasModule->$subLang->{$rawField->field}) ? $this->lang->$aliasModule->$subLang->{$rawField->field} : $field['name'];
             if(!is_string($field['name'])) $field['name'] = '';
@@ -154,79 +154,85 @@ class devModel extends model
         foreach($methods as $method)
         {
             if($method->class == 'baseControl' or $method->class == 'control' or $method->name == '__construct') continue;
-            $api = array('name' => $method->name, 'post' => false, 'param' => array());
+            $api = array('name' => $method->name, 'post' => false, 'default' => array());
             $methodReflect = new ReflectionMethod($module, $method->name);
             foreach($methodReflect->getParameters() as $key => $param)
             {
-                $paramName = $param->getName();
-                $api['param'][$paramName] = array('var' => $paramName, 'type' => '', 'desc' => '');
+                try
+                {
+                    $api['default'][$param->getName()] = $param->getDefaultValue();
+                }catch(ReflectionException $e){}
             }
-
             $startLine = $methodReflect->getStartLine();
             $endLine   = $methodReflect->getEndLine();
             $comment   = $methodReflect->getDocComment();
 
-            if($startLine > 0)
+            $file = file($fileName);
+            for($i = $startLine - 1; $i <= $endLine; $i++)
             {
-                $file = file($fileName);
-                for($i = $startLine - 1; $i <= $endLine; $i++)
+                if(strpos($file[$i], '$this->post') or strpos($file[$i], 'fixer::input') or strpos($file[$i], '$_POST'))
                 {
-                    if(strpos($file[$i], '$this->post') or strpos($file[$i], 'fixer::input') or strpos($file[$i], '$_POST')) $api['post'] = true;
+                    $api['post'] = true;
                 }
             }
 
-            if($comment)
+            // Strip the opening and closing tags of the docblock.
+            $comment = substr($comment, 3, -2);
+
+            // Split into arrays of lines.
+            $comment = preg_split('/\r?\n\r?/', $comment);
+
+            // Trim asterisks and whitespace from the beginning and whitespace from the end of lines.
+            $comment = array_map(array('devModel', "trimSpace"), $comment);
+
+            // Group the lines together by @tags
+            $blocks = array();
+            $b = -1;
+            foreach ($comment as $line)
             {
-                // Strip the opening and closing tags of the docblock.
-                $comment = substr($comment, 3, -2);
-
-                // Split into arrays of lines.
-                $comment = preg_split('/\r?\n\r?/', $comment);
-
-                // Trim asterisks and whitespace from the beginning and whitespace from the end of lines.
-                $comment = array_map(array('devModel', "trimSpace"), $comment);
-
-                // Group the lines together by @tags
-                $blocks = array();
-                $b = -1;
-                foreach($comment as $line)
+                if (isset($line[1]) && $line[0] == '@' && ctype_alpha($line[1]))
                 {
-                    if(isset($line[1]) && $line[0] == '@' && ctype_alpha($line[1])) $b++;
-                    if($b == -1) $b = 0;
-
-                    if(!isset($blocks[$b])) $blocks[$b] = array();
-                    $blocks[$b][] = $line;
+                    $b++;
+                    $blocks[] = array();
                 }
-
-                // Parse the blocks
-                foreach($blocks as $block => $body)
+                else if($b == -1)
                 {
-                    $body = trim(implode("\n", $body));
-                    if($block == 0 && !(isset($body[1]) && $body[0] == '@' && ctype_alpha($body[1])))
-                    {
-                        // This is the description block
-                        $api['desc'] = $body;
-                        continue;
-                    }
+                    $b = 0;
+                    $blocks[] = array();
+                }
+                $blocks[$b][] = $line;
+            }
 
+            // Parse the blocks
+            foreach ($blocks as $block => $body)
+            {
+                $body = trim(implode("\n", $body));
+                if($block == 0 && !(isset($body[1]) && $body[0] == '@' && ctype_alpha($body[1])))
+                {
+                    // This is the description block
+                    $api['desc'] = $body;
+                    continue;
+                }
+                else
+                {
                     // This block is tagged
                     if(preg_match('/^@[a-z0-9_]+/', $body, $matches))
                     {
                         $tag  = substr($matches[0], 1);
-                        $body = substr($body, strlen($tag) + 2);
-                        if($tag != 'param')
+                        $body = substr($body, strlen($tag)+2);
+                        if($tag == 'param')
+                        {
+                            $parts          = preg_split('/\s+/', trim($body), 3);
+                            $parts          = array_pad($parts, 3, null);
+                            $property       = array('type', 'var', 'desc');
+                            $param          = array_combine($property, $parts);
+                            $param['var']   = substr($param['var'], 1);
+                            $api['param'][] = $param;
+                        }
+                        else
                         {
                             $api[$tag][] = $body;
-                            continue;
                         }
-
-                        $parts        = preg_split('/\s+/', trim($body), 3);
-                        $parts        = array_pad($parts, 3, null);
-                        $property     = array('type', 'var', 'desc');
-                        $param        = array_combine($property, $parts);
-                        $paramName    = substr($param['var'], 1);
-                        $param['var'] = $paramName;
-                        if(isset($api['param'][$paramName])) $api['param'][$paramName] = $param;
                     }
                 }
             }
@@ -239,7 +245,7 @@ class devModel extends model
      * Get all modules.
      *
      * @access public
-     * @return array
+     * @return void
      */
     public function getModules()
     {
@@ -252,7 +258,7 @@ class devModel extends model
             $module = basename($module);
             if($module == 'editor' or $module == 'help' or $module == 'setting' or $module == 'common') continue;
             $group  = zget($this->config->dev->group, $module, 'other');
-            $modules[$group][$module] = $module;
+            $modules[$group][] = $module;
         }
 
         $extPaths = $this->getModuleExtPath();
@@ -266,7 +272,7 @@ class devModel extends model
                 $module = basename($path);
                 if($module == 'editor' or $module == 'help' or $module == 'setting' or $module == 'common') continue;
                 $group  = zget($this->config->dev->group, $module, 'other');
-                $modules[$group][$module] = $module;
+                $modules[$group][] = $module;
             }
         }
 

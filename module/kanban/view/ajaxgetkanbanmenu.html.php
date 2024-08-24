@@ -136,10 +136,10 @@ $closedKanbansHtml .= '</ul>';
 <script>
 $(function()
 {
-    $('#dropMenu .nav-tabs li span').hide();
-    $('#dropMenu .nav-tabs li.active').find('span').show();
+    $('.nav-tabs li span').hide();
+    $('.nav-tabs li.active').find('span').show();
 
-    $('#dropMenu .nav-tabs>li a').click(function()
+    $('.nav-tabs>li a').click(function()
     {
         if($('#swapper input[type="search"]').val() == '')
         {
@@ -154,14 +154,14 @@ $(function()
     {
         if(value != '')
         {
-            $('#dropMenu div.hide-in-search').siblings('i').addClass('hide-in-search');
-            $('#dropMenu .nav-tabs li span').hide();
+            $('div.hide-in-search').siblings('i').addClass('hide-in-search');
+            $('.nav-tabs li span').hide();
         }
         else
         {
-            $('#dropMenu div.hide-in-search').siblings('i').removeClass('hide-in-search');
-            $('#dropMenu li.has-list div.hide-in-search').removeClass('hidden');
-            $('#dropMenu .nav-tabs li.active').find('span').show();
+            $('div.hide-in-search').siblings('i').removeClass('hide-in-search');
+            $('li.has-list div.hide-in-search').removeClass('hidden');
+            $('.nav-tabs li.active').find('span').show();
         }
     })
 })

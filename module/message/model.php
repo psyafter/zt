@@ -59,12 +59,10 @@ class messageModel extends model
      * @param  int    $objectID
      * @param  string $actionType
      * @param  int    $actionID
-     * @param  string $actor
-     * @param  string $extra
      * @access public
      * @return void
      */
-    public function send($objectType, $objectID, $actionType, $actionID, $actor = '', $extra = '')
+    public function send($objectType, $objectID, $actionType, $actionID, $actor = '')
     {
         $objectType     = strtolower($objectType);
         $messageSetting = $this->config->message->setting;
@@ -91,14 +89,8 @@ class messageModel extends model
                     }
                 }
 
-                if($objectType == 'feedback')
-                {
-                    $this->loadModel('feedback')->sendmail($objectID, $actionID);
-                }
-                else
-                {
-                    $this->loadModel('mail')->sendmail($objectID, $actionID);
-                }
+                $moduleName = $objectType == 'case' ? 'testcase' : $objectType;
+                $this->loadModel('mail')->sendmail($objectID, $actionID);
 
                 if(defined('RUN_MODE') and RUN_MODE == 'api') $config->requestType = $requestType;
             }
@@ -155,11 +147,10 @@ class messageModel extends model
 
         $moduleName = $objectType == 'case' ? 'testcase' : $objectType;
         $moduleName = $objectType == 'kanbancard' ? 'kanban' : $objectType;
-        $space      = common::checkNotCN() ? ' ' : '';
-        $data       = $user->realname . $space . $this->lang->action->label->$actionType . $space . $this->lang->action->objectTypes[$objectType];
-        $dataID     = $objectType == 'kanbancard' ? $object->kanban : $objectID;
-        $url        = helper::createLink($moduleName, 'view', "id=$dataID");
-        $data      .= ' ' . html::a((strpos($url, $sysURL) === 0 ? '' : $sysURL) . $url, "[#{$objectID}::{$object->$field}]");
+        $space = common::checkNotCN() ? ' ' : '';
+        $data  = $user->realname . $space . $this->lang->action->label->$actionType . $space . $this->lang->action->objectTypes[$objectType];
+        $dataID = $objectType == 'kanbancard' ? $object->kanban : $objectID;
+        $data  .= ' ' . html::a($sysURL . helper::createLink($moduleName, 'view', "id=$dataID"), "[#{$objectID}::{$object->$field}]");
 
         if($isonlybody) $_GET['onlybody'] = 'yes';
 
@@ -201,7 +192,6 @@ class messageModel extends model
         }
 
         if($toList == 'closed') $toList = '';
-        if($objectType == 'feedback' and $object->status == 'replied') $toList = ',' . $object->openedBy . ',';
         return $toList;
     }
 

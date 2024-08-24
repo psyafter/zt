@@ -11,8 +11,6 @@ class myMisc extends misc
      */
     public function downloadClient($action = 'check', $os = '')
     {
-        ini_set('memory_limit', '256M'); // Temporarily handle the problem that the ZenTao client file is too large.
-
         if($_POST)
         {
             $os = $this->post->os;
@@ -102,7 +100,6 @@ class myMisc extends misc
 
         if($action == 'downloadPackage')
         {
-            ini_set('memory_limit', '1G');
             $account   = $this->app->user->account;
             $clientDir = $this->app->wwwRoot . 'data/client/' . "$account/";
 

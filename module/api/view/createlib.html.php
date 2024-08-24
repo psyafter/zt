@@ -33,8 +33,7 @@
             <tr>
               <th><?php echo $lang->api->control;?></th>
               <td>
-                <?php $isDisabled = $type == 'demo' ? 'disabled' : '';?>
-                <span><?php echo html::radio('acl', $lang->api->aclList, 'open', "onchange='toggleAcl(this.value, \"lib\")' $isDisabled")?></span>
+                <span><?php echo html::radio('acl', $lang->api->aclList, 'open', "onchange='toggleAcl(this.value, \"lib\")'")?></span>
                 <span class='text-info' id='noticeAcl'><?php echo $lang->api->noticeAcl['open'];?></span>
               </td>
             </tr>

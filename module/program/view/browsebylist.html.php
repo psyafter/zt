@@ -1,12 +1,12 @@
 <?php $canOrder = (common::hasPriv('program', 'updateOrder') and strpos($orderBy, 'order') !== false)?>
-<form class='main-table' id='programForm' method='post' data-ride='table' data-nested='true' data-expand-nest-child='false' data-checkable='false' data-enable-empty-nested-row='true' data-replace-id='programTableList' data-preserve-nested='true'>
+<form class='main-table' id='programForm' method='post' data-ride='table' data-nested='true' data-expand-nest-child='false' data-checkable='false' data-enable-empty-nested-row='true' data-replace-id='programTableList'>
   <table class='table has-sort-head table-fixed table-nested' id='programList'>
     <?php $vars = "status=$status&orderBy=%s";?>
     <thead>
       <tr>
         <th class='table-nest-title'>
-          <?php echo $lang->nameAB;?>
           <a class='table-nest-toggle table-nest-toggle-global' data-expand-text='<?php echo $lang->expand; ?>' data-collapse-text='<?php echo $lang->collapse;?>'></a>
+          <?php echo $lang->nameAB;?>
         </th>
         <th class='c-status'> <?php common::printOrderLink('status', $orderBy, $vars, $lang->program->status);?></th>
         <th class='c-user'><?php common::printOrderLink('PM',     $orderBy, $vars, $lang->program->PM);?></th>
@@ -48,7 +48,7 @@
       $originOrders[] = $program->order;
       ?>
 
-      <tr <?php echo $trAttrs;?> data-type="<?php echo $program->type;?>" data-status="<?php echo $program->status?>">
+      <tr <?php echo $trAttrs;?>>
         <td class='c-name text-left <?php if($canOrder) echo 'sort-handler';?> has-prefix has-suffix' title='<?php echo $program->name?>'>
           <?php
           $icon = '';
@@ -58,11 +58,9 @@
           ?>
           <span class="table-nest-icon icon <?php echo $class . $icon;?>"></span>
           <?php if($program->type == 'program'):?>
-          &nbsp;<span class="icon icon-cards-view" style="color: #888fa1;"></span>
-          <?php echo ($app->user->admin or strpos(",{$app->user->view->programs},", ",$program->id,") !== false) ? html::a($this->createLink('program', 'product', "programID=$program->id"), $program->name) : $program->name;?>
+          <?php echo strpos(",{$app->user->view->programs},", ",$program->id,") !== false ? html::a($this->createLink('program', 'product', "programID=$program->id"), $program->name) : $program->name;?>
           <?php else:?>
-          <?php $projectType = $lang->project->{$program->model};?>
-          <?php echo html::a($this->createLink('project', 'index', "projectID=$program->id", '', '', $program->id), $program->name, '', "class='text-ellipsis text-primary' title='{$program->name} ($projectType)'");?>
+          <?php echo html::a($this->createLink('project', 'index', "projectID=$program->id", '', '', $program->id), $program->name, '', 'class="text-ellipsis text-primary"');?>
           <?php
           if($program->status != 'done' and $program->status != 'closed' and $program->status != 'suspended')
           {
@@ -73,22 +71,22 @@
           <?php endif;?>
         </td>
         <td class='c-status'><span class="status-program status-<?php echo $program->status?>"><?php echo zget($lang->project->statusList, $program->status, '');?></span></td>
-        <td class="c-manager">
+        <td>
           <?php if(!empty($program->PM)):?>
           <?php $userName = zget($users, $program->PM);?>
-          <?php echo html::smallAvatar(array('avatar' => $usersAvatar[$program->PM], 'account' => $program->PM, 'name' => $userName), (($program->type == 'program' and $program->grade == 1 )? 'avatar-circle avatar-top avatar-' : 'avatar-circle avatar-') . zget($userIdPairs, $program->PM)); ?>
+          <?php echo html::smallAvatar(array('avatar' => $usersAvatar[$program->PM], 'account' => $program->PM, 'name' => $userName), 'avatar-circle avatar-' . zget($userIdPairs, $program->PM)); ?>
           <?php $userID   = isset($PMList[$program->PM]) ? $PMList[$program->PM]->id : '';?>
           <?php echo html::a($this->createLink('user', 'profile', "userID=$userID", '', true), $userName, '', "title='{$userName}' data-toggle='modal' data-type='iframe' data-width='600'");?>
           <?php endif;?>
         </td>
         <?php $programBudget = $this->loadModel('project')->getBudgetWithUnit($program->budget);?>
-        <td class='text-right c-budget'><?php echo $program->budget != 0 ? zget($lang->project->currencySymbol, $program->budgetUnit) . ' ' . $programBudget : $lang->project->future;?></td>
+        <td class='text-right'><?php echo $program->budget != 0 ? zget($lang->project->currencySymbol, $program->budgetUnit) . ' ' . $programBudget : $lang->project->future;?></td>
         <td><?php echo $program->begin;?></td>
         <td><?php echo $program->end == LONG_TIME ? $lang->program->longTime : $program->end;?></td>
         <td>
           <?php if(isset($progressList[$program->id])):?>
-          <div class='progress-pie' data-doughnut-size='85' data-color='#00DA88' data-value='<?php echo round($progressList[$program->id])?>' data-width='26' data-height='26' data-back-color='#e8edf3'>
-            <div class='progress-info'><?php echo round($progressList[$program->id]);?></div>
+          <div class='progress-pie' data-doughnut-size='85' data-color='#00DA88' data-value='<?php echo $progressList[$program->id]?>' data-width='26' data-height='26' data-back-color='#e8edf3'>
+            <div class='progress-info'><?php echo $progressList[$program->id];?></div>
           </div>
           <?php endif;?>
         </td>
@@ -101,20 +99,15 @@
     </tbody>
   </table>
   <div class='table-footer <?php if($status == 'bySearch') echo 'hide';?>'>
-    <div id="programSummary" class="table-statistic">&nbsp;<?php echo $summary;?></div>
+    <div class="table-statistic">&nbsp;<?php echo $summary;?></div>
     <?php if($status != 'bySearch') $pager->show('right', 'pagerjs');?>
   </div>
 </form>
 <style>
-th.table-nest-title {padding-left: 12px !important;}
-th.table-nest-title > .table-nest-toggle-global {left: auto; right: 6px; font-size: 12px; color: #888fa1;}
-th.table-nest-title > .table-nest-toggle-global:before {width: 100%; left: 0 !important;}
-#programTableList td.c-name span.icon.table-nest-toggle {cursor: pointer;}
 #programTableList.sortable-sorting > tr {opacity: 0.7}
 #programTableList.sortable-sorting > tr.drag-row {opacity: 1;}
 #programTableList > tr.drop-not-allowed {opacity: 0.1!important}
 #programList .c-actions {overflow: visible;}
-#programList .c-actions .btn-group:last-child {margin-left: -4px;}
 #programList > thead > tr > th .table-nest-toggle-global {top: 6px}
 #programList > thead > tr > th .table-nest-toggle-global:before {color: #a6aab8;}
 #programTableList > tr:last-child .c-actions .dropdown-menu {top: auto; bottom: 100%; margin-bottom: -5px;}
@@ -123,9 +116,6 @@ th.table-nest-title > .table-nest-toggle-global:before {width: 100%; left: 0 !im
 #programTableList .icon-scrum:before {content: '\e9a2';}
 #programTableList .icon-waterfall:before {content: '\e9a4';}
 #programTableList .icon-kanban:before {content: '\e983';}
-#programTableList > tr[data-type="program"] > .c-name > a {color: #0b0f18 !important;}
-#programTableList > tr[data-type="program"] > .c-name:hover > a {color: #313c52 !important;}
-#programTableList > tr[data-nest-parent] {background: #f8f8f8;}
 </style>
 <?php js::set('originOrders', $originOrders);?>
 <script>
@@ -143,10 +133,6 @@ $(function()
         selector: 'tr',
         dragCssClass: 'drag-row',
         trigger: $list.find('.sort-handler').length ? '.sort-handler' : null,
-        before: function(e)
-        {
-            if($(e.event.target).closest('a,.btn').length) return false;
-        },
         canMoveHere: function($ele, $target)
         {
             return $ele.data('parent') === $target.data('parent');

@@ -34,7 +34,7 @@ class feedbacksEntry extends entry
         $result = array();
         foreach($feedbacks as $feedback)
         {
-            $result[] = $this->format($feedback, 'openedBy:user,openedDate:time,reviewedBy:user,reviewedDate:time,processedBy:user,processedDate:time,closedBy:user,closedDate:time,editedBy:user,editedDate:time,assignedTo:user,mailto:userList,deleted:bool');
+            $result[] = $this->format($feedback, 'openedBy:user,openedDate:time,reviewedBy:user,reviewedDate:time,processedBy:user,processedDate:time,closedBy:user,closedDate:time,editedBy:user,editedDate:time,mailto:userList,deleted:bool');
         }
 
         $data = array();
@@ -54,10 +54,8 @@ class feedbacksEntry extends entry
      */
     public function post()
     {
-        $fields = 'module,product,type,title,public,desc,status,feedbackBy,notify,uid';
+        $fields = 'module,product,type,title,public,desc,status,feedbackBy,notifyEmail,notify,uid';
         $this->batchSetPost($fields);
-
-        $this->setPost('notifyEmail', $this->request('notifyEmail', ''));
 
         $control = $this->loadController('feedback', 'create');
         $this->requireFields('title,product');

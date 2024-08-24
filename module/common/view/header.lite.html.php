@@ -1,5 +1,5 @@
-<?php 
-if($extView = $this->getExtViewFile(__FILE__)){include $extView; return helper::cd();}
+<?php if($extView = $this->getExtViewFile(__FILE__)){include $extView; return helper::cd();}?>
+<?php
 $clientLang   = $app->getClientLang();
 $webRoot      = $this->app->getWebRoot();
 $jsRoot       = $webRoot . "js/";
@@ -8,7 +8,7 @@ $defaultTheme = $webRoot . 'theme/default/';
 $langTheme    = $themeRoot . 'lang/' . $clientLang . '.css';
 $clientTheme  = $this->app->getClientTheme();
 $onlybody     = zget($_GET, 'onlybody', 'no');
-$commonLang   = array('zh-cn', 'zh-tw', 'en', 'fr', 'de');
+$defaultLang  = array('zh-cn', 'zh-tw', 'en');
 ?>
 <!DOCTYPE html>
 <html lang='<?php echo $clientLang;?>'>
@@ -32,7 +32,7 @@ $commonLang   = array('zh-cn', 'zh-tw', 'en', 'fr', 'de');
 
       js::import($jsRoot . 'jquery/lib.js');
       js::import($jsRoot . 'zui/min.js?t=' . $timestamp);
-      if(!in_array($clientLang, $commonLang)) js::import($jsRoot . 'zui/lang.' . $clientLang . '.min.js?t=' . $timestamp);
+      if(!in_array($clientLang, $defaultLang)) js::import($jsRoot . 'zui/lang.' . $clientLang . '.min.js?t=' . $timestamp);
       js::import($jsRoot . 'my.full.js?t=' . $timestamp);
 
   }
@@ -42,7 +42,7 @@ $commonLang   = array('zh-cn', 'zh-tw', 'en', 'fr', 'de');
       if(!file_exists($this->app->getThemeRoot() . 'default/' . $this->cookie->lang . '.' . $this->cookie->theme . '.css')) $minCssFile = $defaultTheme . 'en.' . $this->cookie->theme . '.css';
       css::import($minCssFile);
       js::import($jsRoot . 'all.js');
-      if(!in_array($clientLang, $commonLang)) js::import($jsRoot . 'zui/lang.' . $clientLang . '.min.js');
+      if(!in_array($clientLang, $defaultLang)) js::import($jsRoot . 'zui/lang.' . $clientLang . '.min.js');
   }
   if($this->app->getViewType() == 'xhtml') css::import($defaultTheme . 'x.style.css');
 
@@ -81,13 +81,13 @@ $xuanExtFile = $extensionRoot . 'xuan/common/ext/view/header.xuanxuan.html.hook.
 if(file_exists($xuanExtFile)) include $xuanExtFile;
 ?>
 </head>
-<?php 
-$bodyClass = $this->app->getViewType() == 'xhtml' ? 'allow-self-open' : '';
-if(isset($pageBodyClass)) $bodyClass = $bodyClass . ' ' . $pageBodyClass;
-if($this->moduleName == 'index' && $this->methodName == 'index') $bodyClass .= ' menu-' . ($this->cookie->hideMenu ? 'hide' : 'show');
-if(strpos($_SERVER['HTTP_USER_AGENT'], 'xuanxuan') !== false) $bodyClass .= ' xxc-embed';
-?>
-<body class='<?php echo $bodyClass; ?>'>
+<?php $singleClass = $this->app->getViewType() == 'xhtml' ? 'allow-self-open' : '';?>
+<?php if(isset($pageBodyClass)) $singleClass = $singleClass . ' ' . $pageBodyClass; ?>
+<?php if($this->moduleName == 'index' && $this->methodName == 'index'): ?>
+<body class='menu-<?php echo $this->cookie->hideMenu ? 'hide' : 'show'; ?> <?php echo $singleClass;?>'>
+<?php else: ?>
+<body class='<?php echo $singleClass;?>'>
+<?php endif; ?>
 <?php if($this->app->getViewType() == 'xhtml'):?>
   <style>
     .main-actions-holder {display: none !important;}

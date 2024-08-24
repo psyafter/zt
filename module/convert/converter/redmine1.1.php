@@ -385,9 +385,7 @@ class redmine11ConvertModel extends redmineConvertModel
         /* Insert into zentao */
         foreach($productPlans as $id => $productPlan)
         {
-            $productPlan->product     = $this->map['products'][$productPlan->execution_id];
-            $productPlan->createdBy   = $this->app->user->account;
-            $productPlan->createdDate = helper::now();
+            $productPlan->product = $this->map['products'][$productPlan->execution_id];
             unset($productPlan->id);
             unset($productPlan->execution_id);
             $this->dao->dbh($this->dbh)->insert(TABLE_PRODUCTPLAN)->data($productPlan)->exec();
@@ -397,9 +395,7 @@ class redmine11ConvertModel extends redmineConvertModel
         foreach($this->map['products'] as $productID)
         {
             $productPlan = $this->dao->dbh($this->dbh)->select("name as title, createdDate as begin")->from(TABLE_PRODUCT)->where('id')->eq($productID)->fetch();
-            $productPlan->product     = $productID;
-            $productPlan->createdBy   = $this->app->user->account;
-            $productPlan->createdDate = helper::now();
+            $productPlan->product = $productID;
             $this->dao->dbh($this->dbh)->insert(TABLE_PRODUCTPLAN)->data($productPlan)->exec();
             $this->map['planOfProduct'][$productID] = $this->dao->lastinsertID();
         }

@@ -27,12 +27,12 @@ $(function()
         var planID = $('#plan').val();
         if(planID)
         {
-            location.href = createLink('execution', 'importPlanStories', 'executionID=' + executionID + '&planID=' + planID);
+            parent.location.href = createLink('execution', 'importPlanStories', 'executionID=' + executionID + '&planID=' + planID);
         }
     })
 
     /* Get checked stories. */
-    $(document).on('click', '#batchToTaskButton', function()
+    $('#batchToTaskButton').on('click', function()
     {
         storyIdList      = '';
         linedTaskIdList  = '';
@@ -49,34 +49,10 @@ $(function()
             }
             storyIdList += $(this).val() + ',';
         });
-
-        $('#type').val('').trigger("chosen:updated");
-        $('#hourPointValue').val('');
-        $('input[name^=fields]').prop('checked', true);
     });
 
     $('#submit').click(function()
     {
-        var taskType  = $('#type').val();
-        var hourPoint = $('#hourPointValue').val();
-        if(taskType.length == 0)
-        {
-            alert(typeNotEmpty);
-            return false;
-        }
-
-        if(hourPoint == 0)
-        {
-            alert(hourPointNotEmpty);
-            return false;
-        }
-        else if(typeof(hourPoint) != 'undefined' && (isNaN(hourPoint) || hourPoint < 0))
-        {
-            alert(hourPointNotError);
-            return false;
-        }
-        hourPoint = typeof(hourPoint) == 'undefined' ? 0 : hourPoint;
-
         if(linedTaskIdList)
         {
             confirmStoryToTask = confirmStoryToTask.replace('%s', linedTaskIdList);
@@ -86,8 +62,6 @@ $(function()
             }
             else
             {
-                if(!unlinkTaskIdList) return false;
-
                 $('#storyIdList').val(unlinkTaskIdList);
             }
         }
@@ -98,13 +72,6 @@ $(function()
     });
 
     $('.sorter-false a').unwrap();
-
-    /* The display of the adjusting sidebarHeader is synchronized with the sidebar. */
-    $(".sidebar-toggle").click(function()
-    {
-        $("#sidebarHeader").toggle("fast");
-    });
-    if($("main").is(".hide-sidebar")) $("#sidebarHeader").hide();
 });
 
 /**

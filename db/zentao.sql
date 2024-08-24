@@ -7,10 +7,10 @@ CREATE TABLE IF NOT EXISTS `zt_acl` (
   `type` char(40) NOT NULL DEFAULT 'whitelist',
   `source` char(30) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_action`;
 CREATE TABLE IF NOT EXISTS `zt_action` (
-  `id` int(9) unsigned NOT NULL auto_increment,
+  `id` mediumint(8) unsigned NOT NULL auto_increment,
   `objectType` varchar(30) NOT NULL default '',
   `objectID` mediumint(8) unsigned NOT NULL default '0',
   `product` text NOT NULL,
@@ -29,9 +29,9 @@ CREATE TABLE IF NOT EXISTS `zt_action` (
   KEY `project` (`project`),
   KEY `action` (`action`),
   KEY `objectID` (`objectID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_api_lib_release`;
-CREATE TABLE IF NOT EXISTS `zt_api_lib_release` (
+CREATE TABLE `zt_api_lib_release` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `lib` int UNSIGNED NOT NULL DEFAULT 0,
   `desc` varchar(255) NOT NULL DEFAULT '',
@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS `zt_api_lib_release` (
   `addedBy` varchar(30) NOT NULL DEFAULT 0,
   `addedDate` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_api`;
-CREATE TABLE IF NOT EXISTS `zt_api` (
+CREATE TABLE `zt_api` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `product` varchar(255) NOT NULL DEFAULT '',
   `lib` int UNSIGNED NOT NULL DEFAULT 0,
@@ -68,9 +68,9 @@ CREATE TABLE IF NOT EXISTS `zt_api` (
   `editedDate` datetime NOT NULL,
   `deleted` enum ('0', '1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_apispec`;
-CREATE TABLE IF NOT EXISTS `zt_apispec` (
+CREATE TABLE `zt_apispec` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `doc` int UNSIGNED NOT NULL DEFAULT 0,
   `module` int UNSIGNED NOT NULL DEFAULT 0,
@@ -91,9 +91,9 @@ CREATE TABLE IF NOT EXISTS `zt_apispec` (
   `addedBy` varchar(30)  NOT NULL DEFAULT 0,
   `addedDate` datetime NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_apistruct`;
-CREATE TABLE IF NOT EXISTS `zt_apistruct` (
+CREATE TABLE `zt_apistruct` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
   `lib` int UNSIGNED NOT NULL DEFAULT 0,
   `name` varchar(30)  NOT NULL DEFAULT '',
@@ -107,9 +107,9 @@ CREATE TABLE IF NOT EXISTS `zt_apistruct` (
   `editedDate` datetime NOT NULL,
   `deleted` enum ('0', '1') NOT NULL DEFAULT '0',
   primary key (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_apistruct_spec`;
-CREATE TABLE IF NOT EXISTS `zt_apistruct_spec` (
+CREATE TABLE `zt_apistruct_spec` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL DEFAULT '',
   `type` varchar(50)  NOT NULL DEFAULT '',
@@ -119,9 +119,9 @@ CREATE TABLE IF NOT EXISTS `zt_apistruct_spec` (
   `addedBy` varchar(30) NOT NULL DEFAULT 0,
   `addedDate` datetime NOT NULL,
   primary key (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_approval`;
-CREATE TABLE IF NOT EXISTS `zt_approval` (
+CREATE TABLE `zt_approval` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `flow` mediumint(8) NOT NULL,
   `objectType` varchar(30) NOT NULL,
@@ -131,12 +131,12 @@ CREATE TABLE IF NOT EXISTS `zt_approval` (
   `status` varchar(20) NOT NULL DEFAULT 'doing',
   `result` varchar(20) NOT NULL,
   `createdBy` char(30) NOT NULL,
-  `createdDate` datetime NOT NULL,
+  `createdDate` int(11) NOT NULL,
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_approvalflow`;
-CREATE TABLE IF NOT EXISTS `zt_approvalflow` (
+CREATE TABLE `zt_approvalflow` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `code` varchar(100) NOT NULL,
@@ -147,9 +147,9 @@ CREATE TABLE IF NOT EXISTS `zt_approvalflow` (
   `type` varchar(30) NOT NULL,
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_approvalflowobject`;
-CREATE TABLE IF NOT EXISTS `zt_approvalflowobject` (
+CREATE TABLE `zt_approvalflowobject` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `root` int(8) NOT NULL,
   `flow` int(8) NOT NULL,
@@ -157,9 +157,9 @@ CREATE TABLE IF NOT EXISTS `zt_approvalflowobject` (
   `objectID` mediumint(9) NOT NULL,
   `extra` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_approvalflowspec`;
-CREATE TABLE IF NOT EXISTS `zt_approvalflowspec` (
+CREATE TABLE `zt_approvalflowspec` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `flow` mediumint(8) NOT NULL,
   `version` mediumint(8) NOT NULL,
@@ -167,9 +167,9 @@ CREATE TABLE IF NOT EXISTS `zt_approvalflowspec` (
   `createdBy` varchar(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_approvalnode`;
-CREATE TABLE IF NOT EXISTS `zt_approvalnode` (
+CREATE TABLE `zt_approvalnode` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `approval` mediumint(8) NOT NULL,
   `type` enum('review','cc') NOT NULL,
@@ -187,20 +187,19 @@ CREATE TABLE IF NOT EXISTS `zt_approvalnode` (
   `extra` mediumtext NOT NULL,
   `reviewedBy` char(30) NOT NULL,
   `reviewedDate` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_reviewed_date` (`reviewedDate`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_approvalobject`;
-CREATE TABLE IF NOT EXISTS `zt_approvalobject` (
+CREATE TABLE `zt_approvalobject` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `approval` int(8) NOT NULL,
   `objectType` char(30) NOT NULL,
   `objectID` mediumint(8) NOT NULL,
   `extra` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_approvalrole`;
-CREATE TABLE IF NOT EXISTS `zt_approvalrole` (
+CREATE TABLE `zt_approvalrole` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `code` char(30) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -208,7 +207,7 @@ CREATE TABLE IF NOT EXISTS `zt_approvalrole` (
   `users` longtext NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_block`;
 CREATE TABLE IF NOT EXISTS `zt_block` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -218,7 +217,7 @@ CREATE TABLE IF NOT EXISTS `zt_block` (
   `type` char(30) NOT NULL,
   `title` varchar(100) NOT NULL,
   `source` varchar(20) NOT NULL,
-  `block` varchar(30) NOT NULL,
+  `block` varchar(20) NOT NULL,
   `params` text NOT NULL,
   `order` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `grid` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -227,7 +226,7 @@ CREATE TABLE IF NOT EXISTS `zt_block` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `account_vision_module_type_order` (`account`,`vision`,`module`,`type`,`order`),
   KEY `account` (`account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_branch`;
 CREATE TABLE IF NOT EXISTS `zt_branch` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -242,7 +241,7 @@ CREATE TABLE IF NOT EXISTS `zt_branch` (
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY  (`id`),
   KEY `product` (`product`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_bug`;
 CREATE TABLE IF NOT EXISTS `zt_bug` (
   `id` mediumint(8) NOT NULL auto_increment,
@@ -262,8 +261,8 @@ CREATE TABLE IF NOT EXISTS `zt_bug` (
   `severity` tinyint(4) NOT NULL default '0',
   `pri` tinyint(3) unsigned NOT NULL,
   `type` varchar(30) NOT NULL default '',
-  `os` varchar(255) NOT NULL default '',
-  `browser` varchar(255) NOT NULL default '',
+  `os` varchar(30) NOT NULL default '',
+  `browser` varchar(30) NOT NULL default '',
   `hardware` varchar(30) NOT NULL,
   `found` varchar(30) NOT NULL default '',
   `steps` mediumtext NOT NULL,
@@ -315,7 +314,7 @@ CREATE TABLE IF NOT EXISTS `zt_bug` (
   KEY `toStory` (`toStory`),
   KEY `result` (`result`),
   KEY `assignedTo` (`assignedTo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_build`;
 CREATE TABLE IF NOT EXISTS `zt_build` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -331,13 +330,11 @@ CREATE TABLE IF NOT EXISTS `zt_build` (
   `bugs` text NOT NULL,
   `builder` char(30) NOT NULL default '',
   `desc` mediumtext NOT NULL,
-  `createdBy` varchar(30) NOT NULL,
-  `createdDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`),
   KEY `product` (`product`),
   KEY `execution` (`execution`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_burn`;
 CREATE TABLE IF NOT EXISTS `zt_burn` (
   `execution` mediumint(8) unsigned NOT NULL,
@@ -349,7 +346,7 @@ CREATE TABLE IF NOT EXISTS `zt_burn` (
   `consumed` float NOT NULL,
   `storyPoint` float NOT NULL,
   PRIMARY KEY  (`execution`,`date`,`task`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_case`;
 CREATE TABLE IF NOT EXISTS `zt_case` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -400,7 +397,7 @@ CREATE TABLE IF NOT EXISTS `zt_case` (
   KEY `story` (`story`),
   KEY `fromBug` (`fromBug`),
   KEY `module` (`module`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_casestep`;
 CREATE TABLE IF NOT EXISTS `zt_casestep` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -413,31 +410,7 @@ CREATE TABLE IF NOT EXISTS `zt_casestep` (
   PRIMARY KEY  (`id`),
   KEY `case` (`case`),
   KEY `version` (`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
--- DROP TABLE IF EXISTS `zt_cfd`;
-CREATE TABLE IF NOT EXISTS `zt_cfd` (
-  `id` int(8) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  `execution` int(8) NOT NULL,
-  `type` char(30) NOT NULL,
-  `name` char(30) NOT NULL,
-  `count` smallint NOT NULL,
-  `date` date NOT NULL,
-  UNIQUE KEY `execution_type_name_date` (`execution`,`type`,`name`,`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
--- DROP TABLE IF EXISTS `zt_chart`;
-CREATE TABLE `zt_chart` (
-  `id` mediumint NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `type` varchar(30) NOT NULL,
-  `dataset` varchar(30) NOT NULL,
-  `desc` mediumtext NOT NULL,
-  `settings` mediumtext NOT NULL,
-  `filters` mediumtext NOT NULL,
-  `createdBy` char(30) NOT NULL,
-  `createdDate` datetime NOT NULL,
-  `deleted` tinyint NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_company`;
 CREATE TABLE IF NOT EXISTS `zt_company` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -452,7 +425,7 @@ CREATE TABLE IF NOT EXISTS `zt_company` (
   `admins` char(255) default NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_compile`;
 CREATE TABLE IF NOT EXISTS `zt_compile` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -470,7 +443,7 @@ CREATE TABLE IF NOT EXISTS `zt_compile` (
   `updateDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_config`;
 CREATE TABLE IF NOT EXISTS `zt_config` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -482,7 +455,7 @@ CREATE TABLE IF NOT EXISTS `zt_config` (
   `value` longtext NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `unique` (`vision`,`owner`,`module`,`section`,`key`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_cron`;
 CREATE TABLE IF NOT EXISTS `zt_cron` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -499,32 +472,7 @@ CREATE TABLE IF NOT EXISTS `zt_cron` (
   `lastTime` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `lastTime` (`lastTime`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
--- DROP TABLE IF EXISTS `zt_dashboard`;
-CREATE TABLE `zt_dashboard` (
-  `id` mediumint(8) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `module` mediumint NOT NULL,
-  `desc` mediumtext NOT NULL,
-  `layout` mediumtext NOT NULL,
-  `filters` mediumtext NOT NULL,
-  `createdBy` varchar(30) NOT NULL,
-  `createdDate` datetime NOT NULL,
-  `deleted` tinyint NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
--- DROP TABLE IF EXISTS `zt_dataset`;
-CREATE TABLE `zt_dataset` (
-  `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(155) NOT NULL,
-  `sql` text NOT NULL,
-  `fields` mediumtext NOT NULL,
-  `objects` mediumtext NOT NULL,
-  `createdBy` varchar(30) NOT NULL,
-  `createdDate` datetime NOT NULL,
-  `deleted` tinyint NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_dept`;
 CREATE TABLE IF NOT EXISTS `zt_dept` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -539,7 +487,7 @@ CREATE TABLE IF NOT EXISTS `zt_dept` (
   PRIMARY KEY (`id`),
   KEY `parent` (`parent`),
   KEY `path` (`path`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_design`;
 CREATE TABLE IF NOT EXISTS `zt_design` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -563,7 +511,7 @@ CREATE TABLE IF NOT EXISTS `zt_design` (
   `version` smallint(6) NOT NULL,
   `type` char(30) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_designspec`;
 CREATE TABLE IF NOT EXISTS `zt_designspec` (
   `design` mediumint(8) NOT NULL,
@@ -572,7 +520,7 @@ CREATE TABLE IF NOT EXISTS `zt_designspec` (
   `desc` mediumtext NOT NULL,
   `files` varchar(255) NOT NULL,
   UNIQUE KEY `design` (`design`,`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_doc`;
 CREATE TABLE IF NOT EXISTS `zt_doc` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -602,7 +550,7 @@ CREATE TABLE IF NOT EXISTS `zt_doc` (
   KEY `product` (`product`),
   KEY `execution` (`execution`),
   KEY `lib` (`lib`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_doccontent`;
 CREATE TABLE IF NOT EXISTS `zt_doccontent` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -615,7 +563,7 @@ CREATE TABLE IF NOT EXISTS `zt_doccontent` (
   `version` smallint(5) unsigned NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `doc_version` (`doc`,`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_doclib`;
 CREATE TABLE IF NOT EXISTS `zt_doclib` (
   `id` smallint(5) unsigned NOT NULL auto_increment,
@@ -637,7 +585,7 @@ CREATE TABLE IF NOT EXISTS `zt_doclib` (
   PRIMARY KEY  (`id`),
   KEY `product` (`product`),
   KEY `execution` (`execution`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_effort`;
 CREATE TABLE IF NOT EXISTS `zt_effort` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -654,7 +602,7 @@ CREATE TABLE IF NOT EXISTS `zt_effort` (
   `status` enum('1','2','3') NOT NULL default '1',
   PRIMARY KEY  (`id`),
   KEY `user` (`user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_entry`;
 CREATE TABLE IF NOT EXISTS `zt_entry` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -672,7 +620,7 @@ CREATE TABLE IF NOT EXISTS `zt_entry` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0', '1') NOT NULL DEFAULT '0',
   PRIMARY KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_expect`;
 CREATE TABLE IF NOT EXISTS `zt_expect` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -683,7 +631,7 @@ CREATE TABLE IF NOT EXISTS `zt_expect` (
   `createdBy` char(30) NOT NULL,
   `createdDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_extension`;
 CREATE TABLE IF NOT EXISTS `zt_extension` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -705,7 +653,7 @@ CREATE TABLE IF NOT EXISTS `zt_extension` (
   UNIQUE KEY `code` (`code`),
   KEY `name` (`name`),
   KEY `installedTime` (`installedTime`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_file`;
 CREATE TABLE IF NOT EXISTS `zt_file` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -723,7 +671,7 @@ CREATE TABLE IF NOT EXISTS `zt_file` (
   PRIMARY KEY (`id`),
   KEY `objectType` (`objectType`),
   KEY `objectID` (`objectID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_group`;
 CREATE TABLE IF NOT EXISTS `zt_group` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -734,14 +682,14 @@ CREATE TABLE IF NOT EXISTS `zt_group` (
   `desc` char(255) NOT NULL default '',
   `acl` text,
   PRIMARY KEY  (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_grouppriv`;
 CREATE TABLE IF NOT EXISTS `zt_grouppriv` (
   `group` mediumint(8) unsigned NOT NULL default '0',
   `module` char(30) NOT NULL default '',
   `method` char(30) NOT NULL default '',
   UNIQUE KEY `group` (`group`,`module`,`method`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_holiday`;
 CREATE TABLE IF NOT EXISTS `zt_holiday` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -754,10 +702,10 @@ CREATE TABLE IF NOT EXISTS `zt_holiday` (
   PRIMARY KEY (`id`),
   KEY `year` (`year`),
   KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_history`;
 CREATE TABLE IF NOT EXISTS `zt_history` (
-  `id` int(9) unsigned NOT NULL auto_increment,
+  `id` mediumint(8) unsigned NOT NULL auto_increment,
   `action` mediumint(8) unsigned NOT NULL default '0',
   `field` varchar(30) NOT NULL default '',
   `old` text NOT NULL,
@@ -765,7 +713,7 @@ CREATE TABLE IF NOT EXISTS `zt_history` (
   `diff` mediumtext NOT NULL,
   PRIMARY KEY (`id`),
   KEY `action` (`action`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_job`;
 CREATE TABLE IF NOT EXISTS `zt_job` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -791,12 +739,11 @@ CREATE TABLE IF NOT EXISTS `zt_job` (
   `lastExec` datetime DEFAULT NULL,
   `lastStatus` varchar(255) DEFAULT NULL,
   `lastTag` varchar(255) DEFAULT NULL,
-  `lastSyncDate` datetime DEFAULT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_kanbanspace`;
-CREATE TABLE IF NOT EXISTS `zt_kanbanspace` (
+CREATE TABLE `zt_kanbanspace` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `type` varchar(50) NOT NULL,
@@ -817,9 +764,9 @@ CREATE TABLE IF NOT EXISTS `zt_kanbanspace` (
   `activatedDate` datetime NOT NULL,
   `deleted` enum('0', '1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_kanban`;
-CREATE TABLE IF NOT EXISTS `zt_kanban` (
+CREATE TABLE `zt_kanban` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `space` mediumint(8) unsigned NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -833,13 +780,8 @@ CREATE TABLE IF NOT EXISTS `zt_kanban` (
   `status` enum('active','closed') NOT NULL default 'active',
   `order` mediumint(8) NOT NULL DEFAULT '0',
   `displayCards` smallint(6) NOT NULL default '0',
-  `showWIP` enum('0','1') NOT NULL DEFAULT '1',
   `fluidBoard` enum('0','1') NOT NULL DEFAULT '0',
-  `colWidth` smallint(4) NOT NULL DEFAULT '264',
-  `minColWidth` smallint(4) NOT NULL DEFAULT '180',
-  `maxColWidth` smallint(4) NOT NULL DEFAULT '384',
   `object` varchar(255) NOT NULL,
-  `alignment` varchar(10) NOT NULL default 'center',
   `createdBy` char(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   `lastEditedBy` char(30) NOT NULL,
@@ -850,9 +792,9 @@ CREATE TABLE IF NOT EXISTS `zt_kanban` (
   `activatedDate` datetime NOT NULL,
   `deleted` enum('0', '1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_kanbanregion`;
-CREATE TABLE IF NOT EXISTS `zt_kanbanregion` (
+CREATE TABLE `zt_kanbanregion` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `space` mediumint(8) unsigned NOT NULL,
   `kanban` mediumint(8) unsigned NOT NULL,
@@ -864,9 +806,9 @@ CREATE TABLE IF NOT EXISTS `zt_kanbanregion` (
   `lastEditedDate` datetime NOT NULL,
   `deleted` enum('0', '1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_kanbancard`;
-CREATE TABLE IF NOT EXISTS `zt_kanbancard` (
+CREATE TABLE `zt_kanbancard` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `kanban` mediumint(8) unsigned NOT NULL,
   `region` mediumint(8) unsigned NOT NULL,
@@ -897,9 +839,9 @@ CREATE TABLE IF NOT EXISTS `zt_kanbancard` (
   `assignedDate` datetime NOT NULL,
   `deleted` enum('0', '1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_kanbancell`;
-CREATE TABLE IF NOT EXISTS `zt_kanbancell` (
+CREATE TABLE `zt_kanbancell` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
   `kanban` mediumint(8) NOT NULL,
   `lane` mediumint(8) NOT NULL,
@@ -908,15 +850,15 @@ CREATE TABLE IF NOT EXISTS `zt_kanbancell` (
   `cards` text NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `card_group` (`kanban`,`type`,`lane`,`column`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_kanbangroup`;
-CREATE TABLE IF NOT EXISTS `zt_kanbangroup` (
+CREATE TABLE `zt_kanbangroup` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `kanban` mediumint(8) unsigned NOT NULL,
   `region` mediumint(8) unsigned NOT NULL,
   `order` smallint(6) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_kanbanlane`;
 CREATE TABLE IF NOT EXISTS `zt_kanbanlane` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
@@ -932,7 +874,7 @@ CREATE TABLE IF NOT EXISTS `zt_kanbanlane` (
   `lastEditedTime` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_kanbancolumn`;
 CREATE TABLE IF NOT EXISTS `zt_kanbancolumn` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
@@ -947,7 +889,7 @@ CREATE TABLE IF NOT EXISTS `zt_kanbancolumn` (
   `archived` enum('0', '1') NOT NULL DEFAULT '0',
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_lang`;
 CREATE TABLE IF NOT EXISTS `zt_lang` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -960,7 +902,7 @@ CREATE TABLE IF NOT EXISTS `zt_lang` (
   `vision` varchar(10) NOT NULL DEFAULT 'rnd',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `lang` (`lang`,`module`,`section`,`key`,`vision`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_log`;
 CREATE TABLE IF NOT EXISTS `zt_log` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -975,7 +917,7 @@ CREATE TABLE IF NOT EXISTS `zt_log` (
   PRIMARY KEY `id` (`id`),
   KEY `objectType` (`objectType`),
   KEY `obejctID` (`objectID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_module`;
 CREATE TABLE IF NOT EXISTS `zt_module` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -987,7 +929,6 @@ CREATE TABLE IF NOT EXISTS `zt_module` (
   `grade` tinyint(3) unsigned NOT NULL default '0',
   `order` smallint(5) unsigned NOT NULL default '0',
   `type` char(30) NOT NULL,
-  `from` mediumint(8) unsigned NOT NULL default '0',
   `owner` varchar(30) NOT NULL,
   `collector` text NOT NULL,
   `short` varchar(30) NOT NULL,
@@ -996,14 +937,14 @@ CREATE TABLE IF NOT EXISTS `zt_module` (
   KEY `root` (`root`),
   KEY `type` (`type`),
   KEY `path` (`path`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_mr`;
 CREATE TABLE IF NOT EXISTS `zt_mr` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `hostID` mediumint(8) unsigned NOT NULL,
-  `sourceProject` varchar(50) NOT NULL,
+  `gitlabID` mediumint(8) unsigned NOT NULL,
+  `sourceProject` int unsigned NOT NULL,
   `sourceBranch` varchar(100) NOT NULL,
-  `targetProject` varchar(50) NOT NULL,
+  `targetProject` int unsigned NOT NULL,
   `targetBranch` varchar(100) NOT NULL,
   `mriid` int unsigned NOT NULL,
   `title` varchar(255) NOT NULL,
@@ -1032,7 +973,7 @@ CREATE TABLE IF NOT EXISTS `zt_mr` (
   `hasNoConflict` enum('0','1') COLLATE 'utf8_general_ci' NOT NULL DEFAULT '0',
   `diffs` longtext COLLATE 'utf8_general_ci' NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_mrapproval`;
 CREATE TABLE IF NOT EXISTS `zt_mrapproval` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1042,7 +983,7 @@ CREATE TABLE IF NOT EXISTS `zt_mrapproval` (
   `action` char(30) NOT NULL,
   `comment` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_notify`;
 CREATE TABLE IF NOT EXISTS `zt_notify` (
   `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
@@ -1060,7 +1001,7 @@ CREATE TABLE IF NOT EXISTS `zt_notify` (
   `failReason` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `objectType_toList_status` (`objectType`,`toList`,`status`)
-) ENGINE='InnoDB' COLLATE 'utf8_general_ci';
+) ENGINE='MyISAM' COLLATE 'utf8_general_ci';
 -- DROP TABLE IF EXISTS `zt_oauth`;
 CREATE TABLE IF NOT EXISTS `zt_oauth` (
   `account` varchar(30) NOT NULL,
@@ -1070,7 +1011,7 @@ CREATE TABLE IF NOT EXISTS `zt_oauth` (
   KEY `account` (`account`),
   KEY `providerType` (`providerType`),
   KEY `providerID` (`providerID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_pipeline`;
 CREATE TABLE IF NOT EXISTS `zt_pipeline` (
   `id` smallint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1087,14 +1028,14 @@ CREATE TABLE IF NOT EXISTS `zt_pipeline` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_planstory`;
 CREATE TABLE IF NOT EXISTS `zt_planstory` (
   `plan` mediumint(8) unsigned NOT NULL,
   `story` mediumint(8) unsigned NOT NULL,
   `order` mediumint(9) NOT NULL,
   UNIQUE KEY `plan_story` (`plan`,`story`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_product`;
 CREATE TABLE IF NOT EXISTS `zt_product` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1122,7 +1063,7 @@ CREATE TABLE IF NOT EXISTS `zt_product` (
   PRIMARY KEY (`id`),
   KEY `acl` (`acl`),
   KEY `order` (`order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_productplan`;
 CREATE TABLE IF NOT EXISTS `zt_productplan` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1136,13 +1077,11 @@ CREATE TABLE IF NOT EXISTS `zt_productplan` (
   `end` date NOT NULL,
   `order` text NOT NULL,
   `closedReason` varchar(20) NOT NULL,
-  `createdBy` varchar(30) NOT NULL,
-  `createdDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`),
   KEY `product` (`product`),
   KEY `end` (`end`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_project`;
 CREATE TABLE IF NOT EXISTS `zt_project` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1196,9 +1135,6 @@ CREATE TABLE IF NOT EXISTS `zt_project` (
   `vision` varchar(10) NOT NULL DEFAULT 'rnd',
   `displayCards` smallint(6) NOT NULL default '0',
   `fluidBoard` enum('0','1') NOT NULL DEFAULT '0',
-  `colWidth` smallint(4) NOT NULL DEFAULT '264',
-  `minColWidth` smallint(4) NOT NULL DEFAULT '180',
-  `maxColWidth` smallint(4) NOT NULL DEFAULT '384',
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `parent` (`parent`),
@@ -1207,17 +1143,7 @@ CREATE TABLE IF NOT EXISTS `zt_project` (
   KEY `status` (`status`),
   KEY `acl` (`acl`),
   KEY `order` (`order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
--- DROP TABLE IF EXISTS `zt_projectadmin`;
-CREATE TABLE IF NOT EXISTS `zt_projectadmin` (
-  `group` smallint(6) NOT NULL,
-  `account` char(30) NOT NULL,
-  `programs` text NOT NULL,
-  `projects` text NOT NULL,
-  `products` text NOT NULL,
-  `executions` text NOT NULL,
-  UNIQUE KEY `group_account` (`group`, `account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_projectcase`;
 CREATE TABLE IF NOT EXISTS `zt_projectcase` (
   `project` mediumint(8) unsigned NOT NULL DEFAULT '0',
@@ -1227,15 +1153,15 @@ CREATE TABLE IF NOT EXISTS `zt_projectcase` (
   `version` smallint(6) NOT NULL DEFAULT '1',
   `order` smallint(6) unsigned NOT NULL,
   UNIQUE KEY `project` (`project`,`case`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_projectproduct`;
 CREATE TABLE IF NOT EXISTS `zt_projectproduct` (
   `project` mediumint(8) unsigned NOT NULL,
   `product` mediumint(8) unsigned NOT NULL,
   `branch` mediumint(8) unsigned NOT NULL,
-  `plan` varchar(255) NOT NULL,
+  `plan` mediumint(8) unsigned NOT NULL,
   PRIMARY KEY  (`project`, `product`, `branch`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_projectspec`;
 CREATE TABLE IF NOT EXISTS `zt_projectspec` (
   `project` mediumint(8) NOT NULL,
@@ -1245,7 +1171,7 @@ CREATE TABLE IF NOT EXISTS `zt_projectspec` (
   `begin` date NOT NULL,
   `end` date NOT NULL,
   UNIQUE KEY `project` (`project`,`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_projectstory`;
 CREATE TABLE IF NOT EXISTS `zt_projectstory` (
   `project` mediumint(8) unsigned NOT NULL default '0',
@@ -1256,7 +1182,7 @@ CREATE TABLE IF NOT EXISTS `zt_projectstory` (
   `order` smallint(6) unsigned NOT NULL,
   UNIQUE KEY `project` (`project`,`story`),
   KEY `story` (`story`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_relation`;
 CREATE TABLE IF NOT EXISTS `zt_relation` (
   `id` int(8) NOT NULL AUTO_INCREMENT,
@@ -1273,7 +1199,7 @@ CREATE TABLE IF NOT EXISTS `zt_relation` (
   `extra` char(30) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `relation` (`product`,`relation`,`AType`,`BType`, `AID`, `BID`)
-) ENGINE='InnoDB' DEFAULT CHARSET=utf8;
+) ENGINE='MyISAM' DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_release`;
 CREATE TABLE IF NOT EXISTS `zt_release` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1292,13 +1218,11 @@ CREATE TABLE IF NOT EXISTS `zt_release` (
   `notify` varchar(255),
   `status` varchar(20) NOT NULL default 'normal',
   `subStatus` varchar(30) NOT NULL default '',
-  `createdBy` varchar(30) NOT NULL,
-  `createdDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`),
   KEY `product` (`product`),
   KEY `build` (`build`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_repo`;
 CREATE TABLE IF NOT EXISTS `zt_repo` (
   `id` mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -1309,8 +1233,6 @@ CREATE TABLE IF NOT EXISTS `zt_repo` (
   `encoding` varchar(20) NOT NULL,
   `SCM` varchar(10) NOT NULL,
   `client` varchar(100) NOT NULL,
-  `serviceHost` varchar(50) NOT NULL,
-  `serviceProject` varchar(100) NOT NULL,
   `commits` mediumint(8) unsigned NOT NULL,
   `account` varchar(30) NOT NULL,
   `password` varchar(30) NOT NULL,
@@ -1327,7 +1249,7 @@ CREATE TABLE IF NOT EXISTS `zt_repo` (
   `fileServerPassword` varchar(100) NOT NULL default '',
   `deleted` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_repobranch`;
 CREATE TABLE IF NOT EXISTS `zt_repobranch` (
   `repo` mediumint(8) unsigned NOT NULL,
@@ -1336,7 +1258,7 @@ CREATE TABLE IF NOT EXISTS `zt_repobranch` (
   UNIQUE KEY `repo_revision_branch` (`repo`,`revision`,`branch`),
   KEY `branch` (`branch`),
   KEY `revision` (`revision`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_repofiles`;
 CREATE TABLE IF NOT EXISTS `zt_repofiles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -1351,7 +1273,7 @@ CREATE TABLE IF NOT EXISTS `zt_repofiles` (
   KEY `parent` (`parent`),
   KEY `repo` (`repo`),
   KEY `revision` (`revision`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_repohistory`;
 CREATE TABLE IF NOT EXISTS `zt_repohistory` (
   `id` mediumint(9) NOT NULL AUTO_INCREMENT,
@@ -1364,7 +1286,7 @@ CREATE TABLE IF NOT EXISTS `zt_repohistory` (
   PRIMARY KEY (`id`),
   KEY `repo` (`repo`),
   KEY `revision` (`revision`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_score`;
 CREATE TABLE IF NOT EXISTS `zt_score` (
   `id` bigint(12) unsigned NOT NULL AUTO_INCREMENT,
@@ -1380,13 +1302,13 @@ CREATE TABLE IF NOT EXISTS `zt_score` (
   KEY `account` (`account`),
   KEY `model` (`module`),
   KEY `method` (`method`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_searchdict`;
 CREATE TABLE IF NOT EXISTS `zt_searchdict` (
   `key` smallint(5) unsigned NOT NULL,
   `value` char(3) NOT NULL,
   PRIMARY KEY (`key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_searchindex`;
 CREATE TABLE IF NOT EXISTS `zt_searchindex` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -1400,8 +1322,9 @@ CREATE TABLE IF NOT EXISTS `zt_searchindex` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `object` (`objectType`,`objectID`),
   KEY `addedDate` (`addedDate`),
-  FULLTEXT KEY `title_content` (`title`, `content`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  FULLTEXT KEY `content` (`content`),
+  FULLTEXT KEY `title` (`title`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_stage`;
 CREATE TABLE IF NOT EXISTS `zt_stage` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1414,7 +1337,7 @@ CREATE TABLE IF NOT EXISTS `zt_stage` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_stakeholder`;
 CREATE TABLE IF NOT EXISTS `zt_stakeholder` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -1430,7 +1353,7 @@ CREATE TABLE IF NOT EXISTS `zt_stakeholder` (
   `editedDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL,
   KEY `objectID` (`objectID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_story`;
 CREATE TABLE IF NOT EXISTS `zt_story` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1449,7 +1372,7 @@ CREATE TABLE IF NOT EXISTS `zt_story` (
   `category` varchar(30) NOT NULL default 'feature',
   `pri` tinyint(3) unsigned NOT NULL default '3',
   `estimate` float unsigned NOT NULL,
-  `status` enum('','changing','active','draft', 'reviewing', 'closed') NOT NULL default '',
+  `status` enum('','changed','active','draft','closed') NOT NULL default '',
   `subStatus` varchar(30) NOT NULL default '',
   `color` char(7) NOT NULL,
   `stage` enum('','wait','planned','projected','developing','developed','testing','tested','verified','released', 'closed') NOT NULL DEFAULT 'wait',
@@ -1461,8 +1384,6 @@ CREATE TABLE IF NOT EXISTS `zt_story` (
   `assignedDate` datetime NOT NULL,
   `lastEditedBy` varchar(30) NOT NULL default '',
   `lastEditedDate` datetime NOT NULL,
-  `changedBy` VARCHAR(30) NOT NULL,
-  `changedDate` DATETIME NOT NULL,
   `reviewedBy` varchar(255) NOT NULL,
   `reviewedDate` datetime NOT NULL default '0000-00-00 00:00:00',
   `closedBy` varchar(30) NOT NULL default '',
@@ -1472,7 +1393,6 @@ CREATE TABLE IF NOT EXISTS `zt_story` (
   `toBug` mediumint(8) unsigned NOT NULL,
   `childStories` varchar(255) NOT NULL,
   `linkStories` varchar(255) NOT NULL,
-  `linkRequirements` varchar(255) NOT NULL,
   `duplicateStory` mediumint(8) unsigned NOT NULL,
   `version` smallint(6) NOT NULL default '1',
   `feedbackBy` varchar(100) NOT NULL,
@@ -1483,7 +1403,7 @@ CREATE TABLE IF NOT EXISTS `zt_story` (
   KEY `product` (`product`),
   KEY `status` (`status`),
   KEY `assignedTo` (`assignedTo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_storyreview`;
 CREATE TABLE IF NOT EXISTS `zt_storyreview` (
   `story` mediumint(9) NOT NULL,
@@ -1492,7 +1412,7 @@ CREATE TABLE IF NOT EXISTS `zt_storyreview` (
   `result` varchar(30) NOT NULL,
   `reviewDate` datetime NOT NULL,
   UNIQUE KEY `story` (`story`,`version`,`reviewer`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_storyestimate`;
 CREATE TABLE IF NOT EXISTS `zt_storyestimate` (
   `story` mediumint(9) NOT NULL,
@@ -1502,7 +1422,7 @@ CREATE TABLE IF NOT EXISTS `zt_storyestimate` (
   `openedBy` varchar(30) NOT NULL,
   `openedDate` datetime NOT NULL,
   UNIQUE KEY `story` (`story`,`round`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_storyspec`;
 CREATE TABLE IF NOT EXISTS `zt_storyspec` (
   `story` mediumint(9) NOT NULL,
@@ -1510,9 +1430,8 @@ CREATE TABLE IF NOT EXISTS `zt_storyspec` (
   `title` varchar(255) NOT NULL,
   `spec` mediumtext NOT NULL,
   `verify` mediumtext NOT NULL,
-  `files` text NOT NULL,
   UNIQUE KEY `story` (`story`,`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_storystage`;
 CREATE TABLE IF NOT EXISTS `zt_storystage` (
   `story` mediumint(8) unsigned NOT NULL,
@@ -1521,7 +1440,7 @@ CREATE TABLE IF NOT EXISTS `zt_storystage` (
   `stagedBy` char(30) NOT NULL,
   UNIQUE KEY `story_branch` (`story`,`branch`),
   KEY `story` (`story`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_suitecase`;
 CREATE TABLE IF NOT EXISTS `zt_suitecase` (
   `suite` mediumint(8) unsigned NOT NULL,
@@ -1529,7 +1448,7 @@ CREATE TABLE IF NOT EXISTS `zt_suitecase` (
   `case` mediumint(8) unsigned NOT NULL,
   `version` smallint(5) unsigned NOT NULL,
   UNIQUE KEY `suitecase` (`suite`,`case`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_task`;
 CREATE TABLE IF NOT EXISTS `zt_task` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1576,7 +1495,6 @@ CREATE TABLE IF NOT EXISTS `zt_task` (
   `lastEditedBy` varchar(30) NOT NULL,
   `lastEditedDate` datetime NOT NULL,
   `activatedDate` datetime NOT NULL,
-  `order` mediumint(8) unsigned NOT NULL,
   `repo` mediumint(8) unsigned NOT NULL,
   `mr` mediumint(8) unsigned NOT NULL,
   `entry` varchar(255) NOT NULL,
@@ -1589,9 +1507,8 @@ CREATE TABLE IF NOT EXISTS `zt_task` (
   KEY `execution` (`execution`),
   KEY `story` (`story`),
   KEY `parent` (`parent`),
-  KEY `assignedTo` (`assignedTo`),
-  KEY `order` (`order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  KEY `assignedTo` (`assignedTo`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_taskestimate`;
 CREATE TABLE IF NOT EXISTS `zt_taskestimate` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1601,10 +1518,9 @@ CREATE TABLE IF NOT EXISTS `zt_taskestimate` (
   `consumed` float unsigned NOT NULL,
   `account` char(30) NOT NULL default '',
   `work` text,
-  `order` tinyint(3) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `task` (`task`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_taskspec`;
 CREATE TABLE IF NOT EXISTS `zt_taskspec` (
   `task` mediumint(8) NOT NULL,
@@ -1613,21 +1529,7 @@ CREATE TABLE IF NOT EXISTS `zt_taskspec` (
   `estStarted` date NOT NULL,
   `deadline` date NOT NULL,
   UNIQUE KEY `task` (`task`,`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
--- DROP TABLE IF EXISTS `zt_taskteam`;
-CREATE TABLE `zt_taskteam` (
-  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `task` mediumint(8) unsigned NOT NULL,
-  `account` char(30) NOT NULL,
-  `estimate` decimal(12,2) NOT NULL,
-  `consumed` decimal(12,2) NOT NULL,
-  `left` decimal(12,2) NOT NULL,
-  `transfer` char(30) NOT NULL,
-  `status` enum('wait','doing','done') NOT NULL DEFAULT 'wait',
-  `order` tinyint(3) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `task` (`task`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_team`;
 CREATE TABLE IF NOT EXISTS `zt_team` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1645,7 +1547,7 @@ CREATE TABLE IF NOT EXISTS `zt_team` (
   `order` TINYINT(3) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `team` (`root`,`type`,`account`)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_testreport`;
 CREATE TABLE IF NOT EXISTS `zt_testreport` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1669,7 +1571,7 @@ CREATE TABLE IF NOT EXISTS `zt_testreport` (
   `createdDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_testresult`;
 CREATE TABLE IF NOT EXISTS `zt_testresult` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1688,7 +1590,7 @@ CREATE TABLE IF NOT EXISTS `zt_testresult` (
   KEY `case` (`case`),
   KEY `version` (`version`),
   KEY `run` (`run`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_testrun`;
 CREATE TABLE IF NOT EXISTS `zt_testrun` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1702,7 +1604,7 @@ CREATE TABLE IF NOT EXISTS `zt_testrun` (
   `status` char(30) NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `task` (`task`,`case`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_testsuite`;
 CREATE TABLE IF NOT EXISTS `zt_testsuite` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1711,7 +1613,6 @@ CREATE TABLE IF NOT EXISTS `zt_testsuite` (
   `name` varchar(255) NOT NULL,
   `desc` mediumtext NOT NULL,
   `type` varchar(20) NOT NULL,
-  `order` smallint unsigned NOT NULL DEFAULT '0',
   `addedBy` char(30) NOT NULL,
   `addedDate` datetime NOT NULL,
   `lastEditedBy` char(30) NOT NULL,
@@ -1719,7 +1620,7 @@ CREATE TABLE IF NOT EXISTS `zt_testsuite` (
   `deleted` enum('0','1') NOT NULL,
   PRIMARY KEY (`id`),
   KEY `product` (`product`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_testtask`;
 CREATE TABLE IF NOT EXISTS `zt_testtask` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1741,13 +1642,11 @@ CREATE TABLE IF NOT EXISTS `zt_testtask` (
   `testreport` mediumint(8) unsigned NOT NULL,
   `auto` varchar(10) NOT NULL DEFAULT 'no',
   `subStatus` varchar(30) NOT NULL default '',
-  `createdBy` varchar(30) NOT NULL,
-  `createdDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`),
   KEY `product` (`product`),
   KEY `build` (`build`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_todo`;
 CREATE TABLE IF NOT EXISTS `zt_todo` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1778,7 +1677,7 @@ CREATE TABLE IF NOT EXISTS `zt_todo` (
   KEY `assignedTo` (`assignedTo`),
   KEY `finishedBy` (`finishedBy`),
   KEY `date` (`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_user`;
 CREATE TABLE IF NOT EXISTS `zt_user` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1818,7 +1717,6 @@ CREATE TABLE IF NOT EXISTS `zt_user` (
   `ranzhi` char(30) NOT NULL default '',
   `score` INT(11) NOT NULL DEFAULT '0',
   `scoreLevel` INT(11) NOT NULL DEFAULT '0',
-  `resetToken` varchar(50) NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY  (`id`),
   UNIQUE KEY `account` (`account`),
@@ -1826,7 +1724,7 @@ CREATE TABLE IF NOT EXISTS `zt_user` (
   KEY `email` (`email`),
   KEY `commiter` (`commiter`),
   KEY `deleted` (`deleted`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_usercontact`;
 CREATE TABLE IF NOT EXISTS `zt_usercontact` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1835,14 +1733,14 @@ CREATE TABLE IF NOT EXISTS `zt_usercontact` (
   `userList` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `account` (`account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_usergroup`;
 CREATE TABLE IF NOT EXISTS `zt_usergroup` (
   `account` char(30) NOT NULL default '',
   `group` mediumint(8) unsigned NOT NULL default '0',
   `project` text NOT NULL,
   UNIQUE KEY `account` (`account`,`group`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_userquery`;
 CREATE TABLE IF NOT EXISTS `zt_userquery` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1856,7 +1754,7 @@ CREATE TABLE IF NOT EXISTS `zt_userquery` (
   PRIMARY KEY  (`id`),
   KEY `account` (`account`),
   KEY `module` (`module`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_usertpl`;
 CREATE TABLE IF NOT EXISTS `zt_usertpl` (
   `id` mediumint(8) unsigned NOT NULL auto_increment,
@@ -1867,7 +1765,7 @@ CREATE TABLE IF NOT EXISTS `zt_usertpl` (
   `public` enum('0', '1') NOT NULL DEFAULT '0',
   PRIMARY KEY  (`id`),
   KEY `account` (`account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_userview`;
 CREATE TABLE IF NOT EXISTS `zt_userview` (
   `account` char(30) NOT NULL,
@@ -1876,7 +1774,7 @@ CREATE TABLE IF NOT EXISTS `zt_userview` (
   `projects` mediumtext NOT NULL,
   `sprints` mediumtext NOT NULL,
   UNIQUE KEY `account` (`account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_weeklyreport`;
 CREATE TABLE IF NOT EXISTS `zt_weeklyreport`(
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1892,7 +1790,7 @@ CREATE TABLE IF NOT EXISTS `zt_weeklyreport`(
   `workload` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `week` (`project`,`weekStart`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_webhook`;
 CREATE TABLE IF NOT EXISTS `zt_webhook` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -1914,12 +1812,11 @@ CREATE TABLE IF NOT EXISTS `zt_webhook` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0', '1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 INSERT INTO `zt_cron` (`m`, `h`, `dom`, `mon`, `dow`, `command`, `remark`, `type`, `buildin`, `status`, `lastTime`) VALUES
 ('*',    '*',    '*',    '*',    '*',    '', '监控定时任务', 'zentao', 1, 'normal',   '0000-00-00 00:00:00'),
-('30',   '23',   '*',    '*',    '*',    'moduleName=execution&methodName=computeburn', '更新燃尽图',    'zentao', 1, 'normal', '0000-00-00 00:00:00'),
-('30',   '23',   '*',    '*',    '*',    'moduleName=execution&methodName=computecfd', '更新累积流图',   'zentao', 1, 'normal', '0000-00-00 00:00:00'),
+('30',   '23',   '*',    '*',    '*',    'moduleName=execution&methodName=computeburn', '更新燃尽图',      'zentao', 1, 'normal', '0000-00-00 00:00:00'),
 ('0',    '8',    '*',    '*',    '*',    'moduleName=report&methodName=remind',       '每日任务提醒',    'zentao', 1, 'normal', '0000-00-00 00:00:00'),
 ('*/5',  '*',    '*',    '*',    '*',    'moduleName=svn&methodName=run',             '同步SVN',         'zentao', 1, 'stop',   '0000-00-00 00:00:00'),
 ('*/5',  '*',    '*',    '*',    '*',    'moduleName=git&methodName=run',             '同步GIT',         'zentao', 1, 'stop',   '0000-00-00 00:00:00'),
@@ -1931,8 +1828,7 @@ INSERT INTO `zt_cron` (`m`, `h`, `dom`, `mon`, `dow`, `command`, `remark`, `type
 ('1',    '0',    '*',    '*',    '*',    'moduleName=ci&methodName=initQueue', '创建周期性任务', 'zentao', 1, 'normal',   '0000-00-00 00:00:00'),
 ('*/5',  '*',    '*',    '*',    '*',    'moduleName=ci&methodName=checkCompileStatus', '同步DevOps构建任务状态', 'zentao', 1, 'normal',   '0000-00-00 00:00:00'),
 ('*/5',  '*',    '*',    '*',    '*',    'moduleName=ci&methodName=exec', '执行DevOps构建任务', 'zentao', 1, 'normal',   '0000-00-00 00:00:00'),
-('*/5',  '*',    '*',    '*',    '*',    'moduleName=mr&methodName=syncMR', '定时同步GitLab合并数据到禅道数据库', 'zentao', 1, 'normal', '0000-00-00 00:00:00'),
-('*/5',  '*',    '*',    '*',    '*',    'moduleName=compile&methodName=syncCompile', '定时同步构建记录', 'zentao', 1, 'normal', '0000-00-00 00:00:00');
+('*/5',  '*',    '*',    '*',    '*',    'moduleName=mr&methodName=syncMR', '定时同步GitLab合并数据到禅道数据库', 'zentao', 1, 'normal', '0000-00-00 00:00:00');
 
 INSERT INTO `zt_group` (`id`, `vision`, `name`, `role`, `desc`) VALUES
 (1, 'rnd', 'ADMIN', 'admin', 'for administrator'),
@@ -2125,7 +2021,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1,'execution','putoff'),
 (1,'execution','start'),
 (1,'execution','story'),
-(1,'execution','storyView'),
 (1,'execution','storyEstimate'),
 (1,'execution','storyKanban'),
 (1,'execution','storySort'),
@@ -2432,28 +2327,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1,'story','report'),
 (1,'story','review'),
 (1,'story','tasks'),
-(1,'product','track'),
+(1,'story','track'),
 (1,'story','view'),
-(1,'testcase','zeroCase'),
-(1,'requirement','activate'),
-(1,'requirement','assignTo'),
-(1,'requirement','batchAssignTo'),
-(1,'requirement','batchChangeBranch'),
-(1,'requirement','batchChangeModule'),
-(1,'requirement','batchClose'),
-(1,'requirement','batchCreate'),
-(1,'requirement','batchEdit'),
-(1,'requirement','batchReview'),
-(1,'requirement','change'),
-(1,'requirement','close'),
-(1,'requirement','create'),
-(1,'requirement','delete'),
-(1,'requirement','edit'),
-(1,'requirement','export'),
-(1,'requirement','recall'),
-(1,'requirement','report'),
-(1,'requirement','review'),
-(1,'requirement','view'),
+(1,'story','zeroCase'),
 (1,'svn','apiSync'),
 (1,'svn','cat'),
 (1,'svn','diff'),
@@ -2695,7 +2571,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (2,'execution','manageMembers'),
 (2,'execution','printKanban'),
 (2,'execution','story'),
-(2,'execution','storyView'),
 (2,'execution','storyEstimate'),
 (2,'execution','storyKanban'),
 (2,'execution','task'),
@@ -2822,10 +2697,8 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (2,'story','cases'),
 (2,'story','report'),
 (2,'story','tasks'),
-(2,'product','track'),
+(2,'story','track'),
 (2,'story','view'),
-(2,'requirement','report'),
-(2,'requirement','view'),
 (2,'svn','apiSync'),
 (2,'svn','cat'),
 (2,'svn','diff'),
@@ -2996,7 +2869,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (3,'execution','index'),
 (3,'execution','kanban'),
 (3,'execution','story'),
-(3,'execution','storyView'),
 (3,'execution','task'),
 (3,'execution','team'),
 (3,'execution','testcase'),
@@ -3120,12 +2992,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (3,'story','processStoryChange'),
 (3,'story','report'),
 (3,'story','tasks'),
-(3,'product','track'),
+(3,'story','track'),
 (3,'story','view'),
-(3,'testcase','zeroCase'),
-(3,'requirement','export'),
-(3,'requirement','report'),
-(3,'requirement','view'),
+(3,'story','zeroCase'),
 (3,'svn','apiSync'),
 (3,'svn','cat'),
 (3,'svn','diff'),
@@ -3354,7 +3223,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (4,'execution','putoff'),
 (4,'execution','start'),
 (4,'execution','story'),
-(4,'execution','storyView'),
 (4,'execution','storyEstimate'),
 (4,'execution','storyKanban'),
 (4,'execution','storySort'),
@@ -3617,28 +3485,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (4,'story','report'),
 (4,'story','review'),
 (4,'story','tasks'),
-(4,'product','track'),
+(4,'story','track'),
 (4,'story','view'),
-(4,'testcase','zeroCase'),
-(4,'requirement','activate'),
-(4,'requirement','assignTo'),
-(4,'requirement','batchAssignTo'),
-(4,'requirement','batchChangeBranch'),
-(4,'requirement','batchChangeModule'),
-(4,'requirement','batchClose'),
-(4,'requirement','batchCreate'),
-(4,'requirement','batchEdit'),
-(4,'requirement','batchReview'),
-(4,'requirement','change'),
-(4,'requirement','close'),
-(4,'requirement','create'),
-(4,'requirement','delete'),
-(4,'requirement','edit'),
-(4,'requirement','export'),
-(4,'requirement','recall'),
-(4,'requirement','report'),
-(4,'requirement','review'),
-(4,'requirement','view'),
+(4,'story','zeroCase'),
 (4,'svn','apiSync'),
 (4,'svn','cat'),
 (4,'svn','diff'),
@@ -3870,7 +3719,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (5,'execution','putoff'),
 (5,'execution','start'),
 (5,'execution','story'),
-(5,'execution','storyView'),
 (5,'execution','storyEstimate'),
 (5,'execution','storyKanban'),
 (5,'execution','storySort'),
@@ -4136,28 +3984,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (5,'story','report'),
 (5,'story','review'),
 (5,'story','tasks'),
-(5,'product','track'),
+(5,'story','track'),
 (5,'story','view'),
-(5,'testcase','zeroCase'),
-(5,'requirement','activate'),
-(5,'requirement','assignTo'),
-(5,'requirement','batchAssignTo'),
-(5,'requirement','batchChangeBranch'),
-(5,'requirement','batchChangeModule'),
-(5,'requirement','batchClose'),
-(5,'requirement','batchCreate'),
-(5,'requirement','batchEdit'),
-(5,'requirement','batchReview'),
-(5,'requirement','change'),
-(5,'requirement','close'),
-(5,'requirement','create'),
-(5,'requirement','delete'),
-(5,'requirement','edit'),
-(5,'requirement','export'),
-(5,'requirement','recall'),
-(5,'requirement','report'),
-(5,'requirement','review'),
-(5,'requirement','view'),
+(5,'story','zeroCase'),
 (5,'svn','apiSync'),
 (5,'svn','cat'),
 (5,'svn','diff'),
@@ -4339,7 +4168,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (6,'execution','putoff'),
 (6,'execution','start'),
 (6,'execution','story'),
-(6,'execution','storyView'),
 (6,'execution','storyEstimate'),
 (6,'execution','storyKanban'),
 (6,'execution','storySort'),
@@ -4529,12 +4357,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (6,'story','processStoryChange'),
 (6,'story','report'),
 (6,'story','tasks'),
-(6,'product','track'),
+(6,'story','track'),
 (6,'story','view'),
-(6,'testcase','zeroCase'),
-(6,'requirement','export'),
-(6,'requirement','report'),
-(6,'requirement','view'),
+(6,'story','zeroCase'),
 (6,'svn','apiSync'),
 (6,'svn','cat'),
 (6,'svn','diff'),
@@ -4710,7 +4535,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (7,'execution','linkStory'),
 (7,'execution','manageProducts'),
 (7,'execution','story'),
-(7,'execution','storyView'),
 (7,'execution','storyKanban'),
 (7,'execution','storySort'),
 (7,'execution','task'),
@@ -4937,28 +4761,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (7,'story','report'),
 (7,'story','review'),
 (7,'story','tasks'),
-(7,'product','track'),
+(7,'story','track'),
 (7,'story','view'),
-(7,'testcase','zeroCase'),
-(7,'requirement','activate'),
-(7,'requirement','assignTo'),
-(7,'requirement','batchAssignTo'),
-(7,'requirement','batchChangeBranch'),
-(7,'requirement','batchChangeModule'),
-(7,'requirement','batchClose'),
-(7,'requirement','batchCreate'),
-(7,'requirement','batchEdit'),
-(7,'requirement','batchReview'),
-(7,'requirement','change'),
-(7,'requirement','close'),
-(7,'requirement','create'),
-(7,'requirement','delete'),
-(7,'requirement','edit'),
-(7,'requirement','export'),
-(7,'requirement','recall'),
-(7,'requirement','report'),
-(7,'requirement','review'),
-(7,'requirement','view'),
+(7,'story','zeroCase'),
 (7,'svn','apiSync'),
 (7,'svn','cat'),
 (7,'svn','diff'),
@@ -5133,7 +4938,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (8,'execution','index'),
 (8,'execution','kanban'),
 (8,'execution','story'),
-(8,'execution','storyView'),
 (8,'execution','storyKanban'),
 (8,'execution','task'),
 (8,'execution','team'),
@@ -5301,12 +5105,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (8,'story','processStoryChange'),
 (8,'story','report'),
 (8,'story','tasks'),
-(8,'product','track'),
+(8,'story','track'),
 (8,'story','view'),
-(8,'testcase','zeroCase'),
-(8,'requirement','export'),
-(8,'requirement','report'),
-(8,'requirement','view'),
+(8,'story','zeroCase'),
 (8,'svn','apiSync'),
 (8,'svn','cat'),
 (8,'svn','diff'),
@@ -5515,7 +5316,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (9,'execution','kanban'),
 (9,'execution','manageMembers'),
 (9,'execution','story'),
-(9,'execution','storyView'),
 (9,'execution','storyKanban'),
 (9,'execution','storySort'),
 (9,'execution','task'),
@@ -5690,13 +5490,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (9,'story','report'),
 (9,'story','review'),
 (9,'story','tasks'),
-(9,'product','track'),
+(9,'story','track'),
 (9,'story','view'),
-(9,'testcase','zeroCase'),
-(9,'requirement','export'),
-(9,'requirement','report'),
-(9,'requirement','review'),
-(9,'requirement','view'),
+(9,'story','zeroCase'),
 (9,'svn','apiSync'),
 (9,'svn','cat'),
 (9,'svn','diff'),
@@ -5837,7 +5633,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (10,'execution','index'),
 (10,'execution','kanban'),
 (10,'execution','story'),
-(10,'execution','storyView'),
 (10,'execution','task'),
 (10,'execution','team'),
 (10,'execution','testtask'),
@@ -5945,11 +5740,8 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (10,'story','processStoryChange'),
 (10,'story','report'),
 (10,'story','tasks'),
-(10,'product','track'),
+(10,'story','track'),
 (10,'story','view'),
-(10,'requirement','export'),
-(10,'requirement','report'),
-(10,'requirement','view'),
 (10,'svn','apiSync'),
 (10,'svn','cat'),
 (10,'svn','diff'),
@@ -6074,7 +5866,6 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (11,'execution','index'),
 (11,'execution','kanban'),
 (11,'execution','story'),
-(11,'execution','storyView'),
 (11,'execution','task'),
 (11,'execution','team'),
 (11,'execution','testcase'),
@@ -6198,12 +5989,9 @@ INSERT INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (11,'story','export'),
 (11,'story','report'),
 (11,'story','tasks'),
-(11,'product','track'),
+(11,'story','track'),
 (11,'story','view'),
-(11,'testcase','zeroCase'),
-(11,'requirement','export'),
-(11,'requirement','report'),
-(11,'requirement','view'),
+(11,'story','zeroCase'),
 (11,'svn','apiSync'),
 (11,'svn','cat'),
 (11,'svn','diff'),
@@ -6309,7 +6097,6 @@ INSERT INTO `zt_config` (`owner`, `module`, `section`, `key`, `value`) VALUES ('
 INSERT INTO `zt_config` (`owner`, `module`, `section`, `key`, `value`) VALUES ('system', 'project', '', 'unitList', 'CNY,USD');
 INSERT INTO `zt_config` (`owner`, `module`, `section`, `key`, `value`) VALUES ('system', 'project', '', 'defaultCurrency', 'CNY');
 INSERT INTO `zt_config` (`owner`, `module`, `section`, `key`, `value`) VALUES ('system', 'story', '', 'reviewRules', 'allpass');
-INSERT INTO `zt_config` (`owner`, `module`, `section`, `key`, `value`) VALUES ('system', 'common', 'global', 'syncProduct', '{"feedback":{},"ticket":{}}');
 -- DROP TABLE IF EXISTS `zt_im_chat`;
 CREATE TABLE IF NOT EXISTS `zt_im_chat` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -6328,12 +6115,9 @@ CREATE TABLE IF NOT EXISTS `zt_im_chat` (
   `mergedDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastActiveTime` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastMessage` int(11) unsigned NOT NULL DEFAULT 0,
-  `lastMessageIndex` int(11) unsigned NOT NULL DEFAULT 0,
   `dismissDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `pinnedMessages` text NOT NULL DEFAULT '',
   `mergedChats` text NOT NULL DEFAULT '',
-  `adminInvite` enum('0','1') NOT NULL DEFAULT '0',
-  `avatar` text NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `gid` (`gid`),
   KEY `name` (`name`),
@@ -6341,7 +6125,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_chat` (
   KEY `public` (`public`),
   KEY `createdBy` (`createdBy`),
   KEY `editedBy` (`editedBy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_chatuser`;
 CREATE TABLE IF NOT EXISTS `zt_im_chatuser` (
@@ -6357,7 +6141,6 @@ CREATE TABLE IF NOT EXISTS `zt_im_chatuser` (
   `quit` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `category` varchar(40) NOT NULL DEFAULT '',
   `lastReadMessage` int(11) unsigned NOT NULL DEFAULT 0,
-  `lastReadMessageIndex` int(11) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `cgid` (`cgid`),
   KEY `user` (`user`),
@@ -6365,7 +6148,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_chatuser` (
   KEY `star` (`star`),
   KEY `hide` (`hide`),
   UNIQUE KEY `chatuser` (`cgid`, `user`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_client`;
 CREATE TABLE IF NOT EXISTS `zt_im_client` (
@@ -6381,7 +6164,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_client` (
   `editedBy` varchar(30) NOT NULL DEFAULT '',
   `status` enum('released','wait') NOT NULL DEFAULT 'wait',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_message`;
 CREATE TABLE IF NOT EXISTS `zt_im_message` (
@@ -6390,7 +6173,6 @@ CREATE TABLE IF NOT EXISTS `zt_im_message` (
   `cgid` char(40) NOT NULL DEFAULT '',
   `user` varchar(30) NOT NULL DEFAULT '',
   `date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `index` int(11) unsigned NOT NULL DEFAULT 0,
   `type` enum('normal', 'broadcast', 'notify', 'bulletin') NOT NULL DEFAULT 'normal',
   `content` text NOT NULL DEFAULT '',
   `contentType` enum('text', 'plain', 'emotion', 'image', 'file', 'object', 'code') NOT NULL DEFAULT 'text',
@@ -6401,7 +6183,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_message` (
   KEY `mcgid` (`cgid`),
   KEY `muser` (`user`),
   KEY `mtype` (`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_message_backup`;
 CREATE TABLE IF NOT EXISTS `zt_im_message_backup` (
@@ -6410,13 +6192,12 @@ CREATE TABLE IF NOT EXISTS `zt_im_message_backup` (
   `cgid` char(40) NOT NULL DEFAULT '',
   `user` varchar(30) NOT NULL DEFAULT '',
   `date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `index` int(11) unsigned NOT NULL DEFAULT 0,
   `type` enum('normal', 'broadcast', 'notify') NOT NULL DEFAULT 'normal',
   `content` text NOT NULL DEFAULT '',
   `contentType` enum('text', 'plain', 'emotion', 'image', 'file', 'object', 'code') NOT NULL DEFAULT 'text',
   `data` text NOT NULL DEFAULT '',
   `deleted` enum('0','1') NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_message_index`;
 CREATE TABLE IF NOT EXISTS `zt_im_message_index` (
@@ -6433,7 +6214,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_message_index` (
   KEY `end` (`end`),
   KEY `startDate` (`startDate`),
   KEY `endDate` (`endDate`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_chat_message_index`;
 CREATE TABLE IF NOT EXISTS `zt_im_chat_message_index` (
@@ -6442,8 +6223,6 @@ CREATE TABLE IF NOT EXISTS `zt_im_chat_message_index` (
   `tableName` char(64) NOT NULL,
   `start` int(11) unsigned NOT NULL,
   `end` int(11) unsigned NOT NULL,
-  `startIndex` int(11) unsigned NOT NULL,
-  `endIndex` int(11) unsigned NOT NULL,
   `startDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `endDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `count` mediumint(8) unsigned NOT NULL,
@@ -6452,10 +6231,8 @@ CREATE TABLE IF NOT EXISTS `zt_im_chat_message_index` (
   KEY `start` (`start`),
   KEY `end` (`end`),
   KEY `startDate` (`startDate`),
-  KEY `endDate` (`endDate`),
-  KEY `chatstartindex` (`gid`,`startIndex`),
-  KEY `chatendindex` (`gid`,`endIndex`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  KEY `endDate` (`endDate`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_messagestatus`;
 CREATE TABLE IF NOT EXISTS `zt_im_messagestatus` (
@@ -6463,7 +6240,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_messagestatus` (
   `message` int(11) unsigned NOT NULL,
   `status` enum('waiting','sent','readed','deleted') NOT NULL DEFAULT 'waiting',
   UNIQUE KEY `user` (`user`,`message`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_queue`;
 CREATE TABLE IF NOT EXISTS `zt_im_queue` (
@@ -6475,7 +6252,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_queue` (
   `result` text NOT NULL,
   `status` char(30) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_conference`;
 CREATE TABLE IF NOT EXISTS `zt_im_conference` (
@@ -6488,7 +6265,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_conference` (
   `openedBy` mediumint(8) NOT NULL DEFAULT 0,
   `openedDate` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_conferenceaction`;
 CREATE TABLE IF NOT EXISTS `zt_im_conferenceaction` (
@@ -6500,7 +6277,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_conferenceaction` (
   `date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   `device` char(40) NOT NULL DEFAULT 'default',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_im_userdevice`;
 CREATE TABLE IF NOT EXISTS `zt_im_userdevice` (
@@ -6517,7 +6294,7 @@ CREATE TABLE IF NOT EXISTS `zt_im_userdevice` (
   KEY `lastLogin` (`lastLogin`),
   KEY `lastLogout` (`lastLogout`),
   UNIQUE KEY `userdevice` (`user`, `device`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
 
 ALTER TABLE `zt_file` CHANGE `pathname` `pathname` char(100) NOT NULL;
 ALTER TABLE `zt_user` ADD `clientStatus` enum('online', 'away', 'busy', 'offline', 'meeting') NOT NULL DEFAULT 'offline';
@@ -6544,7 +6321,6 @@ ALTER TABLE `zt_effort` ADD `consumed` float NOT NULL AFTER `left`;
 ALTER TABLE `zt_effort` CHANGE `begin` `begin` smallint(4) unsigned zerofill NOT NULL AFTER `consumed`;
 ALTER TABLE `zt_effort` CHANGE `end` `end` smallint(4) unsigned zerofill NOT NULL AFTER `begin`;
 ALTER TABLE `zt_effort` ADD `deleted` enum('0','1') NOT NULL DEFAULT '0' AFTER `end`;
-ALTER TABLE `zt_effort` ADD `order` tinyint unsigned NOT NULL DEFAULT '0' AFTER `end`;
 ALTER TABLE `zt_effort` ADD INDEX `execution` (`execution`);
 ALTER TABLE `zt_effort` ADD INDEX `objectID` (`objectID`);
 ALTER TABLE `zt_effort` ADD INDEX `date` (`date`);
@@ -6812,7 +6588,7 @@ CREATE TABLE IF NOT EXISTS `zt_relationoftasks` (
   `action` ENUM( 'begin', 'end' ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
   PRIMARY KEY (`id`),
   KEY `relationoftasks` (`execution`,`task`)
-) ENGINE = InnoDB CHARACTER SET utf8 COLLATE utf8_general_ci;
+) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci;
 REPLACE INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES
 (1,'execution','gantt'),
 (1,'execution','relation'),
@@ -6995,7 +6771,7 @@ CREATE TABLE IF NOT EXISTS `zt_report` (
   `addedDate` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE OR REPLACE VIEW `ztv_executionsummary` AS select `zt_task`.`execution` AS `execution`,sum(if((`zt_task`.`parent` >= '0'),`zt_task`.`estimate`,0)) AS `estimate`,sum(if((`zt_task`.`parent` >= '0'),`zt_task`.`consumed`,0)) AS `consumed`,sum(if(((`zt_task`.`status` <> 'cancel') and (`zt_task`.`status` <> 'closed') and (`zt_task`.`parent` >= '0')),`zt_task`.`left`,0)) AS `left`,count(0) AS `number`,sum(if(((`zt_task`.`status` <> 'done') and (`zt_task`.`status` <> 'closed')),1,0)) AS `undone`,sum((if((`zt_task`.`parent` >= '0'),`zt_task`.`consumed`,0) + if(((`zt_task`.`status` <> 'cancel') and (`zt_task`.`status` <> 'closed') and (`zt_task`.`parent` >= '0')),`zt_task`.`left`,0))) AS `totalReal` from `zt_task` where (`zt_task`.`deleted` = '0') group by `zt_task`.`execution`;
 CREATE OR REPLACE VIEW `ztv_projectsummary` AS select `zt_task`.`project` AS `project`,sum(if((`zt_task`.`parent` >= '0'),`zt_task`.`estimate`,0)) AS `estimate`,sum(if((`zt_task`.`parent` >= '0'),`zt_task`.`consumed`,0)) AS `consumed`,sum(if(((`zt_task`.`status` <> 'cancel') and (`zt_task`.`status` <> 'closed') and (`zt_task`.`parent` >= '0')),`zt_task`.`left`,0)) AS `left`,count(0) AS `number`,sum(if(((`zt_task`.`status` <> 'done') and (`zt_task`.`status` <> 'closed')),1,0)) AS `undone`,sum((if((`zt_task`.`parent` >= '0'),`zt_task`.`consumed`,0) + if(((`zt_task`.`status` <> 'cancel') and (`zt_task`.`status` <> 'closed') and (`zt_task`.`parent` >= '0')),`zt_task`.`left`,0))) AS `totalReal` from `zt_task` where (`zt_task`.`deleted` = '0') group by `zt_task`.`project`;
@@ -7015,6 +6791,7 @@ CREATE OR REPLACE VIEW `ztv_daybugresolve` AS select count(*) AS `bugresolve`,le
 CREATE OR REPLACE VIEW `ztv_dayactions` AS select count(*) AS `actions`,left(`zt_action`.`date`,10) AS `day` from `zt_action` group by left(`zt_action`.`date`,10);
 
 REPLACE INTO `zt_report` (`code`, `name`, `module`, `sql`, `vars`, `langs`, `params`, `step`, `desc`, `addedBy`, `addedDate`) VALUES
+('product-invest', '{\"zh-cn\":\"\\u4ea7\\u54c1\\u6295\\u5165\\u8868\",\"zh-tw\":\"\\u7522\\u54c1\\u6295\\u5165\\u8868\",\"en\":\"Product Investment\"}', ',product', 'select t1.id,t1.name,1 as projects, round(t3.consumed,2) as consumed from TABLE_PRODUCT as t1\r\n left join TABLE_PROJECTPRODUCT as t2 on t1.id=t2.product\r\n left join ztv_projectsummary as t3 on t2.project=t3.project\r\n left join TABLE_PROJECT as t4 on t2.project=t4.id\r\n left join TABLE_PROGRAM as t5 on t1.program=t5.id\r\n where t1.deleted=\'0\' and t4.deleted=\'0\' and t4.type=\'project\'\r\norder by t5.`order` asc, t1.line desc, t1.`order` asc', '', '{\"projects\":{\"zh-cn\":\"\\u9879\\u76ee\\u6570\",\"zh-tw\":\"\\u9879\\u76ee\\u6570\",\"en\":\"Projects\"},\"consumed\":{\"zh-cn\":\"\\u5df2\\u6d88\\u8017\\u5de5\\u65f6\",\"zh-tw\":\"\\u5df2\\u6d88\\u8017\\u5de5\\u65f6\",\"en\":\"Cost(h)\"}}', '{\"group1\":\"name\",\"group2\":\"\",\"reportField\":[\"projects\",\"consumed\"],\"reportType\":[\"sum\",\"sum\"],\"sumAppend\":[\"projects\",\"consumed\"]}', 2, '{\"zh-cn\":\"\\u5217\\u51fa\\u6bcf\\u4e2a\\u4ea7\\u54c1\\u7684\\u9879\\u76ee\\u603b\\u6570\\uff0c\\u5df2\\u7ecf\\u6d88\\u8017\\u7684\\u5de5\\u65f6\\u3002\",\"zh-tw\":\"\\u5217\\u51fa\\u6bcf\\u500b\\u7522\\u54c1\\u7684\\u9805\\u76ee\\u7e3d\\u6578\\uff0c\\u5df2\\u7d93\\u6d88\\u8017\\u7684\\u5de5\\u6642\\u3002\",\"en\":\"Number of projects and consumed hours.\"}', 'admin', '2015-07-20 14:21:31'),
 ('product-progress', '{\"zh-cn\":\"\\u4ea7\\u54c1\\u5b8c\\u6210\\u5ea6\\u7edf\\u8ba1\\u8868\",\"zh-tw\":\"\\u7522\\u54c1\\u5b8c\\u6210\\u5ea6\\u7d71\\u8a08\\u8868\",\"en\":\"Product Progress\"}', ',product', 'select t1.*,t2.name, (case when t1.status = \'closed\' or t1.stage = \'released\' then 1 else 0 end) as done, 1 as count from TABLE_STORY as t1 \r\nleft join TABLE_PRODUCT as t2 on t1.product=t2.id \r\nleft join TABLE_PROGRAM as t3 on t2.program=t3.id \r\nwhere t1.deleted=\'0\' and t2.deleted=\'0\'\r\norder by t3.`order` asc, t2.line desc, t2.`order` asc', '', '{\"count\":{\"zh-cn\":\"\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u9700\\u6c42\\u6570\",\"en\":\"Stories\"},\"done\":{\"zh-cn\":\"\\u5b8c\\u6210\\u6570\",\"zh-tw\":\"\\u5b8c\\u6210\\u6570\",\"en\":\"Done\"}}', '{\"group1\":\"name\",\"group2\":\"\",\"reportField\":[\"count\",\"done\"],\"reportType\":[\"sum\",\"sum\"],\"sumAppend\":[\"count\",\"done\"],\"percent\":{\"1\":\"1\"},\"contrast\":{\"1\":\"count\"},\"showAlone\":{\"1\":\"1\"}}', 2, '{\"zh-cn\":\"\\u6309\\u7167\\u4ea7\\u54c1\\u5217\\u51fa\\u9700\\u6c42\\u603b\\u6570\\uff0c\\u5b8c\\u6210\\u7684\\u603b\\u6570(\\u72b6\\u6001\\u662f\\u5173\\u95ed\\uff0c\\u6216\\u8005\\u7814\\u53d1\\u9636\\u6bb5\\u662f\\u53d1\\u5e03)\\uff0c\\u5b8c\\u6210\\u7684\\u767e\\u5206\\u6bd4\\u3002\",\"zh-tw\":\"\\u6309\\u7167\\u7522\\u54c1\\u5217\\u51fa\\u9700\\u6c42\\u7e3d\\u6578\\uff0c\\u5b8c\\u6210\\u7684\\u7e3d\\u6578(\\u72c0\\u614b\\u662f\\u95dc\\u9589\\uff0c\\u6216\\u8005\\u7814\\u767c\\u968e\\u6bb5\\u662f\\u767c\\u5e03)\\uff0c\\u5b8c\\u6210\\u7684\\u767e\\u5206\\u6bd4\\u3002\",\"en\":\"Number of total stories,done stories(state is closed, or stage is released), percent of completion.\"}', 'admin', '2015-07-21 15:07:48'),
 ('story-status', '{\"zh-cn\":\"\\u4ea7\\u54c1\\u9700\\u6c42\\u72b6\\u6001\\u5206\\u5e03\\u8868\",\"zh-tw\":\"\\u7522\\u54c1\\u9700\\u6c42\\u72c0\\u614b\\u5206\\u5e03\\u8868\",\"en\":\"Story Status\"}', ',product', 'select t1.*,t2.name from TABLE_STORY as t1\r\n left join TABLE_PRODUCT as t2 on t1.product=t2.id \r\nleft join TABLE_PROGRAM as t3 on t2.program=t3.id \r\nwhere t1.deleted=\'0\' and t2.deleted=\'0\'\r\norder by t3.`order` asc, t2.line desc, t2.`order` asc', '', '', '{\"group1\":\"name\",\"group2\":\"\",\"reportField\":[\"status\"],\"reportType\":[\"count\"],\"sumAppend\":[\"\"],\"reportTotal\":[\"1\"]}', 2, '{\"zh-cn\":\"\\u6309\\u7167\\u4ea7\\u54c1\\u5217\\u51fa\\u9700\\u6c42\\u603b\\u6570\\uff0c\\u72b6\\u6001\\u7684\\u5206\\u5e03\\u60c5\\u51b5\\u3002\",\"zh-tw\":\"\\u6309\\u7167\\u7522\\u54c1\\u5217\\u51fa\\u9700\\u6c42\\u7e3d\\u6578\\uff0c\\u72c0\\u614b\\u7684\\u5206\\u5e03\\u60c5\\u6cc1\\u3002\",\"en\":\"Total number and status distribution of stories.\"}', 'admin', '2015-07-21 15:35:38'),
 ('story-stage', '{\"zh-cn\":\"\\u4ea7\\u54c1\\u9700\\u6c42\\u9636\\u6bb5\\u5206\\u5e03\\u8868\",\"zh-tw\":\"\\u7522\\u54c1\\u9700\\u6c42\\u968e\\u6bb5\\u5206\\u5e03\\u8868\",\"en\":\"Story Stage\"}', ',product', 'select t1.*,t2.name from TABLE_STORY as t1\r\n left join TABLE_PRODUCT as t2 on t1.product=t2.id \r\nleft join TABLE_PROGRAM as t3 on t2.program=t3.id \r\nwhere t1.deleted=\'0\' and t2.deleted=\'0\'\r\norder by t3.`order` asc, t2.line desc, t2.`order` asc', '', '', '{\"group1\":\"name\",\"group2\":\"\",\"reportField\":[\"stage\"],\"reportType\":[\"count\"],\"sumAppend\":[\"\"],\"reportTotal\":[\"1\"]}', 2, '{\"zh-cn\":\"\\u6309\\u7167\\u4ea7\\u54c1\\u5217\\u51fa\\u9700\\u6c42\\u603b\\u6570\\uff0c\\u7814\\u53d1\\u9636\\u6bb5\\u7684\\u5206\\u5e03\\u60c5\\u51b5\\u3002\",\"zh-tw\":\"\\u6309\\u7167\\u7522\\u54c1\\u5217\\u51fa\\u9700\\u6c42\\u7e3d\\u6578\\uff0c\\u7814\\u767c\\u968e\\u6bb5\\u7684\\u5206\\u5e03\\u60c5\\u6cc1\\u3002\",\"en\":\"Total number and stage distribution of stories \"}', 'admin', '2015-07-21 15:38:34'),
@@ -7035,7 +6812,7 @@ REPLACE INTO `zt_report` (`code`, `name`, `module`, `sql`, `vars`, `langs`, `par
 ('productbug-type', '{\"zh-cn\":\"\\u4ea7\\u54c1Bug\\u7c7b\\u578b\\u7edf\\u8ba1\\u8868\",\"zh-tw\":\"\\u7522\\u54c1Bug\\u985e\\u578b\\u7d71\\u8a08\\u8868\",\"en\":\"Bug Type of Product\"}', ',product,test', 'select t1.id,t1.name,t2.id as bugID,t2.type from TABLE_PRODUCT as t1 \r\nleft join TABLE_BUG as t2 on t1.id=t2.product \r\nleft join TABLE_PROGRAM as t3 on t1.program=t3.id \r\nwhere t1.deleted=\'0\' and t2.deleted=\'0\'\r\norder by t3.`order` asc, t1.line desc, t1.`order` asc', '', '{\"count\":{\"zh-cn\":\"\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u9700\\u6c42\\u6570\",\"en\":\"Stories\"},\"done\":{\"zh-cn\":\"\\u5b8c\\u6210\\u6570\",\"zh-tw\":\"\\u5b8c\\u6210\\u6570\",\"en\":\"Done\"}}', '{\"group1\":\"name\",\"group2\":\"\",\"reportField\":[\"type\"],\"reportType\":[\"count\"],\"sumAppend\":[\"\"],\"reportTotal\":[\"1\"]}', 2, '{\"zh-cn\":\"\\u6309\\u7167\\u4ea7\\u54c1\\u7edf\\u8ba1Bug\\u7684\\u7c7b\\u578b\\u5206\\u5e03\\u60c5\\u51b5\\u3002\",\"zh-tw\":\"\\u6309\\u7167\\u7522\\u54c1\\u7d71\\u8a08Bug\\u7684\\u985e\\u578b\\u5206\\u5e03\\u60c5\\u6cc1\\u3002\",\"en\":\"The distribution of Bug types by product statistics.\"}', 'admin', '2015-07-24 13:48:22'),
 ('product-quality', '{\"zh-cn\":\"\\u4ea7\\u54c1\\u8d28\\u91cf\\u8868\",\"zh-tw\":\"\\u7522\\u54c1\\u8cea\\u91cf\\u8868\",\"en\":\"Product Quality\"}', ',product', 'select t1.id,t1.name,t2.stories,(t2.stories-t2.undone) as doneStory,t3.bugs,t3.resolutions,round(t3.bugs/(t2.stories-t2.undone),2) as bugthanstory,t3.seriousBugs from TABLE_PRODUCT as t1 \r\nleft join ztv_productstories as t2 on t1.id=t2.product \r\nleft join ztv_productbugs as t3 on t1.id=t3.product \r\nleft join TABLE_PROGRAM as t4 on t1.program=t4.id \r\nwhere t1.deleted=\'0\'\r\norder by t4.`order` asc, t1.line desc, t1.`order` asc', '', '{\"stories\":{\"zh-cn\":\"\\u9700\\u6c42\\u603b\\u6570\",\"zh-tw\":\"\\u9700\\u6c42\\u603b\\u6570\",\"en\":\"Stories\"},\"doneStory\":{\"zh-cn\":\"\\u5b8c\\u6210\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u5b8c\\u6210\\u9700\\u6c42\\u6570\",\"en\":\"Finished Stories\"},\"bugs\":{\"zh-cn\":\"Bug\\u6570\",\"zh-tw\":\"Bug\\u6570\",\"en\":\"Bugs\"},\"resolutions\":{\"zh-cn\":\"\\u89e3\\u51b3Bug\\u6570\",\"zh-tw\":\"\\u89e3\\u51b3Bug\\u6570\",\"en\":\"Solved Bugs\"},\"bugthanstory\":{\"zh-cn\":\"Bug\\/\\u5b8c\\u6210\\u9700\\u6c42\",\"zh-tw\":\"Bug\\/\\u5b8c\\u6210\\u9700\\u6c42\",\"en\":\"Bug\\/Finished Story\"},\"seriousBugs\":{\"zh-cn\":\"\\u91cd\\u8981Bug\\u6570\",\"zh-tw\":\"\\u91cd\\u8981Bug\\u6570\",\"en\":\"Serious Bugs\"},\"seriousBugsPercent\":{\"zh-cn\":\"\\u4e25\\u91cdbug\\u6bd4\\u7387\",\"zh-tw\":\"\\u4e25\\u91cdbug\\u6bd4\\u7387\",\"en\":\"Serious Bugs %\"}}', '{\"group1\":\"name\",\"group2\":\"\",\"reportField\":[\"stories\",\"doneStory\",\"bugs\",\"resolutions\",\"bugthanstory\",\"seriousBugs\"],\"reportType\":[\"sum\",\"sum\",\"sum\",\"sum\",\"sum\",\"sum\"],\"sumAppend\":[\"stories\",\"doneStory\",\"bugs\",\"resolutions\",\"bugthanstory\",\"seriousBugs\"],\"percent\":{\"5\":\"1\"},\"contrast\":{\"5\":\"bugs\"},\"showAlone\":{\"5\":\"1\"}}', 2, '{\"zh-cn\":\"\\u5217\\u51fa\\u4ea7\\u54c1\\u7684\\u9700\\u6c42\\u6570\\uff0c\\u5b8c\\u6210\\u7684\\u9700\\u6c42\\u603b\\u6570\\uff0cBug\\u6570\\uff0c\\u89e3\\u51b3\\u7684Bug\\u603b\\u6570\\uff0cBug\\/\\u9700\\u6c42\\uff0c\\u91cd\\u8981Bug\\u6570\\u91cf(\\u4e25\\u91cd\\u7a0b\\u5ea6\\u4e0d\\u5927\\u4e8e3)\\u3002\",\"zh-tw\":\"\\u5217\\u51fa\\u7522\\u54c1\\u7684\\u9700\\u6c42\\u6578\\uff0c\\u5b8c\\u6210\\u7684\\u9700\\u6c42\\u7e3d\\u6578\\uff0cBug\\u6578\\uff0c\\u89e3\\u6c7a\\u7684Bug\\u7e3d\\u6578\\uff0cBug\\/\\u9700\\u6c42\\uff0c\\u91cd\\u8981Bug\\u6578\\u91cf(\\u56b4\\u91cd\\u7a0b\\u5ea6\\u4e0d\\u5927\\u65bc3)\\u3002\",\"en\":\"List requirements for the product, total requirements completed, number of bugs, number of bugs solved, bugs\\/requirements, number of significant bugs (severity not greater than 3).\"}', 'admin', '2015-07-23 17:17:40'),
 ('user-login', '{\"zh-cn\":\"\\u5458\\u5de5\\u767b\\u5f55\\u6b21\\u6570\\u7edf\\u8ba1\\u8868\",\"zh-tw\":\"\\u54e1\\u5de5\\u767b\\u9304\\u6b21\\u6578\\u7d71\\u8a08\\u8868\",\"en\":\"Login Times\"}', ',staff', 'select actor,LEFT(`date`,10) as `day` from TABLE_ACTION where `action`=\'login\' and if($startDate=\'\',1,`date`>=$startDate) and if($endDate=\'\',1,`date`<=$endDate) order by `date` asc, actor asc', '{\"varName\":[\"startDate\",\"endDate\"],\"showName\":[\"\\u8d77\\u59cb\\u65f6\\u95f4\",\"\\u7ed3\\u675f\\u65f6\\u95f4\"],\"requestType\":[\"date\",\"date\"],\"selectList\":[\"user\",\"user\"],\"default\":[\"$MONTHBEGIN\",\"$MONTHEND\"]}', '{\"count\":{\"zh-cn\":\"\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u9700\\u6c42\\u6570\",\"en\":\"Stories\"},\"done\":{\"zh-cn\":\"\\u5b8c\\u6210\\u6570\",\"zh-tw\":\"\\u5b8c\\u6210\\u6570\",\"en\":\"Done\"}}', '{\"group1\":\"actor\",\"isUser\":{\"group1\":[\"1\"]},\"group2\":\"\",\"reportField\":[\"day\"],\"reportType\":[\"count\"],\"sumAppend\":[\"\"],\"reportTotal\":[\"1\"]}', 2, '{\"zh-cn\":\"\\u5b9e\\u73b0\\u5458\\u5de5\\u767b\\u5f55\\u6b21\\u6570\\u7edf\\u8ba1\\u62a5\\u8868\\uff0c\\u6309\\u7167\\u5929\\u7edf\\u8ba1\\u6bcf\\u5929\\u6bcf\\u4e2a\\u4eba\\u7684\\u767b\\u5f55\\u6b21\\u6570\\uff0c\\u4ee5\\u53ca\\u603b\\u6570\\u3002\",\"zh-tw\":\"\\u5be6\\u73fe\\u54e1\\u5de5\\u767b\\u9304\\u6b21\\u6578\\u7d71\\u8a08\\u5831\\u8868\\uff0c\\u6309\\u7167\\u5929\\u7d71\\u8a08\\u6bcf\\u5929\\u6bcf\\u500b\\u4eba\\u7684\\u767b\\u9304\\u6b21\\u6578\\uff0c\\u4ee5\\u53ca\\u7e3d\\u6578\\u3002\",\"en\":\"Realize the employee login times statistics report, counting the login times of each person and the total number by day.\"}', 'admin', '2015-07-24 14:28:11'),
-('effort', '{\"zh-cn\":\"\\u65e5\\u5fd7\\u6c47\\u603b\\u8868\",\"zh-tw\":\"\\u65e5\\u8a8c\\u532f\\u7e3d\\u8868\",\"en\":\"Effort Summary\"}', ',staff', 'select t1.account,t1.consumed,t1.`date`,if($dept=\'0\',0,t2.dept) as dept from TABLE_EFFORT as t1 left join TABLE_USER as t2 on t1.account=t2.account where t1.`deleted`=\'0\' and if($startDate=\'\',1,t1.`date`>=$startDate) and if($endDate=\'\',1,t1.`date`<=$endDate) having if($dept=\'0\', dept=$dept,dept in (select id from TABLE_DEPT where concat(\',\',path,\',\')  like concat(\'%,\',$dept,\',%\')))  order by `date` asc', '{\"varName\":[\"dept\",\"startDate\",\"endDate\"],\"showName\":[\"\\u90e8\\u95e8\",\"\\u8d77\\u59cb\\u65f6\\u95f4\",\"\\u7ed3\\u675f\\u65f6\\u95f4\"],\"requestType\":[\"select\",\"date\",\"date\"],\"selectList\":[\"dept\",\"user\",\"user\"],\"default\":[\"\",\"$MONTHBEGIN\",\"$MONTHEND\"]}', '{\"date\":{\"zh-cn\":\"\\u65e5\\u671f\",\"zh-tw\":\"\\u65e5\\u671f\",\"en\":\"Date\"},\"consumed\":{\"zh-cn\":\"\\u6d88\\u8017\\u5de5\\u65f6\",\"zh-tw\":\"\\u6d88\\u8017\\u5de5\\u65f6\",\"en\":\"Cost\"},\"account\":{\"zh-cn\":\"\\u767b\\u8bb0\\u4eba\",\"zh-tw\":\"\\u767b\\u8bb0\\u4eba\",\"en\":\"Owner\"}}', '{\"group1\":\"account\",\"isUser\":{\"group1\":[\"1\"]},\"group2\":\"\",\"reportField\":[\"date\"],\"reportType\":[\"sum\"],\"sumAppend\":[\"consumed\"]}', 2, '{\"zh-cn\":\"\\u67e5\\u770b\\u67d0\\u4e2a\\u65f6\\u95f4\\u6bb5\\u5185\\u7684\\u65e5\\u5fd7\\u60c5\\u51b5\\uff0c\\u53ef\\u4ee5\\u6309\\u7167\\u90e8\\u95e8\\u9009\\u62e9\\u3002\",\"zh-tw\":\"\\u67e5\\u770b\\u67d0\\u500b\\u6642\\u9593\\u6bb5\\u5167\\u7684\\u65e5\\u8a8c\\u60c5\\u6cc1\\uff0c\\u53ef\\u4ee5\\u6309\\u7167\\u90e8\\u9580\\u9078\\u64c7\\u3002\",\"en\":\"You can view the logs of a certain period by department.\"}', 'admin', '2015-07-27 13:53:32'),
+('effort', '{\"zh-cn\":\"\\u65e5\\u5fd7\\u6c47\\u603b\\u8868\",\"zh-tw\":\"\\u65e5\\u8a8c\\u532f\\u7e3d\\u8868\",\"en\":\"Effort Summary\"}', ',staff', 'select t1.account,t1.consumed,t1.`date`,if($dept=\'0\',0,t2.dept) as dept from TABLE_EFFORT as t1 left join TABLE_USER as t2 on t1.account=t2.account where t1.`deleted`=\'0\' and if($startDate=\'\',1,t1.`date`>=$startDate) and if($endDate=\'\',1,t1.`date`<=$endDate) having dept=$dept order by `date` asc', '{\"varName\":[\"dept\",\"startDate\",\"endDate\"],\"showName\":[\"\\u90e8\\u95e8\",\"\\u8d77\\u59cb\\u65f6\\u95f4\",\"\\u7ed3\\u675f\\u65f6\\u95f4\"],\"requestType\":[\"select\",\"date\",\"date\"],\"selectList\":[\"dept\",\"user\",\"user\"],\"default\":[\"\",\"$MONTHBEGIN\",\"$MONTHEND\"]}', '{\"date\":{\"zh-cn\":\"\\u65e5\\u671f\",\"zh-tw\":\"\\u65e5\\u671f\",\"en\":\"Date\"},\"consumed\":{\"zh-cn\":\"\\u6d88\\u8017\\u5de5\\u65f6\",\"zh-tw\":\"\\u6d88\\u8017\\u5de5\\u65f6\",\"en\":\"Cost\"}}', '{\"group1\":\"account\",\"isUser\":{\"group1\":[\"1\"]},\"group2\":\"\",\"reportField\":[\"date\"],\"reportType\":[\"sum\"],\"sumAppend\":[\"consumed\"]}', 2, '{\"zh-cn\":\"\\u67e5\\u770b\\u67d0\\u4e2a\\u65f6\\u95f4\\u6bb5\\u5185\\u7684\\u65e5\\u5fd7\\u60c5\\u51b5\\uff0c\\u53ef\\u4ee5\\u6309\\u7167\\u90e8\\u95e8\\u9009\\u62e9\\u3002\",\"zh-tw\":\"\\u67e5\\u770b\\u67d0\\u500b\\u6642\\u9593\\u6bb5\\u5167\\u7684\\u65e5\\u8a8c\\u60c5\\u6cc1\\uff0c\\u53ef\\u4ee5\\u6309\\u7167\\u90e8\\u9580\\u9078\\u64c7\\u3002\",\"en\":\"You can view the logs of a certain period by department.\"}', 'admin', '2015-07-27 13:53:32'),
 ('company-dynamic', '{\"zh-cn\":\"\\u516c\\u53f8\\u52a8\\u6001\\u6c47\\u603b\\u8868\",\"zh-tw\":\"\\u516c\\u53f8\\u52d5\\u614b\\u532f\\u7e3d\\u8868\",\"en\":\"Company Dynamics\"}', ',staff', 'select t1.day,t2.userlogin,t3.consumed,t4.storyopen,t5.storyclose,t6.taskopen,t7.taskfinish,t8.bugopen,t9.bugresolve,t1.actions from ztv_dayactions as t1 left join ztv_dayuserlogin as t2 on t1.day=t2.day left join ztv_dayeffort as t3 on t1.day=t3.date left join ztv_daystoryopen as t4 on t1.day=t4.day left join ztv_daystoryclose as t5 on t1.day=t5.day left join ztv_daytaskopen as t6 on t1.day=t6.day left join ztv_daytaskfinish as t7 on t1.day=t7.day left join ztv_daybugopen as t8 on t1.day=t8.day left join ztv_daybugresolve as t9 on t1.day=t9.day where if($startDate=\'\',1,t1.day>=$startDate) and if($endDate=\'\',1,t1.day<=$endDate)', '{\"varName\":[\"startDate\",\"endDate\"],\"showName\":[\"\\u8d77\\u59cb\\u65f6\\u95f4\",\"\\u7ed3\\u675f\\u65f6\\u95f4\"],\"requestType\":[\"date\",\"date\"],\"selectList\":[\"user\",\"user\"],\"default\":[\"$MONTHBEGIN\",\"$MONTHEND\"]}', '{\"day\":{\"zh-cn\":\"\\u65e5\\u671f\",\"zh-tw\":\"\\u65e5\\u671f\",\"en\":\"Date\"},\"userlogin\":{\"zh-cn\":\"\\u767b\\u5f55\\u6b21\\u6570\",\"zh-tw\":\"\\u767b\\u9304\\u6b21\\u6578\",\"en\":\"Login\"},\"consumed\":{\"zh-cn\":\"\\u65e5\\u5fd7\\u5de5\\u65f6\",\"zh-tw\":\"\\u65e5\\u8a8c\\u5de5\\u6642\",\"en\":\"Cost(h)\"},\"storyopen\":{\"zh-cn\":\"\\u65b0\\u589e\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u65b0\\u589e\\u9700\\u6c42\\u6578\",\"en\":\"Open Story\"},\"storyclose\":{\"zh-cn\":\"\\u5173\\u95ed\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u95dc\\u9589\\u9700\\u6c42\\u6578\",\"en\":\"Closed Story\"},\"taskopen\":{\"zh-cn\":\"\\u65b0\\u589e\\u4efb\\u52a1\\u6570\",\"zh-tw\":\"\\u65b0\\u589e\\u4efb\\u52d9\\u6578\",\"en\":\"Open Task\"},\"taskfinish\":{\"zh-cn\":\"\\u5b8c\\u6210\\u4efb\\u52a1\\u6570\",\"zh-tw\":\"\\u5b8c\\u6210\\u4efb\\u52d9\\u6578\",\"en\":\"Finished Task\"},\"bugopen\":{\"zh-cn\":\"\\u65b0\\u589eBug\\u6570\",\"zh-tw\":\"\\u65b0\\u589eBug\\u6578\",\"en\":\"Open Bug\"},\"bugresolve\":{\"zh-cn\":\"\\u89e3\\u51b3Bug\\u6570\",\"zh-tw\":\"\\u89e3\\u51b3Bug\\u6578\",\"en\":\"Resolved bug\"},\"actions\":{\"zh-cn\":\"\\u52a8\\u6001\\u6570\",\"zh-tw\":\"\\u52d5\\u614b\\u6578\",\"en\":\"Dynamics\"}}', '{\"group1\":\"day\",\"isUser\":{\"group1\":[\"1\"]},\"group2\":\"\",\"reportField\":[\"userlogin\",\"consumed\",\"storyopen\",\"storyclose\",\"taskopen\",\"taskfinish\",\"bugopen\",\"bugresolve\",\"actions\"],\"reportType\":[\"sum\",\"sum\",\"sum\",\"sum\",\"sum\",\"sum\",\"sum\",\"sum\",\"sum\"],\"sumAppend\":[\"userlogin\",\"consumed\",\"storyopen\",\"storyclose\",\"taskopen\",\"taskfinish\",\"bugopen\",\"bugresolve\",\"actions\"]}', 2, '{\"zh-cn\":\"\\u53ef\\u4ee5\\u6307\\u5b9a\\u4e00\\u4e2a\\u65f6\\u671f\\uff0c\\u5217\\u51fa\\u76f8\\u5e94\\u7684\\u6570\\u636e\\uff1a1. \\u6bcf\\u5929\\u7684\\u767b\\u5f55\\u6b21\\u6570\\u30022. \\u6bcf\\u5929\\u7684\\u65e5\\u5fd7\\u5de5\\u65f6\\u91cf\\u30023. \\u6bcf\\u5929\\u65b0\\u589e\\u7684\\u9700\\u6c42\\u6570\\u30024. \\u6bcf\\u5929\\u5173\\u95ed\\u7684\\u9700\\u6c42\\u6570\\u30025. \\u6bcf\\u5929\\u65b0\\u589e\\u7684\\u4efb\\u52a1\\u6570\\u30026. \\u6bcf\\u5929\\u5b8c\\u6210\\u7684\\u4efb\\u52a1\\u6570\\u30027. \\u6bcf\\u5929\\u65b0\\u589e\\u7684Bug\\u6570\\u30028. \\u6bcf\\u5929\\u89e3\\u51b3\\u7684Bug\\u6570\\u30029. \\u6bcf\\u5929\\u7684\\u52a8\\u6001\\u6570\\u3002\",\"zh-tw\":\"\\u53ef\\u4ee5\\u6307\\u5b9a\\u4e00\\u500b\\u6642\\u671f\\uff0c\\u5217\\u51fa\\u76f8\\u61c9\\u7684\\u6578\\u64da\\uff1a1. \\u6bcf\\u5929\\u7684\\u767b\\u9304\\u6b21\\u6578\\u30022. \\u6bcf\\u5929\\u7684\\u65e5\\u8a8c\\u5de5\\u6642\\u91cf\\u30023. \\u6bcf\\u5929\\u65b0\\u589e\\u7684\\u9700\\u6c42\\u6578\\u30024. \\u6bcf\\u5929\\u95dc\\u9589\\u7684\\u9700\\u6c42\\u6578\\u30025. \\u6bcf\\u5929\\u65b0\\u589e\\u7684\\u4efb\\u52d9\\u6578\\u30026. \\u6bcf\\u5929\\u5b8c\\u6210\\u7684\\u4efb\\u52d9\\u6578\\u30027. \\u6bcf\\u5929\\u65b0\\u589e\\u7684Bug\\u6578\\u30028. \\u6bcf\\u5929\\u89e3\\u6c7a\\u7684Bug\\u6578\\u30029. \\u6bcf\\u5929\\u7684\\u52d5\\u614b\\u6578\\u3002\",\"en\":\"The summary of company dynamics\"}', 'admin', '2015-07-27 15:09:42'),
 ('bug-resolve', '{\"zh-cn\":\"Bug\\u89e3\\u51b3\\u8868\",\"zh-tw\":\"Bug\\u89e3\\u6c7a\\u8868\",\"en\":\"Solved Bugs\"}', ',test', 'select *,if($product=\'\',0,product) as customproduct from TABLE_BUG where deleted=\'0\' and resolution!=\'\' and if($startDate=\'\',1,resolvedDate>=$startDate) and if($endDate=\'\',1,resolvedDate<=$endDate) having customproduct=$product', '{\"varName\":[\"product\",\"startDate\",\"endDate\"],\"showName\":[\"\\u4ea7\\u54c1\",\"\\u89e3\\u51b3\\u65e5\\u671f\\u5f00\\u59cb\",\"\\u89e3\\u51b3\\u65e5\\u671f\\u7ed3\\u675f\"],\"requestType\":[\"select\",\"date\",\"date\"],\"selectList\":[\"product\",\"user\",\"user\"],\"default\":[\"\",\"$MONTHBEGIN\",\"$MONTHEND\"]}', '{\"count\":{\"zh-cn\":\"\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u9700\\u6c42\\u6570\",\"en\":\"Stories\"},\"done\":{\"zh-cn\":\"\\u5b8c\\u6210\\u6570\",\"zh-tw\":\"\\u5b8c\\u6210\\u6570\",\"en\":\"Done\"}}', '{\"group1\":\"resolvedBy\",\"isUser\":{\"group1\":[\"1\"]},\"group2\":\"\",\"reportField\":[\"resolution\"],\"reportType\":[\"count\"],\"sumAppend\":[\"\"],\"reportTotal\":[\"1\"],\"percent\":[\"1\"],\"contrast\":[\"crystalTotal\"],\"showAlone\":[\"1\"]}', 2, '{\"zh-cn\":\"\\u5217\\u51fa\\u89e3\\u51b3\\u7684Bug\\u603b\\u6570\\uff0c\\u89e3\\u51b3\\u65b9\\u6848\\u7684\\u5206\\u5e03\\uff0c\\u5360\\u7684\\u6bd4\\u4f8b\\uff08\\u8be5\\u7528\\u6237\\u89e3\\u51b3\\u7684Bug\\u7684\\u6570\\u91cf\\u5360\\u6240\\u6709\\u7684\\u89e3\\u51b3\\u7684Bug\\u7684\\u6570\\u91cf)\\u3002\",\"zh-tw\":\"\\u5217\\u51fa\\u89e3\\u6c7a\\u7684Bug\\u7e3d\\u6578\\uff0c\\u89e3\\u6c7a\\u65b9\\u6848\\u7684\\u5206\\u5e03\\uff0c\\u5360\\u7684\\u6bd4\\u4f8b\\uff08\\u8a72\\u7528\\u6236\\u89e3\\u6c7a\\u7684Bug\\u7684\\u6578\\u91cf\\u5360\\u6240\\u6709\\u7684\\u89e3\\u6c7a\\u7684Bug\\u7684\\u6578\\u91cf)\\u3002\",\"en\":\"List the total number of bugs resolved, the distribution of solutions, and the percentage (the number of bugs solved by this user to the total number of bugs resolved).\"}', 'admin', '2015-07-24 13:44:25'),
 ('project-progress', '{\"zh-cn\":\"\\u9879\\u76ee\\u8fdb\\u5c55\\u8868\",\"zh-tw\":\"\\u9805\\u76ee\\u9032\\u5c55\\u8868\",\"en\":\"Project Progress Report\"}', ',project', 'select t1.id,t4.name as project,t4.id,t1.name as execution,t1.status,t2.number as tasks,round(t2.consumed,2) as consumed,round(t2.`left`,2) as `left`,t3.stories,t2.undone as undoneTask,t3.undone as undoneStory,t2.totalReal from TABLE_EXECUTION as t1 \r\nleft join ztv_executionsummary as t2 on t1.id=t2.execution\r\nleft join ztv_projectstories as t3 on t1.id=t3.execution\r\nleft join TABLE_PROJECT as t4 on t4.id=t1.project\r\nwhere t1.deleted=\'0\' and t1.type in (\'sprint\',\'stage\') and if($project=\'\',1,t4.id=$project) and if($execution=\'\',1,t1.id=$execution) and if($status=\'\' or $status=\'delay\',1,t1.status=$status) and if($status=\'delay\',t1.`end` < curdate(),1)', '{\"varName\":[\"project\",\"execution\",\"status\"],\"showName\":[\"\\u9879\\u76ee\\u5217\\u8868\",\"\\u6267\\u884c\\u5217\\u8868\",\"\\u6267\\u884c\\u72b6\\u6001\"],\"requestType\":[\"select\",\"select\",\"select\"],\"selectList\":[\"project\",\"execution\",\"project.status\"],\"default\":[\"\",\"\",\"\"]}', '{\"stories\":{\"zh-cn\":\"\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u9700\\u6c42\\u6570\",\"en\":\"Stories\"},\"tasks\":{\"zh-cn\":\"\\u4efb\\u52a1\\u6570\",\"zh-tw\":\"\\u4efb\\u52a1\\u6570\",\"en\":\"Tasks\"},\"undoneStory\":{\"zh-cn\":\"\\u5269\\u4f59\\u9700\\u6c42\\u6570\",\"zh-tw\":\"\\u5269\\u4f59\\u9700\\u6c42\\u6570\",\"en\":\"Undone Story\"},\"undoneTask\":{\"zh-cn\":\"\\u5269\\u4f59\\u4efb\\u52a1\\u6570\",\"zh-tw\":\"\\u5269\\u4f59\\u4efb\\u52a1\\u6570\",\"en\":\"Undone Task\"},\"consumed\":{\"zh-cn\":\"\\u5df2\\u6d88\\u8017\\u5de5\\u65f6\",\"zh-tw\":\"\\u5df2\\u6d88\\u8017\\u5de5\\u65f6\",\"en\":\"Cost(h)\"},\"left\":{\"zh-cn\":\"\\u5269\\u4f59\\u5de5\\u65f6\",\"zh-tw\":\"\\u5269\\u4f59\\u5de5\\u65f6\",\"en\":\"Left(h)\"},\"consumedPercent\":{\"zh-cn\":\"\\u8fdb\\u5ea6\",\"zh-tw\":\"\\u8fdb\\u5ea6\",\"en\":\"Process\"},\"execution\":{\"zh-cn\":\"\\u6267\\u884c\\u540d\\u79f0\"}}', '{\"group1\":\"project\",\"group2\":\"execution\",\"reportField\":[\"stories\",\"undoneStory\",\"tasks\",\"undoneTask\",\"left\",\"consumed\"],\"reportType\":[\"sum\",\"sum\",\"sum\",\"sum\",\"sum\",\"sum\"],\"sumAppend\":[\"stories\",\"undoneStory\",\"tasks\",\"undoneTask\",\"left\",\"consumed\"],\"percent\":{\"5\":\"1\"},\"contrast\":{\"5\":\"totalReal\"},\"showAlone\":{\"5\":\"1\"}}', 2, '{\"zh-cn\":\"\\u9879\\u76ee\\u7684\\u9700\\u6c42\\u6570\\uff0c\\u4efb\\u52a1\\u6570\\uff0c\\u5df2\\u6d88\\u8017\\u5de5\\u65f6\\uff0c\\u5269\\u4f59\\u5de5\\u65f6\\uff0c\\u5269\\u4f59\\u9700\\u6c42\\u6570\\uff0c\\u5269\\u4f59\\u4efb\\u52a1\\u6570\\uff0c\\u8fdb\\u5ea6\\u3002\",\"zh-tw\":\"\\u9805\\u76ee\\u7684\\u9700\\u6c42\\u6578\\uff0c\\u4efb\\u52d9\\u6578\\uff0c\\u5df2\\u6d88\\u8017\\u5de5\\u6642\\uff0c\\u5269\\u9918\\u5de5\\u6642\\uff0c\\u5269\\u9918\\u9700\\u6c42\\u6578\\uff0c\\u5269\\u9918\\u4efb\\u52d9\\u6578\\uff0c\\u9032\\u5ea6\\u3002\",\"en\":\"Project requirements, tasks, consumed hours, remaining hours, remaining demands, remaining tasks, schedule.\"}', 'admin', '2015-07-23 14:03:06'),
@@ -7094,13 +6871,11 @@ CREATE TABLE IF NOT EXISTS `zt_feedback` (
   `type` char(30) NOT NULL,
   `solution` char(30) NOT NULL,
   `desc` text NOT NULL,
-  `pri` tinyint unsigned NOT NULL DEFAULT 2,
   `status` varchar(30) NOT NULL,
   `subStatus` varchar(30) NOT NULL default '',
   `public` enum('0','1') NOT NULL DEFAULT '0',
   `notify` enum('0','1') NOT NULL DEFAULT '0',
   `notifyEmail` varchar(100) NOT NULL,
-  `source` varchar(255) NOT NULL,
   `likes` text NOT NULL,
   `result` mediumint(8) unsigned NOT NULL,
   `faq` mediumint(8) unsigned NOT NULL,
@@ -7118,74 +6893,10 @@ CREATE TABLE IF NOT EXISTS `zt_feedback` (
   `assignedTo` varchar(255) NOT NULL,
   `assignedDate` datetime NOT NULL,
   `feedbackBy` varchar(100) NOT NULL,
-  `repeatFeedback` mediumint(8) NOT NULL DEFAULT 0,
   `mailto` varchar(255) NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- DROP TABLE IF EXISTS `zt_ticket`;
-CREATE TABLE IF NOT EXISTS `zt_ticket` (
-  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `product` mediumint(8) unsigned NOT NULL,
-  `module` mediumint(8) unsigned NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `type` varchar(30) NOT NULL,
-  `desc` text NOT NULL,
-  `openedBuild` varchar(255) NOT NULL,
-  `feedback` mediumint(8) NOT NULL,
-  `assignedTo` varchar(255) NOT NULL,
-  `assignedDate` datetime NOT NULL,
-  `realStarted` datetime NOT NULL,
-  `startedBy` varchar(255) NOT NULL,
-  `startedDate` datetime NOT NULL,
-  `deadline` date NOT NULL,
-  `pri` tinyint unsigned NOT NULL DEFAULT '0',
-  `estimate` float unsigned NOT NULL,
-  `left` float unsigned NOT NULL,
-  `status` varchar(30) NOT NULL,
-  `openedBy` varchar(30) NOT NULL,
-  `openedDate` datetime NOT NULL,
-  `activatedCount` int(10) NOT NULL,
-  `activatedBy` varchar(30) NOT NULL,
-  `activatedDate` datetime NOT NULL,
-  `closedBy` varchar(30) NOT NULL,
-  `closedDate` datetime NOT NULL,
-  `closedReason` varchar(30) NOT NULL,
-  `finishedBy` varchar(30) NOT NULL,
-  `finishedDate` datetime NOT NULL,
-  `resolvedBy` varchar(30) NOT NULL,
-  `resolvedDate` datetime NOT NULL,
-  `resolution` varchar(1000) NOT NULL,
-  `editedBy` varchar(30) NOT NULL,
-  `editedDate` datetime NOT NULL,
-  `keywords` varchar(255) NOT NULL,
-  `repeatTicket` mediumint(8) NOT NULL DEFAULT '0',
-  `mailto` varchar(255) NOT NULL,
-  `deleted` enum('0','1') NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  key `product` (`product`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE IF NOT EXISTS `zt_ticketsource` (
-  `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `ticketId` mediumint(8) unsigned NOT NULL,
-  `customer` varchar(100) NOT NULL,
-  `contact` varchar(100) NOT NULL,
-  `notifyEmail` varchar(100) NOT NULL,
-  `createdDate` datetime NOT NULL,
-  PRIMARY KEY (`id`),
-  key `ticketId` (`ticketId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `zt_ticketrelation` (
-  `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
-  `ticketId` mediumint unsigned NOT NULL,
-  `objectId` mediumint NOT NULL,
-  `objectType` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `ticketId` (`ticketId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE `zt_bug`   ADD `feedback` mediumint(8) unsigned NOT NULL DEFAULT '0' AFTER `caseVersion`;
 ALTER TABLE `zt_story` ADD `feedback` mediumint(8) unsigned NOT NULL DEFAULT '0' AFTER `fromBug`;
@@ -7197,7 +6908,7 @@ CREATE TABLE IF NOT EXISTS `zt_feedbackview` (
   `account` char(30) NOT NULL,
   `product` mediumint(8) unsigned NOT NULL,
   UNIQUE KEY `account_product` (`account`,`product`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_serverroom`;
 CREATE TABLE IF NOT EXISTS `zt_serverroom` (
@@ -7214,7 +6925,7 @@ CREATE TABLE IF NOT EXISTS `zt_serverroom` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_account`;
 CREATE TABLE IF NOT EXISTS `zt_account` (
@@ -7238,7 +6949,7 @@ CREATE TABLE IF NOT EXISTS `zt_account` (
   key `name` (`name`),
   key `provider` (`provider`),
   key `status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_asset`;
 CREATE TABLE IF NOT EXISTS `zt_asset` (
@@ -7253,7 +6964,7 @@ CREATE TABLE IF NOT EXISTS `zt_asset` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_host`;
 CREATE TABLE IF NOT EXISTS `zt_host` (
@@ -7300,7 +7011,7 @@ CREATE TABLE IF NOT EXISTS `zt_host` (
   `cloudPassword` varchar(255) NOT NULL DEFAULT '',
   `couldVPC` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_service`;
 CREATE TABLE IF NOT EXISTS `zt_service` (
@@ -7331,7 +7042,7 @@ CREATE TABLE IF NOT EXISTS `zt_service` (
   `order` smallint(5) unsigned NOT NULL default '0',
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 REPLACE INTO `zt_grouppriv` (`group`, `module`, `method`) VALUES (1, 'tree', 'editHost');
 
@@ -7361,7 +7072,7 @@ CREATE TABLE IF NOT EXISTS `zt_attend` (
   KEY `reviewStatus` (`reviewStatus`),
   KEY `reviewedBy` (`reviewedBy`),
   UNIQUE KEY `attend` (`date`,`account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_attendstat`;
 CREATE TABLE IF NOT EXISTS `zt_attendstat` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -7387,7 +7098,7 @@ CREATE TABLE IF NOT EXISTS `zt_attendstat` (
   KEY `month` (`month`),
   KEY `status` (`status`),
   UNIQUE KEY `attend` (`month`,`account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_overtime`;
 CREATE TABLE IF NOT EXISTS `zt_overtime` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -7411,7 +7122,7 @@ CREATE TABLE IF NOT EXISTS `zt_overtime` (
   KEY `type` (`type`),
   KEY `status` (`status`),
   KEY `createdBy` (`createdBy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_holiday`;
 CREATE TABLE IF NOT EXISTS `zt_holiday` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -7424,7 +7135,7 @@ CREATE TABLE IF NOT EXISTS `zt_holiday` (
   PRIMARY KEY (`id`),
   KEY `year` (`year`),
   KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_leave`;
 CREATE TABLE IF NOT EXISTS `zt_leave` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -7447,7 +7158,7 @@ CREATE TABLE IF NOT EXISTS `zt_leave` (
   KEY `type` (`type`),
   KEY `status` (`status`),
   KEY `createdBy` (`createdBy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_lieu`;
 CREATE TABLE IF NOT EXISTS `zt_lieu` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -7469,7 +7180,7 @@ CREATE TABLE IF NOT EXISTS `zt_lieu` (
   KEY `year` (`year`),
   KEY `status` (`status`),
   KEY `createdBy` (`createdBy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_trip`;
 CREATE TABLE IF NOT EXISTS `zt_trip` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -7489,7 +7200,7 @@ CREATE TABLE IF NOT EXISTS `zt_trip` (
   PRIMARY KEY (`id`),
   KEY `year` (`year`),
   KEY `createdBy` (`createdBy`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_deploy`;
 CREATE TABLE IF NOT EXISTS `zt_deploy` (
@@ -7508,7 +7219,7 @@ CREATE TABLE IF NOT EXISTS `zt_deploy` (
   `result` varchar(20) NOT NULL,
   `deleted` enum('0','1') NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_deployproduct`;
 CREATE TABLE IF NOT EXISTS `zt_deployproduct` (
   `deploy` mediumint(8) unsigned NOT NULL,
@@ -7516,7 +7227,7 @@ CREATE TABLE IF NOT EXISTS `zt_deployproduct` (
   `release` mediumint(8) unsigned NOT NULL,
   `package` varchar(255) NOT NULL,
   UNIQUE KEY `deploy_product_release` (`deploy`,`product`,`release`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_deploystep`;
 CREATE TABLE IF NOT EXISTS `zt_deploystep` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -7535,7 +7246,7 @@ CREATE TABLE IF NOT EXISTS `zt_deploystep` (
   `createdDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 ALTER TABLE `zt_testresult` ADD `deploy` mediumint(8) unsigned NOT NULL;
 -- DROP TABLE IF EXISTS `zt_deployscope`;
 CREATE TABLE IF NOT EXISTS `zt_deployscope` (
@@ -7544,7 +7255,7 @@ CREATE TABLE IF NOT EXISTS `zt_deployscope` (
   `hosts` text NOT NULL,
   `remove` text NOT NULL,
   `add` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_vm`;
 CREATE TABLE IF NOT EXISTS `zt_vm` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -7576,7 +7287,7 @@ CREATE TABLE IF NOT EXISTS `zt_vm` (
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   `public` varchar(50) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_baseimage`;
 CREATE TABLE IF NOT EXISTS `zt_baseimage` (
   `id` SMALLINT(7) unsigned NOT NULL AUTO_INCREMENT,
@@ -7591,7 +7302,7 @@ CREATE TABLE IF NOT EXISTS `zt_baseimage` (
   `suggestMemory` mediumint(6) unsigned NOT NULL DEFAULT 0,
   `suggestVolume` mediumint(6) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_vmtemplate`;
 CREATE TABLE IF NOT EXISTS `zt_vmtemplate` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -7607,7 +7318,7 @@ CREATE TABLE IF NOT EXISTS `zt_vmtemplate` (
   `diskSize` int NOT NULL DEFAULT 0,
   `osArch` varchar(50) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_browser`;
 CREATE TABLE IF NOT EXISTS `zt_browser` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -7618,16 +7329,16 @@ CREATE TABLE IF NOT EXISTS `zt_browser` (
   `createdBy` varchar(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 -- DROP TABLE IF EXISTS `zt_baseimagebrowser`;
 CREATE TABLE IF NOT EXISTS `zt_baseimagebrowser` (
   `vmBackingID` int(10) NOT NULL,
   `browserID` int(10) NOT NULL,
   PRIMARY KEY (`vmBackingID`, `browserID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_traincourse`;
-CREATE TABLE IF NOT EXISTS `zt_traincourse` (
+CREATE TABLE `zt_traincourse` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `code` varchar(50) NOT NULL,
   `category` mediumint(8) NOT NULL,
@@ -7641,7 +7352,7 @@ CREATE TABLE IF NOT EXISTS `zt_traincourse` (
   `editedDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_traincontents`;
 CREATE TABLE IF NOT EXISTS `zt_traincontents` (
@@ -7660,7 +7371,7 @@ CREATE TABLE IF NOT EXISTS `zt_traincontents` (
   `editedDate` datetime NOT NULL,
   `deleted` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_traincategory`;
 CREATE TABLE IF NOT EXISTS `zt_traincategory` (
@@ -7674,7 +7385,7 @@ CREATE TABLE IF NOT EXISTS `zt_traincategory` (
   PRIMARY KEY (`id`),
   KEY `parent` (`parent`),
   KEY `path` (`path`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_trainrecords`;
 CREATE TABLE IF NOT EXISTS `zt_trainrecords` (
@@ -7683,7 +7394,7 @@ CREATE TABLE IF NOT EXISTS `zt_trainrecords` (
   `objectType` varchar(10) NOT NULL,
   `status` varchar(10) NOT NULL,
   PRIMARY KEY (`user`, `objectId`, `objectType`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE `zt_doc`
 ADD `parent` smallint(5) unsigned NOT NULL DEFAULT '0' AFTER `type`,
@@ -7692,7 +7403,6 @@ ADD `grade` tinyint(3) unsigned NOT NULL DEFAULT '0' AFTER `path`,
 ADD `order` smallint(5) unsigned NOT NULL DEFAULT '0' AFTER `grade`;
 
 ALTER TABLE `zt_product` ADD `feedback` varchar(30) COLLATE 'utf8_general_ci' NOT NULL AFTER `RD`;
-ALTER TABLE `zt_product` ADD `ticket` varchar(30) COLLATE 'utf8_general_ci' NOT NULL AFTER `feedback`;
 
 ALTER TABLE `zt_leave`       ADD `level` tinyint(3) NOT NULL;
 ALTER TABLE `zt_leave`       ADD `assignedTo` varchar(30) NOT NULL;
@@ -7714,7 +7424,7 @@ CREATE TABLE IF NOT EXISTS `zt_faq` (
 `answer` text NOT NULL,
 `addedtime` datetime NOT NULL,
 PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE `zt_task` ADD `feedback` mediumint(8) unsigned NOT NULL AFTER `fromBug`;
 ALTER TABLE `zt_todo` ADD `feedback` mediumint(8) unsigned NOT NULL AFTER `end`;
@@ -7736,7 +7446,7 @@ CREATE TABLE IF NOT EXISTS `zt_domain`(
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   key `domain` (`domain`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 DROP VIEW IF EXISTS `view_datasource_5`;
 CREATE VIEW `view_datasource_5`  AS select `id`,`name` from `zt_task` where `deleted` = '0' and vision = 'rnd';
@@ -8761,7 +8471,6 @@ CREATE TABLE IF NOT EXISTS `zt_workflow` (
   `desc` text NOT NULL,
   `version` varchar(10) NOT NULL DEFAULT '1.0',
   `status` varchar(10) NOT NULL DEFAULT 'wait',
-  `approval` enum('enabled', 'disabled') NOT NULL DEFAULT 'disabled',
   `createdBy` varchar(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   `editedBy` varchar(30) NOT NULL,
@@ -8772,7 +8481,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflow` (
   KEY `module` (`module`),
   KEY `order` (`order`),
   UNIQUE KEY `unique` (`app`, `module`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowaction`;
 CREATE TABLE IF NOT EXISTS `zt_workflowaction` (
@@ -8790,7 +8499,6 @@ CREATE TABLE IF NOT EXISTS `zt_workflowaction` (
   `show` enum('dropdownlist', 'direct') NOT NULL DEFAULT 'dropdownlist',
   `order` smallint(5) unsigned NOT NULL,
   `buildin` tinyint(1) unsigned NOT NULL,
-  `role` varchar(10) NOT NULL DEFAULT 'custom',
   `virtual` tinyint(1) unsigned NOT NULL,
   `conditions` text NOT NULL,
   `verifications` text NOT NULL,
@@ -8811,7 +8519,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowaction` (
   KEY `action` (`action`),
   KEY `order` (`order`),
   UNIQUE KEY `unique` (`module`, `action`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowdatasource`;
 CREATE TABLE IF NOT EXISTS `zt_workflowdatasource` (
@@ -8830,7 +8538,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowdatasource` (
   `editedDate` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `type` (`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowfield`;
 CREATE TABLE IF NOT EXISTS `zt_workflowfield` (
@@ -8854,7 +8562,6 @@ CREATE TABLE IF NOT EXISTS `zt_workflowfield` (
   `isValue` enum('0', '1') NOT NULL DEFAULT '0',
   `readonly` enum('0', '1') NOT NULL DEFAULT '0',
   `buildin` tinyint(1) unsigned NOT NULL,
-  `role` varchar(10) NOT NULL DEFAULT 'custom',
   `desc` text NOT NULL,
   `createdBy` varchar(30) NOT NULL,
   `createdDate` datetime NOT NULL,
@@ -8865,7 +8572,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowfield` (
   KEY `field` (`field`),
   KEY `order` (`order`),
   UNIQUE KEY `unique` (`module`, `field`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowlayout`;
 CREATE TABLE IF NOT EXISTS `zt_workflowlayout` (
@@ -8886,7 +8593,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowlayout` (
   KEY `action` (`action`),
   KEY `order` (`order`),
   UNIQUE KEY `unique` (`module`, `action`, `field`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowlabel`;
 CREATE TABLE IF NOT EXISTS `zt_workflowlabel` (
@@ -8899,14 +8606,13 @@ CREATE TABLE IF NOT EXISTS `zt_workflowlabel` (
   `orderBy` text NOT NULL,
   `order` tinyint(3) NOT NULL,
   `buildin` tinyint(1) unsigned NOT NULL,
-  `role` varchar(10) NOT NULL DEFAULT 'custom',
   `createdBy` char(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   `editedBy` char(30) NOT NULL,
   `editedDate` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `module` (`module`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowlinkdata`;
 CREATE TABLE IF NOT EXISTS `zt_workflowlinkdata` (
@@ -8917,7 +8623,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowlinkdata` (
   `createdBy` varchar(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   UNIQUE KEY `unique` (`objectType`, `objectID`, `linkedType`, `linkedID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowrelation`;
 CREATE TABLE IF NOT EXISTS `zt_workflowrelation` (
@@ -8931,7 +8637,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowrelation` (
   `createdBy` char(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowrelationlayout`;
 CREATE TABLE IF NOT EXISTS `zt_workflowrelationlayout` (
@@ -8947,7 +8653,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowrelationlayout` (
   KEY `action` (`action`),
   KEY `order` (`order`),
   UNIQUE KEY `unique` (`prev`, `next`, `action`, `field`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowrule`;
 CREATE TABLE IF NOT EXISTS `zt_workflowrule` (
@@ -8961,7 +8667,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowrule` (
   `editedDate` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `type` (`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowsql`;
 CREATE TABLE IF NOT EXISTS `zt_workflowsql` (
@@ -8979,7 +8685,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowsql` (
   KEY `module` (`module`),
   KEY `field` (`field`),
   KEY `action` (`action`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowversion`;
 CREATE TABLE IF NOT EXISTS `zt_workflowversion` (
@@ -8997,7 +8703,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowversion` (
   UNIQUE KEY `moduleversion` (`module`, `version`),
   KEY `module` (`module`),
   KEY `version` (`version`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workflowreport`;
 CREATE TABLE IF NOT EXISTS `zt_workflowreport` (
@@ -9013,7 +8719,7 @@ CREATE TABLE IF NOT EXISTS `zt_workflowreport` (
   `createdBy` varchar(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   PRIMARY KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE `zt_action` CHANGE `action` `action` varchar(80) NOT NULL DEFAULT '';
 ALTER TABLE `zt_action` CHANGE `extra` `extra` text;
@@ -9208,7 +8914,7 @@ ALTER TABLE `zt_doc` ADD `assetLibType` varchar(30) NOT NULL default '' after `a
 ALTER TABLE `zt_doc` ADD `from` mediumint(8) unsigned NOT NULL default 0 after `assetLibType`;
 ALTER TABLE `zt_doc` ADD `fromVersion` smallint(6) NOT NULL default 1 after `from`;
 ALTER TABLE `zt_doc` ADD `assignedTo` varchar(30) NOT NULL after `addedDate`;
-ALTER TABLE `zt_doc` ADD `assignedDate` datetime NOT NULL after `assignedTo`;
+ALTER TABLE `zt_doc` ADD `assignedDate` date NOT NULL after `assignedTo`;
 ALTER TABLE `zt_doc` ADD `approvedDate` date NOT NULL after `assignedDate`;
 ALTER TABLE `zt_doc` ADD `status` varchar(30) NOT NULL after `type`;
 
@@ -9236,7 +8942,7 @@ CREATE TABLE IF NOT EXISTS `zt_durationestimation` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_workestimation`;
 CREATE TABLE IF NOT EXISTS `zt_workestimation` (
@@ -9256,7 +8962,7 @@ CREATE TABLE IF NOT EXISTS `zt_workestimation` (
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   `dayHour` decimal(10,2) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_intervention`;
 CREATE TABLE IF NOT EXISTS `zt_intervention` (
@@ -9273,7 +8979,7 @@ CREATE TABLE IF NOT EXISTS `zt_intervention` (
   `deleted` enum('0','1') NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `project` (`project`,`activity`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_activity`;
 CREATE TABLE IF NOT EXISTS `zt_activity` (
@@ -9294,7 +9000,7 @@ CREATE TABLE IF NOT EXISTS `zt_activity` (
   `order` mediumint(8) DEFAULT '0',
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_auditcl`;
 CREATE TABLE IF NOT EXISTS `zt_auditcl` (
@@ -9315,7 +9021,7 @@ CREATE TABLE IF NOT EXISTS `zt_auditcl` (
   `assignedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_auditplan`;
 CREATE TABLE IF NOT EXISTS `zt_auditplan` (
@@ -9343,7 +9049,7 @@ CREATE TABLE IF NOT EXISTS `zt_auditplan` (
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   `checkBy` varchar(30) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_auditresult`;
 CREATE TABLE IF NOT EXISTS `zt_auditresult` (
@@ -9364,7 +9070,7 @@ CREATE TABLE IF NOT EXISTS `zt_auditresult` (
   `assignedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_nc`;
 CREATE TABLE IF NOT EXISTS `zt_nc` (
@@ -9393,7 +9099,7 @@ CREATE TABLE IF NOT EXISTS `zt_nc` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_zoutput`;
 CREATE TABLE IF NOT EXISTS `zt_zoutput` (
@@ -9411,7 +9117,7 @@ CREATE TABLE IF NOT EXISTS `zt_zoutput` (
   `order` mediumint(8) DEFAULT '0',
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_process`;
 CREATE TABLE IF NOT EXISTS `zt_process` (
@@ -9432,7 +9138,7 @@ CREATE TABLE IF NOT EXISTS `zt_process` (
   `assignedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_programactivity`;
 CREATE TABLE IF NOT EXISTS `zt_programactivity` (
@@ -9450,7 +9156,7 @@ CREATE TABLE IF NOT EXISTS `zt_programactivity` (
   `createdDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_programoutput`;
 CREATE TABLE IF NOT EXISTS `zt_programoutput` (
@@ -9469,7 +9175,7 @@ CREATE TABLE IF NOT EXISTS `zt_programoutput` (
   `createdDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_programprocess`;
 CREATE TABLE IF NOT EXISTS `zt_programprocess` (
@@ -9486,7 +9192,7 @@ CREATE TABLE IF NOT EXISTS `zt_programprocess` (
   `createdDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_basicmeas`;
 CREATE TABLE IF NOT EXISTS `zt_basicmeas` (
@@ -9513,7 +9219,7 @@ CREATE TABLE IF NOT EXISTS `zt_basicmeas` (
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_budget`;
 CREATE TABLE IF NOT EXISTS `zt_budget` (
@@ -9530,7 +9236,7 @@ CREATE TABLE IF NOT EXISTS `zt_budget` (
   `lastEditedDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_researchplan`;
 CREATE TABLE IF NOT EXISTS `zt_researchplan` (
@@ -9553,7 +9259,7 @@ CREATE TABLE IF NOT EXISTS `zt_researchplan` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_researchreport`;
 CREATE TABLE IF NOT EXISTS `zt_researchreport` (
@@ -9575,7 +9281,7 @@ CREATE TABLE IF NOT EXISTS `zt_researchreport` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_meeting`;
 CREATE TABLE IF NOT EXISTS `zt_meeting` (
@@ -9603,7 +9309,7 @@ CREATE TABLE IF NOT EXISTS `zt_meeting` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB CHARSET=utf8;
+) ENGINE=MyISAM CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_meetingroom`;
 CREATE TABLE IF NOT EXISTS `zt_meetingroom` (
@@ -9619,7 +9325,7 @@ CREATE TABLE IF NOT EXISTS `zt_meetingroom` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB CHARSET=utf8;
+) ENGINE=MyISAM CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_assetlib`;
 CREATE TABLE IF NOT EXISTS `zt_assetlib` (
@@ -9627,14 +9333,13 @@ CREATE TABLE IF NOT EXISTS `zt_assetlib` (
   `name` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
   `desc` mediumtext NOT NULL,
-  `order` SMALLINT UNSIGNED NOT NULL DEFAULT '0',
   `createdBy` varchar(30) NOT NULL,
   `createdDate` datetime NOT NULL,
   `editedBy` varchar(30) NOT NULL,
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB CHARSET=utf8;
+) ENGINE=MyISAM CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_meastemplate`;
 CREATE TABLE IF NOT EXISTS `zt_meastemplate` (
@@ -9646,7 +9351,7 @@ CREATE TABLE IF NOT EXISTS `zt_meastemplate` (
   `createdDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_programreport`;
 CREATE TABLE IF NOT EXISTS `zt_programreport` (
@@ -9660,7 +9365,7 @@ CREATE TABLE IF NOT EXISTS `zt_programreport` (
   `createdDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_measrecords`;
 CREATE TABLE IF NOT EXISTS `zt_measrecords` (
@@ -9682,7 +9387,7 @@ CREATE TABLE IF NOT EXISTS `zt_measrecords` (
   KEY `product` (`product`),
   KEY `project` (`project`),
   KEY `time` (`year`, `month`, `day`, `week`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_object`;
 CREATE TABLE IF NOT EXISTS `zt_object` (
@@ -9705,7 +9410,7 @@ CREATE TABLE IF NOT EXISTS `zt_object` (
   `createdBy` char(30) NOT NULL,
   `createdDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_review`;
 CREATE TABLE IF NOT EXISTS `zt_review` (
@@ -9715,7 +9420,6 @@ CREATE TABLE IF NOT EXISTS `zt_review` (
   `object` mediumint(8) NOT NULL,
   `template` mediumint(8) NOT NULL,
   `doc` mediumint(8) DEFAULT NULL,
-  `docVersion` smallint(6) DEFAULT NULL,
   `status` char(30) NOT NULL,
   `reviewedBy` varchar(255) NOT NULL,
   `auditedBy` varchar(255) NOT NULL,
@@ -9732,7 +9436,7 @@ CREATE TABLE IF NOT EXISTS `zt_review` (
   `auditResult` char(30) NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_reviewcl`;
 CREATE TABLE IF NOT EXISTS `zt_reviewcl` (
@@ -9751,7 +9455,7 @@ CREATE TABLE IF NOT EXISTS `zt_reviewcl` (
   `assignedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_reviewresult`;
 CREATE TABLE IF NOT EXISTS `zt_reviewresult` (
@@ -9765,14 +9469,13 @@ CREATE TABLE IF NOT EXISTS `zt_reviewresult` (
   `createdDate` date NOT NULL,
   `consumed` float NOT NULL,
   UNIQUE KEY `reviewer` (`review`,`reviewer`,`type`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_reviewissue`;
 CREATE TABLE IF NOT EXISTS `zt_reviewissue` (
   `id` mediumint(8) NOT NULL AUTO_INCREMENT,
   `project` mediumint(8) unsigned NOT NULL,
   `review` mediumint(8) NOT NULL,
-  `approval` mediumint(8) NOT NULL,
   `injection` mediumint(8) NOT NULL,
   `identify` mediumint(8) NOT NULL,
   `type` char(30) NOT NULL DEFAULT 'review',
@@ -9788,7 +9491,7 @@ CREATE TABLE IF NOT EXISTS `zt_reviewissue` (
   `createdDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_reviewlist`;
 CREATE TABLE IF NOT EXISTS `zt_reviewlist` (
@@ -9805,7 +9508,7 @@ CREATE TABLE IF NOT EXISTS `zt_reviewlist` (
   `assignedBy` varchar(30) NOT NULL,
   `assignedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_cmcl`;
 CREATE TABLE IF NOT EXISTS `zt_cmcl` (
@@ -9822,7 +9525,7 @@ CREATE TABLE IF NOT EXISTS `zt_cmcl` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_solutions`;
 CREATE TABLE IF NOT EXISTS `zt_solutions` (
@@ -9839,7 +9542,7 @@ CREATE TABLE IF NOT EXISTS `zt_solutions` (
  `editedDate` date NOT NULL,
  `deleted` enum('0','1') NOT NULL DEFAULT '0',
  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_measqueue`;
 CREATE TABLE IF NOT EXISTS `zt_measqueue` (
@@ -9855,7 +9558,7 @@ CREATE TABLE IF NOT EXISTS `zt_measqueue` (
   `updateDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_issue`;
 CREATE TABLE IF NOT EXISTS `zt_issue` (
@@ -9893,7 +9596,7 @@ CREATE TABLE IF NOT EXISTS `zt_issue` (
   `approvedDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_risk`;
 CREATE TABLE IF NOT EXISTS `zt_risk` (
@@ -9939,14 +9642,7 @@ CREATE TABLE IF NOT EXISTS `zt_risk` (
   `approvedDate` date NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- DROP TABLE IF EXISTS `zt_riskissue`;
-CREATE TABLE IF NOT EXISTS `zt_riskissue` (
-  `risk` mediumint(8) unsigned NOT NULL,
-  `issue` mediumint(8) unsigned NOT NULL,
-  UNIQUE KEY `risk_issue` (`risk`,`issue`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_opportunity`;
 CREATE TABLE IF NOT EXISTS `zt_opportunity` (
@@ -9992,7 +9688,7 @@ CREATE TABLE IF NOT EXISTS `zt_opportunity` (
   `lastCheckedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_trainplan`;
 CREATE TABLE IF NOT EXISTS `zt_trainplan` (
@@ -10013,7 +9709,7 @@ CREATE TABLE IF NOT EXISTS `zt_trainplan` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS `zt_gapanalysis`;
 CREATE TABLE IF NOT EXISTS `zt_gapanalysis` (
@@ -10030,7 +9726,7 @@ CREATE TABLE IF NOT EXISTS `zt_gapanalysis` (
   `deleted` enum('0','1') NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `project_account` (`project`,`account`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 ALTER TABLE `zt_bug`
 ADD `injection` mediumint(8) unsigned NOT NULL AFTER `product`,
@@ -13309,449 +13005,232 @@ REPLACE INTO `zt_lang` (`lang`, `module`, `section`, `key`, `value`, `system`) V
 ('all', 'process', 'classify', 'engineering', '工程支持', '1'),
 ('all', 'process', 'classify', 'project', '项目管理', '1');
 
-REPLACE INTO `zt_process` (`id`, `model`, `name`, `type`, `abbr`, `desc`, `assignedTo`, `status`, `order`, `createdBy`, `createdDate`, `editedBy`, `editedDate`, `assignedBy`, `assignedDate`, `deleted`) VALUES
-(11, 'waterfall', '立项管理', 'project', 'PIM', '', '', '', 55, 'admin', '2020-01-09 10:29:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(12, 'waterfall', '项目规划', 'project', 'PP', '', '', '', 60, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(13, 'waterfall', '项目监控', 'project', 'PMC', '', '', '', 65, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(14, 'waterfall', '风险管理', 'project', 'RSKM', '', '', '', 70, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(15, 'waterfall', '结项管理', 'project', 'PCM', '', '', '', 75, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(16, 'waterfall', '量化项目管理', 'project', 'QPM', '', '', '', 80, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(17, 'waterfall', '需求开发', 'engineering', 'RDM', '', '', '', 85, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(18, 'waterfall', '设计开发', 'engineering', '', '', '', '', 90, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(19, 'waterfall', '实现与测试', 'engineering', 'EMBEDDED', '', '', '', 95, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(20, 'waterfall', '系统测试', 'engineering', 'ST', '', '', '', 100, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(21, 'waterfall', '客户验收', 'engineering', 'CA', '', '', '', 105, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(22, 'waterfall', '质量保证', 'support', 'QA', '', '', '', 110, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(23, 'waterfall', '配置管理', 'support', 'CM', '', '', '', 115, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(24, 'waterfall', '度量分析', 'support', 'MA', '', '', '', 120, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(25, 'waterfall', '原因分析与解决', 'support', 'CAR', '', '', '', 125, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(26, 'waterfall', '决策分析', 'support', 'DAR', '', '', '', 130, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(41, 'scrum', '原因分析与解决', 'support', 'CAR', '', '', '', 125, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(40, 'scrum', '度量分析', 'support', 'MA', '', '', '', 120, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(39, 'scrum', '配置管理', 'support', 'CM', '', '', '', 115, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(38, 'scrum', '质量保证', 'support', 'QA', '', '', '', 110, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(37, 'scrum', '客户验收', 'engineering', 'CA', '', '', '', 105, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(36, 'scrum', '系统测试', 'engineering', 'ST', '', '', '', 100, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(35, 'scrum', '实现与测试', 'engineering', 'EMBEDDED', '', '', '', 95, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(34, 'scrum', '设计开发', 'engineering', '', '', '', '', 90, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(33, 'scrum', '需求开发', 'engineering', 'RDM', '', '', '', 85, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(32, 'scrum', '量化项目管理', 'project', 'QPM', '', '', '', 80, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(31, 'scrum', '结项管理', 'project', 'PCM', '', '', '', 75, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(30, 'scrum', '风险管理', 'project', 'RSKM', '', '', '', 70, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(29, 'scrum', '项目监控', 'project', 'PMC', '', '', '', 65, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(28, 'scrum', '项目规划', 'project', 'PP', '', '', '', 60, 'admin', '2020-01-09 10:31:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(27, 'scrum', '立项管理', 'project', 'PIM', '', '', '', 55, 'admin', '2020-01-09 10:29:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0'),
-(42, 'scrum', '决策分析', 'support', 'DAR', '', '', '', 130, 'admin', '2020-01-09 13:14:55', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', '0');
+REPLACE INTO `zt_process` (`id`, `name`, `type`, `abbr`, `desc`, `assignedTo`, `status`, `order`, `createdBy`, `createdDate`, `editedBy`, `editedDate`, `assignedBy`, `assignedDate`, `deleted`) VALUES
+(11,'立项管理','project','PIM','','','',55,'admin','2020-01-09 10:29:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(12,'项目规划','project','PP','','','',60,'admin','2020-01-09 10:31:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(13,'项目监控','project','PMC','','','',65,'admin','2020-01-09 10:31:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(14,'风险管理','project','RSKM','','','',70,'admin','2020-01-09 10:31:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(15,'结项管理','project','PCM','','','',75,'admin','2020-01-09 10:31:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(16,'量化项目管理','project','QPM','','','',80,'admin','2020-01-09 10:31:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(17,'需求开发','engineering','RDM','','','',85,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(18,'设计开发','engineering','','','','',90,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(19,'实现与测试','engineering','EMBEDDED','','','',95,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(20,'系统测试','engineering','ST','','','',100,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(21,'客户验收','engineering','CA','','','',105,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(22,'质量保证','support','QA','','','',110,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(23,'配置管理','support','CM','','','',115,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(24,'度量分析','support','MA','','','',120,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(25,'原因分析与解决','support','CAR','','','',125,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0'),
+(26,'决策分析','support','DAR','','','',130,'admin','2020-01-09 13:14:55','','0000-00-00 00:00:00','','0000-00-00 00:00:00','0');
 
+REPLACE INTO `zt_activity` (`id`, `process`, `name`, `optional`, `content`, `assignedTo`, `status`, `createdBy`, `createdDate`, `editedBy`, `editedDate`, `assignedBy`, `assignedDate`, `order`, `deleted`) VALUES
+(4,11,'立项调查，可行性分析，技术预研','yes','','','','admin','2020-01-09 10:49:34','','0000-00-00 00:00:00','','0000-00-00 00:00:00',20,'0'),
+(5,11,'项目预算','yes','','','','admin','2020-01-09 10:49:34','','0000-00-00 00:00:00','','0000-00-00 00:00:00',25,'0'),
+(6,11,'立项决策','yes','','','','admin','2020-01-09 10:49:34','','0000-00-00 00:00:00','','0000-00-00 00:00:00',30,'0'),
+(7,11,'投标/商务洽谈','no','','','','admin','2020-01-09 10:49:34','','0000-00-00 00:00:00','','0000-00-00 00:00:00',35,'0'),
+(8,12,'估算','yes','','','','admin','2020-01-09 11:12:17','','0000-00-00 00:00:00','','0000-00-00 00:00:00',40,'0'),
+(9,12,'裁剪','yes','','','','admin','2020-01-09 11:12:17','','0000-00-00 00:00:00','','0000-00-00 00:00:00',45,'0'),
+(10,12,'制定项目计划及下属计划','yes','','','','admin','2020-01-09 11:12:17','','0000-00-00 00:00:00','','0000-00-00 00:00:00',50,'0'),
+(11,12,'评审项目计划及下属计划','yes','','','','admin','2020-01-09 11:12:17','','0000-00-00 00:00:00','','0000-00-00 00:00:00',55,'0'),
+(12,13,'日常跟踪','yes','','','','admin','2020-01-09 11:13:37','','0000-00-00 00:00:00','','0000-00-00 00:00:00',60,'0'),
+(13,13,'举行周例会','yes','','','','admin','2020-01-09 11:13:37','','0000-00-00 00:00:00','','0000-00-00 00:00:00',65,'0'),
+(14,13,'里程碑评审','yes','','','','admin','2020-01-09 11:13:37','','0000-00-00 00:00:00','','0000-00-00 00:00:00',70,'0'),
+(15,13,'采取纠正措施','no','','','','admin','2020-01-09 11:13:37','','0000-00-00 00:00:00','','0000-00-00 00:00:00',75,'0'),
+(16,14,'制定风险管理计划','yes','','','','admin','2020-01-09 11:15:04','','0000-00-00 00:00:00','','0000-00-00 00:00:00',80,'0'),
+(17,14,'风险识别','yes','','','','admin','2020-01-09 11:15:04','','0000-00-00 00:00:00','','0000-00-00 00:00:00',85,'0'),
+(18,14,'风险分析','yes','','','','admin','2020-01-09 11:15:04','','0000-00-00 00:00:00','','0000-00-00 00:00:00',90,'0'),
+(19,14,'风险规避和缓解','yes','','','','admin','2020-01-09 11:15:04','','0000-00-00 00:00:00','','0000-00-00 00:00:00',95,'0'),
+(20,14,'风险跟踪','yes','','','','admin','2020-01-09 11:15:04','','0000-00-00 00:00:00','','0000-00-00 00:00:00',100,'0'),
+(21,14,'更新组织级“风险列表库”','no','','','','admin','2020-01-09 11:15:04','','0000-00-00 00:00:00','','0000-00-00 00:00:00',105,'0'),
+(22,15,'结项准备','no','','','','admin','2020-01-09 11:16:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00',110,'0'),
+(23,15,'结项申请','yes','','','','admin','2020-01-09 11:16:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00',115,'0'),
+(24,15,'结项评审','yes','','','','admin','2020-01-09 11:16:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00',120,'0'),
+(25,15,'资料纳入组织级过程资产库','yes','','','','admin','2020-01-09 11:16:16','','0000-00-00 00:00:00','','0000-00-00 00:00:00',125,'0'),
+(26,16,'量化项目管理','yes','','','','admin','2020-01-09 11:16:34','','0000-00-00 00:00:00','','0000-00-00 00:00:00',130,'0'),
+(27,17,'用户需求获取','yes','','','','admin','2020-01-09 13:25:22','','0000-00-00 00:00:00','','0000-00-00 00:00:00',135,'0'),
+(28,17,'用户需求评审','yes','','','','admin','2020-01-09 13:25:22','','0000-00-00 00:00:00','','0000-00-00 00:00:00',140,'0'),
+(29,17,'产品需求定义','yes','','','','admin','2020-01-09 13:25:22','','0000-00-00 00:00:00','','0000-00-00 00:00:00',145,'0'),
+(30,17,'产品需求评审','yes','','','','admin','2020-01-09 13:25:22','','0000-00-00 00:00:00','','0000-00-00 00:00:00',150,'0'),
+(31,17,'需求变更控制','no','未涉及变更时可不进行','','','admin','2020-01-09 13:25:22','','0000-00-00 00:00:00','','0000-00-00 00:00:00',155,'0'),
+(32,18,'概要设计','','','','','admin','2020-01-09 13:26:07','','0000-00-00 00:00:00','','0000-00-00 00:00:00',160,'0'),
+(33,18,'评审《概要设计说明书》','','','','','admin','2020-01-09 13:26:07','','0000-00-00 00:00:00','','0000-00-00 00:00:00',165,'0'),
+(34,18,'详细设计','','','','','admin','2020-01-09 13:26:07','','0000-00-00 00:00:00','','0000-00-00 00:00:00',170,'0'),
+(35,18,'评审详细设计工作产品','','','','','admin','2020-01-09 13:26:07','','0000-00-00 00:00:00','','0000-00-00 00:00:00',175,'0'),
+(42,19,'制定编码阶段计划','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',210,'0'),
+(43,19,'构建数据库','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',215,'0'),
+(44,19,'编码实现','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',220,'0'),
+(45,19,'代码检查','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',225,'0'),
+(46,19,'单元测试','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',230,'0'),
+(47,19,'交叉单元测试','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',235,'0'),
+(48,19,'系统集成','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',240,'0'),
+(49,19,'编写集成测试用例','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',245,'0'),
+(50,19,'评审集成测试用例','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',250,'0'),
+(51,19,'集成测试','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',255,'0'),
+(52,19,'缺陷管理','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',260,'0'),
+(53,19,'编写支持文档','','','','','admin','2020-01-09 13:27:57','','0000-00-00 00:00:00','','0000-00-00 00:00:00',265,'0'),
+(54,20,'制定《系统测试计划》','','','','','admin','2020-01-09 13:28:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',270,'0'),
+(55,20,'评审《系统测试计划》','','','','','admin','2020-01-09 13:28:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',275,'0'),
+(56,20,'编写《系统测试用例》','','','','','admin','2020-01-09 13:28:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',280,'0'),
+(57,20,'评审《系统测试用例》','','','','','admin','2020-01-09 13:28:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',285,'0'),
+(58,20,'执行系统测试','','','','','admin','2020-01-09 13:28:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',290,'0'),
+(59,21,'验收准备','','','','','admin','2020-01-09 13:29:28','','0000-00-00 00:00:00','','0000-00-00 00:00:00',295,'0'),
+(60,21,'产品打包','','','','','admin','2020-01-09 13:29:28','','0000-00-00 00:00:00','','0000-00-00 00:00:00',300,'0'),
+(61,21,'内部培训','','','','','admin','2020-01-09 13:29:28','','0000-00-00 00:00:00','','0000-00-00 00:00:00',305,'0'),
+(62,21,'现场安装调试','','','','','admin','2020-01-09 13:29:28','','0000-00-00 00:00:00','','0000-00-00 00:00:00',310,'0'),
+(63,21,'用户使用培训','','','','','admin','2020-01-09 13:29:28','','0000-00-00 00:00:00','','0000-00-00 00:00:00',315,'0'),
+(64,21,'试运行','','','','','admin','2020-01-09 13:29:28','','0000-00-00 00:00:00','','0000-00-00 00:00:00',320,'0'),
+(65,21,'客户验收','','','','','admin','2020-01-09 13:29:28','','0000-00-00 00:00:00','','0000-00-00 00:00:00',325,'0'),
+(66,22,'制定质量保证计划','','','','','admin','2020-01-09 13:38:58','','0000-00-00 00:00:00','','0000-00-00 00:00:00',330,'0'),
+(67,22,'评审质量保证计划','','','','','admin','2020-01-09 13:38:58','','0000-00-00 00:00:00','','0000-00-00 00:00:00',335,'0'),
+(68,22,'过程和产品质量检查','','','','','admin','2020-01-09 13:38:58','','0000-00-00 00:00:00','','0000-00-00 00:00:00',340,'0'),
+(69,22,'问题跟踪处理','','','','','admin','2020-01-09 13:38:58','','0000-00-00 00:00:00','','0000-00-00 00:00:00',345,'0'),
+(70,22,'质量保证总结报告','','','','','admin','2020-01-09 13:38:58','','0000-00-00 00:00:00','','0000-00-00 00:00:00',350,'0'),
+(71,23,'组织及配置管理员移交工作','','','','','admin','2020-01-09 13:39:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',355,'0'),
+(72,23,'制定《配置管理计划》','','','','','admin','2020-01-09 13:39:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',360,'0'),
+(73,23,'建立和维护配置库','','','','','admin','2020-01-09 13:39:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',365,'0'),
+(74,23,'配置项管理','','','','','admin','2020-01-09 13:39:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',370,'0'),
+(75,23,'基线管理','','','','','admin','2020-01-09 13:39:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',375,'0'),
+(76,23,'变更管理','','','','','admin','2020-01-09 13:39:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',380,'0'),
+(77,23,'配置审计','','','','','admin','2020-01-09 13:39:25','','0000-00-00 00:00:00','','0000-00-00 00:00:00',385,'0'),
+(78,24,'建立项目度量目标','','','','','admin','2020-01-09 13:40:05','','0000-00-00 00:00:00','','0000-00-00 00:00:00',390,'0'),
+(79,24,'确定项目度量点','','','','','admin','2020-01-09 13:40:05','','0000-00-00 00:00:00','','0000-00-00 00:00:00',395,'0'),
+(80,24,'制定度量分析计划','','','','','admin','2020-01-09 13:40:05','','0000-00-00 00:00:00','','0000-00-00 00:00:00',400,'0'),
+(81,24,'收集和分析度量数据','','','','','admin','2020-01-09 13:40:05','','0000-00-00 00:00:00','','0000-00-00 00:00:00',405,'0'),
+(82,24,'存储和通报度量分析结果','','','','','admin','2020-01-09 13:40:05','','0000-00-00 00:00:00','','0000-00-00 00:00:00',410,'0'),
+(83,25,'原因分析与解决','','','','','admin','2020-01-09 13:40:15','','0000-00-00 00:00:00','','0000-00-00 00:00:00',415,'0'),
+(84,26,'建立评估标准','','','','','admin','2020-01-09 13:40:35','','0000-00-00 00:00:00','','0000-00-00 00:00:00',420,'0'),
+(85,26,'确定候选方案','','','','','admin','2020-01-09 13:40:35','','0000-00-00 00:00:00','','0000-00-00 00:00:00',425,'0'),
+(86,26,'原因分析与解决','','','','','admin','2020-01-09 13:40:35','','0000-00-00 00:00:00','','0000-00-00 00:00:00',430,'0'),
+(87,26,'确定评估方法','','','','','admin','2020-01-09 13:40:35','','0000-00-00 00:00:00','','0000-00-00 00:00:00',435,'0'),
+(88,26,'评估候选方案','','','','','admin','2020-01-09 13:40:35','','0000-00-00 00:00:00','','0000-00-00 00:00:00',440,'0'),
+(89,26,'做出决策','','','','','admin','2020-01-09 13:40:35','','0000-00-00 00:00:00','','0000-00-00 00:00:00',445,'0');
 
-REPLACE INTO `zt_activity` (`id`, `process`, `name`, `optional`, `tailorNorm`, `content`, `assignedTo`, `status`, `createdBy`, `createdDate`, `editedBy`, `editedDate`, `assignedBy`, `assignedDate`, `order`, `deleted`) VALUES
-(4, 11, '立项调查，可行性分析，技术预研', 'yes', '', '', '', '', 'admin', '2020-01-09 10:49:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 20, '0'),
-(5, 11, '项目预算', 'yes', '', '', '', '', 'admin', '2020-01-09 10:49:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 25, '0'),
-(6, 11, '立项决策', 'yes', '', '', '', '', 'admin', '2020-01-09 10:49:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 30, '0'),
-(7, 11, '投标/商务洽谈', 'no', '', '', '', '', 'admin', '2020-01-09 10:49:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 35, '0'),
-(8, 12, '估算', 'yes', '', '', '', '', 'admin', '2020-01-09 11:12:17', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 40, '0'),
-(9, 12, '裁剪', 'yes', '', '', '', '', 'admin', '2020-01-09 11:12:17', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 45, '0'),
-(10, 12, '制定项目计划及下属计划', 'yes', '', '', '', '', 'admin', '2020-01-09 11:12:17', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 50, '0'),
-(11, 12, '评审项目计划及下属计划', 'yes', '', '', '', '', 'admin', '2020-01-09 11:12:17', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 55, '0'),
-(12, 13, '日常跟踪', 'yes', '', '', '', '', 'admin', '2020-01-09 11:13:37', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 60, '0'),
-(13, 13, '举行周例会', 'yes', '', '', '', '', 'admin', '2020-01-09 11:13:37', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 65, '0'),
-(14, 13, '里程碑评审', 'yes', '', '', '', '', 'admin', '2020-01-09 11:13:37', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 70, '0'),
-(15, 13, '采取纠正措施', 'no', '', '', '', '', 'admin', '2020-01-09 11:13:37', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 75, '0'),
-(16, 14, '制定风险管理计划', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 80, '0'),
-(17, 14, '风险识别', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 85, '0'),
-(18, 14, '风险分析', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 90, '0'),
-(19, 14, '风险规避和缓解', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 95, '0'),
-(20, 14, '风险跟踪', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 100, '0'),
-(21, 14, '更新组织级“风险列表库”', 'no', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 105, '0'),
-(22, 15, '结项准备', 'no', '', '', '', '', 'admin', '2020-01-09 11:16:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 110, '0'),
-(23, 15, '结项申请', 'yes', '', '', '', '', 'admin', '2020-01-09 11:16:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 115, '0'),
-(24, 15, '结项评审', 'yes', '', '', '', '', 'admin', '2020-01-09 11:16:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 120, '0'),
-(25, 15, '资料纳入组织级过程资产库', 'yes', '', '', '', '', 'admin', '2020-01-09 11:16:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 125, '0'),
-(26, 16, '量化项目管理', 'yes', '', '', '', '', 'admin', '2020-01-09 11:16:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 130, '0'),
-(27, 17, '用户需求获取', 'yes', '', '', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 135, '0'),
-(28, 17, '用户需求评审', 'yes', '', '', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 140, '0'),
-(29, 17, '产品需求定义', 'yes', '', '', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 145, '0'),
-(30, 17, '产品需求评审', 'yes', '', '', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 150, '0'),
-(31, 17, '需求变更控制', 'no', '', '未涉及变更时可不进行', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 155, '0'),
-(32, 18, '概要设计', '', '', '', '', '', 'admin', '2020-01-09 13:26:07', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 160, '0'),
-(33, 18, '评审《概要设计说明书》', '', '', '', '', '', 'admin', '2020-01-09 13:26:07', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 165, '0'),
-(34, 18, '详细设计', '', '', '', '', '', 'admin', '2020-01-09 13:26:07', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 170, '0'),
-(35, 18, '评审详细设计工作产品', '', '', '', '', '', 'admin', '2020-01-09 13:26:07', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 175, '0'),
-(42, 19, '制定编码阶段计划', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 210, '0'),
-(43, 19, '构建数据库', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 215, '0'),
-(44, 19, '编码实现', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 220, '0'),
-(45, 19, '代码检查', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 225, '0'),
-(46, 19, '单元测试', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 230, '0'),
-(47, 19, '交叉单元测试', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 235, '0'),
-(48, 19, '系统集成', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 240, '0'),
-(49, 19, '编写集成测试用例', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 245, '0'),
-(50, 19, '评审集成测试用例', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 250, '0'),
-(51, 19, '集成测试', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 255, '0'),
-(52, 19, '缺陷管理', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 260, '0'),
-(53, 19, '编写支持文档', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 265, '0'),
-(54, 20, '制定《系统测试计划》', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 270, '0'),
-(55, 20, '评审《系统测试计划》', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 275, '0'),
-(56, 20, '编写《系统测试用例》', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 280, '0'),
-(57, 20, '评审《系统测试用例》', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 285, '0'),
-(58, 20, '执行系统测试', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 290, '0'),
-(59, 21, '验收准备', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 295, '0'),
-(60, 21, '产品打包', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 300, '0'),
-(61, 21, '内部培训', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 305, '0'),
-(62, 21, '现场安装调试', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 310, '0'),
-(63, 21, '用户使用培训', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 315, '0'),
-(64, 21, '试运行', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 320, '0'),
-(65, 21, '客户验收', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 325, '0'),
-(66, 22, '制定质量保证计划', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 330, '0'),
-(67, 22, '评审质量保证计划', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 335, '0'),
-(68, 22, '过程和产品质量检查', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 340, '0'),
-(69, 22, '问题跟踪处理', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 345, '0'),
-(70, 22, '质量保证总结报告', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 350, '0'),
-(71, 23, '组织及配置管理员移交工作', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 355, '0'),
-(72, 23, '制定《配置管理计划》', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 360, '0'),
-(73, 23, '建立和维护配置库', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 365, '0'),
-(74, 23, '配置项管理', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 370, '0'),
-(75, 23, '基线管理', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 375, '0'),
-(76, 23, '变更管理', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 380, '0'),
-(77, 23, '配置审计', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 385, '0'),
-(78, 24, '建立项目度量目标', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 390, '0'),
-(79, 24, '确定项目度量点', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 395, '0'),
-(80, 24, '制定度量分析计划', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 400, '0'),
-(81, 24, '收集和分析度量数据', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 405, '0'),
-(82, 24, '存储和通报度量分析结果', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 410, '0'),
-(83, 25, '原因分析与解决', '', '', '', '', '', 'admin', '2020-01-09 13:40:15', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 415, '0'),
-(84, 26, '建立评估标准', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 420, '0'),
-(85, 26, '确定候选方案', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 425, '0'),
-(86, 26, '原因分析与解决', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 430, '0'),
-(87, 26, '确定评估方法', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 435, '0'),
-(88, 26, '评估候选方案', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 440, '0'),
-(89, 26, '做出决策', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 445, '0'),
-(90, 27, '立项调查，可行性分析，技术预研', 'yes', '', '', '', '', 'admin', '2020-01-09 10:49:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 20, '0'),
-(91, 27, '项目预算', 'yes', '', '', '', '', 'admin', '2020-01-09 10:49:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 25, '0'),
-(92, 27, '立项决策', 'yes', '', '', '', '', 'admin', '2020-01-09 10:49:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 30, '0'),
-(93, 27, '投标/商务洽谈', 'no', '', '', '', '', 'admin', '2020-01-09 10:49:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 35, '0'),
-(94, 28, '估算', 'yes', '', '', '', '', 'admin', '2020-01-09 11:12:17', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 40, '0'),
-(95, 28, '裁剪', 'yes', '', '', '', '', 'admin', '2020-01-09 11:12:17', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 45, '0'),
-(96, 28, '制定项目计划及下属计划', 'yes', '', '', '', '', 'admin', '2020-01-09 11:12:17', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 50, '0'),
-(97, 28, '评审项目计划及下属计划', 'yes', '', '', '', '', 'admin', '2020-01-09 11:12:17', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 55, '0'),
-(98, 29, '日常跟踪', 'yes', '', '', '', '', 'admin', '2020-01-09 11:13:37', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 60, '0'),
-(99, 29, '举行周例会', 'yes', '', '', '', '', 'admin', '2020-01-09 11:13:37', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 65, '0'),
-(100, 29, '里程碑评审', 'yes', '', '', '', '', 'admin', '2020-01-09 11:13:37', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 70, '0'),
-(101, 29, '采取纠正措施', 'no', '', '', '', '', 'admin', '2020-01-09 11:13:37', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 75, '0'),
-(102, 30, '制定风险管理计划', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 80, '0'),
-(103, 30, '风险识别', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 85, '0'),
-(104, 30, '风险分析', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 90, '0'),
-(105, 30, '风险规避和缓解', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 95, '0'),
-(106, 30, '风险跟踪', 'yes', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 100, '0'),
-(107, 30, '更新组织级“风险列表库”', 'no', '', '', '', '', 'admin', '2020-01-09 11:15:04', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 105, '0'),
-(108, 31, '结项准备', 'no', '', '', '', '', 'admin', '2020-01-09 11:16:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 110, '0'),
-(109, 31, '结项申请', 'yes', '', '', '', '', 'admin', '2020-01-09 11:16:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 115, '0'),
-(110, 31, '结项评审', 'yes', '', '', '', '', 'admin', '2020-01-09 11:16:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 120, '0'),
-(111, 31, '资料纳入组织级过程资产库', 'yes', '', '', '', '', 'admin', '2020-01-09 11:16:16', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 125, '0'),
-(112, 32, '量化项目管理', 'yes', '', '', '', '', 'admin', '2020-01-09 11:16:34', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 130, '0'),
-(113, 33, '用户需求获取', 'yes', '', '', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 135, '0'),
-(114, 33, '用户需求评审', 'yes', '', '', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 140, '0'),
-(115, 33, '产品需求定义', 'yes', '', '', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 145, '0'),
-(116, 33, '产品需求评审', 'yes', '', '', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 150, '0'),
-(117, 33, '需求变更控制', 'no', '', '未涉及变更时可不进行', '', '', 'admin', '2020-01-09 13:25:22', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 155, '0'),
-(118, 34, '概要设计', '', '', '', '', '', 'admin', '2020-01-09 13:26:07', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 160, '0'),
-(119, 34, '评审《概要设计说明书》', '', '', '', '', '', 'admin', '2020-01-09 13:26:07', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 165, '0'),
-(120, 34, '详细设计', '', '', '', '', '', 'admin', '2020-01-09 13:26:07', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 170, '0'),
-(121, 34, '评审详细设计工作产品', '', '', '', '', '', 'admin', '2020-01-09 13:26:07', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 175, '0'),
-(122, 35, '制定编码阶段计划', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 210, '0'),
-(123, 35, '构建数据库', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 215, '0'),
-(124, 35, '编码实现', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 220, '0'),
-(125, 35, '代码检查', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 225, '0'),
-(126, 35, '单元测试', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 230, '0'),
-(127, 35, '交叉单元测试', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 235, '0'),
-(128, 35, '系统集成', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 240, '0'),
-(129, 35, '编写集成测试用例', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 245, '0'),
-(130, 35, '评审集成测试用例', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 250, '0'),
-(131, 35, '集成测试', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 255, '0'),
-(132, 35, '缺陷管理', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 260, '0'),
-(133, 35, '编写支持文档', '', '', '', '', '', 'admin', '2020-01-09 13:27:57', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 265, '0'),
-(134, 36, '制定《系统测试计划》', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 270, '0'),
-(135, 36, '评审《系统测试计划》', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 275, '0'),
-(136, 36, '编写《系统测试用例》', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 280, '0'),
-(137, 36, '评审《系统测试用例》', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 285, '0'),
-(138, 36, '执行系统测试', '', '', '', '', '', 'admin', '2020-01-09 13:28:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 290, '0'),
-(139, 37, '验收准备', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 295, '0'),
-(140, 37, '产品打包', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 300, '0'),
-(141, 37, '内部培训', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 305, '0'),
-(142, 37, '现场安装调试', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 310, '0'),
-(143, 37, '用户使用培训', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 315, '0'),
-(144, 37, '试运行', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 320, '0'),
-(145, 37, '客户验收', '', '', '', '', '', 'admin', '2020-01-09 13:29:28', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 325, '0'),
-(146, 38, '制定质量保证计划', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 330, '0'),
-(147, 38, '评审质量保证计划', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 335, '0'),
-(148, 38, '过程和产品质量检查', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 340, '0'),
-(149, 38, '问题跟踪处理', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 345, '0'),
-(150, 38, '质量保证总结报告', '', '', '', '', '', 'admin', '2020-01-09 13:38:58', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 350, '0'),
-(151, 39, '组织及配置管理员移交工作', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 355, '0'),
-(152, 39, '制定《配置管理计划》', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 360, '0'),
-(153, 39, '建立和维护配置库', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 365, '0'),
-(154, 39, '配置项管理', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 370, '0'),
-(155, 39, '基线管理', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 375, '0'),
-(156, 39, '变更管理', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 380, '0'),
-(157, 39, '配置审计', '', '', '', '', '', 'admin', '2020-01-09 13:39:25', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 385, '0'),
-(158, 40, '建立项目度量目标', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 390, '0'),
-(159, 40, '确定项目度量点', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 395, '0'),
-(160, 40, '制定度量分析计划', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 400, '0'),
-(161, 40, '收集和分析度量数据', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 405, '0'),
-(162, 40, '存储和通报度量分析结果', '', '', '', '', '', 'admin', '2020-01-09 13:40:05', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 410, '0'),
-(163, 41, '原因分析与解决', '', '', '', '', '', 'admin', '2020-01-09 13:40:15', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 415, '0'),
-(164, 42, '建立评估标准', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 420, '0'),
-(165, 42, '确定候选方案', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 425, '0'),
-(166, 42, '原因分析与解决', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 430, '0'),
-(167, 42, '确定评估方法', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 435, '0'),
-(168, 42, '评估候选方案', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 440, '0'),
-(169, 42, '做出决策', '', '', '', '', '', 'admin', '2020-01-09 13:40:35', '', '0000-00-00 00:00:00', '', '0000-00-00 00:00:00', 445, '0');
-
-REPLACE INTO `zt_zoutput` (`id`, `activity`, `name`, `content`, `optional`, `tailorNorm`, `status`, `createdBy`, `createdDate`, `editedBy`, `editedDate`, `order`, `deleted`) VALUES
-(5, 4, '《技术可行性分析报告》', '', '', '', '', 'admin', '2020-01-09 11:01:52', '', '0000-00-00 00:00:00', 25, '0'),
-(6, 5, '《项目预算表》', '', '', '', '', 'admin', '2020-01-09 11:17:27', '', '0000-00-00 00:00:00', 30, '0'),
-(7, 6, '《立项申请报告》', '', '', '', '', 'admin', '2020-01-09 11:17:50', '', '0000-00-00 00:00:00', 35, '0'),
-(8, 7, '《项目投标书》', '不涉及投标', '', '', '', 'admin', '2020-01-09 11:18:12', '', '0000-00-00 00:00:00', 40, '0'),
-(9, 8, '《项目估算报告》', '', '', '', '', 'admin', '2020-01-09 11:18:41', '', '0000-00-00 00:00:00', 45, '0'),
-(10, 8, '《功能点估算》', '', '', '', '', 'admin', '2020-01-09 11:18:41', '', '0000-00-00 00:00:00', 50, '0'),
-(11, 9, '《PDP说明》', '', '', '', '', 'admin', '2020-01-09 11:18:54', '', '0000-00-00 00:00:00', 55, '0'),
-(12, 10, '《项目进度表》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 60, '0'),
-(13, 10, '《项目计划》及其下属计划', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 65, '0'),
-(14, 10, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 70, '0'),
-(15, 10, '《项目资源计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 75, '0'),
-(16, 10, '《干系人计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 80, '0'),
-(17, 10, '《同行评审计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 85, '0'),
-(18, 10, '《质量保证计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 90, '0'),
-(19, 10, '《配置管理计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 95, '0'),
-(20, 11, '《同行评审通知》', '', '', '', '', 'admin', '2020-01-09 11:20:16', '', '0000-00-00 00:00:00', 100, '0'),
-(21, 11, '《评审准备表》', '', '', '', '', 'admin', '2020-01-09 11:20:16', '', '0000-00-00 00:00:00', 105, '0'),
-(22, 11, '《同行评审报告》', '', '', '', '', 'admin', '2020-01-09 11:20:17', '', '0000-00-00 00:00:00', 110, '0'),
-(23, 12, '《里程碑报告》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 115, '0'),
-(24, 12, '《项目周报》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 120, '0'),
-(25, 13, '《项目周报》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 125, '0'),
-(26, 13, '《会议纪要》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 130, '0'),
-(27, 14, '《里程碑报告》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 135, '0'),
-(28, 14, '《里程碑会议纪要》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 140, '0'),
-(29, 15, '《计划变更申请》', '', 'no', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 145, '0'),
-(30, 16, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 150, '0'),
-(31, 17, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 155, '0'),
-(32, 17, '《风险管理报告》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 160, '0'),
-(33, 18, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 165, '0'),
-(34, 19, '《异常处理申请表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 170, '0'),
-(35, 19, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 175, '0'),
-(36, 20, '《风险管理报告》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 180, '0'),
-(37, 20, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 185, '0'),
-(38, 21, '《风险列表库》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 190, '0'),
-(39, 22, '《代码复用总结》', '', '', '', '', 'admin', '2020-01-09 13:46:26', '', '0000-00-00 00:00:00', 195, '0'),
-(40, 24, '《结项报告》', '', '', '', '', 'admin', '2020-01-09 13:46:26', '', '0000-00-00 00:00:00', 200, '0'),
-(41, 26, '《量化项目管理及跟踪计划》', '', 'yes', '', '', 'admin', '2020-01-09 13:46:46', '', '0000-00-00 00:00:00', 205, '0'),
-(42, 27, '《用户需求调查单》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 210, '0'),
-(43, 27, '《用户需求说明书》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 215, '0'),
-(44, 28, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 220, '0'),
-(45, 28, '《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 225, '0'),
-(46, 28, '《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 230, '0'),
-(47, 29, '《产品需求规格说明书》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 235, '0'),
-(48, 30, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 240, '0'),
-(49, 30, ' 《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 245, '0'),
-(50, 30, ' 《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 250, '0'),
-(51, 31, '《需求变更记录》', '', '', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 255, '0'),
-(52, 31, '《用户需求说明书》', '', '', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 260, '0'),
-(53, 31, '《软件需求规格说明书》', '', '', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 265, '0'),
-(54, 32, '《概要设计说明书》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 270, '0'),
-(55, 33, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 275, '0'),
-(56, 33, '《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 280, '0'),
-(57, 33, '《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 285, '0'),
-(58, 34, '《模块设计说明书》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 290, '0'),
-(59, 34, '《数据库设计说明书》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 295, '0'),
-(60, 34, '《用户界面设计说明书》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 300, '0'),
-(61, 35, '《评审通知》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 305, '0'),
-(62, 35, '《同行评审准备表》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 310, '0'),
-(63, 35, '《同行评审报告》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 315, '0'),
-(64, 42, '《实现与测试计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 320, '0'),
-(65, 42, '《单板硬件调试和单元测试计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 325, '0'),
-(66, 42, '《项目进度表》中“实现与测试”部分', '', 'yes', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 330, '0'),
-(67, 43, '产品数据库', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 335, '0'),
-(68, 44, '模块代码', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 340, '0'),
-(69, 45, '《代码质量检查记录单》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 345, '0'),
-(70, 46, '《单元测试缺陷统计分析报告》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 350, '0'),
-(71, 47, '禅道缺陷记录', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 355, '0'),
-(72, 48, '《系统集成说明书》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 360, '0'),
-(73, 49, '《集成测试用例》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 365, '0'),
-(74, 50, '《评审通知》 ', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 370, '0'),
-(75, 50, '《同行评审准备表》 ', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 375, '0'),
-(76, 50, '《同行评审报告》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 380, '0'),
-(77, 51, '《集成测试报告》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 385, '0'),
-(78, 52, '禅道缺陷记录', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 390, '0'),
-(79, 52, '《用户操作手册》 ', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 395, '0'),
-(80, 52, '《安装手册》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 400, '0'),
-(81, 54, '《系统测试计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 405, '0'),
-(82, 55, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 410, '0'),
-(83, 55, '《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 415, '0'),
-(84, 55, '《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 420, '0'),
-(85, 56, '《系统测试用例》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 425, '0'),
-(86, 57, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 430, '0'),
-(87, 57, '《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 435, '0'),
-(88, 57, '《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 440, '0'),
-(89, 58, '禅道缺陷跟踪系统记录项', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 445, '0'),
-(90, 58, '《系统测试分析报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 450, '0'),
-(91, 58, '《缺陷统计分析报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 455, '0'),
-(92, 59, '《产品打包清单》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 460, '0'),
-(93, 60, '发布光盘、纸质支持文档', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 465, '0'),
-(94, 61, '《交接签收单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 470, '0'),
-(95, 62, '《工作联系单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 475, '0'),
-(96, 62, '《工作记录单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 480, '0'),
-(97, 62, '《交接签收单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 485, '0'),
-(98, 62, '《安装调试信息》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 490, '0'),
-(99, 64, '禅道缺陷记录项', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 495, '0'),
-(100, 64, '会议纪要等文档', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 500, '0'),
-(101, 65, '《交接验收单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 505, '0'),
-(102, 65, '《客户验收报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 510, '0'),
-(103, 66, '初步《质量保证计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 515, '0'),
-(104, 67, '详细《质量保证计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 520, '0'),
-(105, 68, '《过程审计检查表》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 525, '0'),
-(106, 68, '《产品审计检查表》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 530, '0'),
-(107, 68, '《QA审计报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 535, '0'),
-(108, 68, '《QA问题报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 540, '0'),
-(109, 68, '《QA里程碑报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 545, '0'),
-(110, 68, '《QA周报》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 550, '0'),
-(111, 69, '《QA审计报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 555, '0'),
-(112, 69, '《QA问题报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 560, '0'),
-(113, 70, '《QA总结报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 565, '0'),
-(114, 72, '《配置管理计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 570, '0'),
-(115, 72, '《配置项计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 575, '0'),
-(116, 72, '《基线计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 580, '0'),
-(117, 73, '《配置库管理报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 585, '0'),
-(118, 74, '《配置项计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 590, '0'),
-(119, 75, '《基线计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 595, '0'),
-(120, 76, '《变更申请书》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 600, '0'),
-(121, 77, '《配置审计报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 605, '0'),
-(122, 80, '《度量分析计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 610, '0'),
-(123, 82, '项目度量数据库', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 615, '0'),
-(124, 86, '《量化项目管理及跟踪计划》', '', 'no', '', '', 'admin', '2020-01-09 14:59:04', '', '0000-00-00 00:00:00', 620, '0'),
-(125, 84, '《决策分析报告》的决策分析评估表', '', 'no', '', '', 'admin', '2020-01-09 14:59:04', '', '0000-00-00 00:00:00', 625, '0'),
-(126, 83, '《量化项目计划及跟踪表》', '', 'no', '', '', 'admin', '2020-01-09 14:59:04', '', '0000-00-00 00:00:00', 630, '0'),
-(127, 87, '《决策分析报告》的评分表', '', 'no', '', '', 'admin', '2020-01-09 14:59:04', '', '0000-00-00 00:00:00', 635, '0'),
-(128, 88, '《决策分析报告》的评分表', '', 'no', '', '', 'admin', '2020-01-09 14:59:04', '', '0000-00-00 00:00:00', 640, '0'),
-(129, 89, '《决策分析报告》', '', 'no', '', '', 'admin', '2020-01-09 14:59:04', '', '0000-00-00 00:00:00', 645, '0'),
-(130, 90, '《技术可行性分析报告》', '', '', '', '', 'admin', '2020-01-09 11:01:52', '', '0000-00-00 00:00:00', 25, '0'),
-(131, 91, '《项目预算表》', '', '', '', '', 'admin', '2020-01-09 11:17:27', '', '0000-00-00 00:00:00', 30, '0'),
-(132, 92, '《立项申请报告》', '', '', '', '', 'admin', '2020-01-09 11:17:50', '', '0000-00-00 00:00:00', 35, '0'),
-(133, 93, '《项目投标书》', '不涉及投标', '', '', '', 'admin', '2020-01-09 11:18:12', '', '0000-00-00 00:00:00', 40, '0'),
-(134, 94, '《项目估算报告》', '', '', '', '', 'admin', '2020-01-09 11:18:41', '', '0000-00-00 00:00:00', 45, '0'),
-(135, 94, '《功能点估算》', '', '', '', '', 'admin', '2020-01-09 11:18:41', '', '0000-00-00 00:00:00', 50, '0'),
-(136, 95, '《PDP说明》', '', '', '', '', 'admin', '2020-01-09 11:18:54', '', '0000-00-00 00:00:00', 55, '0'),
-(137, 96, '《项目进度表》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 60, '0'),
-(138, 96, '《项目计划》及其下属计划', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 65, '0'),
-(139, 96, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 70, '0'),
-(140, 96, '《项目资源计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 75, '0'),
-(141, 96, '《干系人计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 80, '0'),
-(142, 96, '《同行评审计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 85, '0'),
-(143, 96, '《质量保证计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 90, '0'),
-(144, 96, '《配置管理计划》', '', '', '', '', 'admin', '2020-01-09 11:19:46', '', '0000-00-00 00:00:00', 95, '0'),
-(145, 97, '《同行评审通知》', '', '', '', '', 'admin', '2020-01-09 11:20:16', '', '0000-00-00 00:00:00', 100, '0'),
-(146, 97, '《评审准备表》', '', '', '', '', 'admin', '2020-01-09 11:20:16', '', '0000-00-00 00:00:00', 105, '0'),
-(147, 97, '《同行评审报告》', '', '', '', '', 'admin', '2020-01-09 11:20:17', '', '0000-00-00 00:00:00', 110, '0'),
-(148, 98, '《里程碑报告》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 115, '0'),
-(149, 98, '《项目周报》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 120, '0'),
-(150, 99, '《项目周报》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 125, '0'),
-(151, 99, '《会议纪要》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 130, '0'),
-(152, 100, '《里程碑报告》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 135, '0'),
-(153, 100, '《里程碑会议纪要》', '', 'yes', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 140, '0'),
-(154, 101, '《计划变更申请》', '', 'no', '', '', 'admin', '2020-01-09 13:44:11', '', '0000-00-00 00:00:00', 145, '0'),
-(155, 102, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 150, '0'),
-(156, 103, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 155, '0'),
-(157, 103, '《风险管理报告》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 160, '0'),
-(158, 104, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 165, '0'),
-(159, 105, '《异常处理申请表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 170, '0'),
-(160, 105, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 175, '0'),
-(161, 106, '《风险管理报告》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 180, '0'),
-(162, 106, '《风险管理计划及跟踪表》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 185, '0'),
-(163, 107, '《风险列表库》', '', '', '', '', 'admin', '2020-01-09 13:45:53', '', '0000-00-00 00:00:00', 190, '0'),
-(164, 108, '《代码复用总结》', '', '', '', '', 'admin', '2020-01-09 13:46:26', '', '0000-00-00 00:00:00', 195, '0'),
-(165, 110, '《结项报告》', '', '', '', '', 'admin', '2020-01-09 13:46:26', '', '0000-00-00 00:00:00', 200, '0'),
-(166, 112, '《量化项目管理及跟踪计划》', '', 'yes', '', '', 'admin', '2020-01-09 13:46:46', '', '0000-00-00 00:00:00', 205, '0'),
-(167, 113, '《用户需求调查单》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 210, '0'),
-(168, 113, '《用户需求说明书》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 215, '0'),
-(169, 114, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 220, '0'),
-(170, 114, '《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 225, '0'),
-(171, 114, '《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 230, '0'),
-(172, 115, '《产品需求规格说明书》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 235, '0'),
-(173, 116, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 240, '0'),
-(174, 116, ' 《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 245, '0'),
-(175, 116, ' 《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 250, '0'),
-(176, 117, '《需求变更记录》', '', '', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 255, '0'),
-(177, 117, '《用户需求说明书》', '', '', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 260, '0'),
-(178, 117, '《软件需求规格说明书》', '', '', '', '', 'admin', '2020-01-09 14:08:58', '', '0000-00-00 00:00:00', 265, '0'),
-(179, 118, '《概要设计说明书》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 270, '0'),
-(180, 119, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 275, '0'),
-(181, 119, '《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 280, '0'),
-(182, 119, '《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 285, '0'),
-(183, 120, '《模块设计说明书》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 290, '0'),
-(184, 120, '《数据库设计说明书》', '', 'yes', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 295, '0'),
-(185, 120, '《用户界面设计说明书》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 300, '0'),
-(186, 121, '《评审通知》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 305, '0'),
-(187, 121, '《同行评审准备表》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 310, '0'),
-(188, 121, '《同行评审报告》', '', 'no', '', '', 'admin', '2020-01-09 14:20:09', '', '0000-00-00 00:00:00', 315, '0'),
-(189, 128, '《实现与测试计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 320, '0'),
-(190, 128, '《单板硬件调试和单元测试计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 325, '0'),
-(191, 128, '《项目进度表》中“实现与测试”部分', '', 'yes', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 330, '0'),
-(192, 129, '产品数据库', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 335, '0'),
-(193, 130, '模块代码', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 340, '0'),
-(194, 131, '《代码质量检查记录单》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 345, '0'),
-(195, 132, '《单元测试缺陷统计分析报告》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 350, '0'),
-(196, 133, 'bugzilla缺陷记录', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 355, '0'),
-(197, 134, '《系统集成说明书》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 360, '0'),
-(198, 135, '《集成测试用例》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 365, '0'),
-(199, 136, '《评审通知》 ', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 370, '0'),
-(200, 136, '《同行评审准备表》 ', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 375, '0'),
-(201, 136, '《同行评审报告》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 380, '0'),
-(202, 137, '《集成测试报告》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 385, '0'),
-(203, 138, 'bugzilla缺陷记录', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 390, '0'),
-(204, 138, '《用户操作手册》 ', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 395, '0'),
-(205, 138, '《安装手册》', '', '', '', '', 'admin', '2020-01-09 14:22:52', '', '0000-00-00 00:00:00', 400, '0'),
-(206, 140, '《系统测试计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 405, '0'),
-(207, 141, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 410, '0'),
-(208, 141, '《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 415, '0'),
-(209, 141, '《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 420, '0'),
-(210, 142, '《系统测试用例》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 425, '0'),
-(211, 143, '《评审通知》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 430, '0'),
-(212, 143, '《同行评审准备表》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 435, '0'),
-(213, 143, '《同行评审报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 440, '0'),
-(214, 144, 'bugzilla缺陷跟踪系统记录项', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 445, '0'),
-(215, 144, '《系统测试分析报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 450, '0'),
-(216, 144, '《缺陷统计分析报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 455, '0'),
-(217, 145, '《产品打包清单》', '', 'yes', '', '', 'admin', '2020-01-09 14:25:16', '', '0000-00-00 00:00:00', 460, '0'),
-(218, 146, '发布光盘、纸质支持文档', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 465, '0'),
-(219, 147, '《交接签收单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 470, '0'),
-(220, 148, '《工作联系单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 475, '0'),
-(221, 148, '《工作记录单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 480, '0'),
-(222, 148, '《交接签收单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 485, '0'),
-(223, 148, '《安装调试信息》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 490, '0'),
-(224, 150, 'bugzilla缺陷记录项', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 495, '0'),
-(225, 150, '会议纪要等文档', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 500, '0'),
-(226, 151, '《交接验收单》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 505, '0'),
-(227, 151, '《客户验收报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:26:52', '', '0000-00-00 00:00:00', 510, '0'),
-(228, 152, '初步《质量保证计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 515, '0'),
-(229, 153, '详细《质量保证计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 520, '0'),
-(230, 154, '《过程审计检查表》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 525, '0'),
-(231, 154, '《产品审计检查表》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 530, '0'),
-(232, 154, '《QA审计报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 535, '0'),
-(233, 154, '《QA问题报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 540, '0'),
-(234, 154, '《QA里程碑报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 545, '0'),
-(235, 154, '《QA周报》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 550, '0'),
-(236, 155, '《QA审计报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 555, '0'),
-(237, 155, '《QA问题报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 560, '0'),
-(238, 156, '《QA总结报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:28:18', '', '0000-00-00 00:00:00', 565, '0'),
-(239, 158, '《配置管理计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 570, '0'),
-(240, 158, '《配置项计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 575, '0'),
-(241, 158, '《基线计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 580, '0'),
-(242, 159, '《配置库管理报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 585, '0'),
-(243, 160, '《配置项计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 590, '0'),
-(244, 161, '《基线计划及跟踪表》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 595, '0'),
-(245, 162, '《变更申请书》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 600, '0'),
-(246, 163, '《配置审计报告》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 605, '0'),
-(247, 166, '《度量分析计划》', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 610, '0'),
-(248, 168, '项目度量数据库', '', 'yes', '', '', 'admin', '2020-01-09 14:55:08', '', '0000-00-00 00:00:00', 615, '0'),
-(249, 169, '《量化项目计划及跟踪表》', '', 'no', '', '', 'admin', '2020-01-09 14:59:04', '', '0000-00-00 00:00:00', 630, '0');
+REPLACE INTO `zt_zoutput` (`id`, `activity`, `name`, `content`, `optional`, `status`, `createdBy`, `createdDate`, `editedBy`, `editedDate`, `order`, `deleted`) VALUES
+(5,4,'《技术可行性分析报告》','','','','admin','2020-01-09 11:01:52','','0000-00-00 00:00:00',25,'0'),
+(6,5,'《项目预算表》','','','','admin','2020-01-09 11:17:27','','0000-00-00 00:00:00',30,'0'),
+(7,6,'《立项申请报告》','','','','admin','2020-01-09 11:17:50','','0000-00-00 00:00:00',35,'0'),
+(8,7,'《项目投标书》','不涉及投标','','','admin','2020-01-09 11:18:12','','0000-00-00 00:00:00',40,'0'),
+(9,8,'《项目估算报告》','','','','admin','2020-01-09 11:18:41','','0000-00-00 00:00:00',45,'0'),
+(10,8,'《功能点估算》','','','','admin','2020-01-09 11:18:41','','0000-00-00 00:00:00',50,'0'),
+(11,9,'《PDP说明》','','','','admin','2020-01-09 11:18:54','','0000-00-00 00:00:00',55,'0'),
+(12,10,'《项目进度表》','','','','admin','2020-01-09 11:19:46','','0000-00-00 00:00:00',60,'0'),
+(13,10,'《项目计划》及其下属计划','','','','admin','2020-01-09 11:19:46','','0000-00-00 00:00:00',65,'0'),
+(14,10,'《风险管理计划及跟踪表》','','','','admin','2020-01-09 11:19:46','','0000-00-00 00:00:00',70,'0'),
+(15,10,'《项目资源计划》','','','','admin','2020-01-09 11:19:46','','0000-00-00 00:00:00',75,'0'),
+(16,10,'《干系人计划》','','','','admin','2020-01-09 11:19:46','','0000-00-00 00:00:00',80,'0'),
+(17,10,'《同行评审计划》','','','','admin','2020-01-09 11:19:46','','0000-00-00 00:00:00',85,'0'),
+(18,10,'《质量保证计划》','','','','admin','2020-01-09 11:19:46','','0000-00-00 00:00:00',90,'0'),
+(19,10,'《配置管理计划》','','','','admin','2020-01-09 11:19:46','','0000-00-00 00:00:00',95,'0'),
+(20,11,'《同行评审通知》','','','','admin','2020-01-09 11:20:16','','0000-00-00 00:00:00',100,'0'),
+(21,11,'《评审准备表》','','','','admin','2020-01-09 11:20:16','','0000-00-00 00:00:00',105,'0'),
+(22,11,'《同行评审报告》','','','','admin','2020-01-09 11:20:17','','0000-00-00 00:00:00',110,'0'),
+(23,12,'《里程碑报告》','','yes','','admin','2020-01-09 13:44:11','','0000-00-00 00:00:00',115,'0'),
+(24,12,'《项目周报》','','yes','','admin','2020-01-09 13:44:11','','0000-00-00 00:00:00',120,'0'),
+(25,13,'《项目周报》','','yes','','admin','2020-01-09 13:44:11','','0000-00-00 00:00:00',125,'0'),
+(26,13,'《会议纪要》','','yes','','admin','2020-01-09 13:44:11','','0000-00-00 00:00:00',130,'0'),
+(27,14,'《里程碑报告》','','yes','','admin','2020-01-09 13:44:11','','0000-00-00 00:00:00',135,'0'),
+(28,14,'《里程碑会议纪要》','','yes','','admin','2020-01-09 13:44:11','','0000-00-00 00:00:00',140,'0'),
+(29,15,'《计划变更申请》','','no','','admin','2020-01-09 13:44:11','','0000-00-00 00:00:00',145,'0'),
+(30,16,'《风险管理计划及跟踪表》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',150,'0'),
+(31,17,'《风险管理计划及跟踪表》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',155,'0'),
+(32,17,'《风险管理报告》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',160,'0'),
+(33,18,'《风险管理计划及跟踪表》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',165,'0'),
+(34,19,'《异常处理申请表》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',170,'0'),
+(35,19,'《风险管理计划及跟踪表》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',175,'0'),
+(36,20,'《风险管理报告》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',180,'0'),
+(37,20,'《风险管理计划及跟踪表》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',185,'0'),
+(38,21,'《风险列表库》','','','','admin','2020-01-09 13:45:53','','0000-00-00 00:00:00',190,'0'),
+(39,22,'《代码复用总结》','','','','admin','2020-01-09 13:46:26','','0000-00-00 00:00:00',195,'0'),
+(40,24,'《结项报告》','','','','admin','2020-01-09 13:46:26','','0000-00-00 00:00:00',200,'0'),
+(41,26,'《量化项目管理及跟踪计划》','','yes','','admin','2020-01-09 13:46:46','','0000-00-00 00:00:00',205,'0'),
+(42,27,'《用户需求调查单》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',210,'0'),
+(43,27,'《用户需求说明书》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',215,'0'),
+(44,28,'《评审通知》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',220,'0'),
+(45,28,'《同行评审准备表》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',225,'0'),
+(46,28,'《同行评审报告》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',230,'0'),
+(47,29,'《产品需求规格说明书》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',235,'0'),
+(48,30,'《评审通知》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',240,'0'),
+(49,30,' 《同行评审准备表》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',245,'0'),
+(50,30,' 《同行评审报告》','','yes','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',250,'0'),
+(51,31,'《需求变更记录》','','','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',255,'0'),
+(52,31,'《用户需求说明书》','','','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',260,'0'),
+(53,31,'《软件需求规格说明书》','','','','admin','2020-01-09 14:08:58','','0000-00-00 00:00:00',265,'0'),
+(54,32,'《概要设计说明书》','','yes','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',270,'0'),
+(55,33,'《评审通知》','','yes','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',275,'0'),
+(56,33,'《同行评审准备表》','','yes','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',280,'0'),
+(57,33,'《同行评审报告》','','yes','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',285,'0'),
+(58,34,'《模块设计说明书》','','no','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',290,'0'),
+(59,34,'《数据库设计说明书》','','yes','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',295,'0'),
+(60,34,'《用户界面设计说明书》','','no','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',300,'0'),
+(61,35,'《评审通知》','','no','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',305,'0'),
+(62,35,'《同行评审准备表》','','no','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',310,'0'),
+(63,35,'《同行评审报告》','','no','','admin','2020-01-09 14:20:09','','0000-00-00 00:00:00',315,'0'),
+(64,42,'《实现与测试计划》','','yes','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',320,'0'),
+(65,42,'《单板硬件调试和单元测试计划》','','yes','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',325,'0'),
+(66,42,'《项目进度表》中“实现与测试”部分','','yes','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',330,'0'),
+(67,43,'产品数据库','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',335,'0'),
+(68,44,'模块代码','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',340,'0'),
+(69,45,'《代码质量检查记录单》','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',345,'0'),
+(70,46,'《单元测试缺陷统计分析报告》','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',350,'0'),
+(71,47,'禅道缺陷记录','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',355,'0'),
+(72,48,'《系统集成说明书》','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',360,'0'),
+(73,49,'《集成测试用例》','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',365,'0'),
+(74,50,'《评审通知》 ','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',370,'0'),
+(75,50,'《同行评审准备表》 ','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',375,'0'),
+(76,50,'《同行评审报告》','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',380,'0'),
+(77,51,'《集成测试报告》','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',385,'0'),
+(78,52,'禅道缺陷记录','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',390,'0'),
+(79,52,'《用户操作手册》 ','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',395,'0'),
+(80,52,'《安装手册》','','','','admin','2020-01-09 14:22:52','','0000-00-00 00:00:00',400,'0'),
+(81,54,'《系统测试计划》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',405,'0'),
+(82,55,'《评审通知》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',410,'0'),
+(83,55,'《同行评审准备表》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',415,'0'),
+(84,55,'《同行评审报告》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',420,'0'),
+(85,56,'《系统测试用例》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',425,'0'),
+(86,57,'《评审通知》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',430,'0'),
+(87,57,'《同行评审准备表》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',435,'0'),
+(88,57,'《同行评审报告》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',440,'0'),
+(89,58,'禅道缺陷跟踪系统记录项','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',445,'0'),
+(90,58,'《系统测试分析报告》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',450,'0'),
+(91,58,'《缺陷统计分析报告》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',455,'0'),
+(92,59,'《产品打包清单》','','yes','','admin','2020-01-09 14:25:16','','0000-00-00 00:00:00',460,'0'),
+(93,60,'发布光盘、纸质支持文档','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',465,'0'),
+(94,61,'《交接签收单》','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',470,'0'),
+(95,62,'《工作联系单》','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',475,'0'),
+(96,62,'《工作记录单》','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',480,'0'),
+(97,62,'《交接签收单》','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',485,'0'),
+(98,62,'《安装调试信息》','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',490,'0'),
+(99,64,'禅道缺陷记录项','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',495,'0'),
+(100,64,'会议纪要等文档','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',500,'0'),
+(101,65,'《交接验收单》','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',505,'0'),
+(102,65,'《客户验收报告》','','yes','','admin','2020-01-09 14:26:52','','0000-00-00 00:00:00',510,'0'),
+(103,66,'初步《质量保证计划及跟踪表》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',515,'0'),
+(104,67,'详细《质量保证计划及跟踪表》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',520,'0'),
+(105,68,'《过程审计检查表》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',525,'0'),
+(106,68,'《产品审计检查表》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',530,'0'),
+(107,68,'《QA审计报告》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',535,'0'),
+(108,68,'《QA问题报告》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',540,'0'),
+(109,68,'《QA里程碑报告》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',545,'0'),
+(110,68,'《QA周报》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',550,'0'),
+(111,69,'《QA审计报告》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',555,'0'),
+(112,69,'《QA问题报告》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',560,'0'),
+(113,70,'《QA总结报告》','','yes','','admin','2020-01-09 14:28:18','','0000-00-00 00:00:00',565,'0'),
+(114,72,'《配置管理计划》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',570,'0'),
+(115,72,'《配置项计划及跟踪表》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',575,'0'),
+(116,72,'《基线计划及跟踪表》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',580,'0'),
+(117,73,'《配置库管理报告》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',585,'0'),
+(118,74,'《配置项计划及跟踪表》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',590,'0'),
+(119,75,'《基线计划及跟踪表》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',595,'0'),
+(120,76,'《变更申请书》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',600,'0'),
+(121,77,'《配置审计报告》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',605,'0'),
+(122,80,'《度量分析计划》','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',610,'0'),
+(123,82,'项目度量数据库','','yes','','admin','2020-01-09 14:55:08','','0000-00-00 00:00:00',615,'0'),
+(124,86,'《量化项目管理及跟踪计划》','','no','','admin','2020-01-09 14:59:04','','0000-00-00 00:00:00',620,'0'),
+(125,84,'《决策分析报告》的决策分析评估表','','no','','admin','2020-01-09 14:59:04','','0000-00-00 00:00:00',625,'0'),
+(126,83,'《量化项目计划及跟踪表》','','no','','admin','2020-01-09 14:59:04','','0000-00-00 00:00:00',630,'0'),
+(127,87,'《决策分析报告》的评分表','','no','','admin','2020-01-09 14:59:04','','0000-00-00 00:00:00',635,'0'),
+(128,88,'《决策分析报告》的评分表','','no','','admin','2020-01-09 14:59:04','','0000-00-00 00:00:00',640,'0'),
+(129,89,'《决策分析报告》','','no','','admin','2020-01-09 14:59:04','','0000-00-00 00:00:00',645,'0');
 
 REPLACE INTO `zt_basicmeas` VALUES
 (2,'scale','project','userRequest','项目用户需求初始规模','pgmURInitScale','故事点或功能点','CREATE FUNCTION qc_pgmurinitscale($project int) returns float (10,2)\r\nbegin\r\n    declare scale float(10,2) default 0__DELIMITER__\r\n    declare inited int default 0__DELIMITER__\r\n    select qc_cminited($project, \'URS\') into inited__DELIMITER__\r\n    IF inited = 1 THEN\r\n    select qc_initscale($project, \'URS\',\'requestEst\') into scale__DELIMITER__\r\n    return scale__DELIMITER__\r\n    ELSE \r\n    return 0__DELIMITER__\r\n    END IF__DELIMITER__\r\nend','{\"$project\":{\"showName\":\"\\u6240\\u5c5e\\u9879\\u76ee\",\"varName\":\"$project\",\"varType\":\"select\",\"options\":\"project\",\"defaultValue\":\"\"}}','项目每个产品的第一个用户需求规格说明书基线版本的规模之和','从基线表中查询该项目下面每个产品的第一个用户需求规模说明书版本，然后查询对应的需求，求和。','crontab','{\"week\":\"1,2,3,4,5,6,0\",\"type\":\"week\"}','00:00','','system','0000-00-00 00:00:00','admin','2020-07-07 14:19:41',10,'0'),
@@ -13813,7 +13292,7 @@ CREATE TABLE IF NOT EXISTS `zt_sqlview` (
   `editedDate` datetime NOT NULL,
   `deleted` enum('0','1') NOT NULL default '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 SET global log_bin_trust_function_creators = 1;
 SET global sql_mode = '';
 USE `__TABLE__`;

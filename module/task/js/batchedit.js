@@ -49,9 +49,4 @@ $(document).on('change', 'select', function()
 $(function()
 {
     $('#subNavbar li[data-id="task"]').addClass('active');
-
-    $('#customField').click(function()
-    {
-        hiddenRequireFields();
-    });
 });

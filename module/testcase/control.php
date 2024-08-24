@@ -115,10 +115,8 @@ class testcase extends control
         /* Set menu, save session. */
         if($this->app->tab == 'project')
         {
-            $linkedProducts = $this->product->getProducts($projectID, 'all', '', false);
-            $this->products = count($linkedProducts) > 1 ? array('0' => $this->lang->product->all) + $linkedProducts : $linkedProducts;
-            $productID      = count($linkedProducts) > 1 ? $productID : key($linkedProducts);
-
+            $this->products = array('0' => $this->lang->product->all) + $this->product->getProducts($projectID, 'all', '', false);
+            $branch = 'all';
             $this->loadModel('project')->setMenu($projectID);
         }
         else
@@ -174,7 +172,7 @@ class testcase extends control
         }
         else
         {
-            $moduleTree = $this->tree->getTreeMenu($productID, 'case', 0, array('treeModel', 'createCaseLink'), array('projectID' => $projectID, 'productID' => $productID), $branch);
+            $moduleTree = $this->tree->getTreeMenu($productID, 'case', 0, array('treeModel', 'createCaseLink'), array('projectID' => $projectID, 'productID' => $productID), $projectID ? '' : $branch);
         }
 
         $product = $this->product->getById($productID);
@@ -225,7 +223,6 @@ class testcase extends control
         $this->view->setModule       = true;
         $this->view->modulePairs     = $showModule ? $this->tree->getModulePairs($productID, 'case', $showModule) : array();
         $this->view->showBranch      = $showBranch;
-        $this->view->libraries       = $this->loadModel('caselib')->getLibraries();
 
         $this->display();
     }
@@ -296,72 +293,6 @@ class testcase extends control
     }
 
     /**
-     * Show zero case story.
-     *
-     * @param  int    $productID
-     * @param  int    $branchID
-     * @param  string $orderBy
-     * @param  int    $projectID
-     * @param  int    $recTotal
-     * @param  int    $recPerPage
-     * @param  int    $pageID
-     * @access public
-     * @return void
-     */
-    public function zeroCase($productID = 0, $branchID = 0, $orderBy = 'id_desc', $projectID = 0, $recTotal = 0, $recPerPage = 20, $pageID = 1)
-    {
-        $orderBy = empty($orderBy) ? 'id_desc' : $orderBy;
-        $this->session->set('storyList', $this->app->getURI(true) . '#app=' . $this->app->tab, 'product');
-        $this->session->set('caseList', $this->app->getURI(true), $this->app->tab);
-
-        $this->loadModel('story');
-        if($this->app->tab == 'project')
-        {
-            $this->loadModel('project')->setMenu($this->session->project);
-            $this->app->rawModule = 'qa';
-            $this->lang->project->menu->qa['subMenu']->testcase['subModule'] = 'story';
-            $products  = $this->product->getProducts($this->session->project, 'all', '', false);
-            $productID = $this->product->saveState($productID, $products);
-            $this->lang->modulePageNav = $this->product->select($products, $productID, 'testcase', 'zeroCase', "projectID=$projectID", $branchID);
-        }
-        else
-        {
-            $products  = $this->product->getPairs();
-            $productID = $this->product->saveState($productID, $products);
-            $this->loadModel('qa');
-            $this->app->rawModule = 'testcase';
-            foreach($this->config->qa->menuList as $module) $this->lang->navGroup->$module = 'qa';
-            $this->qa->setMenu($products, $productID, $branchID);
-        }
-
-        /* Append id for secend sort. */
-        $sort    = common::appendOrder($orderBy);
-        $stories = $this->story->getZeroCase($productID, $branchID, $sort);
-
-        /* Pager. */
-        $this->app->loadClass('pager', $static = true);
-        $recTotal = count($stories);
-        $pager    = new pager($recTotal, $recPerPage, $pageID);
-        $stories  = array_chunk($stories, $pager->recPerPage);
-
-        $this->view->title      = $this->lang->story->zeroCase;
-        $this->view->position[] = html::a($this->createLink('testcase', 'browse', "productID=$productID"), $products[$productID]);
-        $this->view->position[] = $this->lang->story->zeroCase;
-
-        $this->view->stories    = empty($stories) ? $stories : $stories[$pageID - 1];
-        $this->view->users      = $this->user->getPairs('noletter');
-        $this->view->projectID  = $projectID;
-        $this->view->productID  = $productID;
-        $this->view->branchID   = $branchID;
-        $this->view->orderBy    = $orderBy;
-        $this->view->suiteList  = $this->loadModel('testsuite')->getSuites($productID);
-        $this->view->browseType = '';
-        $this->view->product    = $this->product->getByID($productID);
-        $this->view->pager      = $pager;
-        $this->display();
-    }
-
-    /**
      * Create a test case.
      * @param        $productID
      * @param string $branch
@@ -385,7 +316,8 @@ class testcase extends control
         $this->loadModel('story');
         if(!empty($_POST))
         {
-            $response['result'] = 'success';
+            $response['result']  = 'success';
+            $response['message'] = $this->lang->saveSuccess;
 
             setcookie('lastCaseModule', (int)$this->post->module, $this->config->cookieLife, $this->config->webRoot, '', $this->config->cookieSecure, false);
             $caseResult = $this->testcase->create($bugID);
@@ -412,7 +344,6 @@ class testcase extends control
 
             $message = $this->executeHooks($caseID);
             if($message) $this->lang->saveSuccess = $message;
-            $response['message'] = $this->lang->saveSuccess;
 
             if($this->viewType == 'json') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'id' => $caseID));
             /* If link from no head then reload. */
@@ -421,9 +352,8 @@ class testcase extends control
             setcookie('caseModule', 0, 0, $this->config->webRoot, '', $this->config->cookieSecure, false);
 
             /* Use this session link, when the tab is not QA, a session of the case list exists, and the session is not from the Dynamic page. */
-            $useSession         = ($this->app->tab != 'qa' and $this->session->caseList and strpos($this->session->caseList, 'dynamic') === false);
-            $locateLink         = $this->app->tab == 'project' ? $this->createLink('project', 'testcase', "projectID={$this->session->project}") : $this->createLink('testcase', 'browse', "productID={$this->post->product}&branch={$this->post->branch}&browseType=all&param=0&orderBy=id_desc");
-            $response['locate'] = $useSession ? $this->session->caseList : $locateLink;
+            $useSession         = $this->app->tab != 'qa' and $this->session->caseList and strpos($this->session->caseList, 'dynamic') === false;
+            $response['locate'] = $useSession ? $this->session->caseList : $this->createLink('testcase', 'browse', "productID={$this->post->product}&branch={$this->post->branch}&browseType=all&param=0&orderBy=id_desc");
             return $this->send($response);
         }
         if(empty($this->products)) $this->locate($this->createLink('product', 'create'));
@@ -861,16 +791,20 @@ class testcase extends control
         if(!empty($_POST))
         {
             $changes = array();
+            $files   = array();
             if($comment == false or $comment == 'false')
             {
                 $changes = $this->testcase->update($caseID, $testtasks);
                 if(dao::isError()) return print(js::error(dao::getError()));
+                $files = $this->loadModel('file')->saveUpload('testcase', $caseID);
             }
-            if($this->post->comment != '' or !empty($changes))
+            if($this->post->comment != '' or !empty($changes) or !empty($files))
             {
                 $this->loadModel('action');
-                $action = !empty($changes) ? 'Edited' : 'Commented';
-                $actionID = $this->action->create('case', $caseID, $action, $this->post->comment);
+                $action = (!empty($changes) or !empty($files)) ? 'Edited' : 'Commented';
+                $fileAction = '';
+                if(!empty($files)) $fileAction = $this->lang->addFiles . join(',', $files) . "\n";
+                $actionID = $this->action->create('case', $caseID, $action, $fileAction . $this->post->comment);
                 $this->action->logHistory($actionID, $changes);
             }
 
@@ -973,19 +907,13 @@ class testcase extends control
                 $branchTagOption[$case->branch] = $case->branch == BRANCH_MAIN ? $caseBranch : ($caseBranch->name . ($caseBranch->status == 'closed' ? ' (' . $this->lang->branch->statusList['closed'] . ')' : ''));
             }
 
-            $moduleIdList = $case->module;
-            if($case->module) $moduleIdList = $this->tree->getAllChildID($case->module);
-
-            $moduleIdList = (!in_array($this->app->tab, array('execution', 'project')) and empty($stories)) ? 0 : $moduleIdList;
-            $stories = $this->story->getProductStoryPairs($productID, $case->branch, $moduleIdList, 'all','id_desc', 0, 'full', 'story', false);
-
             $this->view->productID        = $productID;
             $this->view->product          = $product;
             $this->view->products         = $this->products;
             $this->view->branchTagOption  = $branchTagOption;
             $this->view->productName      = $this->products[$productID];
             $this->view->moduleOptionMenu = $moduleOptionMenu;
-            $this->view->stories          = $stories;
+            $this->view->stories          = $this->story->getProductStoryPairs($productID, $case->branch, 0, 'all','id_desc', 0, 'full', 'story', false);
         }
         $forceNotReview = $this->testcase->forceNotReview();
         if($forceNotReview) unset($this->lang->testcase->statusList['wait']);
@@ -1093,6 +1021,7 @@ class testcase extends control
                 }
 
                 $this->view->branchTagOption = array($productID => $branchTagOption);
+                $this->view->position[]      = html::a($this->createLink('testcase', 'browse', "productID=$productID"), $this->products[$productID]);
                 $this->view->title           = $product->name . $this->lang->colon . $this->lang->testcase->batchEdit;
                 $this->view->product         = $product;
             }
@@ -1103,7 +1032,8 @@ class testcase extends control
             $cases = $this->dao->select('t1.*,t2.id as runID')->from(TABLE_CASE)->alias('t1')
                 ->leftJoin(TABLE_TESTRUN)->alias('t2')->on('t1.id = t2.case')
                 ->where('t1.deleted')->eq(0)
-                ->andWhere('t1.id')->in($caseIDList)
+                ->beginIF($tab == 'my')->andWhere('t2.id')->in($caseIDList)->fi()
+                ->beginIF($tab != 'my')->andWhere('t1.id')->in($caseIDList)->fi()
                 ->fetchAll('id');
             $caseIDList = array_keys($cases);
 
@@ -1198,16 +1128,16 @@ class testcase extends control
             $changes = $this->testcase->review($caseID);
             if(dao::isError()) return print(js::error(dao::getError()));
 
-            if(is_array($changes))
+            if($changes or $this->post->comment != '')
             {
                 $result = $this->post->result;
                 $actionID = $this->loadModel('action')->create('case', $caseID, 'Reviewed', $this->post->comment, ucfirst($result));
                 $this->action->logHistory($actionID, $changes);
-
-                $this->executeHooks($caseID);
-
-                return print(js::reload('parent.parent'));
             }
+
+            $this->executeHooks($caseID);
+
+            return print(js::reload('parent.parent'));
         }
 
         $this->view->users   = $this->user->getPairs('noletter|noclosed|nodeleted');
@@ -1370,13 +1300,10 @@ class testcase extends control
      * @param  int    $caseID
      * @param  string $browseType
      * @param  int    $param
-     * @param  int    $recTotal
-     * @param  int    $recPerPage
-     * @param  int    $pageID
      * @access public
      * @return void
      */
-    public function linkCases($caseID, $browseType = '', $param = 0, $recTotal = 0, $recPerPage = 20, $pageID = 1)
+    public function linkCases($caseID, $browseType = '', $param = 0)
     {
         /* Get case and queryID. */
         $case    = $this->testcase->getById($caseID);
@@ -1395,67 +1322,14 @@ class testcase extends control
         /* Get cases to link. */
         $cases2Link = $this->testcase->getCases2Link($caseID, $browseType, $queryID);
 
-        /* Pager. */
-        $this->app->loadClass('pager', true);
-        $recTotal   = count($cases2Link);
-        $pager      = new pager($recTotal, $recPerPage, $pageID);
-        $cases2Link = array_chunk($cases2Link, $pager->recPerPage);
-
         /* Assign. */
         $this->view->title      = $case->title . $this->lang->colon . $this->lang->testcase->linkCases;
         $this->view->position[] = html::a($this->createLink('product', 'view', "productID=$case->product"), $this->products[$case->product]);
         $this->view->position[] = html::a($this->createLink('testcase', 'view', "caseID=$caseID"), $case->title);
         $this->view->position[] = $this->lang->testcase->linkCases;
         $this->view->case       = $case;
-        $this->view->cases2Link = empty($cases2Link) ? $cases2Link : $cases2Link[$pageID - 1];
+        $this->view->cases2Link = $cases2Link;
         $this->view->users      = $this->loadModel('user')->getPairs('noletter');
-        $this->view->pager      = $pager;
-
-        $this->display();
-    }
-
-    /**
-     * Link related bugs.
-     *
-     * @param  int    $caseID
-     * @param  string $browseType
-     * @param  int    $param
-     * @param  int    $recTotal
-     * @param  int    $recPerPage
-     * @param  int    $pageID
-     * @access public
-     * @return void
-     */
-    public function linkBugs($caseID, $browseType = '', $param = 0, $recTotal = 0, $recPerPage = 20, $pageID = 1)
-    {
-        $this->loadModel('bug');
-
-        /* Get case and queryID. */
-        $case    = $this->testcase->getById($caseID);
-        $queryID = ($browseType == 'bySearch') ? (int)$param : 0;
-
-        /* Build the search form. */
-        $actionURL = $this->createLink('testcase', 'linkBugs', "caseID=$caseID&browseType=bySearch&queryID=myQueryID", '', true);
-        $objectID  = 0;
-        if($this->app->tab == 'project')   $objectID = $case->project;
-        if($this->app->tab == 'execution') $objectID = $case->execution;
-        $this->bug->buildSearchForm($case->product, $this->products, $queryID, $actionURL, $objectID);
-
-        /* Get cases to link. */
-        $bugs2Link = $this->testcase->getBugs2Link($caseID, $browseType, $queryID);
-
-        /* Pager. */
-        $this->app->loadClass('pager', true);
-        $recTotal  = count($bugs2Link);
-        $pager     = new pager($recTotal, $recPerPage, $pageID);
-        $bugs2Link = array_chunk($bugs2Link, $pager->recPerPage);
-
-        /* Assign. */
-        $this->view->position[] = $this->lang->testcase->linkBugs;
-        $this->view->case       = $case;
-        $this->view->bugs2Link  = empty($bugs2Link) ? $bugs2Link : $bugs2Link[$pageID - 1];
-        $this->view->users      = $this->loadModel('user')->getPairs('noletter');
-        $this->view->pager      = $pager;
 
         $this->display();
     }
@@ -1491,36 +1365,7 @@ class testcase extends control
         $case    = $this->testcase->getById($caseID);
         $libCase = $this->testcase->getById($libcaseID);
         $version = $case->version + 1;
-
-        $this->dao->delete()->from(TABLE_FILE)->where('objectType')->eq('testcase')->andWhere('objectID')->eq($caseID)->exec();
-        foreach($libCase->files as $fileID => $file)
-        {
-            $fileName = pathinfo($file->pathname, PATHINFO_FILENAME);
-            $datePath = substr($file->pathname, 0, 6);
-            $realPath = $this->app->getAppRoot() . "www/data/upload/{$this->app->company->id}/" . "{$datePath}/" . $fileName;
-
-            $rand        = rand();
-            $newFileName = $fileName . 'copy' . $rand;
-            $newFilePath = $this->app->getAppRoot() . "www/data/upload/{$this->app->company->id}/" . "{$datePath}/" .  $newFileName;
-            copy($realPath, $newFilePath);
-
-            $newFileName = $file->pathname;
-            $newFileName = str_replace('.', "copy$rand.", $newFileName);
-
-            unset($file->id, $file->realPath, $file->webPath);
-            $file->objectID = $caseID;
-            $file->pathname = $newFileName;
-            $this->dao->insert(TABLE_FILE)->data($file)->exec();
-        }
-
-        $this->dao->update(TABLE_CASE)
-            ->set('version')->eq($version)
-            ->set('fromCaseVersion')->eq($version)
-            ->set('precondition')->eq($libCase->precondition)
-            ->set('title')->eq($libCase->title)
-            ->where('id')->eq($caseID)
-            ->exec();
-
+        $this->dao->update(TABLE_CASE)->set('version')->eq($version)->set('fromCaseVersion')->eq($version)->where('id')->eq($caseID)->exec();
         foreach($libCase->steps as $step)
         {
             unset($step->id);
@@ -1528,7 +1373,6 @@ class testcase extends control
             $step->version = $version;
             $this->dao->insert(TABLE_CASESTEP)->data($step)->exec();
         }
-
         echo js::locate($this->createLink('testcase', 'view', "caseID=$caseID&version=$version"), 'parent');
     }
 
@@ -1550,18 +1394,14 @@ class testcase extends control
      * Confirm story changes.
      *
      * @param  int    $caseID
-     * @param  bool   $reload
      * @access public
      * @return void
      */
-    public function confirmStoryChange($caseID, $reload = true)
+    public function confirmStoryChange($caseID,$reload=true)
     {
         $case = $this->testcase->getById($caseID);
-        if($case->story)
-        {
-            $this->dao->update(TABLE_CASE)->set('storyVersion')->eq($case->latestStoryVersion)->where('id')->eq($caseID)->exec();
-            $this->loadModel('action')->create('case', $caseID, 'confirmed', '', $case->latestStoryVersion);
-        }
+        $this->dao->update(TABLE_CASE)->set('storyVersion')->eq($case->latestStoryVersion)->where('id')->eq($caseID)->exec();
+        $this->loadModel('action')->create('case', $caseID, 'confirmed', '', $case->latestStoryVersion);
         if($reload) return print(js::reload('parent'));
     }
 
@@ -1697,10 +1537,6 @@ class testcase extends control
                 $case->real       = '';
                 $result = isset($results[$case->id]) ? $results[$case->id] : array();
 
-                $case->openedDate     = !helper::isZeroDate($case->openedDate)     ? $case->openedDate     : '';
-                $case->lastEditedDate = !helper::isZeroDate($case->lastEditedDate) ? $case->lastEditedDate : '';
-                $case->lastRunDate    = !helper::isZeroDate($case->lastRunDate)    ? $case->lastRunDate    : '';
-
                 $case->real = '';
                 if(!empty($result) and !isset($relatedSteps[$case->id]))
                 {
@@ -1820,7 +1656,7 @@ class testcase extends control
      * @access public
      * @return void
      */
-    public function exportTemplate($productID)
+    public function exportTemplet($productID)
     {
         if($_POST)
         {
@@ -1971,10 +1807,17 @@ class testcase extends control
         $queryID    = (int)$queryID;
         $product    = $this->loadModel('product')->getById($productID);
         $branches   = array();
-        if($branch == '') $branch = 0;
 
         $this->loadModel('branch');
         if($product->type != 'normal') $branches = array(BRANCH_MAIN => $this->lang->branch->main) + $this->branch->getPairs($productID, 'active', $projectID);
+
+        if($_POST)
+        {
+            $this->testcase->importFromLib($productID);
+            return print(js::reload('parent'));
+        }
+
+        $this->app->tab == 'project' ? $this->loadModel('project')->setMenu($this->session->project) : $this->testcase->setMenu($this->products, $productID, $branch);
 
         $libraries = $this->loadModel('caselib')->getLibraries();
         if(empty($libraries))
@@ -1983,14 +1826,6 @@ class testcase extends control
             return print(js::locate($this->session->caseList));
         }
         if(empty($libID) or !isset($libraries[$libID])) $libID = key($libraries);
-
-        if($_POST)
-        {
-            $this->testcase->importFromLib($productID, $libID, $branch);
-            return print(js::reload('parent'));
-        }
-
-        $this->app->tab == 'project' ? $this->loadModel('project')->setMenu($this->session->project) : $this->testcase->setMenu($this->products, $productID, $branch);
 
         /* Build the search form. */
         $actionURL = $this->createLink('testcase', 'importFromLib', "productID=$productID&branch=$branch&libID=$libID&orderBy=$orderBy&browseType=bySearch&queryID=myQueryID");
@@ -2006,10 +1841,6 @@ class testcase extends control
         unset($this->config->testcase->search['fields']['branch']);
         $this->loadModel('search')->setSearchParams($this->config->testcase->search);
 
-        $this->loadModel('testsuite');
-        foreach($branches as $branchID => $branchName) $canImportModules[$branchID] = $this->testsuite->getCanImportModules($productID, $libID, $branchID);
-        if(empty($branches)) $canImportModules[0] = $this->testsuite->getCanImportModules($productID, $libID, 0);
-
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
         $pager = pager::init(0, $recPerPage, $pageID);
@@ -2017,19 +1848,19 @@ class testcase extends control
         $this->view->title      = $this->lang->testcase->common . $this->lang->colon . $this->lang->testcase->importFromLib;
         $this->view->position[] = $this->lang->testcase->importFromLib;
 
-        $this->view->libraries        = $libraries;
-        $this->view->libID            = $libID;
-        $this->view->product          = $product;
-        $this->view->productID        = $productID;
-        $this->view->branch           = $branch;
-        $this->view->cases            = $this->testsuite->getCanImportCases($productID, $libID, $branch, $orderBy, $pager, $browseType, $queryID);
-        $this->view->libModules       = $this->tree->getOptionMenu($libID, 'caselib');
-        $this->view->pager            = $pager;
-        $this->view->orderBy          = $orderBy;
-        $this->view->branches         = $branches;
-        $this->view->browseType       = $browseType;
-        $this->view->queryID          = $queryID;
-        $this->view->canImportModules = $canImportModules;
+        $this->view->libraries  = $libraries;
+        $this->view->libID      = $libID;
+        $this->view->product    = $product;
+        $this->view->productID  = $productID;
+        $this->view->branch     = $branch;
+        $this->view->cases      = $this->loadModel('testsuite')->getNotImportedCases($productID, $libID, $orderBy, $pager, $browseType, $queryID);
+        $this->view->modules    = $this->loadModel('tree')->getOptionMenu($productID, 'case', 0, $branch === 'all' ? 0 : (int)$branch);
+        $this->view->libModules = $this->tree->getOptionMenu($libID, 'caselib');
+        $this->view->pager      = $pager;
+        $this->view->orderBy    = $orderBy;
+        $this->view->branches   = $branches;
+        $this->view->browseType = $browseType;
+        $this->view->queryID    = $queryID;
 
         $this->display();
     }
@@ -2280,26 +2111,6 @@ class testcase extends control
         $this->view->maxImport  = $maxImport;
         $this->view->dataInsert = $insert;
 
-        $this->display();
-    }
-
-    /**
-     * Import cases to library.
-     *
-     * @param  int    $caseID
-     * @access public
-     * @return void
-     */
-    public function importToLib($caseID = 0)
-    {
-        if($this->server->request_method == 'POST')
-        {
-            $this->testcase->importToLib($caseID);
-            if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            if(!empty($caseID)) return $this->send(array('result' => 'success', 'message' => $this->lang->importSuccess, 'closeModal' => true));
-            return $this->send(array('result' => 'success', 'message' => $this->lang->importSuccess, 'locate' => 'reload'));
-        }
-        $this->view->libraries = $this->loadModel('caselib')->getLibraries();
         $this->display();
     }
 

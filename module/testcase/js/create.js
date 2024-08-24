@@ -156,16 +156,4 @@ $(function()
     });
 
     $('#subNavbar li[data-id="testcase"]').addClass('active');
-
-    $('#customField').click(function()
-    {
-        hiddenRequireFields();
-    });
-
-    /* Implement a custom form without feeling refresh. */
-    $('#formSettingForm .btn-primary').click(function()
-    {
-        saveCustomFields('createFields');
-        return false;
-    });
 });

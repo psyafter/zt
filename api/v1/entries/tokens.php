@@ -9,7 +9,7 @@
  * @version     1
  * @link        https://www.zentao.pm
  */
-class tokensEntry extends baseEntry
+class tokensEntry extends baseEntry 
 {
     /**
      * POST method.
@@ -19,32 +19,15 @@ class tokensEntry extends baseEntry
      */
     public function post()
     {
-        $account   = $this->request('account');
-        $password  = $this->request('password');
-        $addAction = $this->request('addAction', false);
+        $account  = $this->request('account');
+        $password = $this->request('password');
 
-        if($this->loadModel('user')->checkLocked($account)) return $this->sendError(400, sprintf($this->lang->user->loginLocked, $this->config->user->lockMinutes));
+        $user = $this->loadModel('user')->identify($account, $password);
 
-        $user = $this->user->identify($account, $password);
         if($user)
         {
-            $this->user->login($user, $addAction);
+            $this->user->login($user);
             $this->send(201, array('token' => session_id()));
-        }
-        else
-        {
-            $fails = $this->user->failPlus($account);
-            $remainTimes = $this->config->user->failTimes - $fails;
-            if($remainTimes <= 0)
-            {
-                return $this->sendError(400, sprintf($this->lang->user->loginLocked, $this->config->user->lockMinutes));
-            }
-            else if($remainTimes <= 3)
-            {
-                return $this->sendError(400, sprintf($this->lang->user->lockWarning, $remainTimes));
-            }
-
-            return $this->sendError(400, $this->lang->user->loginFailed);
         }
 
         $this->sendError(400, $this->app->lang->user->loginFailed);

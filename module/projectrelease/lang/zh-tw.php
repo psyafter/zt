@@ -27,7 +27,3 @@ $lang->projectrelease->unlinkBug        = '移除Bug';
 $lang->projectrelease->export           = '導出HTML';
 $lang->projectrelease->browseAction     = "發佈列表";
 $lang->projectrelease->notify           = "通知";
-
-$lang->projectrelease->featureBar['browse']['all']       = '全部';
-$lang->projectrelease->featureBar['browse']['normal']    = '正常';
-$lang->projectrelease->featureBar['browse']['terminate'] = '停止維護';

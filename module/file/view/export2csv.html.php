@@ -12,17 +12,14 @@
 ?>
 <?php
 echo '"'. implode('","', $fields) . '"' . "\n";
-if($rows)
+foreach($rows as $row)
 {
-    foreach($rows as $row)
+    echo '"';
+    foreach($fields as $fieldName => $fieldLabel)
     {
-        echo '"';
-        foreach($fields as $fieldName => $fieldLabel)
-        {
-            isset($row->$fieldName) ? print(str_replace(array('"', '&nbsp;'), array('“', ' '), htmlspecialchars_decode(strip_tags($row->$fieldName, '<img>')))) : print('');
-            echo '","';
-        }
-        echo '"' . "\n";
+        isset($row->$fieldName) ? print(str_replace(array('"', '&nbsp;'), array('“', ' '), htmlspecialchars_decode(strip_tags($row->$fieldName, '<img>')))) : print('');
+        echo '","';
     }
+    echo '"' . "\n";
 }
 if($this->post->kind == 'task' && $config->vision != 'lite') echo $this->lang->file->childTaskTips;

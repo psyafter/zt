@@ -18,7 +18,6 @@ $lang->user->dept             = '部门';
 $lang->user->account          = '用户名';
 $lang->user->password         = '密码';
 $lang->user->password2        = '请重复密码';
-$lang->user->password2AB      = '重复密码';
 $lang->user->role             = '职位';
 $lang->user->group            = '权限分组';
 $lang->user->realname         = '姓名';
@@ -40,11 +39,8 @@ $lang->user->dingding         = '钉钉';
 $lang->user->slack            = 'Slack';
 $lang->user->whatsapp         = 'WhatsApp';
 $lang->user->address          = '通讯地址';
-$lang->user->addressAB        = '地址';
 $lang->user->zipcode          = '邮编';
 $lang->user->join             = '入职日期';
-$lang->user->joinAB           = '入职';
-$lang->user->priv             = '权限';
 $lang->user->visits           = '访问次数';
 $lang->user->visions          = '界面类型';
 $lang->user->ip               = '最后IP';
@@ -78,9 +74,6 @@ $lang->user->projects         = '项目';
 $lang->user->sprints          = $lang->execution->common;
 $lang->user->identity         = '身份';
 $lang->user->switchVision     = '切换到 %s';
-$lang->user->submit           = '提交';
-$lang->user->resetPWD         = '重置密码';
-$lang->user->resetTitle       = '系统管理员重置密码';
 
 $lang->user->legendBasic        = '基本资料';
 $lang->user->legendContribution = '个人贡献';
@@ -118,8 +111,6 @@ $lang->user->applyTemplate         = '应用模板';
 $lang->user->confirmDeleteTemplate = '您确认要删除该模板吗？';
 $lang->user->setPublicTemplate     = '设为公共模板';
 $lang->user->tplContentNotEmpty    = '模板内容不能为空!';
-$lang->user->sendEmailSuccess      = '已发送一封邮件至您的邮箱，请注意查收。';
-$lang->user->linkExpired           = '链接已过期，请重新申请。';
 
 $lang->user->profile   = '档案';
 $lang->user->project   = $lang->executionCommon;
@@ -156,7 +147,6 @@ $lang->user->loginLocked  = "密码尝试次数太多，请联系管理员解锁
 $lang->user->weakPassword = "您的密码强度小于系统设定。";
 $lang->user->errorWeak    = "密码不能使用【%s】这些常用弱口令。";
 $lang->user->errorCaptcha = "验证码不正确！";
-$lang->user->loginExpired = '系统登录已过期，请重新登录：）';
 
 $lang->user->roleList['']       = '';
 $lang->user->roleList['dev']    = '研发';
@@ -222,15 +212,9 @@ $lang->user->placeholder->verify    = '请输入您的系统登录密码';
 $lang->user->placeholder->loginPassword = '请输入密码';
 $lang->user->placeholder->loginAccount  = '请输入用户名';
 $lang->user->placeholder->loginUrl      = '请输入禅道系统网址';
-$lang->user->placeholder->email         = '请输入邮箱';
 
-$lang->user->placeholder->passwordStrength[0] = '密码必须6位及以上。';
-$lang->user->placeholder->passwordStrength[1] = '6位及以上，包含大小写字母，数字。';
-$lang->user->placeholder->passwordStrength[2] = '10位及以上，包含大小写字母，数字，特殊字符。';
-
-$lang->user->placeholder->passwordStrengthCheck[0] = '密码须6位及以上。';
-$lang->user->placeholder->passwordStrengthCheck[1] = '密码必须6位及以上，且包含大小写字母、数字。';
-$lang->user->placeholder->passwordStrengthCheck[2] = '密码必须10位及以上，且包含大小写字母、数字、特殊符号。';
+$lang->user->placeholder->passwordStrength[1] = '6位以上，包含大小写字母，数字。';
+$lang->user->placeholder->passwordStrength[2] = '10位以上，包含大小写字母，数字，特殊字符。';
 
 $lang->user->error = new stdclass();
 $lang->user->error->account        = "【ID %s】的用户名应该为：三位以上的英文、数字或下划线的组合";
@@ -249,14 +233,6 @@ $lang->user->error->verifyPassword   = "验证失败，请检查您的系统登�
 $lang->user->error->originalPassword = "原密码不正确";
 $lang->user->error->companyEmpty     = "公司名称不能为空！";
 $lang->user->error->noAccess         = "该人员和你不是同一部门，你无权访问该人员的工作信息。";
-$lang->user->error->accountEmpty     = '用户名不能为空！';
-$lang->user->error->emailEmpty       = '邮箱不能为空！';
-$lang->user->error->noUser           = '用户不存在';
-$lang->user->error->noEmail          = '该用户未绑定邮箱，请联系管理员以重置密码。';
-$lang->user->error->errorEmail       = '用户名和邮箱不匹配，请重新输入。';
-$lang->user->error->emailSetting     = '系统未配置发信邮箱，请联系管理员重置。';
-$lang->user->error->sendMailFail     = '邮件发送失败，请重试！';
-$lang->user->error->loginTimeoutTip  = '系统登录失败，请检查代理服务是否正常';
 
 $lang->user->contactFieldList['phone']    = $lang->user->phone;
 $lang->user->contactFieldList['mobile']   = $lang->user->mobile;
@@ -317,8 +293,6 @@ $lang->user->mkdirLinux = <<<EOT
     <div style='margin-bottom:8px;'>Commond: <strong style='color:#ed980f'>chmod 777 -R %s</strong>.</div>
     </td></tr></table></body></html>
 EOT;
-
-$lang->user->jumping = "<span id='time'>10</span>秒钟后页面将自动跳转登录页。 <a href='%s' class='btn btn-primary btn-xs'>立即跳转</a>";
 
 $lang->user->zentaoapp = new stdclass();
 $lang->user->zentaoapp->logout = '退出登录';

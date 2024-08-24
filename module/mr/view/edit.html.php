@@ -9,7 +9,7 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
-<?php js::set('hostID', $MR->hostID);?>
+<?php js::set('gitlabID', $MR->gitlabID);?>
 <?php js::set('projectID', $MR->sourceProject);?>
 <!-- If this mr is deleted in GitLab, then show this part to user. -->
 <?php if(empty($rawMR) or !isset($rawMR->id)): ?>
@@ -32,15 +32,15 @@
       <form id='mrForm' method='post' class='form-ajax'>
         <table class='table table-form'>
           <tr>
-            <th><?php echo $lang->mr->server;?></th>
-            <td><?php echo $this->loadModel('pipeline')->getByID($MR->hostID)->name;?></td>
+            <th><?php echo $lang->gitlab->common;?></th>
+            <td><?php echo $this->loadModel('gitlab')->getByID($MR->gitlabID)->name;?></td>
           </tr>
           <tr>
              <th style="white-space: nowrap;"><?php echo $lang->mr->sourceProject;?></th>
              <td>
                <div>
                  <span class='fix-border text-left'>
-                 <?php echo $host->type == 'gitlab' ? $this->loadModel('gitlab')->apiGetSingleProject($MR->hostID, $MR->sourceProject)->name_with_namespace : $MR->sourceProject;?>:
+                 <?php echo $this->loadModel('gitlab')->apiGetSingleProject($MR->gitlabID, $MR->sourceProject)->name_with_namespace;?>:
                  <?php echo $MR->sourceBranch;?>
                  </span>
                </div>
@@ -50,14 +50,14 @@
              <th style="white-space: nowrap;"><?php echo $lang->mr->targetProject;?></th>
              <td>
                <div class='input-group'>
-                 <?php if($MR->status == 'merged' or $MR->status == 'closed' or $host->type == 'gogs'):?>
+                 <?php if($MR->status == 'merged' or $MR->status == 'closed'):?>
                  <span class='fix-border text-left'>
-                 <?php echo $host->type == 'gitlab' ? $this->loadModel('gitlab')->apiGetSingleProject($MR->hostID, $MR->targetProject)->name_with_namespace : $MR->targetProject;?>:
+                 <?php echo $this->loadModel('gitlab')->apiGetSingleProject($MR->gitlabID, $MR->targetProject)->name_with_namespace;?>:
                  <?php echo $MR->targetBranch;?>
                  </span>
                  <?php else:?>
                  <span class='input-group-addon fix-border'>
-                 <?php echo $host->type == 'gitlab' ? $this->loadModel('gitlab')->apiGetSingleProject($MR->hostID, $MR->targetProject)->name_with_namespace : $MR->targetProject;?>:
+                 <?php echo $this->loadModel('gitlab')->apiGetSingleProject($MR->gitlabID, $MR->targetProject)->name_with_namespace;?>
                  </span>
                  <?php echo html::select('targetBranch', $targetBranchList, $MR->targetBranch, "class='form-control chosen'");?>
                  <?php endif;?>
@@ -79,13 +79,9 @@
           <tr>
             <th><?php echo $lang->mr->removeSourceBranch;?></th>
             <td colspan='1'>
-              <?php
-              $attr = '';
-              if($MR->canDeleteBranch and $MR->removeSourceBranch == '1') $attr .= 'checked ';
-              if(!$MR->canDeleteBranch) $attr .= 'disabled';
-              ?>
-              <div class="checkbox-primary" title="<?php echo $lang->mr->notDelbranch;?>">
-                <input type="checkbox" <?php echo $attr;?> name="removeSourceBranch" value="1" id="removeSourceBranch">
+              <div class="checkbox-primary">
+                <?php $checked = $MR->removeSourceBranch== '1' ? 'checked' : '' ?>
+                <input type="checkbox" <?php echo $checked;?> name="removeSourceBranch" value="1" id="removeSourceBranch">
                 <label for="removeSourceBranch"></label>
               </div>
             </td>

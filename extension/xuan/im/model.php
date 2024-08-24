@@ -21,8 +21,6 @@ class imModel extends model
     {
         parent::__construct();
 
-        if((isset($_SERVER['RR_RELAY']) || isset($_SERVER['RR_MODE'])) && !commonModel::isLicensedMethod('im', 'roadrunner')) die;
-
         $modelPath = dirname(__FILE__) . DS . "model" . DS;
 
         helper::import($modelPath . 'chat.php');
@@ -30,10 +28,10 @@ class imModel extends model
         helper::import($modelPath . 'user.php');
         helper::import($modelPath . 'conference.php');
 
-        $this->chat = new imChat();
-        $this->user = new imUser();
-        $this->message = new imMessage();
-        $this->conference = new imConference();
+        $this->chat = new chat();
+        $this->user = new user();
+        $this->message = new message();
+        $this->conference = new conference();
     }
 
     /**
@@ -445,8 +443,6 @@ class imModel extends model
         $data->certPath        = 'cert/';
         $data->debug           = 0;
         $data->key             = $this->config->xuanxuan->key;
-        $data->syncConfig      = 1;
-        $data->thumbnail       = 1;
 
         if($downloadType == 'config')
         {

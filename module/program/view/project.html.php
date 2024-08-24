@@ -14,26 +14,19 @@
 <?php
 js::set('programID', $programID);
 js::set('browseType', $browseType);
-$canBatchEdit   = common::hasPriv('project', 'batchEdit');
-$waitCount      = 0;
-$doingCount     = 0;
-$suspendedCount = 0;
-$closedCount    = 0;
 ?>
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolBar pull-left">
-    <?php common::sortFeatureMenu('program', 'browse');?>
-    <?php foreach($lang->program->featureBar['browse'] as $key => $label):?>
+    <?php foreach($lang->program->featureBar as $key => $label):?>
     <?php $active = $browseType == $key ? 'btn-active-text' : '';?>
     <?php $label = "<span class='text'>$label</span>";?>
     <?php if($browseType == $key) $label .= " <span class='label label-light label-badge'>{$pager->recTotal}</span>";?>
     <?php echo html::a(inlink('project', "programID=$programID&browseType=$key"), $label, '', "class='btn btn-link $active'");?>
     <?php endforeach;?>
-    <?php if($canBatchEdit) echo html::checkbox('showEdit', array('1' => $lang->project->edit), $showBatchEdit);?>
     <?php echo html::checkbox('involved ', array('1' => $lang->project->mine), '', $this->cookie->involved ? 'checked=checked' : '');?>
   </div>
   <div class="btn-toolbar pull-right">
-    <?php if(common::hasPriv('project', 'create')) common::printLink('project', 'createGuide', "programID=$programID", '<i class="icon icon-plus"></i> ' . $lang->project->create, '', 'class="btn btn-primary" data-toggle="modal"');?>
+    <?php if(common::hasPriv('project', 'create')) common::printLink('project', 'createGuide', "programID=$programID", '<i class="icon icon-plus"></i> ' . $lang->project->create, '', 'class="btn btn-primary" data-toggle="modal" data-target="#guideDialog"');?>
   </div>
 </div>
 <div id='mainContent' class="main-row fade">
@@ -42,23 +35,23 @@ $closedCount    = 0;
     <div class="table-empty-tip">
       <p>
         <span class="text-muted"><?php echo $lang->project->empty;?></span>
-        <?php if(empty($allProjectsNum)) common::printLink('project', 'createGuide', "programID=$programID", '<i class="icon icon-plus"></i> ' . $lang->project->create, '', 'class="btn btn-info btn-wide " data-toggle="modal"');?>
+        <?php common::printLink('project', 'createGuide', "programID=$programID", '<i class="icon icon-plus"></i> ' . $lang->project->create, '', 'class="btn btn-info btn-wide " data-toggle="modal" data-target="#guideDialog"');?>
       </p>
     </div>
     <?php else:?>
-    <form class='main-table' id='projectsForm' method='post'>
+    <form class='main-table' id='projectsForm' method='post' data-ride="table">
       <?php
         $vars    = "programID=$programID&browseType=$browseType&orderBy=%s&recTotal={$pager->recTotal}&recPerPage={$pager->recPerPage}&pageID={$pager->pageID}";
         $setting = $this->datatable->getSetting('program');
       ?>
       <table class='table has-sort-head'>
+      <?php $canBatchEdit = common::hasPriv('project', 'batchEdit');?>
         <thead>
           <tr>
             <?php
               foreach($setting as $value)
               {
                 if($value->id == 'projectStatus' and $browseType !== 'all') $value->show = false;
-                if($value->id == 'status' and strpos('all,unclosed', $browseType) === false) $value->show = false;
                 if($value->show) $this->datatable->printHead($value, $orderBy, $vars, $canBatchEdit);
               }
             ?>
@@ -66,12 +59,8 @@ $closedCount    = 0;
         </thead>
         <tbody class="sortable" id='projectTableList'>
           <?php foreach($projectStats as $project):?>
-          <tr data-id="<?php echo $project->id;?>" data-status="<?php echo $project->status;?>">
+          <tr data-id="<?php echo $project->id;?>">
             <?php $project->from = 'pgmproject';?>
-            <?php if($project->status == 'wait')      $waitCount ++;?>
-            <?php if($project->status == 'doing')     $doingCount ++;?>
-            <?php if($project->status == 'suspended') $suspendedCount ++;?>
-            <?php if($project->status == 'closed')    $closedCount ++;?>
             <?php foreach($setting as $value) $this->project->printCell($value, $project, $users, $programID);?>
           </tr>
           <?php endforeach;?>
@@ -91,19 +80,12 @@ $closedCount    = 0;
         }
         ?>
         </div>
-        <div class="table-statistic"><?php echo $browseType == 'all' ? sprintf($lang->project->allSummary, count($projectStats), $waitCount, $doingCount, $suspendedCount, $closedCount) : sprintf($lang->project->summary, count($projectStats));?></div>
         <?php $pager->show('right', 'pagerjs');?>
       </div>
     </form>
     <?php endif;?>
   </div>
 </div>
-<?php
-js::set('summary', sprintf($lang->project->summary, count($projectStats)));
-js::set('allSummary', sprintf($lang->project->allSummary, count($projectStats), $waitCount, $doingCount, $suspendedCount, $closedCount));
-js::set('checkedSummary', $lang->project->checkedSummary);
-js::set('checkedAllSummary', $lang->project->checkedAllSummary);
-?>
 <script>
 $('input[name^="involved"]').click(function()
 {

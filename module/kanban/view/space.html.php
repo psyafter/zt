@@ -40,33 +40,24 @@
         <div class='spaceTitle pull-left'>
           <div><i class='icon-cube'></i></div>
           <div>
-            <p class='spaceName' title="<?php echo $space->name;?>">
+            <h4 title="<?php echo $space->name;?>">
               <?php if($space->status == 'closed'):?>
               <span class="label label-closed"><?php echo $lang->kanban->closed;?></span>
               <?php endif;?>
               <?php echo $space->name;?>
-            </p>
+            </h4>
           </div>
-          <?php $spaceDescTitle = empty($space->desc) ? $lang->kanban->emptyDesc : str_replace("\n", '', strip_tags($space->desc));?>
-          <?php $pattern        = '/<br[^>]*>|<img[^>]*>/';?>
-          <?php $spaceDesc      = empty($space->desc) ? $lang->kanban->emptyDesc : preg_replace($pattern, '', $space->desc);?>
-          <p><div><span class="text-limit hidden" data-limit-size="120"><?php echo $spaceDesc;?></span><a class="text-primary text-limit-toggle small" data-text-expand="<?php echo $lang->expand;?>"  data-text-collapse="<?php echo $lang->collapse;?>"></a></div></p>
         </div>
         <div class='spaceActions pull-right'>
           <?php $class = $space->status == 'closed' ? 'disabled' : '';?>
-          <?php if($space->status != 'closed' and $browseType != 'involved' and !empty($unclosedSpace)) common::printLink('kanban', 'create', "spaceID={$space->id}&type={$space->type}", '<i class="icon icon-plus"></i> ' . $lang->kanban->create, '', "class='iframe btn btn-link' data-width='75%'", '', true);?>
-          <div class="btn-group" id="setting?">
-            <a href="javascript:;" data-toggle="dropdown" class="btn btn-link " style="border-radius: 4px;"><i class="icon icon-cog-outline position"></i><?php echo $lang->kanban->setting;?><span class="caret"></span></a>
-            <ul class="dropdown-menu setting pull-right">
-              <li><?php common::printLink('kanban', 'editSpace', "spaceID={$space->id}", '<i class="icon icon-cog-outline"></i> ' . $lang->kanban->settingSpace, '', "class='iframe' data-width='75%'", '', true);?></li>
-              <li><?php if($class == 'disabled'):?>
-              <?php common::printLink('kanban', 'activateSpace', "spaceID={$space->id}", '<i class="icon icon-magic"></i> ' . $lang->kanban->activateSpace, '', "class='iframe'", '', true);?>
-              <?php else:?>
-              <?php common::printLink('kanban', 'closeSpace', "spaceID={$space->id}", '<i class="icon icon-off"></i> ' . $lang->kanban->closeSpace, '', "class='iframe'", '', true);?>
-              <?php endif;?></li>
-              <li><?php common::printLink('kanban', 'deleteSpace', "spaceID={$space->id}", '<i class="icon icon-trash"></i> ' . $lang->kanban->deleteSpace, 'hiddenwin', '', '', true);?></li>
-            <ul>
-         </div>
+          <?php if($space->status != 'closed' and $browseType != 'involved' and !empty($unclosedSpace)) common::printLink('kanban', 'create', "spaceID={$space->id}&type={$space->type}", '<i class="icon icon-plus"></i> ' . $lang->kanban->create, '', "class='iframe' data-width='75%'", '', true);?>
+          <?php common::printLink('kanban', 'editSpace', "spaceID={$space->id}", '<i class="icon icon-cog-outline"></i> ' . $lang->kanban->setting, '', "class='iframe' data-width='75%'", '', true);?>
+          <?php if($class == 'disabled'):?>
+          <?php common::printLink('kanban', 'activateSpace', "spaceID={$space->id}", '<i class="icon icon-magic"></i> ' . $lang->activate, '', "class='iframe'", '', true);?>
+          <?php else:?>
+          <?php common::printLink('kanban', 'closeSpace', "spaceID={$space->id}", '<i class="icon icon-off"></i> ' . $lang->close, '', "class='iframe'", '', true);?>
+          <?php endif;?>
+          <?php common::printLink('kanban', 'deleteSpace', "spaceID={$space->id}", '<i class="icon icon-trash"></i> ' . $lang->delete, 'hiddenwin', '', '', true);?>
         </div>
       </div>
       <?php if(isset($space->kanbans)):?>
@@ -75,9 +66,6 @@
         <div class='col' data-id='<?php echo $kanbanID?>'>
           <div class='panel' data-url='<?php echo $this->createLink('kanban', 'view', "kanbanID=$kanbanID");?>'>
             <div class='panel-heading'>
-              <?php if($space->type == 'cooperation' and $kanban->owner == $this->app->user->account):?>
-              <span class="label label-outline label-info kanban-label"><?php echo $lang->kanban->mine;?></span>
-              <?php endif;?>
               <div class='kanban-name'>
                 <?php if($kanban->status == 'closed'):?>
                 <span class="label label-closed"><?php echo $lang->kanban->closed;?></span>
@@ -117,7 +105,7 @@
                     if($canDelete)
                     {
                         echo '<li>';
-                        common::printLink('kanban', 'delete', "kanbanID={$kanban->id}&confirm=no&browseType=$browseType", '<i class="icon icon-trash"></i> ' . $lang->kanban->delete, 'hiddenwin');
+                        common::printLink('kanban', 'delete', "kanbanID={$kanban->id}", '<i class="icon icon-trash"></i> ' . $lang->kanban->delete, 'hiddenwin');
                         echo '</li>';
                     }
                     ?>
@@ -128,13 +116,10 @@
               <?php $kanbanCount ++;?>
             </div>
             <div class='panel-body'>
-              <?php $kanbanDescTitle = str_replace("\n", '', strip_tags($kanban->desc));?>
-              <?php $kanbanDesc      = str_replace("\n", '', preg_replace($pattern, '', $kanban->desc));?>
-              <div class='kanban-desc' title="<?php echo $kanbanDescTitle;?>"><?php echo $kanbanDesc;?></div>
+              <div class='kanban-desc' title="<?php echo strip_tags(htmlspecialchars_decode($kanban->desc));?>"><?php echo strip_tags(htmlspecialchars_decode($kanban->desc));?></div>
               <div class='kanban-footer'>
               <?php $count     = 0;?>
-              <?php $teamPairs = array_filter(explode(',', ",$kanban->createdBy,$kanban->owner,$kanban->team"));?>
-              <?php $teamPairs = array_unique($teamPairs);?>
+              <?php $teamPairs = array_filter(explode(',', $kanban->team));?>
               <?php
               foreach($teamPairs as $index => $team)
               {
@@ -167,10 +152,7 @@
                     <?php endif;?>
                   </div>
                   <?php endif;?>
-                  <?php $teamCountLang = ($teamCount > 1) ? $lang->kanban->teamSumCount : str_replace("Pers", "Person", $lang->kanban->teamSumCount);?>
-                  <div class='kanban-members-total pull-left'><?php echo sprintf($teamCountLang, $teamCount);?></div>
-                  <?php $cardsCount = ($kanban->cardsCount > 1) ? str_replace("Card", "Cards", $lang->kanban->cardsCount) : $lang->kanban->cardsCount;?>
-                  <div class='kanban-members-total pull-right'><?php echo empty($kanban->cardsCount) ? $lang->kanban->noCard : sprintf($cardsCount, $kanban->cardsCount);?></div>
+                  <div class='kanban-members-total pull-left'><?php echo sprintf($lang->kanban->teamSumCount, $teamCount);?></div>
                 </div>
               </div>
             </div>

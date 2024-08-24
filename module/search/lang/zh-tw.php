@@ -30,7 +30,6 @@ $lang->search->noQuery       = '還沒有保存查詢！';
 $lang->search->onMenuBar     = '顯示在菜單欄';
 $lang->search->custom        = '自定義';
 $lang->search->setCommon     = '設為公共查詢條件';
-$lang->search->saveCondition = '保存搜索條件';
 
 $lang->search->account  = '用戶名';
 $lang->search->module   = '模組';
@@ -90,13 +89,12 @@ $lang->search->modules['product']     = $lang->productCommon;
 $lang->search->modules['release']     = '發佈';
 $lang->search->modules['testtask']    = '測試單';
 $lang->search->modules['testsuite']   = '測試套件';
-$lang->search->modules['testreport']  = '測試報告';
+$lang->search->modules['testreport']  = '報告';
 $lang->search->modules['productplan'] = '計劃';
 $lang->search->modules['program']     = '項目集';
 $lang->search->modules['project']     = '項目';
 $lang->search->modules['execution']   = $lang->executionCommon;
-$lang->search->modules['story']       = $lang->SRCommon;
-$lang->search->modules['requirement'] = $lang->URCommon;
+$lang->search->modules['story']       = '需求';
 
 $lang->search->objectTypeList['story']            = $lang->SRCommon;
 $lang->search->objectTypeList['requirement']      = $lang->URCommon;

@@ -3,10 +3,7 @@ $lang->message->typeList['xuanxuan'] = '聊天';
 
 $lang->message->sender = '禪道項目管理';
 
-$lang->message->notifyTitle        = '%s %s%d個%s';
-$lang->message->notifyPassTitle    = '%s 通過了%d個研發需求';
-$lang->message->notifyClarifyTitle = '%s 駁回了%d個研發需求';
-$lang->message->notifyRejectTitle  = '%s 拒絶了%d個研發需求';
+$lang->message->notifyTitle = '%s 給您%s%d個%s';
 
 $lang->message->mr = new stdClass();
 $lang->message->mr->logTitle    = '構建日誌';

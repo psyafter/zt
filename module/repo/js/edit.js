@@ -1,26 +1,26 @@
 $(function()
 {
-    scmChanged(scm, true);
+    scmChanged(scm);
     $('#submit').mousedown(function()
     {
         $form = $(this).closest('form');
         $form.css('min-height', $form.height());
     })
 
-    $('#serviceHost').change(function()
+    $('#gitlabHost').change(function()
     {
-        host = $('#serviceHost').val();
+        host = $('#gitlabHost').val();
         if(host == '') return false;
-        url  = createLink('repo', 'ajaxGetProjects', "host=" + host);
+        url  = createLink('repo', 'ajaxGetGitlabProjects', "host=" + host);
 
         $.get(url, function(response)
         {
-            $('#serviceProject').html('').append(response);
-            $('#serviceProject').chosen().trigger("chosen:updated");;
+            $('#gitlabProject').html('').append(response);
+            $('#gitlabProject').chosen().trigger("chosen:updated");;
         });
     });
 
-    $('#serviceProject').change(function()
+    $('#gitlabProject').change(function()
     {
         $option = $(this).find('option:selected');
         if(!$option.data('name')) return false;
@@ -29,16 +29,9 @@ $(function()
     });
 });
 
-/**
- * Changed SCM.
- *
- * @param  string $scm
- * @access public
- * @return void
- */
-function scmChanged(scm, isFirstRequest = false)
+function scmChanged(scm)
 {
-    if(scm == 'Git' || scm == 'Gitea' || scm == 'Gogs')
+    if(scm == 'Git')
     {
         $('.account-fields').addClass('hidden');
 
@@ -53,34 +46,6 @@ function scmChanged(scm, isFirstRequest = false)
         $('.tips-svn').removeClass('hidden');
     }
 
-    if(scm == 'Git' || scm == 'Subversion')
-    {
-        $('tr.service').toggle(false);
-        $('tr.hide-service').toggle(true);
-    }
-    else
-    {
-        $('.tips').addClass('hidden');
-        $('tr.service').toggle(true);
-        if(scm == 'Gitea' || scm == 'Gogs')
-        {
-            $('tr.hide-service:not(".hide-git")').toggle(true);
-            $('tr.hide-git').toggle(false);
-        }
-        else
-        {
-            $('tr.hide-service').toggle(false);
-        }
-
-        if(!isFirstRequest)
-        {
-            var url = createLink('repo', 'ajaxGetHosts', "scm=" + scm);
-            $.get(url, function(response)
-            {
-                $('#serviceHost').html(response);
-                $('#serviceHost').chosen().trigger("chosen:updated");;
-                $('#serviceHost').change();
-            });
-        }
-    }
+    $('tr.gitlab').toggle(scm == 'Gitlab');
+    $('tr.hide-gitlab').toggle(scm != 'Gitlab');
 }

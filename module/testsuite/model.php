@@ -99,28 +99,9 @@ class testsuiteModel extends model
             ->beginIF($this->config->systemMode == 'new' and $this->lang->navGroup->testsuite != 'qa')->andWhere('project')->eq($this->session->project)->fi()
             ->andWhere('deleted')->eq(0)
             ->beginIF(strpos($param, 'all') === false)->andWhere("(`type` = 'public' OR (`type` = 'private' and addedBy = '{$this->app->user->account}'))")->fi()
-            ->beginIF(strpos($param, 'review') !== false)->andWhere("FIND_IN_SET('{$this->app->user->account}', `reviewers`)")->fi()
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll('id');
-    }
-
-    /**
-     * Get test suites pairs of a product.
-     *
-     * @param  int    $productID
-     * @access public
-     * @return array
-     */
-    public function getSuitePairs($productID)
-    {
-        return $this->dao->select("id, name")->from(TABLE_TESTSUITE)
-            ->where('product')->eq((int)$productID)
-            ->beginIF($this->config->systemMode == 'new' and $this->lang->navGroup->testsuite != 'qa')->andWhere('project')->eq($this->session->project)->fi()
-            ->andWhere('deleted')->eq(0)
-            ->andWhere("(`type` = 'public' OR (`type` = 'private' and addedBy = '{$this->app->user->account}'))")
-            ->orderBy('id_desc')
-            ->fetchPairs();
     }
 
     /**
@@ -240,27 +221,6 @@ class testsuiteModel extends model
     }
 
     /**
-     * Get linked cases pairs of suite.
-     *
-     * @param  int    $suiteID
-     * @access public
-     * @return array
-     */
-    public function getLinkedCasePairs($suiteID)
-    {
-        $suite = $this->getById($suiteID);
-        return $this->dao->select('t1.id, t1.title')->from(TABLE_CASE)->alias('t1')
-            ->leftJoin(TABLE_SUITECASE)->alias('t2')->on('t1.id=t2.case')
-            ->where('t2.suite')->eq($suiteID)
-            ->beginIF($this->config->systemMode == 'new' and $this->lang->navGroup->testsuite != 'qa')->andWhere('t1.project')->eq($this->session->project)->fi()
-            ->andWhere('t1.product')->eq($suite->product)
-            ->andWhere('t1.product')->eq($suite->product)
-            ->andWhere('t1.deleted')->eq(0)
-            ->orderBy('id_desc')
-            ->fetchPairs('id');
-    }
-
-    /**
      * Get unlinked cases for suite.
      *
      * @param  object $suite
@@ -315,18 +275,24 @@ class testsuiteModel extends model
     }
 
     /**
-     * Get can import cases.
+     * Get not imported cases.
      *
      * @param  int    $productID
      * @param  int    $libID
-     * @param  int    $branch
      * @param  string $orderBy
      * @param  object $pager
      * @access public
      * @return array
      */
-    public function getCanImportCases($productID, $libID, $branch, $orderBy = 'id_desc', $pager = null, $browseType = '', $queryID = 0)
+    public function getNotImportedCases($productID, $libID, $orderBy = 'id_desc', $pager = null, $browseType = '', $queryID = 0)
     {
+        $importedCases = $this->dao->select('fromCaseID')->from(TABLE_CASE)
+            ->where('product')->eq($productID)
+            ->andWhere('lib')->eq($libID)
+            ->andWhere('fromCaseID')->ne('')
+            ->andWhere('deleted')->eq(0)
+            ->fetchPairs('fromCaseID', 'fromCaseID');
+
         $query = '';
         if($browseType == 'bysearch')
         {
@@ -352,64 +318,22 @@ class testsuiteModel extends model
             if(!$withAllLib) $query .= " AND `lib` = '$libID'";
         }
 
-
-        $this->loadModel('branch');
-        $product  = $this->loadModel('product')->getById($productID);
-        $branches = $product->type != 'normal' ? array(BRANCH_MAIN => $this->lang->branch->main) + $this->branch->getPairs($productID, 'active') : array(0);
-        $canImport = array();
-        foreach($branches as $branchID => $branchName) $canImport += $this->getCanImportModules($productID, $libID, $branchID);
-
         return $this->dao->select('*')->from(TABLE_CASE)->where('deleted')->eq(0)
             ->beginIF($browseType != 'bysearch')->andWhere('lib')->eq($libID)->fi()
             ->beginIF($browseType == 'bysearch')->andWhere($query)->fi()
-            ->andWhere('id')->in(array_keys($canImport))
             ->andWhere('product')->eq(0)
+            ->andWhere('id')->notIN($importedCases)
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll('id');
     }
 
+    
     /**
-     * Get imported case modules.
-     *
-     * @param  int    $productID
-     * @param  int    $libID
-     * @param  int    $branch
-     * @access public
-     * @return array
-     */
-    public function getCanImportModules($productID, $libID, $branch)
-    {
-        $importedModules = $this->dao->select('fromCaseID,module')->from(TABLE_CASE)
-            ->where('product')->eq($productID)
-            ->andWhere('lib')->eq($libID)
-            ->andWhere('branch')->eq($branch)
-            ->andWhere('fromCaseID')->ne('')
-            ->andWhere('deleted')->eq(0)
-            ->fetchGroup('fromCaseID', 'module');
-        foreach($importedModules as $fromCaseID => $modules) $importedModules[$fromCaseID] = array_combine(array_keys($modules), array_keys($modules));
-
-        $libCases = $this->loadModel('caselib')->getLibCases($libID, 'all');
-
-        $modules = $this->loadModel('tree')->getOptionMenu($productID, 'case', 0, $branch);
-
-        $canImportModules = array();
-        foreach($libCases as $caseID => $case)
-        {
-            $caseModules = !empty($importedModules[$caseID]) ? $importedModules[$caseID] : array();
-            $canImportModules[$caseID] = array_diff_key($modules, $caseModules);
-            if(!empty($canImportModules[$caseID])) $canImportModules[$caseID]['ditto'] = $this->lang->testcase->ditto;
-            if(empty($canImportModules[$caseID])) unset($canImportModules[$caseID]);
-        }
-
-        return $canImportModules;
-    }
-
-    /**
-     * Build testsuite menu.
-     *
-     * @param  object $suite
-     * @param  string $type
+     * Build testsuite menu. 
+     * 
+     * @param  object $suite 
+     * @param  string $type 
      * @access public
      * @return string
      */

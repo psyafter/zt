@@ -11,7 +11,6 @@
  */
 ?>
 <?php include '../../common/view/header.html.php';?>
-<?php js::set('isonlybody', isonlybody());?>
 <div id='mainMenu' class='clearfix'>
   <div class='pull-left btn-toolbar'>
     <?php echo html::a($this->createLink('execution', 'importTask', "execution=$executionID"), "<span class='text'>{$lang->execution->importTask}</span>", '', "class='btn btn-link btn-active-text'");?>
@@ -35,16 +34,12 @@
           </th>
           <th class='c-name'><?php echo $lang->execution->name ?></th>
           <th class='c-pri' title=<?php echo $lang->execution->pri;?>><?php echo $lang->priAB;?></th>
-          <?php if(isonlybody()):?>
-          <th class='w-p25'><?php echo $lang->task->name;?></th>
-          <?php else:?>
           <th class='w-p30'><?php echo $lang->task->name;?></th>
-          <?php endif;?>
           <th class='c-user'><?php echo $lang->task->assignedTo;?></th>
           <th class='c-hour'><?php echo $lang->task->leftAB;?></th>
-          <th class='c-date text-center'><?php echo $lang->task->deadlineAB;?></th>
+          <th class='c-date'><?php echo $lang->task->deadlineAB;?></th>
           <th class='c-status'><?php echo $lang->statusAB;?></th>
-          <th class='c-story'><?php echo $lang->task->story;?></th>
+          <th><?php echo $lang->task->story;?></th>
         </tr>
       </thead>
       <tbody>
@@ -60,18 +55,18 @@
           </td>
           <td title="<?php echo $executions[$task->execution];?>"><?php echo $executions[$task->execution];?></td>
           <td><span class='label-pri label-pri-<?php echo $task->pri;?>' title='<?php echo zget($lang->task->priList, $task->pri, $task->pri);?>'><?php echo $task->pri == '0' ? '' : zget($lang->task->priList, $task->pri, $task->pri);?></span></td>
-          <td class='text-left nobr'><?php if(!common::printLink('task', 'view', "task=$task->id", $task->name, '', "class='preview iframe' data-width='90%'", true, true)) echo $task->name;?></td>
+          <td class='text-left nobr'><?php if(!common::printLink('task', 'view', "task=$task->id", $task->name)) echo $task->name;?></td>
           <td <?php echo $class;?>><?php echo $task->assignedToRealName;?></td>
           <td title="<?php echo $task->left . ' ' . $lang->execution->workHour;?>"><?php echo $task->left . ' ' . $lang->execution->workHourUnit;?></td>
-          <td class="text-center <?php if(isset($task->delay)) echo 'delayed';?>"><?php if(substr($task->deadline, 0, 4) > 0) echo '<span>' . $task->deadline . '</span>';?></td>
+          <td class=<?php if(isset($task->delay)) echo 'delayed';?>><?php if(substr($task->deadline, 0, 4) > 0) echo $task->deadline;?></td>
           <td><span class='status-task status-<?php echo $task->status;?>'><?php echo $this->processStatus('task', $task);?></span></td>
-          <td class='text-left text-ellipsis' title="<?php echo $task->storyTitle;?>">
+          <td class='text-left nobr'>
             <?php
             if($task->storyID)
             {
-                if(common::hasPriv('execution', 'storyView'))
+                if(common::hasPriv('story', 'view'))
                 {
-                    echo html::a($this->createLink('execution', 'storyView', "storyid=$task->storyID", '', true), $task->storyTitle, '', "class='preview'");
+                    echo html::a($this->createLink('story', 'view', "storyid=$task->storyID"), $task->storyTitle);
                 }
                 else
                 {
@@ -84,18 +79,10 @@
         <?php endforeach;?>
       </tbody>
     </table>
-    <?php if($tasks2Imported or isonlybody()):?>
+    <?php if($tasks2Imported):?>
     <div class='table-footer'>
       <div class="checkbox-primary check-all"><label><?php echo $lang->selectAll?></label></div>
       <div class="table-actions btn-toolbar show-always"><?php echo html::submitButton('<i class="icon icon-import icon-sm"></i> ' . $lang->execution->importTask, '', 'btn btn-secondary btn-wide');?></div>
-      <div class='btn-toolbar'>
-        <?php if(isonlybody()):?>
-        <?php echo html::commonButton('<i class="icon icon-sm"></i> ' . $lang->goback, 'onclick="goback()"', 'btn');?>
-        <?php else:?>
-        <?php echo html::backButton('','','btn');?>
-        <?php endif;?>
-      </div>
-      <?php $pager->show('right', 'pagerjs');?>
     </div>
     <?php endif;?>
   </form>

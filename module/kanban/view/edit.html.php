@@ -12,7 +12,6 @@
 ?>
 <?php include '../../common/view/header.html.php';?>
 <?php include '../../common/view/kindeditor.html.php';?>
-<?php js::set('vision', $this->config->vision);?>
 <div id='mainContent' class='main-content'>
   <div class='main-header'>
     <h2><?php echo $lang->kanban->edit;?></h2>
@@ -21,7 +20,7 @@
     <table class='table table-form'>
       <tr>
         <th><?php echo $lang->kanban->space;?></th>
-        <td><?php echo html::select('space', $spacePairs, $kanban->space, "class='form-control chosen' onchange='loadOwners(this.value)'");?></td>
+        <td><?php echo html::select('space', $spacePairs, $kanban->space, "class='form-control chosen'");?></td>
       </tr>
       <tr>
         <th><?php echo $lang->kanban->name;?></th>
@@ -30,19 +29,13 @@
       <?php if($type != 'private'):?>
       <tr>
         <th><?php echo $lang->kanban->owner;?></th>
-        <td>
-          <div class='input-group'>
-            <?php echo html::select('owner', $ownerPairs, $kanban->owner, "class='form-control chosen' data-drop_direction='down'");?>
-            <span class='input-group-btn'><?php echo html::commonButton($lang->kanban->allUsers, "class='btn btn-default' onclick='loadAllUsers()' data-toggle='tooltip'");?></span>
-          </div>
-        </td>
+        <td><?php echo html::select('owner', $users, $kanban->owner, "class='form-control chosen' data-drop_direction='down'");?></td>
       </tr>
       <tr>
         <th><?php echo $lang->kanban->team;?></th>
         <td colspan='2'>
           <div class="input-group">
-            <?php echo html::select('team[]', $users, $kanban->team, "class='form-control picker-select' multiple data-dropDirection='bottom'");?>
-            <?php echo $this->fetch('my', 'buildContactLists', 'dropdownName=team');?>
+            <?php echo html::select('team[]', $users, $kanban->team, "class='form-control chosen' multiple data-drop_direction='down'");?>
           </div>
         </td>
       </tr>
@@ -50,18 +43,14 @@
       <tr>
         <th><?php echo $lang->kanban->desc;?></th>
         <td colspan='2'>
+          <?php echo $this->fetch('user', 'ajaxPrintTemplates', 'type=kanban&link=desc');?>
           <?php echo html::textarea('desc', $kanban->desc, "rows='10' class='form-control'");?>
         </td>
       </tr>
       <?php if($type == 'private'):?>
       <tr id="whitelistBox">
         <th><?php echo $lang->whitelist;?></th>
-        <td colspan='2'>
-          <div class="input-group">
-            <?php echo html::select('whitelist[]', $users, $kanban->whitelist, 'class="form-control picker-select" multiple');?>
-            <?php echo $this->fetch('my', 'buildContactLists', "dropdownName=whitelist&attr=data-drop_direction='up'");?>
-          </div>
-        </td>
+        <td><?php echo html::select('whitelist[]', $whitelist, $kanban->whitelist, 'class="form-control chosen" multiple');?></td>
       </tr>
       <?php endif;?>
       <tr>

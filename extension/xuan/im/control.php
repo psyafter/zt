@@ -39,8 +39,6 @@ class im extends control
      */
     public function sysGetServerInfo($account, $password, $apiVersion = '', $userID = 0, $version = '', $device = 'desktop')
     {
-        $this->app->loadLang('user');
-
         if($this->loadModel('restriction') !== false)
         {
             $IPRestriction = $this->restriction->getConfiguration();
@@ -57,16 +55,16 @@ class im extends control
             }
         }
 
-        if($device == 'mobile' && isset($this->config->xuanxuan->mobileClient) && $this->config->xuanxuan->mobileClient == 'off')
+        $this->app->input['device'] = $device; // set device into input for further uses.
+
+        if(version_compare($version, $this->config->minClientVerson, '<'))
         {
             $output = new stdclass();
-            $output->result  = 'fail';
-            $output->data    = 'Illegal Request.';
-            $output->message = $this->lang->im->mobileLimited;
+            $output->result = 'fail';
+            $output->data   = 'Illegal Request.';
+            $output->message = sprintf($this->lang->im->errorClientVersionNotSupport, $version, $this->config->minClientVerson);
             return $this->app->output($this->app->encrypt($output));
         }
-
-        $this->app->input['device'] = $device; // set device into input for further uses.
 
         $user = $this->im->userIdentify($account, $password);
         if(!is_array($user)) $this->im->userAddAction($account, 'loginXuanxuan', 'fail');
@@ -108,14 +106,6 @@ class im extends control
         }
 
         $upgradeInfo = $this->loadModel('client')->getUpgrade($version);
-        if((empty($upgradeInfo) || $upgradeInfo->strategy == 'optional') && version_compare($version, $this->config->minClientVerson, '<'))
-        {
-            $output = new stdClass();
-            $output->result  = 'fail';
-            $output->data    = 'Illegal Request.';
-            $output->message = sprintf($this->lang->im->errorClientVersionNotSupport, $version);
-            return $this->app->output($this->app->encrypt($output));
-        }
 
         $outputData = new stdclass();
         $outputData->clientUpdate            = empty($upgradeInfo) ? null : $upgradeInfo;
@@ -218,8 +208,6 @@ class im extends control
      */
     public function userLogin($account = '', $password = '', $options = array(), $userID = 0, $version = '', $device = 'desktop')
     {
-        $this->app->loadLang('user');
-
         if($this->loadModel('restriction') !== false)
         {
             $IPRestriction = $this->restriction->getConfiguration();
@@ -693,50 +681,6 @@ class im extends control
     }
 
     /**
-     * Get detailed member list of a chat.
-     *
-     * @param  string $gid
-     * @param  object $pager
-     * @param  string $orderBy
-     * @param  string $search
-     * @param  int    $userID
-     * @access public
-     * @return void
-     */
-    public function chatGetMemberDetails($gid, $pager = null, $orderBy = '', $search = '', $userID = 0)
-    {
-        $user = $this->im->userGetByID($userID);
-        if(empty($user->admin) || $user->admin != 'super') return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Unauthorized to get member details.'));
-
-        if(empty($pager)) $pager = new stdclass();
-        if(!isset($pager->pageID))     $pager->pageID     = 1;
-        if(!isset($pager->recPerPage)) $pager->recPerPage = 10;
-        if(!isset($pager->recTotal))   $pager->recTotal   = 0;
-
-        $this->app->loadClass('pager', $static = true);
-        $pager = new pager($pager->recTotal, $pager->recPerPage, $pager->pageID);
-
-        /* Search for members in chat. */
-        $memberIDs = array();
-        if(!empty($search))
-        {
-            $userSearchPager = pager::init(0, $pager->recPerPage, 1);
-            $memberIDs = $this->im->userSearch($search, array('chat' => $gid), true, $userSearchPager);
-        }
-
-        $details = $this->im->chatGetMemberDetails($gid, $pager, $orderBy, $memberIDs);
-        if(dao::isError()) return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Get chat details fail'));
-
-        $output = new stdclass();
-        $output->result = 'success';
-        $output->users  = array($userID);
-        $output->data   = $details->data;
-        $output->pager  = $details->pager;
-
-        return $this->im->sendOutput($output, 'chatgetmemberdetailsResponse');
-    }
-
-    /**
      * Create a chat.
      *
      * @param  string $gid
@@ -802,11 +746,8 @@ class im extends control
         if(!$chat) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notExist), 'messageResponsePack');
 
         $account = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
-        if((empty($chat->ownedBy) && $chat->createdBy != $account) || (!empty($chat->ownedBy) && $chat->ownedBy != $account))
-        {
-            $user = $this->im->userGetByID($userID);
-            if(empty($user->admin) || $user->admin != 'super') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupCreator), 'messageResponsePack');
-        }
+        if(empty($chat->ownedBy) && $chat->createdBy != $account) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupCreator), 'messageResponsePack');
+        if(!empty($chat->ownedBy) && $chat->ownedBy != $account)  return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupCreator), 'messageResponsePack');
 
         $chat    = $this->im->chatAddAdmins($gid, $admins, $userID);
         $users   = $this->im->userGetList($status = 'online', $chat->members);
@@ -814,13 +755,9 @@ class im extends control
 
         $this->im->chatAddAction($chat->id, 'addAdmins', $userID, 'success', $comment);
 
-        $users = array_keys($users);
-        $users[] = $userID;
-        $users = array_unique($users);
-
         $output = new stdclass();
         $output->result = 'success';
-        $output->users  = $users;
+        $output->users  = array_keys($users);
         $output->data   = $chat;
         return $this->im->sendOutput($output, 'chataddadminsResponse');
     }
@@ -840,11 +777,8 @@ class im extends control
         if(!$chat) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notExist), 'messageResponsePack');
 
         $account = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
-        if((empty($chat->ownedBy) && $chat->createdBy != $account) || (!empty($chat->ownedBy) && $chat->ownedBy != $account))
-        {
-            $user = $this->im->userGetByID($userID);
-            if(empty($user->admin) || $user->admin != 'super') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupCreator), 'messageResponsePack');
-        }
+        if(empty($chat->ownedBy) && $chat->createdBy != $account) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupCreator), 'messageResponsePack');
+        if(!empty($chat->ownedBy) && $chat->ownedBy != $account)  return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupCreator), 'messageResponsePack');
 
         $chat    = $this->im->chatRemoveAdmins($gid, $admins, $userID);
         $users   = $this->im->userGetList($status = 'online', $chat->members);
@@ -852,13 +786,9 @@ class im extends control
 
         $this->im->chatAddAction($chat->id, 'removeAdmins', $userID, 'success', $comment);
 
-        $users = array_keys($users);
-        $users[] = $userID;
-        $users = array_unique($users);
-
         $output = new stdclass();
         $output->result = 'success';
-        $output->users  = $users;
+        $output->users  = array_keys($users);
         $output->data   = $chat;
         return $this->im->sendOutput($output, 'chatremoveadminsResponse');
     }
@@ -1011,12 +941,7 @@ class im extends control
         $chat = $this->im->chat->getByGid($gid);
         if(!$chat) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notExist), 'messageResponsePack');
 
-        $account = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
-$admins = $this->dao->select('admins')->from(TABLE_COMPANY)->where('id')->eq($this->app->company->id)->fetch('admins');
-$adminArray = explode(',', $admins);
-$super = in_array($account, $adminArray) ? 'super' : '';
-
-        if(!$this->im->chatIsAdmin($chat, $userID) && $super != 'super') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notAdmin), 'messageResponsePack');
+        if(!$this->im->chatIsAdmin($chat, $userID)) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notAdmin), 'messageResponsePack');
 
         $isPrivateChat = $gid == "$userID&$userID";
         if($chat->type != 'group' && $chat->type != 'system' && !$isPrivateChat) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupChat), 'messageResponsePack');
@@ -1141,7 +1066,7 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         if($chat->type != 'group') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupChat), 'messageResponsePack');
 
         $chatID = $chat->id;
-        $chat->public         = $visible ? '1' : '0';
+        $chat->public         = $visible ? 1 : 0;
         $chat->lastActiveTime = empty($chat->lastActiveTime) ? '0000-00-00 00:00:00' : date('Y-m-d H:i:s', $chat->lastActiveTime);
         $chat  = $this->im->chatUpdate($chat, $userID);
         if(dao::isError())
@@ -1286,7 +1211,7 @@ $super = in_array($account, $adminArray) ? 'super' : '';
     }
 
     /**
-     * Invite members to a chat.
+     * Invite members to a chat or kick members from a chat.
      *
      * @param  string $gid
      * @param  array  $members
@@ -1296,12 +1221,8 @@ $super = in_array($account, $adminArray) ? 'super' : '';
      */
     public function chatInvite($gid = '', $members = array(), $userID = 0)
     {
-        $chat = $this->im->chat->getByGid($gid, true);
-        $user = $this->im->userGetById($userID);
+        $chat = $this->im->chat->getByGid($gid);
         if(!$chat) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notExist), 'messageResponsePack');
-        if(!$this->im->chatIsAdmin($chat, $userID) && $chat->adminInvite == '1' && $chat->public == '0' && $user->admin !='super') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->adminCanInvite), 'messageResponsePack');
-        if($user->admin != 'super' && !in_array($userID, $chat->members)) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->userNotInGroup), 'messageResponsePack');
-
         if($chat->type != 'group') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupChat), 'messageResponsePack');
 
         $joinedMembers = array();
@@ -1311,9 +1232,9 @@ $super = in_array($account, $adminArray) ? 'super' : '';
             if(is_int($result)) $joinedMembers[] = $result;
         }
 
-        $chat    = $this->im->chat->getByGid($gid, true, true, true);
-        $users   = $this->im->userGetList($status = 'online', $chat->members);
-        $comment = json_encode(array('members' => $members));
+        $chat->members = $this->im->chatGetMembers($gid);
+        $users         = $this->im->userGetList($status = 'online', $chat->members);
+        $comment       = json_encode(array('members' => $members));
 
         if(dao::isError())
         {
@@ -1328,21 +1249,14 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $output->users  = array_keys($users);
         $output->data   = $chat;
 
-        if($user->admin == 'super')
-        {
-            $output->users[] = (int)$userID;
-            $output->users   = array_unique($output->users);
-        }
-
         $members = array_diff($members, $joinedMembers);
-        if(!empty($members))
+        if(empty($members)) return $this->im->sendOutput($output, 'chatinviteResponse');
+
+        $broadcast = $this->im->messageCreateBroadcast('inviteUser', $chat, array_keys($users), $userID, $members);
+        if($broadcast)
         {
-            $broadcast = $this->im->messageCreateBroadcast('inviteUser', $chat, $output->users, $userID, $members);
-            if($broadcast)
-            {
-                $output = array($output, $broadcast);
-                return $this->im->sendOutputGroup($output);
-            }
+            $output = array($output, $broadcast);
+            return $this->im->sendOutputGroup($output);
         }
 
         return $this->im->sendOutput($output, 'chatinviteResponse');
@@ -1362,24 +1276,7 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $chat = $this->im->chat->getByGid($gid);
         if(!$chat) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notExist), 'messageResponsePack');
 
-        if(!$this->im->chatIsAdmin($gid, $userID))
-        {
-            $user = $this->im->userGetByID($userID);
-            if(empty($user->admin) || $user->admin != 'super') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupCreator), 'messageResponsePack');
-        }
-
         if($chat->type != 'group') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupChat), 'messageResponsePack');
-
-        $groupOwner = $this->dao->select('tu.id')->from(TABLE_IM_CHAT)->alias('tc')->leftJoin(TABLE_USER)->alias('tu')->on('tc.ownedBy=tu.account')->where('tc.gid')->eq($gid)->fetch('id');
-        if(!empty($groupOwner) && in_array($groupOwner, $users))
-        {
-            $users = array_diff($users, array($groupOwner));
-        }
-        if(empty($users))
-        {
-            return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->canNotDelOwner), 'messageResponsePack');
-        }
-
         foreach($users as $user) $this->im->chatLeave($gid, $user);
 
         $chat = $this->im->chat->getByGid($gid, true);
@@ -1396,13 +1293,9 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         }
         $this->im->chatAddAction($chat->id, 'kick', $userID, 'success', $comment);
 
-        $users = $members;
-        $users[] = $userID;
-        $users = array_unique($users);
-
         $output = new stdclass();
         $output->result = 'success';
-        $output->users  = $users;
+        $output->users  = $members;
         $output->data   = $chat;
 
         return $this->im->sendOutput($output, 'chatkickResponse');
@@ -1497,6 +1390,7 @@ $super = in_array($account, $adminArray) ? 'super' : '';
 
         $newMembers = array_diff($chat->members, $targetChat->members);
         $targetChat = $this->im->chatMerge($chat, $targetChat, $userID);
+
         if(empty($targetChat)) return $this->im->sendOutput(array('result' => 'fail', 'message' => "Unable to merge chat $gid into chat $targetGid."), 'messageResponsePack');
 
         $mergeNoticeChat = $chat;
@@ -1504,12 +1398,10 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $mergeNotice = $this->im->messageCreateBroadcast('chatMerged', $mergeNoticeChat, $mergeNoticeChat->members, $userID);
 
         $chat->members = array();
-	    $targetChatName = $targetChat->name;
         $broadcastChat = $targetChat;
         $broadcastChat->name = $chat->name; // Use merged chat name in broadcast.
         $mergeBroadcast = $this->im->messageCreateBroadcast(empty($newMembers) ? 'mergeChat' : 'mergeChatWithMembers', $broadcastChat, $targetChat->members, $userID, $newMembers);
 
-	    $targetChat->name = $targetChatName; // Restore target chat name.
         $leaveOutput = new stdclass();
         $leaveOutput->result = 'success';
         $leaveOutput->method = 'chatLeave';
@@ -1522,50 +1414,8 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $joinOutput->users  = $targetChat->members;
         $joinOutput->data   = $targetChat;
 
-        $outputGroup = array($leaveOutput, $joinOutput, $mergeBroadcast, $mergeNotice);
-
-        $user = $this->im->userGetById($userID);
-        if($user->admin == 'super')
-        {
-            $targetChat->members[] = (int)$userID;
-            $leaveOutput->users    = array_unique($leaveOutput->users);
-
-            $mergeOutput = new stdclass();
-            $mergeOutput->result  = 'success';
-            $mergeOutput->users   = $userID;
-            $mergeOutput->method  = 'chatMerge';
-
-            $mergeOutput->data = new stdclass();
-            $mergeOutput->data->targetGid = $targetGid;
-
-            $outputGroup[] = $mergeOutput;
-        }
+        $outputGroup = array($mergeBroadcast, $leaveOutput, $joinOutput, $mergeNotice);
         return $this->im->sendOutputGroup($outputGroup);
-    }
-
-    /**
-     * Set last read message for a chat
-     *
-     * @param  string $gid
-     * @param  int    $lastReadMessageIndex
-     * @param  int    $userID
-     * @access public
-     * @return void
-     */
-    public function chatSetLastReadMessageByIndex($gid, $lastReadMessageIndex = 0, $userID = 0)
-    {
-        $this->im->chatSetLastReadMessageByIndex($gid, $lastReadMessageIndex, $userID);
-        if(dao::isError()) return $this->im->sendOutput(array('result' => 'fail', 'message' => "Set last read message fail for chat $gid."), 'messageResponsePack');
-
-        $output = new stdclass();
-        $output->result = 'success';
-        $output->users  = $userID;
-
-        $output->data = new stdclass();
-        $output->data->gid = $gid;
-        $output->data->id  = $lastReadMessageIndex;
-
-        return $this->im->sendOutput($output, 'chatsetlastreadmessageResponse');
     }
 
     /**
@@ -1600,17 +1450,9 @@ $super = in_array($account, $adminArray) ? 'super' : '';
     public function chatChangeOwnership($gid, $ownerUserID, $userID = 0)
     {
         $chat = $this->im->chatGetByGid($gid, true);
+        if(!in_array($userID, $chat->members) || !in_array($ownerUserID, $chat->members)) return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Cannot change ownership of chat, new owner and current user must be in the chat.'), 'messageResponsePack');
 
-        /* Check if new owner is a member of chat. */
-        if(!in_array($ownerUserID, $chat->members)) return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Cannot change ownership of chat, new owner must be in the chat.'), 'messageResponsePack');
-
-        /* Check if current user is a member of chat or super admin. */
-        $user = $this->im->userGetByID($userID);
-        $byAdmin = !empty($user->admin) && $user->admin == 'super';
-
-        if(!$byAdmin && !in_array($userID, $chat->members)) return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Cannot change ownership of chat, current user must be in the chat.'));
-
-        $result = $this->im->chatChangeOwnership($chat, $ownerUserID, $userID, $byAdmin);
+        $result = $this->im->chatChangeOwnership($chat, $ownerUserID, $userID);
         if(empty($result)) return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Change ownership failed.'), 'messageResponsePack');
 
         $output = new stdclass();
@@ -1619,15 +1461,9 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $output->users  = $chat->members;
         $output->data   = $result;
 
-        if($byAdmin)
-        {
-            $output->users[] = $userID;
-            $output->users = array_unique($output->users);
-        }
-
         $users = $this->im->userGetList($status = 'online', $chat->members);
         $this->im->chatAddAction($chat->id, 'changeOwnership', $userID, 'success');
-        $broadcast = $this->im->messageCreateBroadcast('changeChatOwnership' . ($byAdmin ? 'ByAdmin' : ''), $chat, array_keys($users), $ownerUserID, $chat->members);
+        $broadcast = $this->im->messageCreateBroadcast('changeChatOwnership', $chat, array_keys($users), $ownerUserID, $chat->members);
         if($broadcast) $output = array($output, $broadcast);
 
         return $this->im->sendOutputGroup($output);
@@ -1656,7 +1492,7 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $chat        = $this->im->chat->getByGid($message->cgid, $getMembers = true);
         $onlineUsers = $this->im->userGetList($status = 'online', $chat->members);
 
-        $messages = $this->im->messageRetract($message->gid, $this->im->chatIsAdmin($chat, $userID), $userID);
+        $messages = $this->im->messageRetract($message->gid);
         if(dao::isError()) return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Retract message fail.'), 'messageResponsePack');
 
         $output = new stdclass();
@@ -1783,31 +1619,6 @@ $super = in_array($account, $adminArray) ? 'super' : '';
     }
 
     /**
-     * Get messages from chat by indexes.
-     *
-     * @param  string $cgid
-     * @param  array  $indexList
-     * @param  int    $userID
-     * @access public
-     * @return void
-     */
-    public function messageGetListByIndexes($cgid, $indexList, $userID = 0)
-    {
-        $members = $this->im->chatGetMembers($cgid, true);
-        if(is_array($members) && !in_array($userID, $members)) $this->im->sendOutput(array('result' => 'fail', 'message' => 'No such chat, or you are not in the chat.'), 'messageResponsePack');
-
-        $messages = $this->im->messageGetListByIndexes($cgid, $indexList);
-
-        $output         = new stdclass();
-        $output->result = 'success';
-        $output->method = 'messagegetlistbyindexes';
-        $output->users  = array($userID);
-        $output->data   = $messages;
-
-        return $this->im->sendOutput($output, 'messagegetlistbyindexesResponse');
-    }
-
-    /**
      * Sync message from $fromID.
      *
      * @param  string $cgid
@@ -1829,33 +1640,6 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $output = new stdclass();
         $output->result = 'success';
         $output->method = 'messagesync';
-        $output->users  = array($userID);
-        $output->data   = $messages;
-
-        return $this->im->sendOutput($output, $returnID ? 'messagesyncidResponse' :'messagesyncResponse');
-    }
-
-    /**
-     * Sync message by indexIds.
-     *
-     * @param  string $cgid
-     * @param  array  $indexList
-     * @param  bool   $reverse
-     * @param  bool   $returnID
-     * @param  int    $userID
-     * @access public
-     * @return void
-     */
-    public function messageSyncByIndexes($cgid, $indexList, $reverse = false, $returnID = false, $userID = 0)
-    {
-        $members = $this->im->chatGetMembers($cgid, true);
-        if(is_array($members) && !in_array($userID, $members)) $this->im->sendOutput(array('result' => 'fail', 'message' => 'No such chat, or you are not in the chat.'), 'messageResponsePack');
-
-        $messages = $this->im->messageGetListAroundIDByIndexes($cgid, $indexList, $reverse, $returnID);
-
-        $output = new stdclass();
-        $output->result = 'success';
-        $output->method = 'messagesyncbyindexes';
         $output->users  = array($userID);
         $output->data   = $messages;
 
@@ -1970,7 +1754,6 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         if($isOne2OneChat)
         {
             $targetUserArray = array_diff($privateChatMembers, array($userID));
-            if(empty($targetUserArray)) $targetUserArray = array($userID);
             $targetUserID = current($targetUserArray);
             $targetUser = $this->im->userGetByID($targetUserID);
             if($this->im->conferenceIsUserOccupied($targetUserID, $chatID) || $targetUser->status == 'offline')
@@ -2034,11 +1817,6 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $output->users  = $chat->members;
         $output->result = 'success';
         $output->data   = $conferenceData;
-        if($isOne2OneChat && $privateChatMembers[0] == $privateChatMembers[1])
-        {
-            $output->users = array();
-            return $this->im->sendOutputGroup(array($output));
-        }
 
         $broadcast = empty($invitee) ? $this->im->messageCreateBroadcast('createConference', $chat, $chat->members, $userID) : $this->im->messageCreateBroadcast('createConferenceInvitation', $chat, $invitee, $userID, $invitee, true);
         if(!empty($invitee)) foreach($invitee as $user) if($this->im->conferenceIsUserOccupied($user)) array_push($broadcasts, $this->im->messageCreateBroadcast('conferenceInviteeOccupied', $chat, $invitee, $user, $invitee, true));
@@ -2177,9 +1955,7 @@ $super = in_array($account, $adminArray) ? 'super' : '';
 
         $participants = explode(',', $participants);
         $participants = array_filter($participants);
-        $privateChatMembers = explode('&', $chatID);
-        $isOne2OneChat = (count($privateChatMembers) == 2);
-        if(!isset($alreadyClosed) && (empty($participants) || count($participants) == 0) && !($isOne2OneChat && $privateChatMembers[0] == $privateChatMembers[1]))
+        if(!isset($alreadyClosed) && (empty($participants) || count($participants) == 0))
         {
             $this->im->conferenceClose($chatID, $userID);
             $conferenceAction->type         = 'close';
@@ -2216,7 +1992,8 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $conference = $this->im->conferenceGetByChatID($chatID);
         if(empty($conference)) return $this->im->sendOutput(array('result' => 'fail', 'users' => $userID, 'message' => 'No such conference.'), 'messageResponsePack');
 
-        $this->im->conferenceClose($chatID, $userID);
+        $closeResult = $this->im->conferenceClose($chatID, $userID);
+        if(!$closeResult) return $this->im->sendOutput(array('result' => 'fail', 'users' => $userID, 'message' => 'Close conference failed.'), 'messageResponsePack');
 
         $conferenceAction = new stdClass();
         $conferenceAction->room         = $conference->rid;
@@ -2232,14 +2009,6 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $output->users  = $chat->members;
         $output->result = 'success';
         $output->data   = $conferenceAction;
-
-        $privateChatMembers = explode('&', $chatID);
-        $isOne2OneChat = (count($privateChatMembers) == 2);
-        if($isOne2OneChat && $privateChatMembers[0] == $privateChatMembers[1])
-        {
-            $output->users = array();
-            return $this->im->sendOutputGroup(array($output));
-        }
 
         $broadcast = $this->im->messageCreateBroadcast('closeConference', $chat, $chat->members, $userID, array(), true);
         if($broadcast) $output = array($output, $broadcast);
@@ -2367,31 +2136,6 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $getDeptsOutput = addslashes($getDeptsOutput); // Otherwise Go might not be able to parse such JSON.
 
         return $this->app->output($this->app->encrypt(array('result' => 'success', 'data' => $getDeptsOutput)));
-    }
-
-    /**
-     * Get config settings for XXD.
-     *
-     * @access public
-     * @return void
-     */
-    public function syncConfig()
-    {
-        $output = new stdclass();
-        $output->module = 'im';
-        $output->method = 'syncConfig';
-        $output->result = 'success';
-
-        $output->data = new stdclass();
-        $output->data->ip               = $this->config->xuanxuan->ip;
-        $output->data->chatPort         = $this->config->xuanxuan->chatPort;
-        $output->data->commonPort       = $this->config->xuanxuan->commonPort;
-        $output->data->https            = $this->config->xuanxuan->https;
-        $output->data->pollingInterval  = $this->config->xuanxuan->pollingInterval;
-        $output->data->uploadFileSize   = $this->config->xuanxuan->uploadFileSize;
-        if(isset($this->config->xuanxuan->fileEncryptionKey)) $output->data->fileKey = $this->config->xuanxuan->fileEncryptionKey;
-
-        return $this->app->output($this->app->encrypt($output));
     }
 
     /**
@@ -2666,7 +2410,7 @@ $super = in_array($account, $adminArray) ? 'super' : '';
     }
 
     /**
-     * Send notification into chat.
+     * Send notification to users' notification center.
      *
      * @access public
      * @return void
@@ -2928,9 +2672,6 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $output->method = 'maintenance';
         $output->result = 'success';
 
-        set_time_limit(0);
-        ini_set('memory_limit', '2048M');
-
         /* Reindex users' pinyin of realname. */
         $this->im->userReindexPinyin();
 
@@ -2938,13 +2679,10 @@ $super = in_array($account, $adminArray) ? 'super' : '';
         $partitionMark = $this->im->messageMarkOngoingPartition(true);
         if($partitionMark)
         {
+            set_time_limit(0);
             if($this->im->messageNeedPartition()) $this->im->messagePartitionTable();
             $this->im->messageMarkOngoingPartition(false);
         }
-
-        /* TODO: revive this in 6.3. */
-        // $shouldPruneChats = $this->loadModel('setting')->getItem("owner=system&module=common&section=xuanxuan&key=enableCleanDismissGroup");
-        // if(isset($shouldPruneChats) && $shouldPruneChats == 'on') $this->im->chatPruneExpired();
 
         return $this->app->output($this->app->encrypt($output));
     }
@@ -2985,19 +2723,17 @@ $super = in_array($account, $adminArray) ? 'super' : '';
     public function authorize($account = '', $token = '', $device = '', $url = '')
     {
         if(!empty($url)) $url = str_replace('_', $this->config->requestFix, $url);
-        if(empty($account) || empty($token)) die('Invalid params. Please provide account, token and url.');
+        if(empty($account) || empty($token)) return $this->app->output('Invalid params. Please provide account, token and url.');
 
         $user = $this->im->userIdentifyWithToken($account, $token, $device);
-        if(!$user || is_string($user)) die('Invalid token.');
+        if(!$user || is_string($user)) return $this->app->output('Invalid token.');
 
-        if(empty($url)) die('Authorized, but no url to redirect to.');
+        if(empty($url)) return $this->app->output('Authorized, but no url to redirect to.');
 
         $user = $this->loadModel('user')->getByAccount($account);
-        $user = $this->user->login($user);
-$url .= $this->config->requestType == 'GET' ? '&' : '?';
-$url .= "{$this->config->sessionVar}={$this->app->sessionID}";
-
-        header("Location: $url", true, 307);
+        $user = $this->user->login($account, $user->password);
+        header("Location: $url");
+        return $this->app->output();
     }
 
     /**
@@ -3014,166 +2750,10 @@ $url .= "{$this->config->sessionVar}={$this->app->sessionID}";
         $output->result = 'success';
 
         $output->data = new stdclass();
-        $output->data->kickedChangePwd = array();
+        $output->data->kickedChangePwd = $this->im->userGetChangedPassword();
         $output->data->kickedDeleted   = $this->im->userGetOnlineDeleted();
         $output->data->kickedForbided  = $this->im->userGetOnlineForbidden();
 
         return $this->app->output($this->app->encrypt($output));
-    }
-
-    /**
-     * Change a chat.
-     *
-     * @param  string   $gid
-     * @param  objcet   $config {"public":true,"adminInvite":true,"commiters":""}
-     * @param  int      $userID
-     * @access public
-     * @return void
-     */
-    public function chatSetConfig($gid = '', $config = array(), $userID = 0)
-    {
-        $chat = $this->im->chat->getByGid($gid);
-
-        if(!$chat) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notExist), 'messageResponsePack');
-        if($chat->type != 'group') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupChat), 'messageResponsePack');
-
-        $chatID = $chat->id;
-        if(isset($config->public))
-        {
-            $chat->public = $config->public ? '1' : '0';
-        }
-        if(isset($config->committers))
-        {
-            if($chat->type != 'group' && $chat->type != 'system') return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notGroupChat), 'messageResponsePack');
-            $chat->committers = $config->committers;
-        }
-        if(isset($config->adminInvite))
-        {
-            $chat->adminInvite = $config->adminInvite ? '1' : '0';
-        }
-        if(isset($config->avatar))
-        {
-            $chat->avatar = $config->avatar;
-        }
-        $chat = $this->im->chatUpdate($chat, $userID);
-        if(dao::isError())
-        {
-            $this->im->chatAddAction($chatID, 'chatSetConfig', $userID, 'fail');
-            return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Set chat config fail.'), 'messageResponsePack');
-        }
-        $this->im->chatAddAction($chatID, 'chatSetConfig', $userID, 'success');
-
-        $users = $this->im->userGetList($status = 'online', $chat->members);
-
-        $output = new stdclass();
-        $output->result = 'success';
-        $output->users  = array_keys($users);
-        $output->data   = $chat;
-
-        return $this->im->sendOutput($output, 'chatsetconfigResponse');
-    }
-
-    /**
-     * search chats with super admin.
-     *
-     * @param  string   $searchField
-     * @param  object   $pager
-     * @param  string   $orderBy
-     * @param  boolean  $onlyGetChats
-     * @param  int      $userID
-     * @access public
-     * @return array
-     */
-    public function chatSearch($searchField='', $pager = null, $orderBy = '', $onlyGetChats = false, $userID = 0)
-    {
-        $account = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
-$admins = $this->dao->select('admins')->from(TABLE_COMPANY)->where('id')->eq($this->app->company->id)->fetch('admins');
-$adminArray = explode(',', $admins);
-$super = in_array($account, $adminArray) ? 'super' : '';
-        if($super != 'super')
-        {
-            return $this->im->sendOutput(array('result' => 'success', 'data' => array()));
-        }
-
-        $output = new stdclass();
-        $output->result = 'success';
-        $output->users  = array($userID);
-
-        if($onlyGetChats)
-        {
-            $chatList = $this->dao->select('*')->from(TABLE_IM_CHAT)->where('type')->eq('group')->fetchAll();
-            $output->data = $chatList;
-        }
-        else
-        {
-            if(empty($pager))   $pager = new stdclass();
-            if(empty($orderBy)) $orderBy = 'createdDate_desc';
-
-            if(!isset($pager->pageID))     $pager->pageID     = 1;
-            if(!isset($pager->recPerPage)) $pager->recPerPage = 10;
-            if(!isset($pager->recTotal))   $pager->recTotal   = 0;
-
-            $this->app->loadClass('pager', $static = true);
-            $pager = new pager($pager->recTotal, $pager->recPerPage, $pager->pageID);
-
-            $chatList = $this->im->chatSearch($searchField, $pager, $orderBy);
-
-            $output->data   = $chatList;
-            $output->pager  = new stdclass();
-            $output->pager->recPerPage = $pager->recPerPage;
-            $output->pager->pageID     = $pager->pageID;
-            $output->pager->recTotal   = $pager->recTotal;
-        }
-        return $this->im->sendOutput($output, 'chatsearchResponse');
-    }
-
-    /**
-     * Set chat avatar.
-     *
-     * @param  string  $gid
-     * @param  object  $avatar
-     * @param  int     $userID
-     * @access public
-     * @return void
-     */
-    public function chatSetAvatar($gid, $avatar = null, $userID = 0)
-    {
-        $chat = $this->im->chat->getByGid($gid);
-        if(!$chat) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notExist), 'messageResponsePack');
-
-        if(!$this->im->chatIsAdmin($chat, $userID)) return $this->im->sendOutput(array('result' => 'fail', 'message' => $this->lang->im->notAdmin), 'messageResponsePack');
-
-        if($avatar->type == 'image')
-        {
-            $file = $this->loadModel('file')->getById($avatar->data->imgId);
-            $avatar->data->imgUrl = $file->webPath;
-            unset($avatar->data->imgId);
-        }
-
-        /* Sanitize input. */
-        if($avatar->type == 'text') $avatar->data->customText = strip_tags($avatar->data->customText);
-
-        $avatarEncoded = json_encode($avatar);
-        $chat = $this->im->chatUpdateAvatar($gid, $avatarEncoded);
-
-        if(dao::isError())
-        {
-            $this->im->chatAddAction($gid, 'chatSetAvatar', $userID, 'fail');
-            return $this->im->sendOutput(array('result' => 'fail', 'message' => 'Set chat avatar fail.'), 'messageResponsePack');
-        }
-        $this->im->chatAddAction($gid, 'chatSetAvatar', $userID, 'success');
-
-        if($avatar->type == 'image') $avatar->data->imgUrl = $this->loadModel('im')->getServer() . $avatar->data->imgUrl;
-
-        $chat->avatar = $avatar;
-
-        $users = $this->im->userGetList($status = 'online', $chat->members);
-
-        $output = new stdclass();
-        $output->result = 'success';
-        $output->users  = array_keys($users);
-        $output->data   = $chat;
-
-        return $this->im->sendOutput($output, 'chatsetavatarResponse');
     }
 }

@@ -50,7 +50,7 @@ include $app->getModuleRoot() . 'common/view/header.html.php';
                 <?php echo html::radio('backendType', $lang->conference->backend->types, $backendType);?>
               <?php else: echo html::radio('backendType', $lang->conference->backend->types, $backendType, 'disabled'); endif; ?>
             </td>
-            <td></td>
+            <td><?php echo $lang->conference->backendTypeTip;?></td>
           </tr>
           <tr class='edit-row common-row'>
             <th class="w-120px"><?php echo $lang->conference->serverAddr;?></th>
@@ -62,17 +62,17 @@ include $app->getModuleRoot() . 'common/view/header.html.php';
             </td>
             <td><?php echo $lang->conference->serverAddrTip;?></td>
           </tr>
-          <tr class='edit-row srs-row'>
+          <tr class='edit-row common-row'>
             <th class="w-120px"><?php echo $lang->conference->https;?></th>
             <td class="w-400px">
               <?php if($type != 'edit'): ?>
               <div class="checkbox-primary disabled <?php if($https) echo 'checked';?>">
-                <label id="httpsTip"><?php echo $lang->conference->httpsTip;?></label>
+                <label><?php echo $lang->conference->httpsTip;?></label>
               </div>
               <?php else: ?>
               <div class="checkbox-primary">
                 <input type="checkbox" name="https" id='https' value="true" <?php if($https) echo 'checked';?> <?php if($type != 'edit') echo 'disabled';?>>
-                <label id="httpsTip" for='https'><?php echo $lang->conference->httpsTip;?></label>
+                <label for='https'><?php echo $lang->conference->httpsTip;?></label>
               </div>
               <?php endif; ?>
             </td>
@@ -83,10 +83,10 @@ include $app->getModuleRoot() . 'common/view/header.html.php';
             <td class="w-400px code">
               <?php if($type == 'edit'):?>
                 <div class='required required-wrapper'></div>
-                <input type="number" name="apiPort" id="apiPort" <?php echo empty($apiPort) ? "value='3004'" : "value='$apiPort'";?> min="1" max="65535" class="form-control">
+                <input type="number" name="apiPort" id="apiPort" <?php echo empty($apiPort) ? '' : "value='$apiPort'";?> min="1" max="65535" class="form-control">
               <?php else: echo empty($apiPort) ? $lang->conference->notset : $apiPort; endif; ?>
             </td>
-            <td id="apiPortTip"><?php echo $type == 'edit' ? ($backendType == 'srs' ? $lang->conference->apiPortSrsTip : $lang->conference->apiPortOwtTip) : '';?></td>
+            <td><?php echo $type == 'edit' ? $lang->conference->apiPortTip : '';?></td>
           </tr>
           <tr class='edit-row owt-row'>
             <th class="w-120px"><?php echo $lang->conference->mgmtPort;?></th>
@@ -137,21 +137,6 @@ include $app->getModuleRoot() . 'common/view/header.html.php';
             </td>
           </tr>
         </table>
-        <div id="setupTip">
-          <h3><?php echo $lang->conference->setupTitle;?></h3>
-          <p><?php echo $lang->conference->setupDescription;?></p>
-          <a href="https://www.xuanim.com/page/download.html" target="_blank"><?php echo $lang->conference->download;?></a>
-          <hr>
-          <h4><?php echo $lang->conference->srsSetupTitle;?></h4>
-          <a href="https://www.xuanim.com/book/xuanxuanserver/273.html" target="_blank"><?php echo $lang->conference->setupDoc;?></a>
-          <br>
-          <a href="https://www.xuanim.com/book/xxbservice/274.html" target="_blank"><?php echo $lang->conference->configDoc;?></a>
-          <hr>
-          <h4><?php echo $lang->conference->owtSetupTitle;?></h4>
-          <a href="https://www.xuanim.com/book/xuanxuanserver/237.html" target="_blank"><?php echo $lang->conference->setupDoc;?></a>
-          <br>
-          <a href="https://www.xuanim.com/book/xxbservice/239.html" target="_blank"><?php echo $lang->conference->configDoc;?></a>
-        </div>
       </form>
     </div>
     <div class="tab-pane fade <?php echo $type == 'video' ? 'active in' : '';?>" id="videoContent">
@@ -191,11 +176,8 @@ include $app->getModuleRoot() . 'common/view/header.html.php';
 .owt-selected .srs-row {display: none!important}
 </style>
 <script>
-
 $(function()
 {
-    let owtPort = '3004';
-    let srsPort = '1985';
     $.setAjaxForm('#conference-admin-form');
     $('#enabled').on('change', function()
     {
@@ -207,19 +189,11 @@ $(function()
         {
             $('#conference-admin-form').removeClass('srs-selected');
             $('#conference-admin-form').addClass('owt-selected');
-            document.getElementById('https').checked = true;
-            document.getElementById('apiPortTip').innerHTML = '<?php echo $lang->conference->apiPortOwtTip;?>';
-            srsPort = document.getElementById('apiPort').value;
-            document.getElementById('apiPort').value = owtPort;
         }
         if(e.target.value == 'srs')
         {
             $('#conference-admin-form').removeClass('owt-selected');
             $('#conference-admin-form').addClass('srs-selected');
-            document.getElementById('https').checked = false;
-            document.getElementById('apiPortTip').innerHTML = '<?php echo $lang->conference->apiPortSrsTip;?>';
-            owtPort = document.getElementById('apiPort').value;
-            document.getElementById('apiPort').value = srsPort;
         }
     });
 

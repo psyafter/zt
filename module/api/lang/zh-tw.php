@@ -60,8 +60,6 @@ $lang->api->confirmDeleteLib = "您確定刪除該介面庫嗎？";
 $lang->api->filterStruct     = "使用資料結構填充";
 $lang->api->defaultVersion   = "當前版本";
 $lang->api->zentaoAPI        = "禪道API文檔v1";
-$lang->api->search           = "搜索";
-$lang->api->allLibs          = "全部介面庫";
 
 /* Common access control lang. */
 $lang->api->whiteList          = '白名單';
@@ -126,12 +124,6 @@ $lang->api->query              = '請求參數';
 $lang->api->params             = '請求體';
 $lang->api->response           = '請求響應';
 $lang->api->responseExample    = '響應示例';
-$lang->api->id                 = '介面編號';
-$lang->api->addedBy            = '由誰添加';
-$lang->api->addedDate          = '添加時間';
-$lang->api->editedBy           = '由誰更新';
-$lang->api->editedDate         = '更新時間';
-$lang->api->version            = '版本號';
 $lang->api->res                = new stdClass();
 $lang->api->res->name          = '名稱';
 $lang->api->res->desc          = '描述';

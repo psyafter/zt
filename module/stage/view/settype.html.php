@@ -64,14 +64,8 @@ EOT;
           </tr>
           <?php endforeach;?>
           <tr>
-            <td colspan='3' class='text-center form-actions'>
-            <?php
-            $appliedTo = array($currentLang => $lang->custom->currentLang, 'all' => $lang->custom->allLang);
-            echo html::radio('lang', $appliedTo, $lang2Set);
-            echo html::submitButton();
-            if(common::hasPriv('custom', 'restore')) echo html::linkButton($lang->custom->restore, $this->createLink('custom', 'restore', "module=stage&field=typeList"), 'hiddenwin', '', 'btn btn-wide');
-            ?>
-            </td>
+            <td></td>
+            <td colspan='2' class='form-actions'><?php echo html::submitButton() . html::backButton();?></td>
           </tr>
         </tbody>
       </table>

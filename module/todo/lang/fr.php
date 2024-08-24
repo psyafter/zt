@@ -36,7 +36,6 @@ $lang->todo->cycleConfig  = "Récurrence";
 $lang->todo->project      = "Project";
 $lang->todo->product      = "Product";
 $lang->todo->execution    = $lang->executionCommon;
-$lang->todo->changeDate   = "Change Date";
 
 $lang->todo->reasonList['story'] = "Convertir en Story";
 $lang->todo->reasonList['task']  = "Convertir en Tâche";
@@ -57,7 +56,6 @@ $lang->todo->pri          = 'Priorité';
 $lang->todo->name         = 'Titre';
 $lang->todo->status       = 'Statut';
 $lang->todo->desc         = 'Description';
-$lang->todo->config       = 'Config';
 $lang->todo->private      = 'Privé';
 $lang->todo->cycleDay     = 'Jour';
 $lang->todo->cycleWeek    = 'Semaine';
@@ -70,8 +68,6 @@ $lang->todo->finishedDate = 'FinishedDate';
 $lang->todo->closedBy     = 'ClosedBy';
 $lang->todo->closedDate   = 'ClosedDate';
 $lang->todo->deadline     = 'Expiration';
-$lang->todo->deleted      = 'Deleted';
-$lang->todo->ditto        = 'Idem';
 
 $lang->todo->cycleDaysLabel  = 'Interval days';
 $lang->todo->beforeDaysLabel = 'Days in advance';
@@ -83,12 +79,9 @@ $lang->todo->beforeDays   = "<span class='input-group-addon'>Créer automatiquem
 $lang->todo->dayNames     = array(1 => 'Lundi', 2 => 'Mardi', 3 => 'Mercredi', 4 => 'Jeudi', 5 => 'Vendredi', 6 => 'Samedi', 0 => 'Dimanche');
 $lang->todo->specifiedDay = array(1 => 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31);
 
-$lang->todo->confirmBug     = "Cette action est liée au Bug #%s. Voulez-vous l'éditer ?";
-$lang->todo->confirmTask    = "Cette action est liée à la Tâche #%s. Voulez-vous l'éditer ?";
-$lang->todo->confirmStory   = "Cette action est liée à la Story #%s. Voulez-vous l'éditer ?";
-$lang->todo->noOptions      = 'Vous n\'avez pas de %s en attente pour le moment. Veuillez sélectionner le type de Todo.';
-$lang->todo->summary        = 'Total todos: <strong>%s</strong>, Wait: <strong>%s</strong>, Doing: <strong>%s</strong>.';
-$lang->todo->checkedSummary = 'Seleted: <strong>%total%</strong>, Wait: <strong>%wait%</strong>, Doing: <strong>%doing%</strong>.';
+$lang->todo->confirmBug   = "Cette action est liée au Bug #%s. Voulez-vous l'éditer ?";
+$lang->todo->confirmTask  = "Cette action est liée à la Tâche #%s. Voulez-vous l'éditer ?";
+$lang->todo->confirmStory = "Cette action est liée à la Story #%s. Voulez-vous l'éditer ?";
 
 $lang->todo->statusList['wait']   = 'En Attente';
 $lang->todo->statusList['doing']  = 'En cours';
@@ -117,8 +110,6 @@ $lang->todo->lblClickCreate = "Cliquez pour ajouter une entrée";
 $lang->todo->noTodo         = 'Aucune entrée de ce type.';
 $lang->todo->noAssignedTo   = "Le champ Assigné à ne doit pas être vide.";
 $lang->todo->unfinishedTodo = "Les entrées de l'ID %s ne sont pas terminés et ne peuvent pas se fermer.";
-$lang->todo->today          = 'Todo Today';
-$lang->todo->selectProduct  = "Please select a product";
 
 $lang->todo->periods['all']             = 'Toutes les entrées';
 $lang->todo->periods['before']          = 'Non terminée';

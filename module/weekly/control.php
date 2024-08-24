@@ -50,13 +50,10 @@ class weekly extends control
         if(!$date) $date = helper::today();
         $date = date('Y-m-d', strtotime($date));
 
-        $this->weekly->save($projectID, $date);
-
         $this->view->title = $this->lang->weekly->common;
 
-        $PVEV = $this->weekly->getPVEV($projectID, $date);
-        $this->view->pv = $PVEV['PV'];
-        $this->view->ev = $PVEV['EV'];
+        $this->view->pv = $this->weekly->getPV($projectID, $date);
+        $this->view->ev = $this->weekly->getEV($projectID, $date);
         $this->view->ac = $this->weekly->getAC($projectID, $date);
         $this->view->sv = $this->weekly->getSV($this->view->ev, $this->view->pv);
         $this->view->cv = $this->weekly->getCV($this->view->ev, $this->view->ac);
@@ -70,6 +67,7 @@ class weekly extends control
         $this->view->postponed = $this->weekly->getPostponed($projectID, $date);
         $this->view->nextWeek  = $this->weekly->getTasksOfNextWeek($projectID, $date);
         $this->view->workload  = $this->weekly->getWorkloadByType($projectID, $date);
+        $this->weekly->save($projectID, $date);
 
         $this->lang->modulePageNav = $this->weekly->getPageNav($this->view->project, $date);
         $this->display();

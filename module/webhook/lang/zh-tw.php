@@ -87,8 +87,6 @@ $lang->webhook->paramsList['comment']    = '備註';
 $lang->webhook->paramsList['text']       = '操作內容';
 
 $lang->webhook->confirmDelete = '您確認要刪除該webhook嗎？';
-$lang->webhook->friendlyTips  = '友情提示：點擊部門，可以展開該部門下的子部門。';
-$lang->webhook->loadPrompt    = '數據較多，加載緩慢，請稍等。';
 
 $lang->webhook->trimWords = '了';
 
@@ -106,7 +104,6 @@ $lang->webhook->note->typeList['dingding']  = '請在釘釘中添加一個自定
 $lang->webhook->note->typeList['weixin']    = '請在企業微信中添加一個自定義機器人，並將其webhook填寫到此處。';
 $lang->webhook->note->typeList['default']   = '從第三方系統獲取webhook並填寫到此處。';
 
-$lang->webhook->error               = new stdclass();
-$lang->webhook->error->curl         = '需要加載php-curl擴展。';
-$lang->webhook->error->noDept       = '沒有選擇部門，請先選擇同步部門。';
-$lang->webhook->error->requestError = '請求錯誤！';
+$lang->webhook->error = new stdclass();
+$lang->webhook->error->curl   = '需要加載php-curl擴展。';
+$lang->webhook->error->noDept = '沒有選擇部門，請先選擇同步部門。';

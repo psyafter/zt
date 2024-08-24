@@ -51,10 +51,9 @@ $lang->execution->canceledBy          = '由誰取消';
 $lang->execution->canceledDate        = '取消日期';
 $lang->execution->begin               = '計劃開始';
 $lang->execution->end                 = '計劃完成';
-$lang->execution->dateRange           = '計划起止日期';
+$lang->execution->dateRange           = '起始日期';
 $lang->execution->realBeganAB         = '實際開始';
 $lang->execution->realEndAB           = '實際完成';
-$lang->execution->teamCount           = '人數';
 $lang->execution->realBegan           = '實際開始日期';
 $lang->execution->realEnd             = '實際完成日期';
 $lang->execution->to                  = '至';
@@ -95,7 +94,6 @@ $lang->execution->viewBug             = '查看bug';
 $lang->execution->noProduct           = "無{$lang->executionCommon}";
 $lang->execution->createStory         = "提{$lang->SRCommon}";
 $lang->execution->storyTitle          = "{$lang->SRCommon}名稱";
-$lang->execution->storyView           = "{$lang->SRCommon}詳情";
 $lang->execution->all                 = '所有';
 $lang->execution->undone              = '未完成';
 $lang->execution->unclosed            = '未關閉';
@@ -119,7 +117,6 @@ $lang->execution->relatedMember       = '相關成員';
 $lang->execution->watermark           = '由禪道導出';
 $lang->execution->burnXUnit           = '(日期)';
 $lang->execution->burnYUnit           = '(工時)';
-$lang->execution->count               = '(數量)';
 $lang->execution->waitTasks           = '待處理';
 $lang->execution->viewByUser          = '按用戶查看';
 $lang->execution->oneProduct          = "階段只能關聯一個{$lang->productCommon}";
@@ -136,9 +133,6 @@ $lang->execution->sortColumn          = '看板列卡片排序';
 $lang->execution->batchCreateStory    = "批量新建{$lang->SRCommon}";
 $lang->execution->batchCreateTask     = '批量建任務';
 $lang->execution->kanbanNoLinkProduct = "看板沒有關聯{$lang->productCommon}";
-$lang->execution->myTask              = "我的任務";
-$lang->execution->list                = '列表';
-$lang->execution->allProject          = '全部項目';
 
 /* Fields of zt_team. */
 $lang->execution->root     = '源ID';
@@ -155,7 +149,6 @@ $lang->execution->putoff   = "延期";
 $lang->execution->suspend  = "掛起";
 $lang->execution->close    = "關閉";
 $lang->execution->export   = "導出";
-$lang->execution->next     = "下一步";
 
 $lang->execution->endList[7]   = '一星期';
 $lang->execution->endList[14]  = '兩星期';
@@ -169,13 +162,9 @@ $lang->execution->lifeTimeList['short'] = "短期";
 $lang->execution->lifeTimeList['long']  = "長期";
 $lang->execution->lifeTimeList['ops']   = "運維";
 
-$lang->execution->cfdTypeList['story'] = "按{$lang->SRCommon}查看";
-$lang->execution->cfdTypeList['task']  = "按任務查看";
-$lang->execution->cfdTypeList['bug']   = "按Bug查看";
-
+$lang->team = new stdclass();
 $lang->team->account    = '用戶';
 $lang->team->role       = '角色';
-$lang->team->roleAB     = '我的角色';
 $lang->team->join       = '加盟日';
 $lang->team->hours      = '可用工時/天';
 $lang->team->days       = '可用工日';
@@ -216,82 +205,78 @@ $lang->execution->burnByList['estimate']   = "按計劃工時查看";
 $lang->execution->burnByList['storyPoint'] = '按故事點查看';
 
 /* 方法列表。*/
-$lang->execution->index               = "{$lang->execution->common}主頁";
-$lang->execution->task                = '任務列表';
-$lang->execution->groupTask           = '分組瀏覽任務';
-$lang->execution->story               = "{$lang->SRCommon}列表";
-$lang->execution->qa                  = '測試儀表盤';
-$lang->execution->bug                 = 'Bug列表';
-$lang->execution->testcase            = '用例列表';
-$lang->execution->dynamic             = '動態';
-$lang->execution->latestDynamic       = '最新動態';
-$lang->execution->build               = '所有版本';
-$lang->execution->testtask            = '測試單';
-$lang->execution->burn                = '燃盡圖';
-$lang->execution->computeBurn         = '更新燃盡圖';
-$lang->execution->CFD                 = '累積流圖';
-$lang->execution->computeCFD          = '更新累積流圖';
-$lang->execution->burnData            = '燃盡圖數據';
-$lang->execution->fixFirst            = '修改首天工時';
-$lang->execution->team                = '團隊成員';
-$lang->execution->doc                 = '文檔列表';
-$lang->execution->doclib              = '文檔庫列表';
-$lang->execution->manageProducts      = '關聯' . $lang->productCommon;
-$lang->execution->linkStory           = "關聯{$lang->SRCommon}";
-$lang->execution->linkStoryByPlan     = "按照計劃關聯";
-$lang->execution->linkPlan            = "關聯計劃";
-$lang->execution->unlinkStoryTasks    = "未關聯{$lang->SRCommon}任務";
-$lang->execution->linkedProducts      = '已關聯';
-$lang->execution->unlinkedProducts    = '未關聯';
-$lang->execution->view                = "{$lang->execution->common}概況";
-$lang->execution->startAction         = "開始{$lang->execution->common}";
-$lang->execution->activateAction      = "激活{$lang->execution->common}";
-$lang->execution->delayAction         = "延期{$lang->execution->common}";
-$lang->execution->suspendAction       = "掛起{$lang->execution->common}";
-$lang->execution->closeAction         = "關閉{$lang->execution->common}";
-$lang->execution->testtaskAction      = "{$lang->execution->common}測試單";
-$lang->execution->teamAction          = "{$lang->execution->common}團隊";
-$lang->execution->kanbanAction        = "{$lang->execution->common}看板";
-$lang->execution->printKanbanAction   = "打印看板";
-$lang->execution->treeAction          = "{$lang->execution->common}樹狀圖";
-$lang->execution->exportAction        = "導出{$lang->execution->common}";
-$lang->execution->computeBurnAction   = "計算燃盡圖";
-$lang->execution->create              = "添加{$lang->executionCommon}";
-$lang->execution->createExec          = "添加{$lang->execution->common}";
-$lang->execution->createAction        = "添加{$lang->execution->common}";
-$lang->execution->copyExec            = "複製{$lang->execution->common}";
-$lang->execution->copy                = "複製{$lang->executionCommon}";
-$lang->execution->delete              = "刪除{$lang->executionCommon}";
-$lang->execution->deleteAB            = "刪除{$lang->execution->common}";
-$lang->execution->browse              = "瀏覽{$lang->execution->common}";
-$lang->execution->edit                = "設置{$lang->executionCommon}";
-$lang->execution->editAction          = "編輯{$lang->execution->common}";
-$lang->execution->batchEdit           = "編輯";
-$lang->execution->batchEditAction     = "批量編輯";
-$lang->execution->manageMembers       = '團隊管理';
-$lang->execution->unlinkMember        = '移除成員';
-$lang->execution->unlinkStory         = "移除{$lang->SRCommon}";
-$lang->execution->unlinkStoryAB       = "移除{$lang->SRCommon}";
-$lang->execution->batchUnlinkStory    = "批量移除{$lang->SRCommon}";
-$lang->execution->importTask          = '轉入任務';
-$lang->execution->importPlanStories   = "按計劃關聯{$lang->SRCommon}";
-$lang->execution->importBug           = '導入Bug';
-$lang->execution->tree                = '樹狀圖';
-$lang->execution->treeTask            = '只看任務';
-$lang->execution->treeStory           = "只看{$lang->SRCommon}";
-$lang->execution->treeOnlyTask        = '樹狀圖只看任務';
-$lang->execution->treeOnlyStory       = "樹狀圖只看{$lang->SRCommon}";
-$lang->execution->storyKanban         = "{$lang->SRCommon}看板";
-$lang->execution->storySort           = "{$lang->SRCommon}排序";
-$lang->execution->importPlanStory     = '創建' . $lang->executionCommon . '成功！\n是否導入計劃關聯的相關' . $lang->SRCommon . '？導入時將自動過濾掉草稿狀態的' . $lang->SRCommon . '。';
-$lang->execution->importEditPlanStory = '編輯' . $lang->executionCommon . '成功！\n是否導入計劃關聯的相關' . $lang->SRCommon . '？導入時將自動過濾掉草稿狀態的' . $lang->SRCommon . '。';
-$lang->execution->needLinkProducts    = '該執行還未關聯任何產品，相關功能無法使用，請先關聯產品後再試。';
-$lang->execution->iteration           = '版本迭代';
-$lang->execution->iterationInfo       = '迭代%s次';
-$lang->execution->viewAll             = '查看所有';
-$lang->execution->testreport          = '測試報告';
-$lang->execution->taskKanban          = '任務看板';
-$lang->execution->RDKanban            = '研發看板';
+$lang->execution->index             = "{$lang->execution->common}主頁";
+$lang->execution->task              = '任務列表';
+$lang->execution->groupTask         = '分組瀏覽任務';
+$lang->execution->story             = "{$lang->SRCommon}列表";
+$lang->execution->qa                = '測試儀表盤';
+$lang->execution->bug               = 'Bug列表';
+$lang->execution->testcase          = '用例列表';
+$lang->execution->dynamic           = '動態';
+$lang->execution->latestDynamic     = '最新動態';
+$lang->execution->build             = '所有版本';
+$lang->execution->testtask          = '測試單';
+$lang->execution->burn              = '燃盡圖';
+$lang->execution->computeBurn       = '更新燃盡圖';
+$lang->execution->burnData          = '燃盡圖數據';
+$lang->execution->fixFirst          = '修改首天工時';
+$lang->execution->team              = '團隊成員';
+$lang->execution->doc               = '文檔列表';
+$lang->execution->doclib            = '文檔庫列表';
+$lang->execution->manageProducts    = '關聯' . $lang->productCommon;
+$lang->execution->linkStory         = "關聯{$lang->SRCommon}";
+$lang->execution->linkStoryByPlan   = "按照計劃關聯";
+$lang->execution->linkPlan          = "關聯計劃";
+$lang->execution->unlinkStoryTasks  = "未關聯{$lang->SRCommon}任務";
+$lang->execution->linkedProducts    = '已關聯';
+$lang->execution->unlinkedProducts  = '未關聯';
+$lang->execution->view              = "{$lang->execution->common}概況";
+$lang->execution->startAction       = "開始{$lang->execution->common}";
+$lang->execution->activateAction    = "激活{$lang->execution->common}";
+$lang->execution->delayAction       = "延期{$lang->execution->common}";
+$lang->execution->suspendAction     = "掛起{$lang->execution->common}";
+$lang->execution->closeAction       = "關閉{$lang->execution->common}";
+$lang->execution->testtaskAction    = "{$lang->execution->common}測試單";
+$lang->execution->teamAction        = "{$lang->execution->common}團隊";
+$lang->execution->kanbanAction      = "{$lang->execution->common}看板";
+$lang->execution->printKanbanAction = "打印看板";
+$lang->execution->treeAction        = "{$lang->execution->common}樹狀圖";
+$lang->execution->exportAction      = "導出{$lang->execution->common}";
+$lang->execution->computeBurnAction = "計算燃盡圖";
+$lang->execution->create            = "添加{$lang->executionCommon}";
+$lang->execution->createExec        = "添加{$lang->execution->common}";
+$lang->execution->createAction      = "添加{$lang->execution->common}";
+$lang->execution->copyExec          = "複製{$lang->execution->common}";
+$lang->execution->copy              = "複製{$lang->executionCommon}";
+$lang->execution->delete            = "刪除{$lang->executionCommon}";
+$lang->execution->deleteAB          = "刪除{$lang->execution->common}";
+$lang->execution->browse            = "瀏覽{$lang->execution->common}";
+$lang->execution->edit              = "設置{$lang->executionCommon}";
+$lang->execution->editAction        = "編輯{$lang->execution->common}";
+$lang->execution->batchEdit         = "編輯";
+$lang->execution->batchEditAction   = "批量編輯";
+$lang->execution->manageMembers     = '團隊管理';
+$lang->execution->unlinkMember      = '移除成員';
+$lang->execution->unlinkStory       = "移除{$lang->SRCommon}";
+$lang->execution->unlinkStoryAB     = "移除{$lang->SRCommon}";
+$lang->execution->batchUnlinkStory  = "批量移除{$lang->SRCommon}";
+$lang->execution->importTask        = '轉入任務';
+$lang->execution->importPlanStories = "按計劃關聯{$lang->SRCommon}";
+$lang->execution->importBug         = '導入Bug';
+$lang->execution->tree              = '樹狀圖';
+$lang->execution->treeTask          = '只看任務';
+$lang->execution->treeStory         = "只看{$lang->SRCommon}";
+$lang->execution->treeOnlyTask      = '樹狀圖只看任務';
+$lang->execution->treeOnlyStory     = "樹狀圖只看{$lang->SRCommon}";
+$lang->execution->storyKanban       = "{$lang->SRCommon}看板";
+$lang->execution->storySort         = "{$lang->SRCommon}排序";
+$lang->execution->importPlanStory   = '創建' . $lang->executionCommon . '成功！\n是否導入計劃關聯的相關' . $lang->SRCommon . '？';
+$lang->execution->iteration         = '版本迭代';
+$lang->execution->iterationInfo     = '迭代%s次';
+$lang->execution->viewAll           = '查看所有';
+$lang->execution->testreport        = '測試報告';
+$lang->execution->taskKanban        = '任務看板';
+$lang->execution->RDKanban          = '研發看板';
 
 /* 分組瀏覽。*/
 $lang->execution->allTasks     = '所有';
@@ -318,12 +303,12 @@ $lang->execution->groups['finishedBy'] = '完成者分組';
 $lang->execution->groups['closedBy']   = '關閉者分組';
 $lang->execution->groups['type']       = '類型分組';
 
-$lang->execution->groupFilter['story']['all']         = '全部';
+$lang->execution->groupFilter['story']['all']         = '所有';
 $lang->execution->groupFilter['story']['linked']      = "已關聯{$lang->SRCommon}的任務";
-$lang->execution->groupFilter['pri']['all']           = '全部';
+$lang->execution->groupFilter['pri']['all']           = '所有';
 $lang->execution->groupFilter['pri']['noset']         = '未設置';
 $lang->execution->groupFilter['assignedTo']['undone'] = '未完成';
-$lang->execution->groupFilter['assignedTo']['all']    = '全部';
+$lang->execution->groupFilter['assignedTo']['all']    = '所有';
 
 $lang->execution->byQuery = '搜索';
 
@@ -342,9 +327,6 @@ $lang->execution->stats                = '可用工時 <strong>%s</strong> 工�
 $lang->execution->taskSummary          = "本頁共 <strong>%s</strong> 個任務，未開始 <strong>%s</strong>，進行中 <strong>%s</strong>，總預計 <strong>%s</strong> 工時，已消耗 <strong>%s</strong> 工時，剩餘 <strong>%s</strong> 工時。";
 $lang->execution->pageSummary          = "本頁共 <strong>%total%</strong> 個任務，未開始 <strong>%wait%</strong>，進行中 <strong>%doing%</strong>，總預計 <strong>%estimate%</strong> 工時，已消耗 <strong>%consumed%</strong> 工時，剩餘 <strong>%left%</strong> 工時。";
 $lang->execution->checkedSummary       = "選中 <strong>%total%</strong> 個任務，未開始 <strong>%wait%</strong>，進行中 <strong>%doing%</strong>，總預計 <strong>%estimate%</strong> 工時，已消耗 <strong>%consumed%</strong> 工時，剩餘 <strong>%left%</strong> 工時。";
-$lang->execution->executionSummary     = "本頁共 <strong>%s</strong> 個{$lang->executionCommon}。";
-$lang->execution->pageExecSummary      = "本頁共 <strong>%total%</strong> 個{$lang->executionCommon}，未開始 <strong>%wait%</strong>，進行中 <strong>%doing%</strong>。";
-$lang->execution->checkedExecSummary   = "選中 <strong>%total%</strong> 個{$lang->executionCommon}，未開始 <strong>%wait%</strong>，進行中 <strong>%doing%</strong>。";
 $lang->execution->memberHoursAB        = "<div>%s有 <strong>%s</strong> 工時</div>";
 $lang->execution->memberHours          = '<div class="table-col"><div class="clearfix segments"><div class="segment"><div class="segment-title">%s可用工時</div><div class="segment-value">%s</div></div></div></div>';
 $lang->execution->countSummary         = '<div class="table-col"><div class="clearfix segments"><div class="segment"><div class="segment-title">總任務</div><div class="segment-value">%s</div></div><div class="segment"><div class="segment-title">進行中</div><div class="segment-value"><span class="label label-dot label-primary"></span> %s</div></div><div class="segment"><div class="segment-title">未開始</div><div class="segment-value"><span class="label label-dot label-primary muted"></span> %s</div></div></div></div>';
@@ -375,8 +357,8 @@ $lang->execution->noMembers            = '暫時沒有團隊成員。';
 $lang->execution->workloadTotal        = "工作量占比累計不應當超過100, 當前產品下的工作量之和為%s";
 // $lang->execution->linkProjectStoryTip = "(關聯{$lang->SRCommon}來源於項目下所關聯的{$lang->SRCommon})";
 $lang->execution->linkAllStoryTip      = "(項目下還未關聯{$lang->SRCommon}，可直接關聯該{$lang->execution->common}所關聯產品的{$lang->SRCommon})";
-if($config->systemMode == 'classic') $lang->execution->copyTeamTitle = "選擇一個{$lang->execution->common}團隊";
-if($config->systemMode == 'new')     $lang->execution->copyTeamTitle = "選擇一個{$lang->project->common}或{$lang->execution->common}團隊";
+if($config->systemMode == 'classic') $lang->execution->copyTeamTitle = "選擇一個{$lang->execution->common}團隊來複制";
+if($config->systemMode == 'new')     $lang->execution->copyTeamTitle = "選擇一個{$lang->project->common}或{$lang->execution->common}團隊來複制";
 
 /* 交互提示。*/
 $lang->execution->confirmDelete               = "您確定刪除{$lang->executionCommon}[%s]嗎？";
@@ -391,10 +373,8 @@ $lang->execution->errorSameProducts           = "{$lang->executionCommon}不能�
 $lang->execution->errorSameBranches           = "{$lang->executionCommon}不能關聯多個相同的分支。";
 $lang->execution->errorBegin                  = "{$lang->executionCommon}的開始時間不能小於所屬項目的開始時間%s。";
 $lang->execution->errorEnd                    = "{$lang->executionCommon}的截止時間不能大於所屬項目的結束時間%s。";
-$lang->execution->errorLetterProject          = "{$lang->executionCommon}的計劃開始時間不能小於所屬項目的計劃開始時間%s。";
-$lang->execution->errorGreaterProject         = "{$lang->executionCommon}的計劃完成時間不能大於所屬項目的計劃完成時間%s。";
-$lang->execution->errorCommonBegin            = $lang->executionCommon . '開始日期應大於等於項目的開始日期：%s。';
-$lang->execution->errorCommonEnd              = $lang->executionCommon . '截止日期應小於等於項目的截止日期：%s。';
+$lang->execution->errorLetterProject          = "階段的計劃開始時間不能小於所屬項目的計劃開始時間%s。";
+$lang->execution->errorGreaterProject         = "階段的計劃完成時間不能大於所屬項目的計劃完成時間%s。";
 $lang->execution->accessDenied                = "您無權訪問該{$lang->executionCommon}！";
 $lang->execution->tips                        = '提示';
 $lang->execution->afterInfo                   = "{$lang->executionCommon}添加成功，您現在可以進行以下操作：";
@@ -415,11 +395,7 @@ $lang->execution->unresolvedBug               = "[%s]個未解決的bug，";
 $lang->execution->projectNotEmpty             = '所屬項目不能為空。';
 $lang->execution->confirmStoryToTask          = '%s' . $lang->SRCommon . '已經在當前' . $lang->execution->common . '中轉了任務，請確認是否重複轉任務。';
 $lang->execution->ge                          = "『%s』應當不小於實際開始時間『%s』。";
-$lang->execution->storyDragError              = "該{$lang->SRCommon}不是激活狀態，請激活後再拖動";
-$lang->execution->countTip                    = '（%s人）';
-$lang->execution->pleaseInput                 = "請輸入";
-$lang->execution->week                        = '周';
-$lang->execution->checkedExecutions           = "共選中%s個{$lang->executionCommon}。";
+$lang->execution->storyDragError              = "該{$lang->SRCommon}還是草稿或已變更狀態，請評審通過後再拖動";
 
 /* 統計。*/
 $lang->execution->charts = new stdclass();
@@ -437,22 +413,6 @@ $lang->execution->charts->burn->graph->reference    = '參考';
 $lang->execution->charts->burn->graph->actuality    = '實際';
 $lang->execution->charts->burn->graph->delay        = '延期';
 
-$lang->execution->charts->cfd = new stdclass();
-$lang->execution->charts->cfd->cfdTip        = "<p>
-1.累積流圖反應各個階段累積處理的工作項數量隨時間的變化趨勢。</br>
-2.橫軸代表日期，縱軸代表工作項數量。</br>
-3.通過此圖可計算出在製品數量，交付速率以及平均前置時間，從而瞭解團隊的交付情況。</p>";
-$lang->execution->charts->cfd->cycleTime     = '平均周期時間';
-$lang->execution->charts->cfd->cycleTimeTip  = '平均每個卡片從開發啟動到完成的周期時間';
-$lang->execution->charts->cfd->throughput    = '吞吐率';
-$lang->execution->charts->cfd->throughputTip = '吞吐率 = 在製品 / 平均周期時間';
-
-$lang->execution->charts->cfd->begin          = '開始日期';
-$lang->execution->charts->cfd->end            = '結束日期';
-$lang->execution->charts->cfd->errorBegin     = '開始日期應小於結束日期';
-$lang->execution->charts->cfd->errorDateRange = '累積流圖只提供3個月內的數據展示';
-$lang->execution->charts->cfd->dateRangeTip   = '累積流圖只展示3個月內的數據';
-
 $lang->execution->placeholder = new stdclass();
 $lang->execution->placeholder->code      = '團隊內部的簡稱';
 $lang->execution->placeholder->totalLeft = "{$lang->executionCommon}開始時的總預計工時";
@@ -469,7 +429,6 @@ $lang->execution->orderList['stage_desc'] = "{$lang->SRCommon}階段倒序";
 
 $lang->execution->kanban        = "看板";
 $lang->execution->kanbanSetting = "看板設置";
-$lang->execution->setKanban     = "設置看板";
 $lang->execution->resetKanban   = "恢復預設";
 $lang->execution->printKanban   = "打印看板";
 $lang->execution->fullScreen    = "看板全屏展示";
@@ -491,7 +450,7 @@ $lang->kanbanSetting->optionList['0'] = '隱藏';
 $lang->kanbanSetting->optionList['1'] = '顯示';
 
 $lang->printKanban = new stdclass();
-$lang->printKanban->common  = '打印看板';
+$lang->printKanban->common  = '看板打印';
 $lang->printKanban->content = '內容';
 $lang->printKanban->print   = '打印';
 
@@ -505,7 +464,7 @@ $lang->execution->typeList['stage']  = '階段';
 $lang->execution->typeList['sprint'] = $lang->executionCommon;
 $lang->execution->typeList['kanban'] = '看板';
 
-$lang->execution->featureBar['task']['all']          = '全部';
+$lang->execution->featureBar['task']['all']          = $lang->execution->allTasks;
 $lang->execution->featureBar['task']['unclosed']     = $lang->execution->unclosed;
 $lang->execution->featureBar['task']['assignedtome'] = $lang->execution->assignedToMe;
 $lang->execution->featureBar['task']['myinvolved']   = $lang->execution->myInvolved;
@@ -513,17 +472,12 @@ $lang->execution->featureBar['task']['assignedbyme'] = $lang->execution->assigne
 $lang->execution->featureBar['task']['needconfirm']  = "{$lang->SRCommon}變更";
 $lang->execution->featureBar['task']['status']       = $lang->execution->statusSelects[''];
 
-$lang->execution->featureBar['all']['all']       = '全部';
+$lang->execution->featureBar['all']['all']       = $lang->execution->all;
 $lang->execution->featureBar['all']['undone']    = $lang->execution->undone;
 $lang->execution->featureBar['all']['wait']      = $lang->execution->statusList['wait'];
 $lang->execution->featureBar['all']['doing']     = $lang->execution->statusList['doing'];
 $lang->execution->featureBar['all']['suspended'] = $lang->execution->statusList['suspended'];
 $lang->execution->featureBar['all']['closed']    = $lang->execution->statusList['closed'];
-
-$lang->execution->featureBar['bug']['all']        = '全部';
-$lang->execution->featureBar['bug']['unresolved'] = '未解決';
-
-$lang->execution->featureBar['build']['all'] = '全部版本';
 
 $lang->execution->myExecutions = '我參與的';
 $lang->execution->doingProject = '進行中的項目';
@@ -540,19 +494,10 @@ $lang->execution->treeLevel['task']  = '全部顯示';
 $lang->execution->treeLevel['story'] = "只看{$lang->SRCommon}";
 
 $lang->execution->action = new stdclass();
-$lang->execution->action->opened               = '$date, 由 <strong>$actor</strong> 創建。$extra' . "\n";
-$lang->execution->action->managed              = '$date, 由 <strong>$actor</strong> 維護。$extra' . "\n";
-$lang->execution->action->edited               = '$date, 由 <strong>$actor</strong> 編輯。$extra' . "\n";
-$lang->execution->action->extra                = '相關產品為 %s。';
-$lang->execution->action->startbychildactivate = '$date, 系統判斷由於子階段激活，將' . $lang->executionCommon . '狀態置為進行中。' . "\n";
-$lang->execution->action->waitbychilddelete    = '$date, 系統判斷由於子階段刪除，將' . $lang->executionCommon . '狀態置為未開始。' . "\n";
-$lang->execution->action->closebychilddelete   = '$date, 系統判斷由於子階段刪除，將' . $lang->executionCommon . '狀態置為已關閉。' . "\n";
-$lang->execution->action->closebychildclose    = '$date, 系統判斷由於子階段關閉，將' . $lang->executionCommon . '狀態置為已關閉。' . "\n";
-
-$lang->execution->startbychildactivate = '激活了';
-$lang->execution->waitbychilddelete    = '停止了';
-$lang->execution->closebychilddelete   = '關閉了';
-$lang->execution->closebychildclose    = '關閉了';
+$lang->execution->action->opened  = '$date, 由 <strong>$actor</strong> 創建。$extra' . "\n";
+$lang->execution->action->managed = '$date, 由 <strong>$actor</strong> 維護。$extra' . "\n";
+$lang->execution->action->edited  = '$date, 由 <strong>$actor</strong> 編輯。$extra' . "\n";
+$lang->execution->action->extra   = '相關產品為 %s。';
 
 $lang->execution->statusColorList = array();
 $lang->execution->statusColorList['wait']      = '#0991FF';
@@ -561,37 +506,11 @@ $lang->execution->statusColorList['suspended'] = '#fdc137';
 $lang->execution->statusColorList['closed']    = '#838A9D';
 
 if(!isset($lang->execution->gantt)) $lang->execution->gantt = new stdclass();
-$lang->execution->gantt->progressColor[0] = '#B7B7B7';
-$lang->execution->gantt->progressColor[1] = '#FF8287';
-$lang->execution->gantt->progressColor[2] = '#FFC73A';
-$lang->execution->gantt->progressColor[3] = '#6BD5F5';
-$lang->execution->gantt->progressColor[4] = '#9DE88A';
-$lang->execution->gantt->progressColor[5] = '#9BA8FF';
-
-$lang->execution->gantt->color[0] = '#E7E7E7';
-$lang->execution->gantt->color[1] = '#FFDADB';
-$lang->execution->gantt->color[2] = '#FCECC1';
-$lang->execution->gantt->color[3] = '#D3F3FD';
-$lang->execution->gantt->color[4] = '#DFF5D9';
-$lang->execution->gantt->color[5] = '#EBDCF9';
-
-$lang->execution->gantt->textColor[0] = '#2D2D2D';
-$lang->execution->gantt->textColor[1] = '#8D0308';
-$lang->execution->gantt->textColor[2] = '#9D4200';
-$lang->execution->gantt->textColor[3] = '#006D8E';
-$lang->execution->gantt->textColor[4] = '#1A8100';
-$lang->execution->gantt->textColor[5] = '#660ABC';
-
-$lang->execution->gantt->stage = new stdclass();
-$lang->execution->gantt->stage->progressColor = '#70B8FE';
-$lang->execution->gantt->stage->color         = '#D2E7FC';
-$lang->execution->gantt->stage->textColor     = '#0050A7';
-
-$lang->execution->gantt->defaultColor         = '#EBDCF9';
-$lang->execution->gantt->defaultProgressColor = '#9BA8FF';
-$lang->execution->gantt->defaultTextColor     = '#660ABC';
-
-$lang->execution->gantt->bar_height = '24';
+$lang->execution->gantt->color[0] = 'bbb';
+$lang->execution->gantt->color[1] = 'ff5d5d';
+$lang->execution->gantt->color[2] = 'ff9800';
+$lang->execution->gantt->color[3] = '16a8f8';
+$lang->execution->gantt->color[4] = '00da88';
 
 $lang->execution->gantt->exportImg  = '導出圖片';
 $lang->execution->gantt->exportPDF  = '導出 PDF';

@@ -68,7 +68,6 @@ if($app->clientDevice == 'mobile' and (strpos($config->version, 'pro') === 0 or 
 if(!empty($_GET['display']) && $_GET['display'] == 'card') $config->default->view = 'xhtml';
 
 $app->parseRequest();
-if(!$app->setParams()) return;
 $common->checkPriv();
 $common->checkIframe();
 $app->loadModule();

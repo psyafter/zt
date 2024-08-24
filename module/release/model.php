@@ -61,8 +61,7 @@ class releaseModel extends model
             ->where('t1.deleted')->eq(0)
             ->beginIF($productID)->andWhere('t1.product')->eq((int)$productID)->fi()
             ->beginIF($branch !== 'all')->andWhere('t1.branch')->eq($branch)->fi()
-            ->beginIF($type != 'all' && $type != 'review')->andWhere('t1.status')->eq($type)->fi()
-            ->beginIF($type == 'review')->andWhere("FIND_IN_SET('{$this->app->user->account}', t1.reviewers)")->fi()
+            ->beginIF($type != 'all')->andWhere('t1.status')->eq($type)->fi()
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll();
@@ -105,22 +104,6 @@ class releaseModel extends model
     }
 
     /**
-     * Get story releases.
-     *
-     * @param  int    $storyID
-     * @access public
-     * @return array
-     */
-    public function getStoryReleases($storyID)
-    {
-        return $this->dao->select('*')->from(TABLE_RELEASE)
-            ->where('deleted')->eq(0)
-            ->andWhere("CONCAT(stories, ',')")->like("%,$storyID,%")
-            ->orderBy('id_desc')
-            ->fetchAll('id');
-    }
-
-    /**
      * Create a release.
      *
      * @param  int    $productID
@@ -144,8 +127,6 @@ class releaseModel extends model
             ->setIF($projectID, 'project', $projectID)
             ->setIF($this->post->build == false, 'build', 0)
             ->setDefault('stories', '')
-            ->setDefault('createdBy',   $this->app->user->account)
-            ->setDefault('createdDate', helper::now())
             ->join('stories', ',')
             ->join('bugs', ',')
             ->join('mailto', ',')
@@ -169,16 +150,14 @@ class releaseModel extends model
             else
             {
                 $build = new stdclass();
-                $build->project     = $projectID;
-                $build->product     = (int)$productID;
-                $build->branch      = (int)$branch;
-                $build->name        = $release->name;
-                $build->date        = $release->date;
-                $build->builder     = $this->app->user->account;
-                $build->desc        = $release->desc;
-                $build->execution   = 0;
-                $build->createdBy   = $this->app->user->account;
-                $build->createdDate = helper::now();
+                $build->project   = $projectID;
+                $build->product   = (int)$productID;
+                $build->branch    = (int)$branch;
+                $build->name      = $release->name;
+                $build->date      = $release->date;
+                $build->builder   = $this->app->user->account;
+                $build->desc      = $release->desc;
+                $build->execution = 0;
 
                 $build = $this->loadModel('file')->processImgURL($build, $this->config->release->editor->create['id']);
                 $this->app->loadLang('build');
@@ -263,14 +242,12 @@ class releaseModel extends model
     {
         /* Init vars. */
         $releaseID  = (int)$releaseID;
-        $oldRelease = $this->getById($releaseID);
+        $oldRelease = $this->dao->select('*')->from(TABLE_RELEASE)->where('id')->eq($releaseID)->fetch();
         $branch     = $this->dao->select('branch')->from(TABLE_BUILD)->where('id')->eq((int)$this->post->build)->fetch('branch');
 
         $release = fixer::input('post')->stripTags($this->config->release->editor->edit['id'], $this->config->allowedTags)
             ->add('id', $releaseID)
             ->add('branch',  (int)$branch)
-            ->setDefault('mailto', '')
-            ->setDefault('deleteFiles', array())
             ->join('mailto', ',')
             ->setIF(!$this->post->marker, 'marker', 0)
             ->cleanInt('product')
@@ -287,7 +264,7 @@ class releaseModel extends model
             $release->project = $buildInfo->project;
         }
 
-        $this->dao->update(TABLE_RELEASE)->data($release, 'deleteFiles')
+        $this->dao->update(TABLE_RELEASE)->data($release)
             ->autoCheck()
             ->batchCheck($this->config->release->edit->requiredFields, 'notempty')
             ->check('name', 'unique', "id != '$releaseID' AND product = '{$release->product}' AND branch = '$branch' AND deleted = '0'")
@@ -296,7 +273,7 @@ class releaseModel extends model
             ->exec();
         if(!dao::isError())
         {
-            $this->file->processFile4Object('release', $oldRelease, $release);
+            $this->file->updateObjectID($this->post->uid, $releaseID, 'release');
             return common::createChanges($oldRelease, $release);
         }
     }
@@ -336,13 +313,10 @@ class releaseModel extends model
             }
             elseif(($notify == 'ET' or $notify == 'PT') and !empty($release->build))
             {
-                $type     = $notify == 'ET' ? 'execution' : 'project';
-                $table    = $notify == 'ET' ? TABLE_BUILD : TABLE_RELEASE;
-                $objectID = $notify == 'ET' ? $release->build : $release->id;
-                $members  = $this->dao->select('t2.account')->from($table)->alias('t1')
-                    ->leftJoin(TABLE_TEAM)->alias('t2')->on("t1.$type=t2.root")
-                    ->where('t1.id')->eq($objectID)
-                    ->andWhere('t2.type')->eq($type)
+                $type    = $notify == 'ET' ? 'execution' : 'project';
+                $members = $this->dao->select('t2.account')->from(TABLE_BUILD)->alias('t1')
+                    ->leftJoin(TABLE_TEAM)->alias('t2')->on('t1.' . $type . '=t2.root')
+                    ->where('t2.type')->eq($type)
                     ->fetchPairs();
 
                 if(empty($members)) continue;
@@ -559,10 +533,6 @@ class releaseModel extends model
         $release = $this->getByID($releaseID);
         $suffix  = empty($release->product) ? '' : ' - ' . $this->loadModel('product')->getById($release->product)->name;
         $subject = 'Release #' . $release->id . ' ' . $release->name . $suffix;
-
-        $stories  = $this->dao->select('*')->from(TABLE_STORY)->where('id')->in($release->stories)->andWhere('deleted')->eq(0)->fetchAll('id');
-        $bugs     = $this->dao->select('*')->from(TABLE_BUG)->where('id')->in($release->bugs)->andWhere('deleted')->eq(0)->fetchAll();
-        $leftBugs = $this->dao->select('*')->from(TABLE_BUG)->where('id')->in($release->leftBugs)->andWhere('deleted')->eq(0)->fetchAll();
 
         /* Get mail content. */
         $modulePath = $this->app->getModulePath($appName = '', 'release');

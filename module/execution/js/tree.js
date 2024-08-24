@@ -185,7 +185,6 @@ $(function()
     $taskTree.on('click', '.tree-link', function(e)
     {
         var $link = $(this);
-        $.zui.store.set('project/tree/parentLi', $link.closest('li').attr('data-id').length > 0 ? $link.closest('li').attr('data-id') : '')
         showItem($link.attr('href'), $link.find('.title').text());
         $taskTree.find('li.selected').removeClass('selected');
         $link.closest('li').addClass('selected');
@@ -206,11 +205,10 @@ $(function()
     }).on('ready', function()
     {
         var lastUrl = $.zui.store.get('project/tree/showItem');
-        var lastLi  = $.zui.store.get('project/tree/parentLi');
         if(lastUrl)
         {
             showItem(lastUrl);
-            $taskTree.find('li[data-id="' + lastLi + '"]').find('.tree-link[href="' + lastUrl + '"]').closest('li').addClass('selected');
+            $taskTree.find('.tree-link[href="' + lastUrl + '"]').closest('li').addClass('selected');
         }
     });
 });

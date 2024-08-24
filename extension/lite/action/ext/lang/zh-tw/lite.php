@@ -101,6 +101,13 @@ $lang->action->search->label['verified']              = $lang->action->label->ve
 $lang->action->search->label['login']                 = $lang->action->label->login;
 $lang->action->search->label['logout']                = $lang->action->label->logout;
 
+$lang->action->label->createchildrenstory   = "創建子目標";
+$lang->action->label->linkchildstory        = "關聯子目標";
+$lang->action->label->unlinkchildrenstory   = "取消關聯子目標";
+$lang->action->label->linkparentstory       = "關聯到父目標";
+$lang->action->label->unlinkparentstory     = "從父目標取消關聯";
+$lang->action->label->deletechildrenstory   = "刪除子目標";
+
 $lang->action->desc->createchildrenstory = '$date, 由 <strong>$actor</strong> 創建子目標 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->linkchildstory      = '$date, 由 <strong>$actor</strong> 關聯子目標 <strong>$extra</strong>。' . "\n";
 $lang->action->desc->unlinkchildrenstory = '$date, 由 <strong>$actor</strong> 移除子目標 <strong>$extra</strong>。' . "\n";

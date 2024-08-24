@@ -4,10 +4,7 @@ $(function()
     {
         if(executions.length == 0)
         {
-            var message = noDevStage;
-            if(allExecutions.length == 0) message = createExecution;
-            alert(message);
-
+            alert(createExecution);
             var link = createLink('execution', 'create', 'projectID=' + projectID);
 
             window.parent.$.apps.open(link, 'execution');

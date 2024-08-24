@@ -1,6 +1,8 @@
 <?php if(strpos($_SERVER['HTTP_USER_AGENT'], 'xuanxuan') != false): ?>
 <style>
-#appsBar, #apps {left: 0!important;}
+#menu {display: none!important;}
+#appsBar,
+#apps {left: 0!important;}
 </style>
 <script>
 $('html').addClass('xxc-embed');

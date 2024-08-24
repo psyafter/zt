@@ -12,11 +12,10 @@
             <?php endif;?>
           </div>
           <div class="info">
-            <?php $version = $version ? $version : $doc->version;?>
-            <div class="version" data-version='<?php echo $version;?>'>
+            <div class="version">
               <div class='btn-group'>
                 <a href='javascript:;' class='btn btn-link btn-limit text-ellipsis' data-toggle='dropdown' style="max-width: 120px;">
-                  #<?php echo $version;?>
+                  #<?php echo $version ? $version : $doc->version;?>
                   <span class="caret"></span>
                 </a>
                 <ul class='dropdown-menu doc-version-menu' style='max-height:240px; max-width: 300px; overflow-y:auto'>
@@ -103,7 +102,7 @@
             }
             elseif($doc->contentType == 'markdown')
             {
-                echo "<textarea id='markdownContent'></textarea>";
+                echo "<textarea id='markdownContent' /></textarea>";
             }
             else
             {

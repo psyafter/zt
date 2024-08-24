@@ -10,8 +10,6 @@ maxOnlineUser=$maxOnlineUser
 logPath=$logPath
 certPath=$certPath
 debug=$debug
-thumbnail=$thumbnail
-syncConfig=$syncConfig
 [backend]
 $hostx.php
 $key

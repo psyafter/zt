@@ -1,23 +1,22 @@
 <?php
-class imChat extends model
+class chat extends model
 {
     /**
      * Get a chat by gid.
      *
      * @param  string $gid
      * @param  bool   $getMembers
-     * @param  bool   $format          format the chat or return its data as is.
-     * @param  bool   $getLastMessage
+     * @param  bool   $format   format the chat or return its data as is.
      * @access public
      * @return object
      */
-    public function getByGid($gid = '', $getMembers = false, $format = true, $getLastMessage = false)
+    public function getByGid($gid = '', $getMembers = false, $format = true)
     {
         $chat = $this->dao->select('*')->from(TABLE_IM_CHAT)->where('gid')->eq($gid)->fetch();
 
         if($chat && $format)
         {
-            $chat = $this->format($chat, $getLastMessage);
+            $chat = $this->format($chat);
             if($getMembers) $chat->members = $this->getMembers($gid);
         }
 
@@ -82,33 +81,25 @@ class imChat extends model
     public function getListByUserID($userID = 0)
     {
         $limit = isset($this->config->dismissedGroupLife) ? $this->config->dismissedGroupLife : 90;
-        $chats = $this->dao->select('chat.*, cu.star, cu.hide, cu.mute, cu.freeze, cu.category, cu.lastReadMessage, cu.lastReadMessageIndex')
+        $chats = $this->dao->select('chat.*, cu.star, cu.hide, cu.mute, cu.freeze, cu.category, cu.lastReadMessage')
             ->from(TABLE_IM_CHAT)->alias('chat')
             ->leftJoin(TABLE_IM_CHATUSER)->alias('cu')->on('chat.gid=cu.cgid')
             ->where('cu.user')->eq($userID)
             ->andWhere('cu.quit')->eq('0000-00-00 00:00:00')
             ->andWhere('chat.dismissDate', true)->eq('0000-00-00 00:00:00')
-            ->orWhere('chat.dismissDate')->gt(date(DT_DATETIME1, strtotime("-{$limit} day")))
+            ->orWhere('chat.dismissDate')->gt(date(DT_DATETIME1, strtotime("-{$limit} month")))
             ->markRight(1)
             ->fetchAll();
 
-        if(!isset($this->config->xuanxuan->disableSystemGroupChat) || $this->config->xuanxuan->disableSystemGroupChat == 'off')
+        if(!isset($this->config->disableSystemGroupChat) || !$this->config->disableSystemGroupChat)
         {
-            $this->loadModel('setting');
-            $account = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
-            $lastReadMessage = $this->setting->getItem("owner=$account&module=chat&section=system&key=lastreadid");
-            if(empty($lastReadMessage)) $lastReadMessage = 0;
-            $lastReadMessageIndex = $this->setting->getItem("owner=$account&module=chat&section=system&key=lastreadindex");
-            if(empty($lastReadMessageIndex)) $lastReadMessageIndex = 0;
-            $systemChat = $this->dao->select("*, 1 as star, 0 as hide, 0 as mute, 0 as freeze, 0 as category, $lastReadMessage as lastReadMessage, $lastReadMessageIndex as lastReadMessageIndex")
+            $systemChat = $this->dao->select('*, 0 as star, 0 as hide, 0 as mute, 0 as freeze, 0 as category, 0 as lastReadMessage')
                 ->from(TABLE_IM_CHAT)
                 ->where('type')->eq('system')
                 ->fetch();
-            if($systemChat->lastReadMessage == 0) $systemChat->lastReadMessage = $systemChat->lastMessage;
-            if($systemChat->lastReadMessageIndex == 0) $systemChat->lastReadMessageIndex = $systemChat->lastMessageIndex;
             $chats[] = $systemChat;
         }
-        return $this->format($chats, true);
+        return $this->format($chats);
     }
 
     /**
@@ -126,29 +117,6 @@ class imChat extends model
         if(!in_array($userID, $chat->members)) return false;
 
         return $chat;
-    }
-
-    /**
-     * Get chats owned by given user.
-     *
-     * @param  int    $userID
-     * @param  bool   $format
-     * @access public
-     * @return array
-     */
-    public function getOwnedListForUser($userID, $format = true)
-    {
-        $account = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
-        $chats = $this->dao->select('*')->from(TABLE_IM_CHAT)
-            ->where('type')->eq('group')
-            ->andWhere('dismissDate')->eq('0000-00-00 00:00:00')
-            ->andWhere('mergedDate')->eq('0000-00-00 00:00:00')
-            ->andWhere('ownedBy', true)->eq($account)
-            ->orWhere('ownedBy')->eq('')
-            ->andWhere('createdBy')->eq($account)
-            ->markRight(1)
-            ->fetchAll();
-        return $format ? $this->format($chats) : $chats;
     }
 
 	/**
@@ -250,11 +218,7 @@ class imChat extends model
 
         if($chat->createdBy === 'system')
         {
-            $account = $this->loadModel('user')->getById($userID);
-$admins = $this->dao->select('admins')->from(TABLE_COMPANY)->where('id')->eq($this->app->company->id)->fetch('admins');
-$adminArray = explode(',', $admins);
-return in_array($account, $adminArray);
-
+            $sysAdmins = $this->dao->select('id')->from(TABLE_USER)->where('admin')->eq('super')->fetchPairs();
             return in_array($userID, $sysAdmins);
         }
 
@@ -318,7 +282,6 @@ return in_array($account, $adminArray);
         $chat->type        = $type;
         $chat->subject     = $subjectID;
         $chat->createdBy   = !empty($user->account) ? $user->account : '';
-        $chat->ownedBy     = $chat->createdBy;
         $chat->createdDate = helper::now();
 
         if($public) $chat->public = 1;
@@ -341,7 +304,7 @@ return in_array($account, $adminArray);
      */
     public function update($chat = null, $userID = 0)
     {
-        if(isset($chat))
+        if($chat)
         {
             $user = $this->loadModel('im')->user->getByID($userID);
             $chat->editedBy   = !empty($user->account) ? $user->account : '';
@@ -349,18 +312,6 @@ return in_array($account, $adminArray);
             if(is_array($chat->admins))         $chat->admins = implode(',', $chat->admins);
             if(is_array($chat->pinnedMessages)) $chat->pinnedMessages = implode(',', $chat->pinnedMessages);
             if(is_array($chat->mergedChats))    $chat->mergedChats = implode(',', $chat->mergedChats);
-
-            if(is_bool($chat->public))
-            {
-                $chat->public = $chat->public ? '1' : '0';
-            }
-            if(is_bool($chat->adminInvite))
-            {
-                $chat->adminInvite = $chat->adminInvite ? '1' : '0';
-            }
-
-            foreach(array('createdDate', 'lastMessageInfo', 'avatar') as $dropProp) unset($chat->$dropProp);
-
             $this->dao->update(TABLE_IM_CHAT)->data($chat)->where('gid')->eq($chat->gid)->batchCheck($this->config->im->require->edit, 'notempty')->exec();
         }
 
@@ -421,7 +372,6 @@ return in_array($account, $adminArray);
     {
         $this->touch($gid);
 
-        $lastMessageInfo = $this->dao->select('lastMessage, lastMessageIndex')->from(TABLE_IM_CHAT)->where('gid')->eq($gid)->fetch();
         $data = $this->dao->select('*')->from(TABLE_IM_CHATUSER)->where('cgid')->eq($gid)->andWhere('user')->eq($userID)->fetch();
         if($data)
         {
@@ -432,8 +382,6 @@ return in_array($account, $adminArray);
             $data = new stdclass();
             $data->join = helper::now();
             $data->quit = '0000-00-00 00:00:00';
-            $data->lastReadMessage      = $lastMessageInfo->lastMessage;
-            $data->lastReadMessageIndex = $lastMessageInfo->lastMessageIndex;
             $this->dao->update(TABLE_IM_CHATUSER)->data($data)->where('cgid')->eq($gid)->andWhere('user')->eq($userID)->exec();
 
             return !dao::isError();
@@ -444,8 +392,6 @@ return in_array($account, $adminArray);
         $data->cgid = $gid;
         $data->user = $userID;
         $data->join = helper::now();
-        $data->lastReadMessage      = $lastMessageInfo->lastMessage;
-        $data->lastReadMessageIndex = $lastMessageInfo->lastMessageIndex;
         $this->dao->insert(TABLE_IM_CHATUSER)->data($data)->exec();
 
         /* Update order field. */
@@ -480,7 +426,7 @@ return in_array($account, $adminArray);
      * @access public
      * @return object | array
      */
-    public function format($chats, $getLastMessage = false)
+    public function format($chats)
     {
         $isObject = false;
         if(is_object($chats))
@@ -505,17 +451,6 @@ return in_array($account, $adminArray);
             $chat->admins          = array_values(array_map('intval', array_filter(explode(',', $chat->admins))));
             $chat->pinnedMessages  = array_values(array_map('intval', array_filter(explode(',', $chat->pinnedMessages))));
             $chat->mergedChats     = array_values(array_filter(explode(',', $chat->mergedChats)));
-            $chat->avatar          = json_decode($chat->avatar);
-
-            if(isset($chat->avatar) && $chat->avatar->type === 'image')
-            {
-                $chat->avatar->data->imgUrl = $this->loadModel('im')->getServer() . $chat->avatar->data->imgUrl;
-            }
-
-            if($getLastMessage && isset($chat->lastMessage)) $chat->lastMessageInfo = current($this->loadModel('im')->messageGetList($chat->gid, array($chat->lastMessage)));
-            if(empty($chat->lastMessageInfo))  $chat->lastMessageInfo = null;
-            if(!empty($chat->lastMessageInfo)) $chat->lastMessageInfo->senderId = intval($chat->lastMessageInfo->user);
-            if(isset($chat->lastReadMessageIndex)) $chat->lastReadMessageIndex = (int)$chat->lastReadMessageIndex;
 
             if($chat->type == 'one2one' && $chat->gid != "$userID&$userID") $chat->name = '';
 
@@ -525,7 +460,6 @@ return in_array($account, $adminArray);
             if(isset($chat->public))          $chat->public = (bool)$chat->public;
             if(isset($chat->freeze))          $chat->freeze = (bool)$chat->freeze;
             if(isset($chat->lastReadMessage)) $chat->lastReadMessage = (int)$chat->lastReadMessage;
-            if(isset($chat->adminInvite))     $chat->adminInvite = (bool)$chat->adminInvite;
         }
 
         if($isObject) return reset($chats);
@@ -755,143 +689,6 @@ return in_array($account, $adminArray);
     }
 
     /**
-     * Get detailed member list of chat.
-     *
-     * @param  string $chat           chat gid
-     * @param  object $pager
-     * @param  string $orderBy        order by owner, admin, join date by default
-     * @param  array  $memberIDs      only get details for members in memberIDs if provided
-     * @access public
-     * @return array
-     */
-    public function getMemberDetails($cgid, $pager = null, $orderBy = '', $memberIDs = array())
-    {
-        $chat = $this->getByGid($cgid);
-        if(!$chat || $chat->type == 'system') return array();
-
-        /* Get join and last seen date of members, with some values which will be filled in later. */
-        $memberList = $this->dao->select('user as id, account, tcu.`join`, last as lastSeen, "0000-00-00 00:00:00" as lastPost, 0 as isOwner, 0 as isAdmin')->from(TABLE_IM_CHATUSER)->alias('tcu')
-            ->leftJoin(TABLE_USER)->alias('tu')->on('tcu.user = tu.id')
-            ->where('tcu.quit')->eq('0000-00-00 00:00:00')
-            ->andWhere('tu.deleted')->eq('0')
-            ->andWhere('cgid')->eq($cgid)
-            ->fetchAll('id');
-        if(empty($memberList)) return array();
-
-        /* Filter members. */
-        if(!empty($memberIDs))
-        {
-            $memberList = array_filter($memberList, function($member) use ($memberIDs)
-            {
-                return in_array($member->id, $memberIDs);
-            });
-        }
-
-        /* Get date of members' last message in chat. */
-        $members = array_keys($memberList);
-        $lastMessageDates = $this->dao->select('user, MAX(date)')->from(TABLE_IM_MESSAGE)
-            ->where('cgid')->eq($cgid)
-            ->andWhere('user')->in($members)
-            ->groupBy('user')
-            ->fetchAll();
-        foreach($lastMessageDates as $messageDate) $memberList[$messageDate->user]->lastPost = $messageDate->{'MAX(date)'};
-
-        /* Set isAdmin for members. */
-        foreach($chat->admins as $admin)
-        {
-            if(isset($memberList[$admin])) $memberList[$admin]->isAdmin = 1;
-        }
-
-        /* Set isOwner. */
-        $ownerAccount = !empty($chat->ownedBy) ? $chat->ownedBy : $chat->createdBy;
-        $ownerIndex = false; // For reorder later.
-        foreach($memberList as $index => $member)
-        {
-            if($member->account == $ownerAccount)
-            {
-                $memberList[$index]->isOwner = 1;
-                $ownerIndex = $index;
-                break;
-            }
-        }
-
-        /* Format data. */
-        $memberList = array_map(function($member)
-        {
-            $member->id       = (int)$member->id;
-            $member->isOwner  = (int)$member->isOwner;
-            $member->isAdmin  = (int)$member->isAdmin;
-            $member->join     = $member->join == '0000-00-00 00:00:00' ? 0 : strtotime($member->join);
-            $member->lastSeen = $member->lastSeen == '0000-00-00 00:00:00' ? 0 : strtotime($member->lastSeen);
-            $member->lastPost = $member->lastPost == '0000-00-00 00:00:00' ? 0 : strtotime($member->lastPost);
-            return $member;
-        }, $memberList);
-
-        /* Reorder data. */
-        $orderedMemberList = array();
-        if(empty($orderBy) || stripos($orderBy, 'member') === 0) // Default order: owner, admin, join date. Might reverse.
-        {
-            if($ownerIndex !== false) $orderedMemberList[] = $memberList[$ownerIndex];
-            if(!empty($chat->admins))
-            {
-                $adminList = array_filter($memberList, function($member)
-                {
-                    return $member->isAdmin && !$member->isOwner;
-                });
-                usort($adminList, function($a, $b)
-                {
-                    return ($a->join < $b->join) ? -1 : 1;
-                });
-                $orderedMemberList = array_merge($orderedMemberList, $adminList);
-            }
-            $normalMemberList = array_filter($memberList, function($member)
-            {
-                return !$member->isOwner && !$member->isAdmin;
-            });
-            usort($normalMemberList, function($a, $b)
-            {
-                return ($a->join < $b->join) ? -1 : 1;
-            });
-            $orderedMemberList = array_merge($orderedMemberList, $normalMemberList);
-            if(stripos($orderBy, 'desc') !== false) $orderedMemberList = array_reverse($orderedMemberList);
-        }
-        else
-        {
-            $orderByArgs = explode('_', $orderBy);
-            $property  = $orderByArgs[0];
-            $direction = $orderByArgs[1] == 'asc' ? 1 : -1;
-            usort($memberList, function($a, $b) use ($property, $direction)
-            {
-                return ($a->$property < $b->$property) ? (-1 * $direction) : $direction;
-            });
-            $orderedMemberList = $memberList;
-        }
-
-        /* Slice data with pager. */
-        $recTotal = count($memberList);
-        if($pager->recPerPage * ($pager->pageID - 1) >= $recTotal)
-        {
-            $pager->pageID = ceil($recTotal / $pager->recPerPage);
-        }
-        $startIndex = $pager->recPerPage * ($pager->pageID - 1);
-        if($startIndex >= $recTotal || $startIndex < 0) return array();
-
-        $memberSlice = array_slice($orderedMemberList , $startIndex, $pager->recPerPage);
-
-        /* Assemble data. */
-        $details = new stdclass();
-        $details->data  = $memberSlice;
-        $details->pager = new stdclass();
-        $details->pager->gid        = $cgid;
-        $details->pager->recTotal   = $recTotal;
-        $details->pager->recPerPage = $pager->recPerPage;
-        $details->pager->pageID     = $pager->pageID;
-        $details->pager->data       = array('orderBy' => $orderBy);
-
-        return $details;
-    }
-
-    /**
      * Get count of messages for a chat.
      *
      * @param  string $gid
@@ -939,56 +736,12 @@ return in_array($account, $adminArray);
      */
     public function setLastReadMessage($gid, $lastReadMessageID, $userID)
     {
-        $messageIndex = $this->dao->select('`index`')->from(TABLE_IM_MESSAGE)
-            ->where('id')->eq($lastReadMessageID)
-            ->andWhere('cgid')->eq($gid)
-            ->fetch('index');
         $this->dao->update(TABLE_IM_CHATUSER)
             ->set('lastReadMessage')->eq($lastReadMessageID)
-            ->set('lastReadMessageIndex')->eq($messageIndex)
             ->where('cgid')->eq($gid)
             ->andWhere('lastReadMessage')->lt($lastReadMessageID)
             ->andWhere('user')->eq($userID)
             ->exec();
-
-        return !dao::isError();
-    }
-
-    /**
-     * Set last read message for a chat.
-     *
-     * @param  string   $gid
-     * @param  int      $lastReadMessageIndex
-     * @param  int      $userID
-     * @access public
-     * @return bool
-     */
-    public function setLastReadMessageByIndex($gid, $lastReadMessageIndex, $userID)
-    {
-        $messageID = $this->dao->select('id')->from(TABLE_IM_MESSAGE)
-            ->where('`index`')->eq($lastReadMessageIndex)
-            ->andWhere('cgid')->eq($gid)
-            ->fetch('id');
-        $affected = $this->dao->update(TABLE_IM_CHATUSER)
-            ->set('lastReadMessageIndex')->eq($lastReadMessageIndex)
-            ->set('lastReadMessage')->eq($messageID)
-            ->where('cgid')->eq($gid)
-            ->andWhere('user')->eq($userID)
-            ->exec();
-
-        if($affected === 0)
-        {
-            $systemChatGidList = $this->dao->select('gid')->from(TABLE_IM_CHAT)
-                ->where('type')->eq('system')
-                ->fetchPairs('gid');
-            if(in_array($gid, array_keys($systemChatGidList)))
-            {
-                $this->loadModel('setting');
-                $account = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
-                $this->setting->setItem("$account.chat.system.lastreadid", $messageID);
-                $this->setting->setItem("$account.chat.system.lastreadindex", $lastReadMessageIndex);
-            }
-        }
 
         return !dao::isError();
     }
@@ -999,19 +752,15 @@ return in_array($account, $adminArray);
      * @param  object       $chat
      * @param  int          $ownerUserID  new owner id
      * @param  int          $userID
-     * @param  bool         $byAdmin      true if is request by an admin, will bypass owner checking.
      * @access public
      * @return bool|object  returns chat on success, returns false on fail
      */
-    public function changeOwnership($chat, $ownerUserID, $userID, $byAdmin = false)
+    public function changeOwnership($chat, $ownerUserID, $userID)
     {
-        if(!$byAdmin)
-        {
-            if($ownerUserID == $userID) return false;
+        if($ownerUserID == $userID) return false;
 
-            $currentUserAccount = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
-            if(empty($currentUserAccount) || (!empty($chat->ownedBy) && $chat->ownedBy != $currentUserAccount) || (empty($chat->ownedBy) && $chat->createdBy != $currentUserAccount)) return false;
-        }
+        $currentUserAccount = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
+        if(empty($currentUserAccount) || (!empty($chat->ownedBy) && $chat->ownedBy != $currentUserAccount) || (empty($chat->ownedBy) && $chat->createdBy != $currentUserAccount)) return false;
 
         $ownerAccount = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($ownerUserID)->fetch('account');
         if(empty($ownerAccount)) return false;
@@ -1036,12 +785,8 @@ return in_array($account, $adminArray);
     public function merge($chat, $targetChat, $userID)
     {
         /* Check if user is owner of both chats, and chat has not been merged. */
-        $accountAdmin = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch();
-$admins = $this->dao->select('admins')->from(TABLE_COMPANY)->where('id')->eq($this->app->company->id)->fetch('admins');
-$adminArray = explode(',', $admins);
-$accountAdmin->admin = in_array($accountAdmin->account, $adminArray) ? 'super' : '';
-
-        if((empty($accountAdmin) || (!empty($chat->ownedBy) && $chat->ownedBy != $accountAdmin->account) || (!empty($targetChat->ownedBy) && $targetChat->ownedBy != $accountAdmin->account) || (empty($chat->ownedBy) && $chat->createdBy != $accountAdmin->account) || (empty($targetChat->ownedBy) && $targetChat->createdBy != $accountAdmin->account)) && $accountAdmin->admin != 'super') return false;
+        $account = $this->dao->select('account')->from(TABLE_USER)->where('id')->eq($userID)->fetch('account');
+        if(empty($account) || (!empty($chat->ownedBy) && $chat->ownedBy != $account) || (!empty($targetChat->ownedBy) && $targetChat->ownedBy != $account) || (empty($chat->ownedBy) && $chat->createdBy != $account) || (empty($targetChat->ownedBy) && $targetChat->createdBy != $account)) return false;
         if($chat->mergedDate != '0000-00-00 00:00:00') return false;
 
         /* Mark chat as merged. */
@@ -1068,213 +813,5 @@ $accountAdmin->admin = in_array($accountAdmin->account, $adminArray) ? 'super' :
         }
 
         return dao::isError() ? false : $this->getByGid($targetChat->gid, true);
-    }
-
-    /**
-     * Get next owner candidate for chat. (Seniormost user other than current owner)
-     *
-     * @param  object     $chat
-     * @param  int        $userID     current owner user id
-     * @param  bool       $asAccount  will return id if set to false
-     * @access public
-     * @return int|string
-     */
-    public function getNextOwnerCandidate($chat, $userID, $asAccount = true)
-    {
-        if(!empty($chat->admins))
-        {
-            $seniormostAdmin = $this->dao->select($asAccount ? 'account' : 'user')->from(TABLE_IM_CHATUSER)->alias('tcu')
-                ->leftJoin(TABLE_USER)->alias('tu')->on('tcu.user=tu.id')
-                ->where('tcu.cgid')->eq($chat->gid)
-                ->andWhere('tcu.quit')->eq('0000-00-00 00:00:00')
-                ->andWhere('tcu.user')->in($chat->admins)
-                ->andWhere('tcu.user')->ne($userID)
-                ->andWhere('tu.deleted')->eq('0')
-                ->orderBy('tcu.join_asc')
-                ->limit(1)
-                ->fetch($asAccount ? 'account' : 'user');
-            if(!empty($seniormostAdmin)) return $seniormostAdmin;
-        }
-        return $this->dao->select($asAccount ? 'account' : 'user')->from(TABLE_IM_CHATUSER)->alias('tcu')
-            ->leftJoin(TABLE_USER)->alias('tu')->on('tcu.user=tu.id')
-            ->where('tcu.cgid')->eq($chat->gid)
-            ->andWhere('tcu.quit')->eq('0000-00-00 00:00:00')
-            ->andWhere('tcu.user')->ne($userID)
-            ->andWhere('tu.deleted')->eq('0')
-            ->orderBy('tcu.join_asc')
-            ->limit(1)
-            ->fetch($asAccount ? 'account' : 'user');
-    }
-
-    /**
-     * Transfer all chats from user to next candidate if possible.
-     *
-     * @param  int    $userID
-     * @access public
-     * @return bool
-     */
-    public function transferAllFromUser($userID)
-    {
-        $userChats = $this->getOwnedListForUser($userID);
-
-        $chatOwnerPairs = array();
-        foreach($userChats as $chat) $chatOwnerPairs[$chat->gid] = $this->getNextOwnerCandidate($chat, $userID);
-        $chatOwnerPairs = array_filter($chatOwnerPairs);
-        if(empty($chatOwnerPairs)) return true;
-
-        $queryData = array();
-        foreach($chatOwnerPairs as $cgid => $owner) $queryData[] = "WHEN '$cgid' THEN '$owner'";
-        $cgids = array_keys($chatOwnerPairs);
-
-        $query = "UPDATE " . TABLE_IM_CHAT . " SET `ownedBy` = (CASE `gid` " . join(' ', $queryData) . " END) WHERE `gid` IN('" . join('\',\'', $cgids) . "');";
-        $this->dao->query($query);
-
-        return !!dao::isError();
-    }
-
-    /**
-     * Prune group data of the expired, including group information, group messages, group files, etc.
-     *
-     * @access public
-     * @return bool
-     */
-    public function pruneExpired()
-    {
-        $groupLife = isset($this->config->dismissedGroupLife) ? $this->config->dismissedGroupLife : 90;
-        $expiredGroups = $this->dao->select('gid')
-            ->from(TABLE_IM_CHAT)
-            ->where('type')->eq('group')
-            ->andWhere('dismissDate')->ne('0000-00-00 00:00:00')
-            ->andWhere('dismissDate')->lt(date(DT_DATETIME1, strtotime("-{$groupLife} day")))
-            ->fetchPairs();
-        $expiredGroups = array_keys($expiredGroups);
-        if(empty($expiredGroups)) return true;
-
-        $messageTables = $this->loadModel('im')->message->getAllTables();
-        foreach($messageTables as $table) $this->dao->delete()->from($table->tableName)->where('cgid')->in($expiredGroups)->exec();
-
-        $this->dao->delete()->from(TABLE_IM_CHAT_MESSAGE_INDEX)->where('gid')->in($expiredGroups)->exec();
-        $this->dao->delete()->from(TABLE_IM_CHAT)->where('gid')->in($expiredGroups)->exec();
-        $this->dao->delete()->from(TABLE_IM_CHATUSER)->where('cgid')->in($expiredGroups)->exec();
-        $this->dao->delete()->from(TABLE_IM_CONFERENCE)->where('cgid')->in($expiredGroups)->exec();
-        $this->dao->delete()->from(TABLE_IM_CONFERENCEACTION)->where('rid')->in($expiredGroups)->exec();
-
-        return !dao::isError();
-    }
-
-    /**
-     * Search chats with chat name or groupOwner's realname/account/pinyin.
-     *
-     * @param string    $searchField
-     * @param object    $pager
-     * @param string    $orderBy
-     * @access public
-     * @return array
-     */
-    public function search($searchField, $pager, $orderBy)
-    {
-        $accounts = array();
-        if(isset($searchField) && !empty($searchField))
-        {
-            $accounts = $this->dao->select('account')->from(TABLE_USER)
-                ->beginIF($searchField)
-                ->where('account')->like("%$searchField%")
-                ->andWhere('deleted')->eq(0)
-                ->orWhere('pinyin')->like("%$searchField%")
-                ->orWhere('realname')->like("%$searchField%")
-                ->fi()
-                ->fetchPairs('account');
-            $accounts = array_keys($accounts);
-        }
-
-        $chatMemberCounts = $this->dao->select('tc.gid, COUNT(*) AS memberCount')
-            ->from(TABLE_IM_CHATUSER)->alias('tcu')
-            ->leftJoin(TABLE_IM_CHAT)->alias('tc')
-            ->on('tcu.cgid=tc.gid')
-            ->where('tc.type')->eq('group')
-            ->andWhere('tc.dismissDate')->eq('0000-00-00 00:00:00')
-            ->andWhere('tc.mergedDate')->eq('0000-00-00 00:00:00')
-            ->beginIF($searchField)->andWhere('tc.name', true)->like("%$searchField%")
-            ->orWhere('tc.ownedBy')->in($accounts)->markRight(1)
-            ->fi()
-            ->groupBy('tcu.cgid')
-            ->fetchPairs();
-        $pagerGids = array();
-        if($orderBy == 'userCount_asc' || $orderBy == 'userCount_desc')
-        {
-            if($orderBy == 'userCount_asc')
-            {
-                asort($chatMemberCounts);
-            }
-            else
-            {
-                arsort($chatMemberCounts);
-            }
-            $pagerGids = array_slice(array_keys($chatMemberCounts), ($pager->pageID-1)*$pager->recPerPage, $pager->recPerPage);
-        }
-
-        $chats = $this->dao->select('tc.gid, tc.id, tc.name, tc.public, tu.id as groupOwner, tc.createdDate, tc.lastActiveTime')
-            ->from(TABLE_IM_CHAT)->alias('tc')
-            ->leftJoin(TABLE_USER)->alias('tu')
-            ->on('tc.ownedBy=tu.account')
-            ->where('tc.type')->eq('group')
-            ->andWhere('dismissDate')->eq('0000-00-00 00:00:00')
-            ->andWhere('mergedDate')->eq('0000-00-00 00:00:00')
-            ->beginIF($searchField)->andWhere('tc.name', true)->like("%$searchField%")
-            ->orWhere('tc.ownedBy')->in($accounts)->markRight(1)
-            ->fi()
-            ->beginIF(!empty($pagerGids))->andWhere('tc.gid')->in($pagerGids)
-            ->fi()
-            ->beginIF(empty($pagerGids))
-            ->orderBy($orderBy)
-            ->fi()
-            ->beginIF($pager)->page($pager, 'tc.gid')->fi()
-            ->fetchAll();
-        foreach($chats as $chat) $chat->userCount = isset($chatMemberCounts[$chat->gid]) ? $chatMemberCounts[$chat->gid] : 0;
-
-        $sortedChats = array();
-        if($orderBy == 'userCount_asc' || $orderBy == 'userCount_desc')
-        {
-            foreach($pagerGids as $key => $gid)
-            {
-                foreach($chats as $key => $chat)
-                {
-                    if($chat->gid == $gid)
-                    {
-                        $sortedChats[] = $chat;
-                        break;
-                    }
-                }
-            }
-        }
-        $chats = $sortedChats ? $sortedChats : $chats;
-
-        /* Format data. */
-        $chats = array_map(function($chat)
-        {
-            $chat->id             = (int)$chat->id;
-            $chat->groupOwner     = (int)$chat->groupOwner;
-            $chat->userCount      = (int)$chat->userCount;
-            $chat->createdDate    = $chat->createdDate    == '0000-00-00 00:00:00' ? 0 : strtotime($chat->createdDate);
-            $chat->lastActiveTime = $chat->lastActiveTime == '0000-00-00 00:00:00' ? 0 : strtotime($chat->lastActiveTime);
-            $chat->public = empty($chat->public) ? 0 : 1;
-            return $chat;
-        }, $chats);
-
-        return dao::isError() ? array() : $chats;
-    }
-
-    /**
-     * Update chat avatar.
-     *
-     * @param string    $gid
-     * @param object    $avatarData
-     * @access public
-     * @return object
-     */
-    public function updateAvatar($gid, $avatarData)
-    {
-        $this->dao->update(TABLE_IM_CHAT)->set('avatar')->eq($avatarData)->where('gid')->eq($gid)->exec();
-        return $this->getByGid($gid, true);
     }
 }

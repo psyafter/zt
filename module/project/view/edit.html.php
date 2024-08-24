@@ -14,7 +14,6 @@
 <?php include '../../common/view/kindeditor.html.php';?>
 <?php js::import($jsRoot . 'misc/date.js');?>
 <?php js::set('weekend', $config->execution->weekend);?>
-<?php js::set('LONG_TIME', LONG_TIME);?>
 <?php js::set('errorSameProducts', $lang->project->errorSameProducts);?>
 <?php js::set('errorSameBranches', $lang->project->errorSameBranches);?>
 <?php js::set('errorSamePlans', $lang->project->errorSamePlans);?>
@@ -29,14 +28,6 @@
 <?php js::set('multiBranchProducts', $multiBranchProducts);?>
 <?php $aclList = $project->parent ? $lang->project->subAclList : $lang->project->aclList;?>
 <?php $requiredFields = $config->project->edit->requiredFields;?>
-<?php js::set('requiredFields', $requiredFields);?>
-<?php js::set('budget', $project->budget);?>
-<?php js::set('budgetOverrun', $lang->project->budgetOverrun);?>
-<?php js::set('currencySymbol', $lang->project->currencySymbol)?>
-<?php js::set('parentBudget', $lang->project->parentBudget);?>
-<?php js::set('beginLetterParent', $lang->project->beginLetterParent);?>
-<?php js::set('endGreaterParent', $lang->project->endGreaterParent);?>
-<?php js::set('ignore', $lang->project->ignore);?>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
     <div class='main-header'>
@@ -46,12 +37,12 @@
       <table class='table table-form'>
         <?php if($project->model != 'kanban'):?>
         <tr>
-          <th class='w-130px'><?php echo $lang->project->model;?></th>
+          <th><?php echo $lang->project->model;?></th>
           <td><?php echo html::select('model', $lang->project->modelList, $model, "class='form-control chosen' required $disableModel");?></td>
         </tr>
         <?php endif;?>
         <tr>
-          <th class='w-120px'><?php echo $lang->project->parent;?></th>
+          <th class='w-120px'><?php echo $lang->program->parent;?></th>
           <?php
           $attr = '';
           if(!isset($programList[$project->parent]))
@@ -68,12 +59,10 @@
           <th><?php echo $lang->project->name;?></th>
           <td class="col-main"><?php echo html::input('name', $project->name, "class='form-control' required");?></td>
         </tr>
-        <?php if(!isset($config->setCode) or $config->setCode == 1):?>
         <tr>
           <th><?php echo $lang->project->code;?></th>
           <td><?php echo html::input('code', $project->code, "class='form-control' required");?></td>
         </tr>
-        <?php endif;?>
         <tr>
           <th><?php echo $lang->project->PM;?></th>
           <td><?php echo html::select('PM', $PMUsers, $project->PM, "class='form-control chosen'" . (strpos($requiredFields, 'PM') !== false ? ' required' : ''));?></td>
@@ -81,9 +70,9 @@
         <tr>
           <th><?php echo $lang->project->budget;?></th>
           <td>
-            <div id='budgetBox' class='input-group'>
-              <?php $placeholder = ($parentProgram and $parentProgram->budget != 0) ? 'placeholder="' . $lang->project->parentBudget . zget($lang->project->currencySymbol, $parentProgram->budgetUnit) . $availableBudget . '"' : '';?>
-              <?php echo html::input('budget', $project->budget != 0 ? $project->budget : '', "class='form-control' onchange='budgetOverrunTips($project->id)' maxlength='10' " . (strpos($requiredFields, 'budget') !== false ? 'required ' : '') . ($project->budget == 0 ? 'disabled ' : '') . $placeholder);?>
+            <div class='input-group'>
+              <?php $placeholder = ($parentProgram and $parentProgram->budget != 0) ? 'placeholder=' . $lang->project->parentBudget . zget($lang->project->currencySymbol, $parentProgram->budgetUnit) . $availableBudget : '';?>
+              <?php echo html::input('budget', $project->budget != 0 ? $project->budget : '', "class='form-control' maxlength='10' " . (strpos($requiredFields, 'budget') !== false ? 'required ' : '') . ($project->budget == 0 ? 'disabled ' : '') . $placeholder);?>
               <?php if($parentProgram):?>
               <span class='input-group-addon'><?php echo zget($budgetUnitList, $project->budgetUnit);?></span>
               <?php else:?>
@@ -92,7 +81,7 @@
               <?php endif;?>
             </div>
           </td>
-          <td class='futureBox'>
+          <td>
             <div class='checkbox-primary'>
               <input type='checkbox' id='future' name='future' value='1' <?php if($project->budget == 0) echo 'checked';?> />
               <label for='future'><?php echo $lang->project->future;?></label>
@@ -100,9 +89,9 @@
           </td>
         </tr>
         <tr>
-          <th id="dateRange"><?php echo $lang->project->dateRange;?></th>
+          <th><?php echo $lang->project->dateRange;?></th>
           <td>
-            <div id='dateBox' class='input-group'>
+            <div class='input-group'>
               <?php echo html::input('begin', $project->begin, "class='form-control form-date' onchange='computeWorkDays();' placeholder='" . $lang->project->begin . "' required");?>
               <span class='input-group-addon'><?php echo $lang->project->to;?></span>
               <?php
@@ -112,7 +101,7 @@
             </div>
           </td>
           <?php $deltaValue = $project->end == LONG_TIME ? 999 : (strtotime($project->end) - strtotime($project->begin)) / 3600 / 24 + 1;?>
-          <td id="endList" colspan='2'><?php echo html::radio('delta', $lang->project->endList , $deltaValue, "onclick='computeEndDate(this.value)'");?></td>
+          <td colspan='2'><?php echo html::radio('delta', $lang->project->endList , $deltaValue, "onclick='computeEndDate(this.value)'");?></td>
         </tr>
         <tr id='daysBox' <?php if($project->end == LONG_TIME) echo "class='hidden'";?>>
           <th><?php echo $lang->project->days;?></th>
@@ -160,25 +149,25 @@
           </td>
         </tr>
         <tr>
-          <th id='linkPlan'><?php echo $lang->execution->linkPlan;?></th>
+          <th><?php echo $lang->execution->linkPlan;?></th>
           <td id="plansBox" colspan="3">
             <div class='row'>
               <?php $i = 0;?>
               <?php foreach($linkedProducts as $product):?>
                 <?php foreach($linkedBranches[$product->id] as $branchID => $branch):?>
                 <?php $plans = isset($productPlans[$product->id][$branchID]) ? $productPlans[$product->id][$branchID] : array();?>
-                <div class="col-sm-4" id="plan<?php echo $i;?>" style="padding-right: 6px;"><?php echo html::select("plans[{$product->id}][{$branchID}][]", $plans, $branches[$product->id][$branchID]->plan, "class='form-control chosen' multiple");?></div>
+                <div class="col-sm-4" id="plan<?php echo $i;?>" style="padding-right: 6px;"><?php echo html::select("plans[{$product->id}][{$branchID}]", $plans, $branches[$product->id][$branchID]->plan, "class='form-control chosen'");?></div>
                 <?php $i++;?>
                 <?php endforeach;?>
               <?php endforeach;?>
-              <div class="col-sm-4" id="planDefault" style="padding-right: 6px;"><?php echo html::select("plans[0][0][]", array(), 0, "class='form-control chosen' multiple");?></div>
+              <div class="col-sm-4" id="planDefault" style="padding-right: 6px;"><?php echo html::select("plans[0][0]", array(), 0, "class='form-control chosen'");?></div>
             </div>
           </td>
         </tr>
         <?php if($project->model == 'kanban'):?>
         <tr>
           <th><?php echo $lang->execution->team;?></th>
-          <td colspan='2'><?php echo html::select('teamMembers[]', $users, array_keys($teamMembers), "class='form-control picker-select' multiple"); ?></td>
+          <td colspan='2'><?php echo html::select('teamMembers[]', $users, array_keys($teamMembers), "class='form-control chosen' multiple"); ?></td>
         </tr>
         <?php endif;?>
         <tr>
@@ -196,7 +185,7 @@
           <th><?php echo $lang->whitelist;?></th>
           <td colspan='2'>
             <div class='input-group'>
-              <?php echo html::select('whitelist[]', $users, $project->whitelist, 'class="form-control picker-select" multiple');?>
+              <?php echo html::select('whitelist[]', $users, $project->whitelist, 'class="form-control chosen" multiple');?>
               <?php echo $this->fetch('my', 'buildContactLists', "dropdownName=whitelist");?>
             </div>
           </td>

@@ -103,15 +103,6 @@ $lang->misc->feature->themeDesc      = "<p>禪道15系列上線了全新的“�
 $lang->misc->feature->visionsDesc    = "<p>從16.5開始增加了界面概念，用戶可以在<span style='color:#0c60e1'>[研發綜合界面]</span>中處理研發事務、在<span style='color:#0c60e1'>[迅捷界面]</span>處理日常辦公事務。</p><p>在頭像右側即可查看當前所處界面，點擊當前界面名稱可查看和切換其他的界面。</p>";
 $lang->misc->feature->visionsImage   = 'theme/default/images/main/visions.png';
 
-$lang->misc->releaseDate['17.7']        = '2022-10-19';
-$lang->misc->releaseDate['17.6.2']      = '2022-09-23';
-$lang->misc->releaseDate['17.6.1']      = '2022-09-08';
-$lang->misc->releaseDate['17.6']        = '2022-08-26';
-$lang->misc->releaseDate['17.5']        = '2022-08-11';
-$lang->misc->releaseDate['17.4']        = '2022-07-27';
-$lang->misc->releaseDate['17.3']        = '2022-07-13';
-$lang->misc->releaseDate['17.2']        = '2022-06-29';
-$lang->misc->releaseDate['17.1']        = '2022-06-16';
 $lang->misc->releaseDate['17.0']        = '2022-06-02';
 $lang->misc->releaseDate['17.0.beta2']  = '2022-05-26';
 $lang->misc->releaseDate['17.0.beta1']  = '2022-05-06';
@@ -191,15 +182,6 @@ $lang->misc->releaseDate['7.2.stable']  = '2015-05-22';
 $lang->misc->releaseDate['7.1.stable']  = '2015-03-07';
 $lang->misc->releaseDate['6.3.stable']  = '2014-11-07';
 
-$lang->misc->feature->all['17.7'][]       = array('title' => '過渡版本表格優化完成。新增工單功能，優化了反饋功能。修復Bug。', 'desc' => '');
-$lang->misc->feature->all['17.6.2'][]     = array('title' => '禪道更新葉蘭綠、禪道藍、青春藍三大主題。實現附件批量上傳功能。修復Bug。', 'desc' => '');
-$lang->misc->feature->all['17.6.1'][]     = array('title' => '優化了多人任務的處理邏輯，修復Bug。', 'desc' => '');
-$lang->misc->feature->all['17.6'][]       = array('title' => '優化了需求的處理邏輯，拆分了用需和軟需的權限。甘特圖支持手動拖拽維護任務關係。修復Bug。', 'desc' => '');
-$lang->misc->feature->all['17.5'][]       = array('title' => '提供高效的可視化統計工具。優化禪道性能，資料庫引擎從MyISAM調整為InnoDB。甘特圖優化升級，旗艦版的複製項目可以複製任務等更多信息。修復Bug。', 'desc' => '');
-$lang->misc->feature->all['17.4'][]       = array('title' => '詳情頁面的視覺優化和部分頁面跳轉邏輯優化。看板功能完善。文檔創建和編輯頁面優化。修復Bug。', 'desc' => '');
-$lang->misc->feature->all['17.3'][]       = array('title' => '統計、後台等模組的UI優化，用例庫同步用例信息功能優化。修復Bug。', 'desc' => '');
-$lang->misc->feature->all['17.2'][]       = array('title' => '調整敏捷項目區塊的展示，項目集、項目和測試相關UI優化，細節體驗優化。修復Bug。', 'desc' => '');
-$lang->misc->feature->all['17.1'][]       = array('title' => '修改執行、項目模組的交互問題，完成客戶巴高優先順序需求，細節體驗優化。修復Bug。', 'desc' => '');
 $lang->misc->feature->all['17.0'][]       = array('title' => '細節體驗優化。修復Bug。', 'desc' => '');
 $lang->misc->feature->all['17.0.beta2'][] = array('title' => '細節體驗優化。修復Bug。', 'desc' => '');
 $lang->misc->feature->all['17.0.beta1'][] = array('title' => '完成客戶巴高優先順序需求。修復Bug。', 'desc' => '');

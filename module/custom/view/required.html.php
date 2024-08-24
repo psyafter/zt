@@ -16,7 +16,6 @@
     <div class='cell'>
       <div class='list-group'>
         <?php
-        ksort($config->custom->requiredModules);
         foreach($config->custom->requiredModules as $requiredModule)
         {
             $requiredModuleName = zget($lang->custom->moduleName, $requiredModule, $lang->$requiredModule->common);

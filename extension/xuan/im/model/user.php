@@ -1,5 +1,5 @@
 <?php
-class imUser extends model
+class user extends model
 {
     /**
      * Extends identify a user with plain password function,
@@ -21,10 +21,10 @@ class imUser extends model
         $user = $this->loadModel('user')->identify($account, $password);
         if(empty($user))
         {
-            if($this->loadModel('ldap') !== false && method_exists($this->ldap, 'getConfiguration'))
+            if($this->loadModel('ldap') !== false)
             {
                 $ldap = $this->ldap->getConfiguration();
-                if(isset($ldap->enabled) && $ldap->enabled) $user = $this->identifyWithLDAP($account, $originPassword);
+                if(isset($ldap->enabled) && $ldap->enabled) $user = $this->userIdentifyWithLDAP($account, $originPassword);
             }
         }
         if(is_object($user))
@@ -97,7 +97,7 @@ class imUser extends model
      * @param string $password
      * @return object|bool
      */
-    public function identifyWithLDAP($account, $password)
+    public function userIdentifyWithLDAP($account, $password)
     {
         $ldapConfig = $this->loadModel('ldap')->getConfiguration();
         if(empty($ldapConfig) || empty($ldapConfig->enabled)) return false;
@@ -108,26 +108,26 @@ class imUser extends model
         $ldapBind = @ldap_bind($ldapConn, $ldapConfig->admin, $ldapConfig->password);
         if(!$ldapBind)
         {
-            $this->unbindLDAP($ldapConn, false);
+            $this->userUnbindLDAP($ldapConn, false);
             return false;
         }
         $searchList  = ldap_search($ldapConn, $ldapConfig->baseDN, "({$ldapConfig->account}=$account)");
         $infos       = ldap_get_entries($ldapConn, $searchList);
         if(!isset($infos[0]))
         {
-            $this->unbindLDAP($ldapConn, $searchList);
+            $this->userUnbindLDAP($ldapConn, $searchList);
             return false;
         }
         $info = $infos[0];
         if(empty($info['dn']))
         {
-            $this->unbindLDAP($ldapConn, $searchList);
+            $this->userUnbindLDAP($ldapConn, $searchList);
             return false;
         }
         $ldapBind = @ldap_bind($ldapConn, $info['dn'], $password);
         if(!$ldapBind)
         {
-            $this->unbindLDAP($ldapConn, $searchList);
+            $this->userUnbindLDAP($ldapConn, $searchList);
             return false;
         }
         $user = $this->loadModel('user')->getByAccount($account);
@@ -138,19 +138,19 @@ class imUser extends model
                 $user           = new stdClass();
                 $user->account  = $account;
                 $user->password = $password;
-                if(isset($info['mail'][0]))                   $user->email    = $info['mail'][0];
-                if(isset($info['mobile'][0]))                 $user->mobile   = $info['mobile'][0];
-                if(isset($info[$ldapConfig->displayName][0])) $user->realname = $info[$ldapConfig->displayName][0];
-                if(isset($info['postalcode'][0]))             $user->zipcode  = $info['postalcode'][0];
+                if(isset($info['mail'][0]))       $user->email    = $info['mail'][0];
+                if(isset($info['mobile'][0]))     $user->mobile   = $info['mobile'][0];
+                if(isset($info['name'][0]))       $user->realname = $info['name'][0];
+                if(isset($info['postalcode'][0])) $user->zipcode  = $info['postalcode'][0];
                 $result = $this->user->apiCreate($user, false);
-                $this->unbindLDAP($ldapConn, $searchList);
+                $this->userUnbindLDAP($ldapConn, $searchList);
                 if($result) return $this->loadModel('user')->getByAccount($account);
                 return false;
             }
-            $this->unbindLDAP($ldapConn, $searchList);
+            $this->userUnbindLDAP($ldapConn, $searchList);
             return false;
         }
-        $this->unbindLDAP($ldapConn, $searchList);
+        $this->userUnbindLDAP($ldapConn, $searchList);
 
         if($user->deleted == '0') return $user;
         return false;
@@ -162,7 +162,7 @@ class imUser extends model
      * @param \LDAP\Result|array|false $searchList
      * @return void
      */
-    public function unbindLDAP($ldapConn, $searchList)
+    public function userUnbindLDAP($ldapConn, $searchList)
     {
         if(!empty($searchList)) ldap_free_result($searchList);
         if(!empty($ldapConn)) ldap_unbind($ldapConn);
@@ -178,7 +178,7 @@ class imUser extends model
      */
     public function getByID($id = 0)
     {
-		$user = $this->dao->select('id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted, address, weixin')
+		$user = $this->dao->select('id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted')
 			->from(TABLE_USER)
 			->where('id')->eq($id)
 			->fetch();
@@ -198,7 +198,7 @@ class imUser extends model
      */
     public function getList($status = '', $characters = array(), $idAsKey = true)
     {
-        $dao = $this->dao->select('id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted, address, weixin')
+        $dao = $this->dao->select('id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted')
             ->from(TABLE_USER)
             ->where(1)
             ->beginIF(empty($characters))
@@ -262,21 +262,11 @@ class imUser extends model
         if(empty($user->id)) return null;
 
         $data = array();
-
-        /* Updates status. */
-        if(isset($user->clientStatus) && !empty($user->clientStatus)) $data['clientStatus'] = $user->clientStatus;
-
-        /* Changes password. */
-        if(!empty($user->account) && !empty($user->password)) $data['password'] = $user->password;
-
-        /* Updates contact info. */
-        if(empty($data))
+        foreach($this->config->im->user->canEditFields as $field)
         {
-            foreach($this->config->im->user->canEditFields as $field)
-            {
-                if(isset($user->$field)) $data[$field] = $user->$field;
-            }
+            if(!empty($user->$field)) $data[$field] = $user->$field;
         }
+        if(!empty($user->account) && !empty($user->password)) $data['password'] = $user->password;
         if(empty($data)) return null;
 
         $data['clientLang'] = $this->session->clientLang;
@@ -300,7 +290,6 @@ class imUser extends model
             $users    = array($users);
         }
 
-$admins = $this->dao->select('admins')->from(TABLE_COMPANY)->where('id')->eq($this->app->company->id)->fetch('admins');$adminArray = explode(',', $admins);
         foreach($users as $user)
         {
             $user->id      = (int)$user->id;
@@ -310,7 +299,6 @@ $admins = $this->dao->select('admins')->from(TABLE_COMPANY)->where('id')->eq($th
 
             if(isset($user->avatar))  $user->avatar  = (!empty($user->avatar) && substr($user->avatar, 0, 7) !== 'http://' && substr($user->avatar, 0, 8) !== 'https://') ? $this->loadModel('im')->getServer() . $user->avatar : $user->avatar;
             if(!isset($user->signed)) $user->signed  = 0;
-$user->admin = in_array($user->account, $adminArray) ? 'super' : '';
         }
 
         if($isObject) return reset($users);
@@ -453,7 +441,7 @@ $user->admin = in_array($user->account, $adminArray) ? 'super' : '';
         }
         if(property_exists($options, 'exclude')) $exclude = $options->exclude;
 
-        $result = $this->dao->select($returnID ? 'id' : 'id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted, address, weixin')->from(TABLE_USER)
+        $result = $this->dao->select($returnID ? 'id' : 'id, account, realname, avatar, role, dept, clientStatus, gender, email, mobile, phone,  qq, deleted')->from(TABLE_USER)
             ->where('deleted')->eq('0')
             ->beginIF(!empty($depts))->andWhere('dept')->in($depts)->fi()
             ->beginIF(!empty($chatMembers))->andWhere('id')->in($chatMembers)->fi()

@@ -7,16 +7,15 @@ class gitlab
     /**
      * Construct
      *
-     * @param  string $client    gitlab api url.
-     * @param  string $root      id of gitlab project.
-     * @param  string $username  null
-     * @param  string $password  token of gitlab api.
-     * @param  string $encoding
-     * @param  object $repo
+     * @param  string    $client    gitlab api url.
+     * @param  string    $root      id of gitlab project.
+     * @param  string    $username  null
+     * @param  string    $password  token of gitlab api.
+     * @param  string    $encoding
      * @access public
      * @return void
      */
-    public function __construct($client, $root, $username, $password, $encoding = 'UTF-8', $repo = null)
+    public function __construct($client, $root, $username, $password, $encoding = 'UTF-8')
     {
         $this->client = $client;
         $this->root   = rtrim($root, '/') . '/';
@@ -168,7 +167,6 @@ class gitlab
         $params['per_page'] = '100';
 
         $branches = array();
-        $default  = array();
         for($page = 1; true; $page ++)
         {
             $params['page'] = $page;
@@ -178,24 +176,15 @@ class gitlab
             foreach($branchList as $branch)
             {
                 if(!isset($branch->name)) continue;
-                if($branch->default)
-                {
-                    $default[$branch->name] = $branch->name;
-                }
-                else
-                {
-                    $branches[$branch->name] = $branch->name;
-                }
+                $branches[$branch->name] = $branch->name;
             }
 
             /* Last page. */
             if(count($branchList) < $params['per_page']) break;
         }
 
-        if(empty($branches) and empty($default)) $branches['master'] = 'master';
+        if(empty($branches)) $branches['master'] = 'master';
         asort($branches);
-
-        $branches = $default + $branches;
         return $branches;
     }
 
@@ -834,23 +823,5 @@ class gitlab
         }
 
         return $parsedLogs;
-    }
-
-    /**
-     * Get download url.
-     *
-     * @param  string $branch
-     * @param  string $savePath
-     * @param  string $ext
-     * @access public
-     * @return string
-     */
-    public function getDownloadUrl($branch = 'master', $savePath = '', $ext = 'zip')
-    {
-        $params = (array) $params;
-        $params['private_token'] = $this->token;
-        $params['sha']           = $branch;
-
-        return "{$this->root}archive.{$ext}" . '?' . http_build_query($params);
     }
 }

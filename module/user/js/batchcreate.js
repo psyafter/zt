@@ -91,98 +91,47 @@ $(document).on('change', '[id^=visions]', function()
     }
 })
 
-var rndGroupSelect = liteGroupSelect = allGroupSelect = emptyGroupSelect = '';
-$.post(createLink('user', 'ajaxGetGroup', "visions=rnd&i=2"), function(data)
+$('select[id^="visions"]').each(function()
 {
-    rndGroupSelect = data;
+    var i      = $(this).attr('id').replace(/[^0-9]/ig, '');
     var vision = $('#visions1 option:selected').val();
-    if(vision == 'rnd') initGroup(data);
-});
-$.post(createLink('user', 'ajaxGetGroup', "visions=lite&i=2"), function(data)
-{
-    liteGroupSelect = data;
-    var vision = $('#visions1 option:selected').val();
-    if(vision == 'lite') initGroup(data);
-});
-$.post(createLink('user', 'ajaxGetGroup', "visions=rnd,lite&i=2"), function(data)
-{
-    allGroupSelect = data;
-});
-$.post(createLink('user', 'ajaxGetGroup', "visions=null&i=2"), function(data)
-{
-    emptyGroupSelect = data;
-});
 
-function initGroup(data)
-{
-    $('select[id^="visions"]').each(function()
+    $.post(createLink('user', 'ajaxGetGroup', "visions=" + vision + '&i=' + i + '&selected=' + $('#group' + i).val()), function(data)
     {
-        var i        = $(this).attr('id').replace(/[^0-9]/ig, '');
-        var groupVal = $('#group' + i).val();
-
-        var dataObj = $(data);
-        var dataHtml = $(dataObj).attr('id', 'group' + i).attr('name', 'group[' + i + '][]').prop('outerHTML');
-
-        $('#group' + i).replaceWith(dataHtml);
-        $('#group' + i + '_chosen').remove();
-        if(i == 1) $('#group' + i).find('option[value="ditto"]').remove();
-        $('#group' + i).val(groupVal);
-        $('#group' + i).chosen();
+         $('#group' + i).replaceWith(data);
+         $('#group' + i + '_chosen').remove();
+         $('#group' + i).chosen();
     })
-}
-
-/**
- * Get group data by selected vision.
- *
- * @param int $i
- * @access public
- * @return html
- */
-function getGroupSelect(i)
-{
-    if(i < 1) return '';
-    var visions = $('select[id="visions' + i + '"]').val();
-
-    visions = visions ? visions.join() : '';
-    switch(visions)
-    {
-        case 'rnd':
-            var data = rndGroupSelect;
-            break;
-        case 'lite':
-            var data = liteGroupSelect;
-            break;
-        case 'rnd,lite':
-            var data = allGroupSelect;
-            break;
-        case 'ditto':
-            var data = getGroupSelect(i - 1);
-            break;
-        default:
-            var data = emptyGroupSelect;
-            break;
-    }
-
-    return data;
-}
+})
 
 $(document).on('change', "select[id^='visions']", function()
 {
-    var i    = parseInt($(this).attr('id').replace(/[^0-9]/ig, ''));
-    var data = getGroupSelect(i);
+    var i       = parseInt($(this).attr('id').replace(/[^0-9]/ig, ''));
+    var visions = $('select[id="visions' + i + '"]').val();
 
-    for(n = i; n <= batchCreateCount; n++)
+    var groups  = $('#group' + i).val();
+    if($.inArray('ditto', groups) >= 0) groups = '';
+
+    $.post(createLink('user', 'ajaxGetGroup', "visions=" + visions + '&i=' + i + '&selected=' + groups), function(data)
     {
-        if(n != i && $.inArray('ditto', $('select[id="visions' + n + '"]').val()) < 0) break;
+        $('#group' + i).replaceWith(data);
+        $('#group' + i + '_chosen').remove();
+        $('#group' + i).chosen();
+    })
+
+    for(n = i + 1; n <= batchCreateCount; n++)
+    {
+        if(n == i) continue;
+        if($.inArray('ditto', $('select[id="visions' + n + '"]').val()) < 0) break;
 
         ((function(n)
         {
-            var groupVal = $('#group' + n).val();
-            var dataHtml = $(data).attr('id', 'group' + n).attr('name', 'group[' + n + '][]').prop('outerHTML');
-            $('#group' + n).replaceWith(dataHtml);
-            $('#group' + n + '_chosen').remove();
-            $('#group' + n).val(groupVal);
-            $('#group' + n).chosen();
+            $.post(createLink('user', 'ajaxGetGroup', "visions=" + visions + '&i=' + n + '&selected=' + $('#group' + n).val()), function(data)
+            {
+                $('#group' + n).replaceWith(data);
+                $('#group' + n + '_chosen').remove();
+                $('#group' + n).chosen();
+            })
         }(n)));
     }
 });

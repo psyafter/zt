@@ -54,9 +54,9 @@
         <?php echo $api['desc'];?>
         <table class='table table-bordered'>
           <tr>
-            <th><?php echo $lang->dev->params?></th>
-            <th><?php echo $lang->dev->type?></th>
-            <th><?php echo $lang->dev->desc?></th>
+            <td><?php echo $lang->dev->params?></td>
+            <td><?php echo $lang->dev->type?></td>
+            <td><?php echo $lang->dev->desc?></td>
           </tr>
           <?php if(isset($api['param'])):?>
           <?php foreach($api['param'] as $param):?>
@@ -78,9 +78,9 @@
         <table class='table table-bordered'>
           <caption><?php echo $lang->dev->post;?></caption>
           <tr>
-            <th><?php echo $lang->dev->params?></th>
-            <th><?php echo $lang->dev->type?></th>
-            <th><?php echo $lang->dev->desc?></th>
+            <td><?php echo $lang->dev->params?></td>
+            <td><?php echo $lang->dev->type?></td>
+            <td><?php echo $lang->dev->desc?></td>
           </tr>
           <?php foreach($config->dev->postParams[$selectedModule][$methodName] as $paramName => $paramType):?>
           <tr>

@@ -28,8 +28,6 @@ class langsEntry extends entry
         if(empty($language)) $language = 'zh-cn';
         $this->app->setClientLang($language);
 
-        global $filter;
-        $rule    = $filter->default->moduleName;
         $modules = explode(',', $modules);
         foreach($modules as $module)
         {
@@ -41,7 +39,6 @@ class langsEntry extends entry
                     if(!is_dir($modulePath)) continue;
 
                     $moduleName = basename($modulePath);
-                    if(!validater::checkByRule($moduleName, $rule)) continue;
                     $this->app->loadLang($moduleName);
 
                     $loadedModule[$moduleName] = $moduleName;
@@ -64,7 +61,6 @@ class langsEntry extends entry
                         if(!is_dir($modulePath)) continue;
 
                         $moduleName = basename($modulePath);
-                        if(!validater::checkByRule($moduleName, $rule)) continue;
                         if(isset($loadedModule[$moduleName])) continue;
 
                         $this->app->loadLang($moduleName);
@@ -75,7 +71,7 @@ class langsEntry extends entry
                 break;
             }
 
-            if(validater::checkByRule($module, $rule)) $this->app->loadLang($module);
+            $this->app->loadLang($module);
         }
 
         return $this->send(200, $this->lang);

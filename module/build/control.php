@@ -43,7 +43,7 @@ class build extends control
 
             if($this->viewType == 'json') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'id' => $buildID));
             if(isonlybody()) return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'closeModal' => true, 'callback' => "parent.loadExecutionBuilds($executionID, $buildID)")); // Code for task #5126.
-            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('build', 'view', "buildID=$buildID") . "#app={$this->app->tab}"));
+            return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $this->createLink('build', 'view', "buildID=$buildID")));
         }
 
         /* Set menu. */
@@ -233,33 +233,25 @@ class build extends control
         $this->app->loadClass('pager', $static = true);
         if($this->app->getViewType() == 'mhtml') $recPerPage = 10;
 
-        $sort = common::appendOrder($orderBy);
-        if(strpos($sort, 'pri_') !== false) $sort = str_replace('pri_', 'priOrder_', $sort);
-
         /* Get product and bugs. */
         $product = $this->loadModel('product')->getById($build->product);
         if($product->type != 'normal') $this->lang->product->branch = sprintf($this->lang->product->branch, $this->lang->product->branchName[$product->type]);
 
         $bugPager = new pager($type == 'bug' ? $recTotal : 0, $recPerPage, $type == 'bug' ? $pageID : 1);
-        $bugs = $this->dao->select('*')->from(TABLE_BUG)
-            ->where('id')->in($build->bugs)
-            ->andWhere('deleted')->eq(0)
-            ->beginIF($type == 'bug')->orderBy($sort)->fi()
+        $bugs = $this->dao->select('*')->from(TABLE_BUG)->where('id')->in($build->bugs)->andWhere('deleted')->eq(0)
+            ->beginIF($type == 'bug')->orderBy($orderBy)->fi()
             ->page($bugPager)
             ->fetchAll();
 
         /* Get stories and stages. */
         $storyPager = new pager($type == 'story' ? $recTotal : 0, $recPerPage, $type == 'story' ? $pageID : 1);
-        $stories    = $this->dao->select("*, IF(`pri` = 0, {$this->config->maxPriValue}, `pri`) as priOrder")->from(TABLE_STORY)
-            ->where('id')->in($build->stories)
-            ->andWhere('deleted')->eq(0)
-            ->beginIF($type == 'story')->orderBy($sort)->fi()
+        $stories    = $this->dao->select('t1.*, t2.stage')->from(TABLE_STORY)->alias('t1')
+            ->leftJoin(TABLE_STORYSTAGE)->alias('t2')->on('t1.id = t2.story')
+            ->where('t1.id')->in($build->stories)
+            ->andWhere('t1.deleted')->eq(0)
+            ->beginIF($type == 'story')->orderBy("t1.$orderBy")->fi()
             ->page($storyPager)
             ->fetchAll('id');
-
-        $stages = $this->dao->select('*')->from(TABLE_STORYSTAGE)->where('story')->in(array_keys($stories))->andWhere('branch')->eq($build->branch)->fetchPairs('story', 'stage');
-        foreach($stages as $storyID => $stage) $stories[$storyID]->stage = $stage;
-
 
         /* Set menu. */
         if($this->app->tab == 'project')
@@ -278,7 +270,7 @@ class build extends control
         $this->view->storyPager = $storyPager;
 
         $generatedBugPager = new pager($type == 'generatedBug' ? $recTotal : 0, $recPerPage, $type == 'generatedBug' ? $pageID : 1);
-        $this->view->generatedBugs     = $this->bug->getExecutionBugs($build->execution, $build->product, 'all', $build->id, $type, $param, $type == 'generatedBug' ? $sort : 'status_desc,id_desc', '', $generatedBugPager);
+        $this->view->generatedBugs     = $this->bug->getExecutionBugs($build->execution, $build->product, $build->id, $type, $param, $type == 'generatedBug' ? $orderBy : 'status_desc,id_desc', '', $generatedBugPager);
         $this->view->generatedBugPager = $generatedBugPager;
 
         $this->executeHooks($buildID);
@@ -287,7 +279,7 @@ class build extends control
         $this->view->canBeChanged = common::canBeChanged('build', $build); // Determines whether an object is editable.
         $this->view->users        = $this->loadModel('user')->getPairs('noletter');
         $this->view->build        = $build;
-        $this->view->buildPairs   = $this->build->getBuildPairs(0, 'all', 'noempty,notrunk', $build->execution, 'execution');
+        $this->view->buildPairs   = $this->build->getBuildPairs(0, 0, 'noempty,notrunk', $build->execution, 'execution');
         $this->view->actions      = $this->loadModel('action')->getList('build', $buildID);
         $this->view->link         = $link;
         $this->view->param        = $param;
@@ -591,6 +583,21 @@ class build extends control
     {
         $this->build->unlinkStory($buildID, $storyID);
 
+        /* if ajax request, send result. */
+        if($this->server->ajax)
+        {
+            if(dao::isError())
+            {
+                $response['result']  = 'fail';
+                $response['message'] = dao::getError();
+            }
+            else
+            {
+                $response['result']  = 'success';
+                $response['message'] = '';
+            }
+            return $this->send($response);
+        }
         return print(js::reload('parent'));
     }
 
@@ -675,7 +682,7 @@ class build extends control
         }
         else
         {
-            $allBugs = $this->bug->getExecutionBugs($build->execution, 0, 'all', $buildID, 'noclosed', 0, 'status_desc,id_desc', $build->bugs, $pager);
+            $allBugs = $this->bug->getExecutionBugs($build->execution, 0, $buildID, 'noclosed', 0, 'status_desc,id_desc', $build->bugs, $pager);
         }
 
         $this->view->allBugs    = $allBugs;

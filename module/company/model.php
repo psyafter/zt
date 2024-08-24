@@ -66,7 +66,6 @@ class companyModel extends model
     /**
      * Get users.
      *
-     * @param  string $browseType
      * @param  string $type
      * @param  int    $queryID
      * @param  int    $deptID

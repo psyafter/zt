@@ -77,6 +77,9 @@ class repo extends control
      */
     public function maintain($objectID = 0, $orderBy = 'id_desc', $recTotal = 0, $recPerPage = 20, $pageID = 1)
     {
+        $this->lang->switcherMenu = '';
+        if(common::hasPriv('repo', 'create')) $this->lang->TRActions = html::a(helper::createLink('repo', 'create'), "<i class='icon icon-plus'></i> " . $this->lang->repo->create, '', "class='btn btn-primary'");
+
         $repoID = $this->repo->saveState(0, $objectID);
         if($this->viewType !== 'json') $this->commonAction($repoID, $objectID);
 
@@ -128,9 +131,8 @@ class repo extends control
 
             if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
-            $actionID = $this->loadModel('action')->create('repo', $repoID, 'created');
             if($this->viewType == 'json') return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'id' => $repoID));
-            $link = $this->repo->createLink('showSyncCommit', "repoID=$repoID&objectID=$objectID", '', false) . '#app=' . $this->app->tab;
+            $link = $this->repo->createLink('showSyncCommit', "repoID=$repoID&objectID=$objectID", '', false);
             return $this->send(array('result' => 'success', 'message' => $this->lang->saveSuccess, 'locate' => $link));
         }
 
@@ -142,14 +144,14 @@ class repo extends control
         $products  = $this->loadModel('product')->getProductPairsByProject($objectID);
         $productID = count($products) > 0 ? key($products) : '';
 
-        $this->view->title        = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->create;
-        $this->view->position[]   = $this->lang->repo->create;
-        $this->view->groups       = $this->loadModel('group')->getPairs();
-        $this->view->users        = $this->loadModel('user')->getPairs('noletter|noempty|nodeleted|noclosed');
-        $this->view->products     = $products;
-        $this->view->productID    = $productID;
-        $this->view->serviceHosts = $this->loadModel('gitlab')->getPairs();
-        $this->view->objectID     = $objectID;
+        $this->view->title       = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->create;
+        $this->view->position[]  = $this->lang->repo->create;
+        $this->view->groups      = $this->loadModel('group')->getPairs();
+        $this->view->users       = $this->loadModel('user')->getPairs('noletter|noempty|nodeleted');
+        $this->view->products    = $products;
+        $this->view->productID   = $productID;
+        $this->view->gitlabHosts = $this->loadModel('gitlab')->getPairs();
+        $this->view->objectID    = $objectID;
 
         $this->display();
     }
@@ -172,10 +174,6 @@ class repo extends control
             $noNeedSync = $this->repo->update($repoID);
             if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
 
-            $newRepo  = $this->repo->getRepoByID($repoID);
-            $actionID = $this->loadModel('action')->create('repo', $repoID, 'edited');
-            $changes  = common::createChanges($repo, $newRepo);
-            $this->action->logHistory($actionID, $changes);
             if(!$noNeedSync)
             {
                 $link = $this->repo->createLink('showSyncCommit', "repoID=$repoID");
@@ -186,30 +184,25 @@ class repo extends control
 
         $this->app->loadLang('action');
 
-        $scm = strtolower($repo->SCM);
-        if(in_array($scm, $this->config->repo->gitServiceList))
+        if(strtolower($repo->SCM) == 'gitlab')
         {
-            $serviceID = isset($repo->gitService) ? $repo->gitService : 0;
-            $projects  = $this->loadModel($scm)->apiGetProjects($serviceID);
-            $options   = array();
-            foreach($projects as $project)
-            {
-                if($scm == 'gitlab') $options[$project->id] = $project->name_with_namespace;
-                if($scm == 'gitea')  $options[$project->full_name] = $project->full_name;
-                if($scm == 'gogs')   $options[$project->full_name] = $project->full_name;
-            }
+            $gitlabID = isset($repo->gitlab) ? $repo->gitlab : 0;
+            $projects = $this->loadModel('gitlab')->apiGetProjects($gitlabID);
+            $options  = array();
+            foreach($projects as $project) $options[$project->id] = $project->name_with_namespace;
 
             $this->view->projects = $options;
         }
 
-        $this->view->title         = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->edit;
-        $this->view->repo          = $repo;
-        $this->view->repoID        = $repoID;
-        $this->view->objectID      = $objectID;
-        $this->view->groups        = $this->loadModel('group')->getPairs();
-        $this->view->users         = $this->loadModel('user')->getPairs('noletter|noempty|nodeleted|noclosed');
-        $this->view->products      = $objectID ? $this->loadModel('product')->getProductPairsByProject($objectID) : $this->loadModel('product')->getPairs();
-        $this->view->serviceHosts  = array('' => '') + $this->loadModel('pipeline')->getPairs($repo->SCM);
+        $this->view->title       = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->edit;
+        $repo->repoType          = $repo->id . '-' . $repo->SCM;
+        $this->view->repo        = $repo;
+        $this->view->repoID      = $repoID;
+        $this->view->objectID    = $objectID;
+        $this->view->groups      = $this->loadModel('group')->getPairs();
+        $this->view->users       = $this->loadModel('user')->getPairs('noletter|noempty|nodeleted');
+        $this->view->products    = $objectID ? $this->loadModel('product')->getProductPairsByProject($objectID) : $this->loadModel('product')->getPairs();
+        $this->view->gitlabHosts = array('' => '') + $this->loadModel('gitlab')->getPairs();
 
         $this->view->position[] = html::a(inlink('maintain'), $this->lang->repo->common);
         $this->view->position[] = $this->lang->repo->edit;
@@ -242,9 +235,13 @@ class repo extends control
 
         if($error) return print(js::alert($error));
 
-        $this->repo->delete(TABLE_REPO, $repoID);
+        $this->dao->delete()->from(TABLE_REPO)->where('id')->eq($repoID)->exec();
+        $this->dao->delete()->from(TABLE_REPOHISTORY)->where('repo')->eq($repoID)->exec();
+        $this->dao->delete()->from(TABLE_REPOFILES)->where('repo')->eq($repoID)->exec();
+        $this->dao->delete()->from(TABLE_REPOBRANCH)->where('repo')->eq($repoID)->exec();
+
         if(dao::isError()) return print(js::error(dao::getError()));
-        return print(js::reload('parent'));
+        echo js::reload('parent');
     }
 
     /**
@@ -304,7 +301,7 @@ class repo extends control
         }
 
         $this->app->loadClass('pager', $static = true);
-        $pager = new pager(0, 10, 1);
+        $pager = new pager(0, 8, 1);
 
         $logType   = 'file';
         $revisions = $this->repo->getCommits($repo, '/' . $entry, 'HEAD', $logType, $pager);
@@ -313,13 +310,13 @@ class repo extends control
         foreach($revisions as $log)
         {
             if($revision == 'HEAD' and $i == 0) $revision = $log->revision;
-            if($revision == $log->revision) $revisionName = in_array($repo->SCM, $this->config->repo->gitTypeList) ?  $this->repo->getGitRevisionName($log->revision, $log->commit) : $log->revision;
+            if($revision == $log->revision) $revisionName = strpos($repo->SCM, 'Git') !== false ?  $this->repo->getGitRevisionName($log->revision, $log->commit) : $log->revision;
             $i++;
         }
         if(!isset($revisionName))
         {
-            if(in_array($repo->SCM, $this->config->repo->gitTypeList)) $gitCommit = $this->dao->select('*')->from(TABLE_REPOHISTORY)->where('revision')->eq($revision)->andWhere('repo')->eq($repo->id)->fetch('commit');
-            $revisionName = (in_array($repo->SCM, $this->config->repo->gitTypeList) and isset($gitCommit)) ? $this->repo->getGitRevisionName($revision, $gitCommit) : $revision;
+            if(strpos($repo->SCM, 'Git') !== false) $gitCommit = $this->dao->select('*')->from(TABLE_REPOHISTORY)->where('revision')->eq($revision)->andWhere('repo')->eq($repo->id)->fetch('commit');
+            $revisionName = (strpos($repo->SCM, 'Git') !== false and isset($gitCommit)) ? $this->repo->getGitRevisionName($revision, $gitCommit) : $revision;
         }
 
         $this->view->revisions    = $revisions;
@@ -342,7 +339,6 @@ class repo extends control
         $this->view->pager        = $pager;
         $this->view->logType      = $logType;
         $this->view->info         = $info;
-        $this->view->pathInfo     = $pathInfo;
 
         $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->view;
         $this->view->position[] = $this->lang->repo->common;
@@ -359,11 +355,10 @@ class repo extends control
      * @param  string $path
      * @param  string $revision
      * @param  int    $refresh
-     * @param  string $branchOrTag branch|tag
      * @access public
      * @return void
      */
-    public function browse($repoID = 0, $branchID = '', $objectID = 0, $path = '', $revision = 'HEAD', $refresh = 0, $branchOrTag = 'branch')
+    public function browse($repoID = 0, $branchID = '', $objectID = 0, $path = '', $revision = 'HEAD', $refresh = 0)
     {
         $repoID = $this->repo->saveState($repoID, $objectID);
         if($branchID) $branchID = base64_decode(helper::safe64Decode($branchID));
@@ -390,20 +385,15 @@ class repo extends control
         }
         if(!$repo->synced) $this->locate($this->repo->createLink('showSyncCommit', "repoID=$repoID&objectID=$objectID"));
 
-        /* Set branch or tag for git. */
-        $branches = $tags = $branchesAndTags = array();
-        if(in_array($repo->SCM, $this->config->repo->gitTypeList))
+        /* Set branch for git. */
+        $branches = array();
+        if(strpos($repo->SCM, 'Git') !== false)
         {
-            $scm = $this->app->loadClass('scm');
-            $scm->setEngine($repo);
-            $branches = $scm->branch();
-            $initTags = $scm->tags('');
-            foreach($initTags as $tag) $tags[$tag] = $tag;
-            $branchesAndTags = $branches + $tags;
+            $branches = $this->repo->getBranches($repo);
 
-            if(empty($branchID) and $this->cookie->repoBranch and $this->session->repoID == $repoID) $branchID = $this->cookie->repoBranch;
+            if(empty($branchID) and $this->cookie->repoBranch) $branchID = $this->cookie->repoBranch;
             if($branchID) $this->repo->setRepoBranch($branchID);
-            if(!isset($branchesAndTags[$branchID]))
+            if(!isset($branches[$branchID]))
             {
                 $branchID = key($branches);
                 $this->repo->setRepoBranch($branchID);
@@ -421,7 +411,7 @@ class repo extends control
 
         /* Load pager. */
         $this->app->loadClass('pager', $static = true);
-        $pager = new pager(0, 10, 1);
+        $pager = new pager(0, 8, 1);
 
         if($_POST)
         {
@@ -442,7 +432,7 @@ class repo extends control
                 /* Update code commit history. */
                 $commentGroup = $this->loadModel('job')->getTriggerGroup('commit', array($repo->id));
 
-                if($refresh and in_array($repo->SCM, $this->config->repo->gitTypeList))
+                if($refresh and strpos($repo->SCM, 'Git') !== false)
                 {
                     $branch = $this->cookie->repoBranch;
                     $this->loadModel('git')->updateCommit($repo, $commentGroup, false);
@@ -485,27 +475,22 @@ class repo extends control
         $revisions = $this->repo->getCommits($repo, $path, $revision, $logType, $pager);
 
         /* Synchronous commit only in root path. */
-        if(in_array($repo->SCM, $this->config->repo->gitTypeList) and empty($path) and $infos and empty($revisions)) $this->locate($this->repo->createLink('showSyncCommit', "repoID=$repoID&objectID=$objectID&branch=" . helper::safe64Encode(base64_encode($this->cookie->repoBranch))));
+        if(strpos($repo->SCM, 'Git') !== false and empty($path) and $infos and empty($revisions)) $this->locate($this->repo->createLink('showSyncCommit', "repoID=$repoID&objectID=$objectID&branch=" . base64_encode($this->cookie->repoBranch)));
 
-        $this->view->title           = $this->lang->repo->common;
-        $this->view->repo            = $repo;
-        $this->view->repos           = $this->repos;
-        $this->view->revisions       = $revisions;
-        $this->view->repoGroup       = $this->repo->getRepoGroup($this->app->tab, $objectID);
-        $this->view->revision        = $revision;
-        $this->view->infos           = $infos;
-        $this->view->repoID          = $repoID;
-        $this->view->branches        = $branches;
-        $this->view->tags            = $tags;
-        $this->view->branchesAndTags = $branchesAndTags;
-        $this->view->branchID        = $branchID;
-        $this->view->objectID        = $objectID;
-        $this->view->pager           = $pager;
-        $this->view->path            = urldecode($path);
-        $this->view->logType         = $logType;
-        $this->view->cloneUrl        = $this->repo->getCloneUrl($repo);
-        $this->view->cacheTime       = date('m-d H:i', filemtime($cacheFile));
-        $this->view->branchOrTag     = $branchOrTag;
+        $this->view->title     = $this->lang->repo->common;
+        $this->view->repo      = $repo;
+        $this->view->repos     = $this->repos;
+        $this->view->revisions = $revisions;
+        $this->view->revision  = $revision;
+        $this->view->infos     = $infos;
+        $this->view->repoID    = $repoID;
+        $this->view->branches  = $branches;
+        $this->view->branchID  = $branchID;
+        $this->view->objectID  = $objectID;
+        $this->view->pager     = $pager;
+        $this->view->path      = urldecode($path);
+        $this->view->logType   = $logType;
+        $this->view->cacheTime = date('m-d H:i', filemtime($cacheFile));
 
         $this->display();
     }
@@ -596,7 +581,7 @@ class repo extends control
         $history = $this->dao->select('*')->from(TABLE_REPOHISTORY)->where('revision')->eq($log[0]->revision)->andWhere('repo')->eq($repoID)->fetch();
         if($history)
         {
-            if(in_array($repo->SCM, $this->config->repo->gitTypeList))
+            if(strpos($repo->SCM, 'Git') !== false)
             {
                 $thisAndPrevRevisions = $this->scm->exec("rev-list -n 2 {$history->revision} --");
 
@@ -614,7 +599,7 @@ class repo extends control
         if(empty($oldRevision))
         {
             $oldRevision = '^';
-            if($history and in_array($repo->SCM, $this->config->repo->gitTypeList)) $oldRevision = "{$history->revision}^";
+            if($history and strpos($repo->SCM, 'Git') !== false) $oldRevision = "{$history->revision}^";
         }
 
         $changes  = array();
@@ -700,7 +685,7 @@ class repo extends control
             if($encoding != 'utf-8') $blames[$i]['content'] = helper::convertEncoding($blame['content'], $encoding);
         }
 
-        $log = in_array($repo->SCM, $this->config->repo->gitTypeList) ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->eq($revision)->andWhere('repo')->eq($repo->id)->fetch() : '';
+        $log = strpos($repo->SCM, 'Git') !== false ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->eq($revision)->andWhere('repo')->eq($repo->id)->fetch() : '';
 
         $this->view->title        = $this->lang->repo->common;
         $this->view->repoID       = $repoID;
@@ -711,8 +696,8 @@ class repo extends control
         $this->view->entry        = $entry;
         $this->view->file         = $file;
         $this->view->encoding     = str_replace('-', '_', $encoding);
-        $this->view->historys     = in_array($repo->SCM, $this->config->repo->gitTypeList) ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->in($revisions)->andWhere('repo')->eq($repo->id)->fetchPairs() : '';
-        $this->view->revisionName = ($log and in_array($repo->SCM, $this->config->repo->gitTypeList)) ? $this->repo->getGitRevisionName($log->revision, $log->commit) : $revision;
+        $this->view->historys     = strpos($repo->SCM, 'Git') !== false ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->in($revisions)->andWhere('repo')->eq($repo->id)->fetchPairs() : '';
+        $this->view->revisionName = ($log and strpos($repo->SCM, 'Git') !== false) ? $this->repo->getGitRevisionName($log->revision, $log->commit) : $revision;
         $this->view->blames       = $blames;
         $this->display();
     }
@@ -741,12 +726,6 @@ class repo extends control
         $file  = $entry;
         $repo  = $this->repo->getRepoByID($repoID);
         $entry = $this->repo->decodePath($entry);
-
-        if($repo->SCM == 'Git' and !is_dir($repo->path))
-        {
-            $error = sprintf($this->lang->repo->error->notFound, $repo->name, $repo->path);
-            return print(js::error($error) . js::locate($this->repo->createLink('maintain')));
-        }
 
         $pathInfo = pathinfo($entry);
         $suffix   = '';
@@ -834,7 +813,7 @@ class repo extends control
         $this->view->newRevision = $newRevision;
         $this->view->oldRevision = $oldRevision;
         $this->view->revision    = $newRevision;
-        $this->view->historys    = in_array($repo->SCM, $this->config->repo->gitTypeList) ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->in("$oldRevision,$newRevision")->andWhere('repo')->eq($repo->id)->fetchPairs() : '';
+        $this->view->historys    = strpos($repo->SCM, 'Git') !== false ? $this->dao->select('revision,commit')->from(TABLE_REPOHISTORY)->where('revision')->in("$oldRevision,$newRevision")->andWhere('repo')->eq($repo->id)->fetchPairs() : '';
         $this->view->info        = $info;
 
         $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->diff;
@@ -921,7 +900,7 @@ class repo extends control
         $this->commonAction($repoID, $objectID);
 
         if($repoID == 0) $repoID = $this->session->repoID;
-        if($branch) $branch = base64_decode(helper::safe64Decode($branch));
+        if($branch) $branch = base64_decode($branch);
 
         $this->view->title      = $this->lang->repo->common . $this->lang->colon . $this->lang->repo->showSyncCommit;
         $this->view->position[] = $this->lang->repo->showSyncCommit;
@@ -950,33 +929,11 @@ class repo extends control
         if(empty($repo)) return;
         if($repo->synced) return print('finish');
 
-        if(in_array($repo->SCM, array('Gitea', 'Gogs')))
-        {
-            $logFile = realPath($this->app->getTmpRoot() . "/log/clone.progress." . strtolower($repo->SCM) . ".{$repo->name}.log");
-            if($logFile)
-            {
-                $content  = file($logFile);
-                $lastLine = $content[count($content) - 1];
-                if(!strpos($lastLine, 'done'))
-                {
-                    return print(1);
-                }
-                elseif(strpos($lastLine, 'fatal') !== false)
-                {
-                    return print('finish');
-                }
-                else
-                {
-                    @unlink($logFile);
-                }
-            }
-        }
-
         $this->commonAction($repoID);
         $this->scm->setEngine($repo);
 
         $branchID = '';
-        if(in_array($repo->SCM, $this->config->repo->gitTypeList) and empty($branchID))
+        if(strpos($repo->SCM, 'Git') !== false and empty($branchID))
         {
             $branches = $this->scm->branch();
             if($branches)
@@ -1013,7 +970,7 @@ class repo extends control
 
         $version  = empty($latestInDB) ? 1 : $latestInDB->commit + 1;
         $logs     = array();
-        $revision = $version == 1 ? 'HEAD' : (in_array($repo->SCM, array('Git', 'Gitea', 'Gogs')) ? $latestInDB->commit : $latestInDB->revision);
+        $revision = $version == 1 ? 'HEAD' : ($repo->SCM == 'Git' ? $latestInDB->commit : $latestInDB->revision);
         if($type == 'batch')
         {
             $logs = $this->scm->getCommits($revision, $this->config->repo->batchNum, $branchID);
@@ -1028,7 +985,7 @@ class repo extends control
         {
             if(!$repo->synced)
             {
-                if(in_array($repo->SCM, $this->config->repo->gitTypeList))
+                if(strpos($repo->SCM, 'Git') !== false)
                 {
                     if($branchID) $this->repo->saveExistCommits4Branch($repo->id, $branchID);
 
@@ -1063,8 +1020,8 @@ class repo extends control
         set_time_limit(0);
         $repo = $this->repo->getRepoByID($repoID);
         if(empty($repo)) return;
-        if(!in_array($repo->SCM, $this->config->repo->gitTypeList)) return print('finish');
-        if($branch) $branch = base64_decode(helper::safe64Decode($branch));
+        if(strpos($repo->SCM, 'Git') === false) return print('finish');
+        if($branch) $branch = base64_decode($branch);
 
         $this->scm->setEngine($repo);
 
@@ -1074,7 +1031,7 @@ class repo extends control
         $latestInDB = $this->dao->select('DISTINCT t1.*')->from(TABLE_REPOHISTORY)->alias('t1')
             ->leftJoin(TABLE_REPOBRANCH)->alias('t2')->on('t1.id=t2.revision')
             ->where('t1.repo')->eq($repoID)
-            ->beginIF(in_array($repo->SCM, $this->config->repo->gitTypeList) and $this->cookie->repoBranch)->andWhere('t2.branch')->eq($this->cookie->repoBranch)->fi()
+            ->beginIF(strpos($repo->SCM, 'Git') !== false and $this->cookie->repoBranch)->andWhere('t2.branch')->eq($this->cookie->repoBranch)->fi()
             ->orderBy('t1.time')
             ->limit(1)
             ->fetch();
@@ -1112,7 +1069,7 @@ class repo extends control
      * @access public
      * @return void
      */
-    public function ajaxSideCommits($repoID, $path, $objectID = 0,  $type = 'dir', $recTotal = 0, $recPerPage = 10, $pageID = 1)
+    public function ajaxSideCommits($repoID, $path, $objectID = 0,  $type = 'dir', $recTotal = 0, $recPerPage = 8, $pageID = 1)
     {
         if($this->get->repoPath) $path = $this->get->repoPath;
         $this->app->loadClass('pager', $static = true);
@@ -1171,108 +1128,25 @@ class repo extends control
      * @access public
      * @return void
      */
-    public function ajaxGetDropMenu($repoID, $module = 'repo', $method = 'browse')
+    public function ajaxGetDropMenu($repoID, $type = 'repo', $objectID = 0)
     {
-        if($module == 'repo' and !in_array($method, array('review', 'diff'))) $method = 'browse';
-        if($module == 'mr')  $method = 'browse';
-        if($module == 'job') $method = 'browse';
-        if($module == 'compile' and $method == 'logs') $method = 'browse';
-        if($module == 'bug' and $method == 'view')
+        $repos = $this->repo->getRepoPairs($type, $objectID);
+        $reposHtml = "<div class='table-row'><div class='table-col col-left'><div class='list-group' style='margin-bottom: 0;'>";
+        foreach($repos as $id => $repoName)
         {
-            $module = 'repo';
-            $method = 'review';
+            $selected = $id == $repoID ? 'selected' : '';
+            $reposHtml .= html::a($this->createLink('repo', 'browse', "repoID=$id&branchID=&objectID=$objectID"), $repoName, '', "class='$selected' data-app='{$this->app->tab}'");
         }
+        $reposHtml .= '</div></div></div>';
 
-        /* Get repo group by type. */
-        $repoGroup = $this->repo->getRepoGroup($this->app->tab);
-        if($module == 'mr')
-        {
-            foreach($repoGroup as $type => $group)
-            {
-                if(!in_array(strtolower($type), $this->config->repo->gitServiceList)) unset($repoGroup[$type]);
-            }
-        }
-
-        $this->view->repoID    = $repoID;
-        $this->view->repoGroup = $repoGroup;
-        $this->view->link      = $this->createLink($module, $method, "repoID=%s");
-
-        $this->display();
-    }
-
-    /**
-     * Ajax get hosts.
-     *
-     * @param  int    $scm
-     * @access public
-     * @return void
-     */
-    public function ajaxGetHosts($scm)
-    {
-        $scm   = strtolower($scm);
-        $hosts = $this->loadModel($scm)->getPairs();
-        return print(html::select('pipelineHost', $hosts, '', "class='form-control chosen'"));
-    }
-
-    /**
-     * Ajax get projects by server.
-     *
-     * @param  int    $serverID
-     * @access public
-     * @return void
-     */
-    public function ajaxGetProjects($serverID)
-    {
-        $server         = $this->loadModel('pipeline')->getByID($serverID);
-        $getProjectFunc = 'ajaxGet' . $server->type . 'Projects';
-
-        $this->$getProjectFunc($serverID);
-    }
-
-    /**
-     * Ajax get gitea projects.
-     *
-     * @param  string $gitlabID
-     * @param  string $projectIdList
-     * @access public
-     * @return void
-     */
-    public function ajaxGetGiteaProjects($giteaID)
-    {
-        $projects = $this->loadModel('gitea')->apiGetProjects($giteaID);
-        if(!$projects) $this->send(array('message' => array()));
-
-        $options = "<option value=''></option>";
-        foreach($projects as $project) $options .= "<option value='{$project->full_name}' data-name='{$project->name}'>{$project->full_name}</option>";
-
-        return print($options);
-    }
-
-    /**
-     * Ajax get gogs projects.
-     *
-     * @param  string $gitlabID
-     * @param  string $projectIdList
-     * @access public
-     * @return void
-     */
-    public function ajaxGetGogsProjects($gogsID)
-    {
-        $projects = $this->loadModel('gogs')->apiGetProjects($gogsID);
-        $options = "<option value=''></option>";
-        if(!empty($projects))
-        {
-            foreach($projects as $project) $options .= "<option value='{$project->full_name}' data-name='{$project->name}'>{$project->full_name}</option>";
-        }
-
-        return print($options);
+        return print($reposHtml);
     }
 
     /**
      * Ajax get gitlab projects.
      *
-     * @param  string $gitlabID
-     * @param  string $token
+     * @param  string    $gitlabID
+     * @param  string    $token
      * @access public
      * @return void
      */
@@ -1300,6 +1174,7 @@ class repo extends control
                 }
             }
         }
+
 
         if(!$projects) $this->send(array('message' => array()));
         $projectIdList = $projectIdList ? explode(',', $projectIdList) : null;
@@ -1396,31 +1271,5 @@ class repo extends control
     {
         $executions = $this->repo->getExecutionPairs($productID, $branch);
         echo html::select('execution', array('' => '') + $executions, '', 'class="form-control chosen"');
-    }
-
-    /**
-     * Download zip code.
-     *
-     * @param  int    $repoID
-     * @param  string $branch
-     * @access public
-     * @return void
-     */
-    public function downloadCode($repoID = 0, $branch = '')
-    {
-        $repo     = $this->repo->getRepoByID($repoID);
-        $savePath = $this->app->getDataRoot() . 'repo';
-        if(!is_dir($savePath))
-        {
-            if(!is_writable($this->app->getDataRoot())) return print(js::alert(sprintf($this->lang->repo->error->noWritable, dirname($savePath))) . js::close());
-            mkdir($savePath, 0777, true);
-        }
-
-        $repo = $this->repo->getRepoByID($repoID);
-        $this->scm = $this->app->loadClass('scm');
-        $this->scm->setEngine($repo);
-        $url = $this->scm->getDownloadUrl($branch, $savePath);
-
-        $this->locate($url);
     }
 }
