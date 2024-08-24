@@ -3,7 +3,7 @@
  * The zh-tw file of design module.
  *
  * @copyright   Copyright 2009-2020 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Shujie Tian <tianshujie@easycorp.ltd>
  * @package     design
  * @version     $Id: zh-tw.php 4729 2020-09-01 07:53:55Z tianshujie@easycorp.ltd $
@@ -33,10 +33,12 @@ $lang->design->affectedStory = "影響{$lang->SRCommon}";
 $lang->design->affectedTasks = '影響任務';
 $lang->design->reviewObject  = '評審對象';
 $lang->design->createdBy     = '由誰創建';
+$lang->design->createdByAB   = '創建者';
 $lang->design->createdDate   = '創建時間';
 $lang->design->basicInfo     = '基本信息';
 $lang->design->noAssigned    = '未指派';
 $lang->design->comment       = '註釋';
+$lang->design->more          = '更多';
 
 /* 動作列表. */
 $lang->design->common       = '設計';

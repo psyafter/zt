@@ -3,7 +3,7 @@
  * The bug module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     bug
  * @version     $Id: zh-tw.php 4536 2013-03-02 13:39:37Z wwccss $
@@ -19,6 +19,7 @@ $lang->bug->module           = '所屬模組';
 $lang->bug->moduleAB         = '模組';
 $lang->bug->project          = '所屬項目';
 $lang->bug->execution        = '所屬' . $lang->execution->common;
+$lang->bug->kanban           = '所屬看板';
 $lang->bug->story            = "相關需求";
 $lang->bug->storyVersion     = "{$lang->SRCommon}版本";
 $lang->bug->color            = '標題顏色';
@@ -33,9 +34,12 @@ $lang->bug->browser          = '瀏覽器';
 $lang->bug->hardware         = '硬件';
 $lang->bug->result           = '結果';
 $lang->bug->repo             = '所屬版本庫';
+$lang->bug->mr               = '合併請求';
+$lang->bug->entry            = '代碼路徑';
 $lang->bug->lines            = '代碼行';
 $lang->bug->v1               = '版本1';
 $lang->bug->v2               = '版本2';
+$lang->bug->issueKey         = 'Sonarqube問題鍵值';
 $lang->bug->repoType         = '版本庫類型';
 $lang->bug->steps            = '重現步驟';
 $lang->bug->status           = 'Bug狀態';
@@ -57,6 +61,7 @@ $lang->bug->openedDate       = '創建日期';
 $lang->bug->openedDateAB     = '創建日期';
 $lang->bug->openedBuild      = '影響版本';
 $lang->bug->assignedTo       = '指派給';
+$lang->bug->assignedToMe     = '指派給我';
 $lang->bug->assignBug        = '指派給';
 $lang->bug->assignedToAB     = '指派給';
 $lang->bug->assignedDate     = '指派日期';
@@ -72,7 +77,7 @@ $lang->bug->deadlineAB       = '截止';
 $lang->bug->plan             = '所屬' . '計劃';
 $lang->bug->closedBy         = '由誰關閉';
 $lang->bug->closedDate       = '關閉日期';
-$lang->bug->duplicateBug     = '重複ID';
+$lang->bug->duplicateBug     = '重複Bug';
 $lang->bug->lastEditedBy     = '最後修改者';
 $lang->bug->linkBug          = '相關Bug';
 $lang->bug->linkBugs         = '關聯相關Bug';
@@ -89,6 +94,11 @@ $lang->bug->fromCase         = '來源用例';
 $lang->bug->toCase           = '生成用例';
 $lang->bug->colorTag         = '顏色標籤';
 $lang->bug->fixedRate        = '修復率';
+$lang->bug->noticefeedbackBy = '通知反饋者';
+$lang->bug->selectProjects   = '選擇項目';
+$lang->bug->nextStep         = '下一步';
+$lang->bug->noProject        = '還沒有選擇項目！';
+$lang->bug->noExecution      = "還沒有選擇{$lang->execution->common}！";
 
 /* 方法列表。*/
 $lang->bug->index              = '首頁';
@@ -132,6 +142,7 @@ $lang->bug->assignToMe         = '指派給我';
 $lang->bug->openedByMe         = '由我創建';
 $lang->bug->resolvedByMe       = '由我解決';
 $lang->bug->closedByMe         = '由我關閉';
+$lang->bug->assignedByMe       = '由我指派';
 $lang->bug->assignToNull       = '未指派';
 $lang->bug->unResolved         = '未解決';
 $lang->bug->toClosed           = '待關閉';
@@ -164,6 +175,8 @@ $lang->bug->labelConfirmed = '已確認';
 $lang->bug->labelPostponed = '被延期';
 $lang->bug->changed        = '已變動';
 $lang->bug->storyChanged   = '需求變動';
+$lang->bug->linkMR         = '相關合併請求';
+$lang->bug->duplicateTip   = '請輸入關鍵字';
 
 /* 頁面標籤。*/
 $lang->bug->lblAssignedTo = '當前指派';
@@ -174,10 +187,11 @@ $lang->bug->allUsers      = '加載所有用戶';
 $lang->bug->allBuilds     = '所有';
 $lang->bug->createBuild   = '創建';
 
+global $config;
 /* legend列表。*/
 $lang->bug->legendBasicInfo             = '基本信息';
 $lang->bug->legendAttatch               = '附件';
-$lang->bug->legendPRJExecStoryTask      = "項目/" . $lang->executionCommon . "/{$lang->SRCommon}/任務";
+$lang->bug->legendPRJExecStoryTask      = $config->systemMode == 'new' ? "項目/" . $lang->executionCommon . "/{$lang->SRCommon}/任務" : $lang->executionCommon . "/{$lang->SRCommon}/任務";
 $lang->bug->legendExecStoryTask         = $lang->executionCommon . "/{$lang->SRCommon}/任務";
 $lang->bug->lblTypeAndSeverity          = '類型/嚴重程度';
 $lang->bug->lblSystemBrowserAndHardware = '系統/瀏覽器';
@@ -196,11 +210,12 @@ $lang->bug->summary               = "本頁共 <strong>%s</strong> 個Bug，未�
 $lang->bug->confirmChangeProduct  = "修改{$lang->productCommon}會導致相應的{$lang->executionCommon}、{$lang->SRCommon}和任務發生變化，確定嗎？";
 $lang->bug->confirmDelete         = '您確認要刪除該Bug嗎？';
 $lang->bug->remindTask            = '該Bug已經轉化為任務，是否更新任務(編號:%s)狀態 ?';
-$lang->bug->skipClose             = 'Bug %s 不是已解決狀態，不能關閉。';
+$lang->bug->skipClose             = 'Bug %s 不是已解決狀態，不能關閉，將自動忽略。';
 $lang->bug->executionAccessDenied = "您無權訪問該Bug所屬的{$lang->executionCommon}！";
 $lang->bug->stepsNotEmpty         = "重現步驟不能為空。";
 $lang->bug->confirmUnlinkBuild    = "更換解決版本將取消與舊版本的關聯，您確定取消該bug與%s的關聯嗎？";
 $lang->bug->noSwitchBranch        = 'Bug%s所屬模組不在當前分支下，將自動忽略。';
+$lang->bug->confirmToStory        = '轉需求後Bug將自動關閉，關閉原因為轉為需求。';
 
 /* 模板。*/
 $lang->bug->tplStep   = "<p>[步驟]</p><br/>";
@@ -219,51 +234,39 @@ $lang->bug->priList[2] = '2';
 $lang->bug->priList[3] = '3';
 $lang->bug->priList[4] = '4';
 
-$lang->bug->osList['']        = '';
-$lang->bug->osList['all']     = '全部';
-$lang->bug->osList['windows'] = 'Windows';
-$lang->bug->osList['win10']   = 'Windows 10';
-$lang->bug->osList['win8']    = 'Windows 8';
-$lang->bug->osList['win7']    = 'Windows 7';
-$lang->bug->osList['vista']   = 'Windows Vista';
-$lang->bug->osList['winxp']   = 'Windows XP';
-$lang->bug->osList['win2012'] = 'Windows 2012';
-$lang->bug->osList['win2008'] = 'Windows 2008';
-$lang->bug->osList['win2003'] = 'Windows 2003';
-$lang->bug->osList['win2000'] = 'Windows 2000';
-$lang->bug->osList['android'] = 'Android';
-$lang->bug->osList['ios']     = 'IOS';
-$lang->bug->osList['wp8']     = 'WP8';
-$lang->bug->osList['wp7']     = 'WP7';
-$lang->bug->osList['symbian'] = 'Symbian';
-$lang->bug->osList['linux']   = 'Linux';
-$lang->bug->osList['freebsd'] = 'FreeBSD';
-$lang->bug->osList['osx']     = 'OS X';
-$lang->bug->osList['unix']    = 'Unix';
-$lang->bug->osList['others']  = '其他';
+$lang->bug->osList['']         = '';
+$lang->bug->osList['all']      = '全部';
+$lang->bug->osList['windows']  = 'Windows';
+$lang->bug->osList['win11']    = 'Windows 11';
+$lang->bug->osList['win10']    = 'Windows 10';
+$lang->bug->osList['win8']     = 'Windows 8';
+$lang->bug->osList['win7']     = 'Windows 7';
+$lang->bug->osList['winxp']    = 'Windows XP';
+$lang->bug->osList['osx']      = 'Mac OS';
+$lang->bug->osList['android']  = 'Android';
+$lang->bug->osList['ios']      = 'IOS';
+$lang->bug->osList['linux']    = 'Linux';
+$lang->bug->osList['ubuntu']   = 'Ubuntu';
+$lang->bug->osList['chromeos'] = 'Chrome OS';
+$lang->bug->osList['fedora']   = 'Fedora';
+$lang->bug->osList['unix']     = 'Unix';
+$lang->bug->osList['others']   = '其他';
 
-$lang->bug->browserList['']         = '';
-$lang->bug->browserList['all']      = '全部';
-$lang->bug->browserList['ie']       = 'IE系列';
-$lang->bug->browserList['ie11']     = 'IE11';
-$lang->bug->browserList['ie10']     = 'IE10';
-$lang->bug->browserList['ie9']      = 'IE9';
-$lang->bug->browserList['ie8']      = 'IE8';
-$lang->bug->browserList['ie7']      = 'IE7';
-$lang->bug->browserList['ie6']      = 'IE6';
-$lang->bug->browserList['chrome']   = 'chrome';
-$lang->bug->browserList['firefox']  = 'firefox系列';
-$lang->bug->browserList['firefox4'] = 'firefox4';
-$lang->bug->browserList['firefox3'] = 'firefox3';
-$lang->bug->browserList['firefox2'] = 'firefox2';
-$lang->bug->browserList['opera']    = 'opera系列';
-$lang->bug->browserList['oprea11']  = 'opera11';
-$lang->bug->browserList['oprea10']  = 'opera10';
-$lang->bug->browserList['opera9']   = 'opera9';
-$lang->bug->browserList['safari']   = 'safari';
-$lang->bug->browserList['maxthon']  = '傲游';
-$lang->bug->browserList['uc']       = 'UC';
-$lang->bug->browserList['other']    = '其他';
+$lang->bug->browserList['']        = '';
+$lang->bug->browserList['all']     = '全部';
+$lang->bug->browserList['chrome']  = 'Chrome';
+$lang->bug->browserList['edge']    = 'Edge';
+$lang->bug->browserList['ie']      = 'IE系列';
+$lang->bug->browserList['ie11']    = 'IE11';
+$lang->bug->browserList['ie10']    = 'IE10';
+$lang->bug->browserList['ie9']     = 'IE9';
+$lang->bug->browserList['ie8']     = 'IE8';
+$lang->bug->browserList['firefox'] = 'firefox系列';
+$lang->bug->browserList['opera']   = 'Opera系列';
+$lang->bug->browserList['safari']  = 'safari';
+$lang->bug->browserList['360']     = '360瀏覽器';
+$lang->bug->browserList['qq']      = 'QQ瀏覽器';
+$lang->bug->browserList['other']   = '其他';
 
 $lang->bug->typeList['']             = '';
 $lang->bug->typeList['codeerror']    = '代碼錯誤';
@@ -282,8 +285,8 @@ $lang->bug->statusList['resolved'] = '已解決';
 $lang->bug->statusList['closed']   = '已關閉';
 
 $lang->bug->confirmedList[''] = '';
-$lang->bug->confirmedList[1]  = '是';
-$lang->bug->confirmedList[0]  = '否';
+$lang->bug->confirmedList[1]  = '已確認';
+$lang->bug->confirmedList[0]  = '未確認';
 
 $lang->bug->resolutionList['']           = '';
 $lang->bug->resolutionList['bydesign']   = '設計如此';
@@ -396,6 +399,7 @@ $lang->bug->action = new stdclass();
 $lang->bug->action->resolved            = array('main' => '$date, 由 <strong>$actor</strong> 解決，方案為 <strong>$extra</strong> $appendLink。', 'extra' => 'resolutionList');
 $lang->bug->action->tostory             = array('main' => '$date, 由 <strong>$actor</strong> 轉為<strong> ' . $lang->SRCommon . '</strong>，編號為 <strong>$extra</strong>。');
 $lang->bug->action->totask              = array('main' => '$date, 由 <strong>$actor</strong> 導入為<strong>任務</strong>，編號為 <strong>$extra</strong>。');
+$lang->bug->action->converttotask       = array('main' => '$date, 由 <strong>$actor</strong> 轉為<strong>任務</strong>，編號為 <strong>$extra</strong>。');
 $lang->bug->action->linked2plan         = array('main' => '$date, 由 <strong>$actor</strong> 關聯到計劃 <strong>$extra</strong>。');
 $lang->bug->action->unlinkedfromplan    = array('main' => '$date, 由 <strong>$actor</strong> 從計劃 <strong>$extra</strong> 移除。');
 $lang->bug->action->linked2build        = array('main' => '$date, 由 <strong>$actor</strong> 關聯到版本 <strong>$extra</strong>。');
@@ -409,12 +413,12 @@ $lang->bug->placeholder = new stdclass();
 $lang->bug->placeholder->chooseBuilds = '選擇相關版本...';
 $lang->bug->placeholder->newBuildName = '新版本名稱';
 
-$lang->bug->featureBar['browse']['all']          = $lang->bug->allBugs;
+$lang->bug->featureBar['browse']['all']          = '全部';
 $lang->bug->featureBar['browse']['unclosed']     = $lang->bug->unclosed;
 $lang->bug->featureBar['browse']['openedbyme']   = $lang->bug->openedByMe;
 $lang->bug->featureBar['browse']['assigntome']   = $lang->bug->assignToMe;
 $lang->bug->featureBar['browse']['resolvedbyme'] = $lang->bug->resolvedByMe;
-$lang->bug->featureBar['browse']['toclosed']     = $lang->bug->toClosed;
+$lang->bug->featureBar['browse']['assignedbyme'] = $lang->bug->assignedByMe;
 $lang->bug->featureBar['browse']['unresolved']   = $lang->bug->unResolved;
 $lang->bug->featureBar['browse']['more']         = $lang->more;
 
@@ -422,6 +426,7 @@ $lang->bug->featureBar['browse']['more']         = $lang->more;
 $lang->bug->moreSelects['unconfirmed']   = $lang->bug->unconfirmed;
 $lang->bug->moreSelects['assigntonull']  = $lang->bug->assignToNull;
 $lang->bug->moreSelects['longlifebugs']  = $lang->bug->longLifeBugs;
+$lang->bug->moreSelects['toclosed']      = $lang->bug->toClosed;
 $lang->bug->moreSelects['postponedbugs'] = $lang->bug->postponedBugs;
 $lang->bug->moreSelects['overduebugs']   = $lang->bug->overdueBugs;
 $lang->bug->moreSelects['needconfirm']   = $lang->bug->needConfirm;

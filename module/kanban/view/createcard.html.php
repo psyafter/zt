@@ -3,9 +3,9 @@
  * The create card view of kanban module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Shujie Tian<tianshujie@cnezsoft.com>
- * @package     kanban 
+ * @package     kanban
  * @version     $Id: createcard.html.php 5090 2021-12-13 13:49:24Z tainshujie@cnezsoft.com $
  * @link        https://www.zentao.pm
  */
@@ -36,10 +36,16 @@
               <div class='table-col w-120px'>
                 <div class="input-group">
                   <span class="input-group-addon fix-border br-0"><?php echo $lang->kanbancard->estimate;?></span>
-                  <input type="text" name="estimate" id="estimate" class="form-control" autocomplete="off" placeholder=<?php echo $lang->kanbancard->lblHour;?>>
+                  <?php echo html::input('estimate', '', "class='form-control' placeholder='{$lang->kanbancard->lblHour}' autocomplete='off'");?>
                 </div>
               </div>
             </div>
+          </td>
+        </tr>
+        <tr>
+          <th><?php echo $lang->kanbanlane->common;?></th>
+          <td colspan='2'>
+            <?php echo html::select('lane', $lanePairs, key($lanePairs), "class='form-control chosen'");?>
           </td>
         </tr>
         <tr>

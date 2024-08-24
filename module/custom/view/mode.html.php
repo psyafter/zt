@@ -3,7 +3,7 @@
  * The set view file of custom module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Tingting Dai <daitingting@xirangit.com>
  * @package     custom
  * @version     $Id$
@@ -32,12 +32,12 @@
       </tr>
       <tr>
         <td></td>
-        <td><?php if($changedMode != 'yes') echo html::submitButton($lang->custom->switch);?></td>
+        <td>
+          <?php if($changedMode != 'yes') echo html::submitButton($lang->custom->switch);?>
+          <div id='changeModeTips' class='text-danger hidden'><?php echo $lang->custom->changeModeTips;?></div>
+        </td>
       </tr>
     </table>
   </form>
 </div>
-<script>
-$('#modeTab').addClass('btn-active-text');
-</script>
 <?php include '../../common/view/footer.html.php';?>

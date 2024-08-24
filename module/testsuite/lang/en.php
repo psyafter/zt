@@ -3,7 +3,7 @@
  * The testsuite module en file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     testsuite
  * @version     $Id: zh-cn.php 4490 2013-02-27 03:27:05Z wyd621@gmail.com $
@@ -24,6 +24,7 @@ $lang->testsuite->deleted          = 'Deleted';
 $lang->testsuite->successSaved     = 'Saved';
 
 $lang->testsuite->id             = 'ID';
+$lang->testsuite->pri            = 'Priority';
 $lang->testsuite->common         = 'Test Suite';
 $lang->testsuite->project        = 'Project';
 $lang->testsuite->product        = $lang->productCommon;
@@ -47,9 +48,12 @@ $lang->testsuite->confirmUnlinkCase = 'Do you want to unlink this Case?';
 $lang->testsuite->noticeNone        = 'You have not created any suite yet.';
 $lang->testsuite->noModule          = '<div>You have no modules.</div><div>Manage it now.</div>';
 $lang->testsuite->noTestsuite       = 'No suites yet.';
+$lang->testsuite->summary           = "Total suites: <strong>%total%</strong>, public: <strong>%public%</strong>, private: <strong>%private%</strong>.";
 
 $lang->testsuite->lblCases      = 'Cases';
 $lang->testsuite->lblUnlinkCase = 'Unlink Case';
 
 $lang->testsuite->authorList['private'] = 'Private';
 $lang->testsuite->authorList['public']  = 'Public';
+
+$lang->testsuite->featureBar['browse']['all'] = 'Suite List';

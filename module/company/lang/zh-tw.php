@@ -3,7 +3,7 @@
  * The company module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     company
  * @version     $Id: zh-tw.php 4714 2013-05-02 08:10:58Z chencongzhi520@gmail.com $
@@ -32,8 +32,9 @@ $lang->company->deleted  = '已刪除';
 
 $lang->company->product   = $lang->productCommon;
 $lang->company->project   = '項目';
-$lang->company->execution = '執行';
+$lang->company->execution = $lang->executionCommon;
 $lang->company->user      = '用戶';
+$lang->company->empty     = '暫時沒有動態';
 
 $lang->company->guestOptions[0] = '不允許';
 $lang->company->guestOptions[1] = '允許';

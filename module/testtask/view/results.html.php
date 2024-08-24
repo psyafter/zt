@@ -3,7 +3,7 @@
  * The resutls view file of testtask of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testtask
  * @version     $Id: results.html.php 4129 2013-01-18 01:58:14Z wwccss $
@@ -120,7 +120,7 @@
                     <?php endif; endif; $childId++;?>
                   </tr>
                   <?php endforeach;?>
-                  <?php if($result->caseResult == 'fail'):?>
+                  <?php if($result->caseResult == 'fail' and common::hasPriv('testcase', 'createBug')):?>
                   <tr>
                     <td></td><td></td><td></td><td></td><td></td><td></td>
                     <td><?php echo html::commonButton($lang->testcase->createBug, "onclick='createBug(this)'", "btn btn-primary createBtn");?></td>

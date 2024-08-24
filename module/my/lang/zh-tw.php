@@ -10,8 +10,8 @@ $lang->my->work            = '待處理';
 $lang->my->contribute      = '貢獻';
 $lang->my->task            = '我的任務';
 $lang->my->bug             = '我的Bug';
-$lang->my->testTask        = '我的版本';
-$lang->my->testCase        = '我的用例';
+$lang->my->myTestTask      = '我的版本';
+$lang->my->myTestCase      = '我的用例';
 $lang->my->story           = "我的{$lang->SRCommon}";
 $lang->my->doc             = "我的文檔";
 $lang->my->createProgram   = '添加項目';
@@ -41,6 +41,11 @@ $lang->my->requirement     = "我的{$lang->URCommon}";
 $lang->my->testtask        = '我的測試單';
 $lang->my->testcase        = '我的用例';
 $lang->my->storyConcept    = $config->URAndSR ? '預設需求概念組合' : '預設需求概念';
+$lang->my->pri             = '優先順序';
+$lang->my->alert           = '後續您可以點擊右上方的頭像，選擇“個性化設置”修改信息。';
+$lang->my->assignedToMe    = '指派給我';
+$lang->my->byQuery         = '搜索';
+$lang->my->contactList     = '聯繫人列表';
 
 $lang->my->indexAction      = '地盤儀表盤';
 $lang->my->calendarAction   = '我的日程';
@@ -56,7 +61,7 @@ $lang->my->projects     = '所屬項目';
 $lang->my->executions   = "所屬{$lang->executionCommon}";
 
 $lang->my->executionMenu = new stdclass();
-$lang->my->executionMenu->undone = '未結束';
+$lang->my->executionMenu->undone = '未完成';
 $lang->my->executionMenu->done   = '已完成';
 
 $lang->my->taskMenu = new stdclass();
@@ -65,6 +70,7 @@ $lang->my->taskMenu->openedByMe   = '由我創建';
 $lang->my->taskMenu->finishedByMe = '由我完成';
 $lang->my->taskMenu->closedByMe   = '由我關閉';
 $lang->my->taskMenu->canceledByMe = '由我取消';
+$lang->my->taskMenu->assignedByMe = '由我指派';
 
 $lang->my->storyMenu = new stdclass();
 $lang->my->storyMenu->assignedToMe = '指派給我';
@@ -72,6 +78,7 @@ $lang->my->storyMenu->reviewByMe   = '待我評審';
 $lang->my->storyMenu->openedByMe   = '由我創建';
 $lang->my->storyMenu->reviewedByMe = '由我評審';
 $lang->my->storyMenu->closedByMe   = '由我關閉';
+$lang->my->storyMenu->assignedByMe = '由我指派';
 
 $lang->my->projectMenu = new stdclass();
 $lang->my->projectMenu->doing      = '進行中';

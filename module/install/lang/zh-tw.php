@@ -3,7 +3,7 @@
  * The install module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     install
  * @version     $Id: zh-tw.php 4972 2013-07-02 06:50:10Z zhujinyonging@gmail.com $
@@ -23,9 +23,9 @@ $lang->install->start            = '開始安裝';
 $lang->install->keepInstalling   = '繼續安裝當前版本';
 $lang->install->seeLatestRelease = '看看最新的版本';
 $lang->install->welcome          = '歡迎使用禪道項目管理軟件！';
-$lang->install->license          = '禪道項目管理軟件使用 Z PUBLIC LICENSE(ZPL) 1.2 授權協議';
+$lang->install->license          = '禪道項目管理軟件授權協議';
 $lang->install->desc             = <<<EOT
-禪道項目管理軟件(ZenTaoPMS)是一款國產的，基于<a href='http://zpl.pub' target='_blank'>ZPL</a>協議，開源免費的項目管理軟件，它集產品管理、項目管理、測試管理於一體，同時還包含了事務管理、組織管理等諸多功能，是中小型企業項目管理的首選。
+禪道項目管理軟件(ZenTaoPMS)是一款國產的，基于<a href='http://zpl.pub/page/zplv12.html' target='_blank'>ZPL</a>或<a href='https://www.gnu.org/licenses/agpl-3.0.en.html' target='_blank'>AGPL</a>雙授權協議，開源免費的項目管理軟件，它集產品管理、項目管理、測試管理於一體，同時還包含了事務管理、組織管理等諸多功能，是中小型企業項目管理的首選。
 
 禪道項目管理軟件使用PHP + MySQL開發，基于自主的PHP開發框架──ZenTaoPHP而成。第三方開發者或者企業可以非常方便的開發插件或者進行定製。
 EOT;
@@ -48,17 +48,17 @@ $lang->install->introductionContent = <<<EOT
   <h4>尊敬的用戶您好，歡迎您使用禪道項目管理系統。</h4>
   <p> 禪道自15系列開始提供了兩種使用模式，一種是經典管理模式，功能較為精簡，主要提供了產品和項目兩個核心功能；另一種是全新項目集管理模式，增加了項目集和執行的概念。下面是全新項目集管理模式的介紹：</p>
   <div class='block-content'>
-    <div class='block-details'><p class='block-title'><i class='icon icon-program'></i><strong>項目集</strong></p><p>項目集用來管理一組相關的產品和項目，公司高層或者PMO可以用來做戰略規劃。</p></div>
+    <div class='block-details'><p class='block-title'><i class='icon icon-program'></i> <strong>項目集</strong></p><p>項目集用來管理一組相關的產品和項目，公司高層或者PMO可以用來做戰略規劃。</p></div>
     <div class='block-details block-right'>
-      <p class='block-title'><i class='icon icon-product'></i><strong>產品</strong></p>
+      <p class='block-title'><i class='icon icon-product'></i> <strong>產品</strong></p>
       <p>產品用來將公司的戰略細分為可以進行研發的需求，產品經理可以用來做產品的發佈計劃。<p>
     </div>
     <div class='block-details'>
-      <p class='block-title'><i class='icon icon-project'></i><strong>項目</strong></p>
+      <p class='block-title'><i class='icon icon-project'></i> <strong>項目</strong></p>
       <p>項目用來組織相應的人力進行研發，做好項目過程的跟蹤管理，多快好省地完成項目。</p>
     </div>
     <div class='block-details block-right'>
-      <p class='block-title'><i class='icon icon-run'></i><strong>執行</strong></p>
+      <p class='block-title'><i class='icon icon-run'></i> <strong>執行</strong></p>
       <p>執行用來做任務的分解、指派和跟蹤，保證項目目標可以落實到人來執行。<p>
     </div>
   </div>
@@ -116,7 +116,7 @@ $lang->install->sessionFail  = '修改PHP配置檔案，設置session.save_path�
 $lang->install->mkdirWin     = '<p>需要創建目錄%s。命令為：<br /> mkdir %s</p>';
 $lang->install->chmodWin     = '需要修改目錄 "%s" 的權限。';
 $lang->install->mkdirLinux   = '<p>需要創建目錄%s。<br /> 命令為：<br /> mkdir -p %s</p>';
-$lang->install->chmodLinux   = '需要修改目錄 "%s" 的權限。<br />命令為：<br />chmod o=rwx -R %s';
+$lang->install->chmodLinux   = '需要修改目錄 "%s" 的權限。<br />命令為：<br />chmod 777 -R %s';
 
 $lang->install->timezone       = '時區設置';
 $lang->install->defaultLang    = '預設語言';
@@ -153,11 +153,83 @@ $lang->install->save2File          = '<div class="alert alert-warning">拷貝上
 $lang->install->saved2File         = '配置信息已經成功保存到" <strong>%s</strong> "中。您後面還可繼續修改此檔案。';
 $lang->install->errorNotSaveConfig = '還沒有保存配置檔案';
 
+global $app;
+$lang->install->CSRFNotice = "系統已開啟了CSRF的防禦，如需關閉，請聯繫管理員到{$app->basePath}config/config.php檔案中手動關閉。";
+
 $lang->install->getPriv            = '設置帳號';
 $lang->install->company            = '公司名稱';
 $lang->install->account            = '管理員帳號';
 $lang->install->password           = '管理員密碼';
-$lang->install->errorEmptyPassword = '密碼不能為空';
+
+$lang->install->placeholder = new stdclass();
+$lang->install->placeholder->password = '6位及以上，包含大小寫字母，數字。';
+
+$lang->install->errorEmpty['company']  = "{$lang->install->company}不能為空";
+$lang->install->errorEmpty['account']  = "{$lang->install->account}不能為空";
+$lang->install->errorEmpty['password'] = "{$lang->install->password}不能為空";
+
+$lang->install->langList['1'] = array('module' => 'process', 'key' => 'support', 'value' => '支持過程');
+$lang->install->langList['2'] = array('module' => 'process', 'key' => 'engineering', 'value' => '工程支持');
+$lang->install->langList['3'] = array('module' => 'process', 'key' => 'project', 'value' => '項目管理');
+
+$lang->install->processList['11'] = '立項管理';
+$lang->install->processList['12'] = '項目規劃';
+$lang->install->processList['13'] = '項目監控';
+$lang->install->processList['14'] = '風險管理';
+$lang->install->processList['15'] = '結項管理';
+$lang->install->processList['16'] = '量化項目管理';
+$lang->install->processList['17'] = '需求開發';
+$lang->install->processList['18'] = '設計開發';
+$lang->install->processList['19'] = '實現與測試';
+$lang->install->processList['20'] = '系統測試';
+$lang->install->processList['21'] = '客戶驗收';
+$lang->install->processList['22'] = '質量保證';
+$lang->install->processList['23'] = '配置管理';
+$lang->install->processList['24'] = '度量分析';
+$lang->install->processList['25'] = '原因分析與解決';
+$lang->install->processList['26'] = '決策分析';
+
+$lang->install->basicmeasList['2'] = array('name' => '項目用戶需求初始規模', 'unit' => '故事點或功能點', 'definition' => '項目每個產品的第一個用戶需求規格說明書基線版本的規模之和');
+$lang->install->basicmeasList['3'] = array('name' => '項目軟件需求初始規模', 'unit' => '故事點或功能點', 'definition' => '項目每個產品的第一個軟件需求規格說明書基線版本的規模之和');
+$lang->install->basicmeasList['4'] = array('name' => '項目用戶需求實時規模', 'unit' => '故事點或功能點', 'definition' => '項目用戶需求實際的規模');
+$lang->install->basicmeasList['5'] = array('name' => '項目軟件需求實時規模', 'unit' => '故事點或功能點', 'definition' => '項目軟件需求實際的規模');
+$lang->install->basicmeasList['6'] = array('name' => '項目估算規模', 'unit' => '故事點或功能點', 'definition' => '項目最初估算時估計的規模');
+$lang->install->basicmeasList['8'] = array('name' => '項目需求階段計劃天數', 'unit' => '天', 'definition' => '項目下面所有需求階段計劃天數的和');
+$lang->install->basicmeasList['9'] = array('name' => '項目設計階段計劃天數', 'unit' => '天', 'definition' => '項目下面所有設計階段計劃天數的和');
+$lang->install->basicmeasList['10'] = array('name' => '項目開發階段計劃天數', 'unit' => '天', 'definition' => '項目下面所有研發階段計劃天數的和');
+$lang->install->basicmeasList['11'] = array('name' => '項目測試階段計劃天數', 'unit' => '天', 'definition' => '項目下面所有測試階段計劃天數的和');
+$lang->install->basicmeasList['12'] = array('name' => '項目需求階段實際天數', 'unit' => '天', 'definition' => '項目下面所有需求階段實際天數的和');
+$lang->install->basicmeasList['13'] = array('name' => '項目設計階段實際天數', 'unit' => '天', 'definition' => '項目下面所有設計階段實際天數的和');
+$lang->install->basicmeasList['14'] = array('name' => '項目開發階段實際天數', 'unit' => '天', 'definition' => '項目下面所有研發階段實際天數的和');
+$lang->install->basicmeasList['15'] = array('name' => '項目測試階段實際天數', 'unit' => '天', 'definition' => '項目下面所有測試階段實際天數的和');
+$lang->install->basicmeasList['26'] = array('name' => '分產品需求階段計劃天數', 'unit' => '天', 'definition' => '產品下面所有需求階段計劃天數的和');
+$lang->install->basicmeasList['27'] = array('name' => '分產品設計階段計劃天數', 'unit' => '天', 'definition' => '產品下面所有設計階段計劃天數的和');
+$lang->install->basicmeasList['28'] = array('name' => '分產品開發階段計劃天數', 'unit' => '天', 'definition' => '產品下面所有研發階段計劃天數的和');
+$lang->install->basicmeasList['29'] = array('name' => '分產品測試階段計劃天數', 'unit' => '天', 'definition' => '產品下面所有測試階段計劃天數的和');
+$lang->install->basicmeasList['30'] = array('name' => '分產品需求階段實際天數', 'unit' => '天', 'definition' => '產品下面所有需求階段實際天數的和');
+$lang->install->basicmeasList['31'] = array('name' => '分產品設計階段實際天數', 'unit' => '天', 'definition' => '產品下面所有設計階段實際天數的和');
+$lang->install->basicmeasList['32'] = array('name' => '分產品開發階段實際天數', 'unit' => '天', 'definition' => '產品下面所有研發階段實際天數的和');
+$lang->install->basicmeasList['33'] = array('name' => '分產品測試階段實際天數', 'unit' => '天', 'definition' => '產品下面所有測試階段實際天數的和');
+$lang->install->basicmeasList['34'] = array('name' => '項目任務實時預計工時數', 'unit' => '小時', 'definition' => '項目下面所有任務的最初預計工時和');
+$lang->install->basicmeasList['35'] = array('name' => '項目需求工作實時總預計工時數', 'unit' => '小時', 'definition' => '項目所有需求相關任務的最初預計工時和');
+$lang->install->basicmeasList['36'] = array('name' => '項目設計工作實時總預計工時數', 'unit' => '小時', 'definition' => '項目所有設計相關任務的最初預計工時和');
+$lang->install->basicmeasList['37'] = array('name' => '項目開發工作實時總預計工時數', 'unit' => '小時', 'definition' => '項目所有開發相關任務的最初預計工時和');
+$lang->install->basicmeasList['38'] = array('name' => '項目測試工作實時總預計工時數', 'unit' => '小時', 'definition' => '項目所有測試相關任務的最初預計工時和');
+$lang->install->basicmeasList['39'] = array('name' => '項目任務實際消耗工時數', 'unit' => '小時', 'definition' => '項目下面所有任務的實際消耗工時和');
+$lang->install->basicmeasList['40'] = array('name' => '項目需求工作實際消耗工時數', 'unit' => '小時', 'definition' => '項目所有需求相關任務的實際消耗工時和');
+$lang->install->basicmeasList['41'] = array('name' => '項目設計工作實際消耗工時數', 'unit' => '小時', 'definition' => '項目所有設計相關任務的實際消耗工時和');
+$lang->install->basicmeasList['42'] = array('name' => '項目開發工作實際消耗工時數', 'unit' => '小時', 'definition' => '項目所有開發相關任務的實際消耗工時和');
+$lang->install->basicmeasList['43'] = array('name' => '項目測試工作實際消耗工時數', 'unit' => '小時', 'definition' => '項目所有測試相關任務的實際消耗工時和');
+$lang->install->basicmeasList['44'] = array('name' => '項目開發工作最初總預計工時數', 'unit' => '小時', 'definition' => '項目計劃第一個基線版本中所有開發相關工作最初預計工時和');
+$lang->install->basicmeasList['45'] = array('name' => '項目設計工作最初總預計工時數', 'unit' => '小時', 'definition' => '項目計劃第一個基線版本中所有設計相關工作最初預計工時和');
+$lang->install->basicmeasList['46'] = array('name' => '項目測試工作最初總預計工時數', 'unit' => '小時', 'definition' => '項目計劃第一個基線版本中所有測試相關工作最初預計工時和');
+$lang->install->basicmeasList['47'] = array('name' => '項目需求工作最初總預計工時數', 'unit' => '小時', 'definition' => '項目計劃第一個基線版本中所有需求相關工作最初預計工時和');
+$lang->install->basicmeasList['48'] = array('name' => '項目任務最初總預計工時數', 'unit' => '小時', 'definition' => '項目計劃第一個基線版本中所有任務最初預計工時和');
+$lang->install->basicmeasList['49'] = array('name' => '項目開發工作最終總預計工時數', 'unit' => '小時', 'definition' => '項目計劃最後一個基線版本中所有開發相關任務最初預計工時和');
+$lang->install->basicmeasList['50'] = array('name' => '項目需求工作最終總預計工時數', 'unit' => '小時', 'definition' => '項目計劃最後一個基線版本中所有需求相關任務最初預計工時和');
+$lang->install->basicmeasList['51'] = array('name' => '項目測試工作最終總預計工時數', 'unit' => '小時', 'definition' => '項目計劃最後一個基線版本中所有測試相關任務最初預計工時和');
+$lang->install->basicmeasList['52'] = array('name' => '項目設計工作最終總預計工時數', 'unit' => '小時', 'definition' => '項目計劃最後一個基線版本中所有設計相關任務最初預計工時和');
+$lang->install->basicmeasList['53'] = array('name' => '項目任務最終總預計工時數', 'unit' => '小時', 'definition' => '項目計劃最後一個基線版本中所有任務最初預計工時和');
 
 $lang->install->selectedMode     = '選擇模式';
 $lang->install->selectedModeTips = '後續您還可以去後台-自定義-模式中進行調整';
@@ -186,6 +258,12 @@ $lang->install->groupList['LIMITED']['name']      = '受限用戶';
 $lang->install->groupList['LIMITED']['desc']      = '受限用戶分組(只能編輯與自己相關的內容)';
 $lang->install->groupList['PROJECTADMIN']['name'] = '項目管理員';
 $lang->install->groupList['PROJECTADMIN']['desc'] = '項目管理員可以維護項目的權限';
+$lang->install->groupList['LITEADMIN']['name']    = '管理員';
+$lang->install->groupList['LITEADMIN']['desc']    = '迅捷版用戶分組';
+$lang->install->groupList['LITEPROJECT']['name']  = '項目管理';
+$lang->install->groupList['LITEPROJECT']['desc']  = '迅捷版用戶分組';
+$lang->install->groupList['LITETEAM']['name']     = '團隊成員';
+$lang->install->groupList['LITETEAM']['desc']     = '迅捷版用戶分組';
 
 $lang->install->cronList[''] = '監控定時任務';
 $lang->install->cronList['moduleName=execution&methodName=computeBurn'] = '更新燃盡圖';

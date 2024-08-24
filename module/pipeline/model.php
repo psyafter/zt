@@ -3,7 +3,7 @@
  * The model file of pipeline module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chenqi <chenqi@cnezsoft.com>
  * @package     product
  * @version     $Id: $
@@ -42,7 +42,7 @@ class pipelineModel extends model
     {
         return $this->dao->select('*')->from(TABLE_PIPELINE)
             ->where('deleted')->eq('0')
-            ->AndWhere('type')->eq($type)
+            ->AndWhere('type')->in($type)
             ->orderBy($orderBy)
             ->page($pager)
             ->fetchAll('id');
@@ -76,7 +76,7 @@ class pipelineModel extends model
             ->add('private',md5(rand(10,113450)))
             ->add('createdBy', $this->app->user->account)
             ->add('createdDate', helper::now())
-            ->trim('token')
+            ->trim('url,token,account,password')
             ->skipSpecial('url,token,account,password')
             ->get();
         if($type == 'gitlab') $pipeline->url = rtrim($pipeline->url, '/');
@@ -86,6 +86,10 @@ class pipelineModel extends model
         $this->dao->insert(TABLE_PIPELINE)->data($pipeline)
             ->batchCheck($this->config->pipeline->create->requiredFields, 'notempty')
             ->batchCheck("url", 'URL')
+            ->check('name', 'unique', "`type` = '$type'")
+            ->checkIF($type == 'jenkins', 'account', 'notempty')
+            ->checkIF($type == 'jenkins' and !$pipeline->token, 'password', 'notempty')
+            ->checkIF($type == 'jenkins' and !$pipeline->password, 'token', 'notempty')
             ->autoCheck()
             ->exec();
         if(dao::isError()) return false;
@@ -105,7 +109,7 @@ class pipelineModel extends model
         $pipeline = fixer::input('post')
             ->add('editedBy', $this->app->user->account)
             ->add('editedDate', helper::now())
-            ->trim('token')
+            ->trim('url,token,account,password')
             ->skipSpecial('url,token,account,password')
             ->get();
 
@@ -116,10 +120,49 @@ class pipelineModel extends model
         $this->dao->update(TABLE_PIPELINE)->data($pipeline)
             ->batchCheck($this->config->pipeline->edit->requiredFields, 'notempty')
             ->batchCheck("url", 'URL')
+            ->check('name', 'unique', "`type` = '$type' and id <> $id")
+            ->checkIF($type == 'jenkins', 'account', 'notempty')
+            ->checkIF($type == 'jenkins' and !$pipeline->token, 'password', 'notempty')
+            ->checkIF($type == 'jenkins' and !$pipeline->password, 'token', 'notempty')
             ->autoCheck()
             ->where('id')->eq($id)
             ->exec();
 
         return !dao::isError();
+    }
+
+    /**
+     * Delete one record.
+     *
+     * @param  string $id     the id to be deleted
+     * @param  string $object the action object
+     * @access public
+     * @return int|bool
+     */
+    public function delete($id, $object = 'gitlab')
+    {
+        if(in_array($object, array('gitlab', 'gitea', 'gogs')))
+        {
+            $repo = $this->dao->select('*')->from(TABLE_REPO)
+                ->where('deleted')->eq('0')
+                ->andWhere('SCM')->eq(ucfirst($object))
+                ->andWhere('serviceHost')->eq($id)
+                ->fetch();
+            if($repo) return false;
+        }
+        elseif($object == 'sonarqube')
+        {
+            $job = $this->dao->select('id,name,repo,deleted')->from(TABLE_JOB)
+                ->where('frame')->eq('sonarqube')
+                ->andWhere('server')->eq($id)
+                ->andWhere('deleted')->eq('0')
+                ->fetch();
+            if($job) return false;
+        }
+        $this->dao->update(TABLE_PIPELINE)->set('deleted')->eq(1)->where('id')->eq($id)->exec();
+        $this->loadModel('action')->create($object, $id, 'deleted', '', ACTIONMODEL::CAN_UNDELETED);
+
+        $actionID = $this->dao->lastInsertID();
+        return $actionID;
     }
 }

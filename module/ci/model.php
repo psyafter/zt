@@ -12,12 +12,29 @@ class ciModel extends model
     /**
      * Set menu.
      *
+     * @param  int    $repoID
      * @access public
      * @return void
      */
-    public function setMenu()
+    public function setMenu($repoID = 0)
     {
+        if($repoID)
+        {
+            if(!session_id()) session_start();
+            $this->session->set('repoID', $repoID);
+            session_write_close();
+        }
         common::setMenuVars('devops', $this->session->repoID);
+
+        if($this->session->repoID)
+        {
+            $repo = $this->loadModel('repo')->getRepoByID($this->session->repoID);
+            if(!empty($repo) and !in_array(strtolower($repo->SCM), $this->config->repo->gitServiceList)) unset($this->lang->devops->menu->mr);
+
+            $tab   = $this->app->tab;
+            $repos = $this->repo->getRepoPairs($tab);
+            if(count($repos) > 1) $this->lang->switcherMenu = $this->loadModel('repo')->getSwitcher($this->session->repoID);
+        }
     }
 
     /**
@@ -42,22 +59,34 @@ class ciModel extends model
             ->andWhere('compile.createdDate')->gt(date(DT_DATETIME1, strtotime("-1 day")))
             ->fetchAll();
 
-        foreach($compiles as $compile) $this->syncCompileStatus($compile);
+        $notCompileMR = $this->dao->select('id,jobID')
+            ->from(TABLE_MR)
+            ->where('jobID')->gt(0)
+            ->andWhere('compileStatus')->eq('created')
+            ->fetchPairs();
+
+        foreach($compiles as $compile) $this->syncCompileStatus($compile, $notCompileMR);
     }
 
     /**
      * Sync compile status.
      *
      * @param  object $compile
+     * @param  array  $notCompileMR
      * @access public
      * @return void
      */
-    public function syncCompileStatus($compile)
+    public function syncCompileStatus($compile, $notCompileMR = array())
     {
+        $MRID = array_search($compile->job, $notCompileMR);
+
         /* Max retry times is: 3. */
         if($compile->times >= 3)
         {
             $this->updateBuildStatus($compile, 'failure');
+
+            /* Added merge request result push to xuanxuan. */
+            if($MRID) $this->loadModel('message')->send('mr', $MRID, 'compilefail', 0);
             return false;
         }
 
@@ -69,6 +98,7 @@ class ciModel extends model
         $queueUrl        = sprintf('%s/queue/item/%s/api/json', $jenkinsServer, $compile->queue);
 
         $response = common::http($queueUrl, '', array(CURLOPT_USERPWD => $userPWD));
+        $result   = '';
 
         if($compile->engine != 'gitlab') $this->dao->update(TABLE_COMPILE)->set('times = times + 1')->where('id')->eq($compile->id)->exec();
         if(strripos($response, "404") > -1)
@@ -115,6 +145,12 @@ class ciModel extends model
                 }
             }
         }
+
+        if($MRID && in_array($result, array('success', 'failure')))
+        {
+            $actionType = $result == 'success' ? 'compilepass' : 'compilefail';
+            $this->loadModel('message')->send('mr', $MRID, $actionType, 0);
+        }
     }
 
     /**
@@ -146,11 +182,12 @@ class ciModel extends model
         $data = new stdclass;
         $data->status     = $pipeline->status;
         $data->updateDate = $now;
+        $data->logs       = '';
 
         foreach($jobs as $job)
         {
             if(empty($job->duration) or $job->duration == '') $job->duration = '-';
-            $data->logs  = "<font style='font-weight:bold'>&gt;&gt;&gt; Job: $job->name, Stage: $job->stage, Status: $job->status, Duration: $job->duration Sec\r\n </font>";
+            $data->logs .= "<font style='font-weight:bold'>&gt;&gt;&gt; Job: $job->name, Stage: $job->stage, Status: $job->status, Duration: $job->duration Sec\r\n </font>";
             $data->logs .= "Job URL: <a href=\"$job->web_url\" target='_blank'>$job->web_url</a> \r\n";
             $data->logs .= $this->transformAnsiToHtml($this->gitlab->apiGetJobLog($compile->server, $compile->project, $job->id));
         }
@@ -201,7 +238,10 @@ class ciModel extends model
         $this->dao->update(TABLE_JOB)->set('lastExec')->eq(helper::now())->set('lastStatus')->eq($status)->where('id')->eq($build->job)->exec();
 
         if($status == 'building') return;
+
         $relateMR = $this->dao->select('*')->from(TABLE_MR)->where('compileID')->eq($build->id)->fetch();
+        if(empty($relateMR)) return;
+
         if(isset($relateMR->synced) and $relateMR->synced == '0' and $status == 'success')
         {
             $newMR = new stdclass();
@@ -230,21 +270,13 @@ class ciModel extends model
             */
             if(isset($rawMR->message) and !isset($rawMR->iid))
             {
-                foreach($this->lang->mr->apiErrorMap as $key => $errorMsg)
+                $errorMessage = $rawMR->message;
+                $rawMR        = $this->mr->apiGetSameOpened($relateMR->gitlabID, $relateMR->sourceProject, $MRObject->source_branch, $MRObject->target_project_id, $MRObject->target_branch);
+                if(empty($rawMR) or !isset($rawMR->iid))
                 {
-                    if(strpos($errorMsg, '/') === 0)
-                    {
-                        $result = preg_match($errorMsg, $rawMR->message[0], $matches);
-                        if($result) $errorMessage = sprintf(zget($this->lang->mr->errorLang, $key), $matches[1]);
-                    }
-                    else
-                    {
-                        if($rawMR->message[0] == $errorMsg) $errorMessage = zget($this->lang->mr->errorLang, $key, $rawMR->message[0]);
-                    }
-
-                    if(isset($errorMessage)) break;
+                    $errorMessage     = $this->mr->convertApiError($errorMessage);
+                    $newMR->syncError = sprintf($this->lang->mr->apiError->createMR, $errorMessage);
                 }
-                $newMR->syncError = sprintf($this->lang->mr->apiError->createMR, isset($errorMessage) ? $errorMessage : $rawMR->message[0]);
             }
             elseif(!isset($rawMR->iid))
             {
@@ -253,24 +285,23 @@ class ciModel extends model
 
             if(!empty($rawMR->iid))
             {
-                $newMR->mriid  = $rawMR->iid;
-                $newMR->status = $rawMR->state;
-                $newMR->synced = '1';
+                $newMR->mriid     = $rawMR->iid;
+                $newMR->status    = $rawMR->state;
+                $newMR->synced    = '1';
+                $newMR->syncError = '';
             }
 
-            $this->dao->update(TABLE_MR)->data($newMR)
-                    ->where('id')->eq($relateMR->id)
-                    ->exec();
+            $this->dao->update(TABLE_MR)->data($newMR)->where('id')->eq($relateMR->id)->exec();
+            $this->mr->linkObjects($relateMR);
         }
-        else
+        elseif($status != 'success')
         {
             $newMR = new stdclass();
+            $newMR->status        = 'closed';
             $newMR->mergeStatus   = 'cannot_merge_by_fail';
             $newMR->compileStatus = $status;
 
-            $this->dao->update(TABLE_MR)->data($newMR)
-                    ->where('id')->eq($relateMR->id)
-                    ->exec();
+            $this->dao->update(TABLE_MR)->data($newMR)->where('id')->eq($relateMR->id)->exec();
         }
     }
 

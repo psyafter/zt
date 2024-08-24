@@ -3,7 +3,7 @@
  * The zh-tw file of block module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     block
  * @version     $Id$
@@ -39,11 +39,14 @@ $lang->block->lblNum       = '條數';
 $lang->block->lblHtml      = 'HTML內容';
 $lang->block->dynamic      = '最新動態';
 $lang->block->assignToMe   = '待處理';
+$lang->block->wait         = '未開始';
+$lang->block->doing        = '進行中';
 $lang->block->done         = '已完成';
 $lang->block->lblFlowchart = '流程圖';
 $lang->block->welcome      = '歡迎總覽';
 $lang->block->lblTesttask  = '查看測試詳情';
 $lang->block->contribute   = '我的貢獻';
+$lang->block->finish       = '已完成';
 
 $lang->block->leftToday           = '今天剩餘工作總計';
 $lang->block->myTask              = '我的任務';
@@ -77,6 +80,7 @@ $lang->block->month               = '月';
 $lang->block->selectProduct       = '選擇產品';
 $lang->block->of                  = '的';
 $lang->block->remain              = '剩餘工時';
+$lang->block->allStories          = '總需求';
 
 $lang->block->createBlock        = '添加區塊';
 $lang->block->editBlock          = '編輯區塊';
@@ -90,8 +94,8 @@ $lang->block->remove             = '移除';
 $lang->block->refresh            = '刷新';
 $lang->block->nbsp               = '';
 $lang->block->hidden             = '隱藏';
-$lang->block->dynamicInfo        = "<span class='timeline-tag'>%s</span> <span class='timeline-text'>%s <em>%s</em> %s <a href='%s' title='%s'>%s</a></span>";
-$lang->block->noLinkDynamic      = "<span class='timeline-tag'>%s</span> <span class='timeline-text' title='%s'>%s <em>%s</em> %s %s</span>";
+$lang->block->dynamicInfo        = "<span class='timeline-tag'>%s</span> <span class='timeline-text'>%s<em class='label-action'>%s</em>%s<a href='%s' title='%s'>%s</a></span>";
+$lang->block->noLinkDynamic      = "<span class='timeline-tag'>%s</span> <span class='timeline-text' title='%s'>%s<em class='label-action'>%s</em>%s<span class='label-name'>%s</span></span>";
 $lang->block->cannotPlaceInLeft  = '此區塊無法放置在左側。';
 $lang->block->cannotPlaceInRight = '此區塊無法放置在右側。';
 
@@ -99,12 +103,31 @@ $lang->block->productName  = $lang->productCommon . '名稱';
 $lang->block->totalStory   = '總' . $lang->SRCommon;
 $lang->block->totalBug     = '總Bug';
 $lang->block->totalRelease = '發佈次數';
+$lang->block->totalTask    = '總' . $lang->task->common;
 
 $lang->block->totalInvestment = '總投入';
 $lang->block->totalPeople     = '總人數';
 $lang->block->spent           = '已花費';
 $lang->block->budget          = '預算';
 $lang->block->left            = '剩餘';
+
+$lang->block->titleList['flowchart']      = '流程圖';
+$lang->block->titleList['statistic']      = '項目統計';
+$lang->block->titleList['recentproject']  = '我近期參與的項目';
+$lang->block->titleList['assigntome']     = '待處理';
+$lang->block->titleList['projectteam']    = '項目人力投入';
+$lang->block->titleList['project']        = '項目列表';
+$lang->block->titleList['dynamic']        = '最新動態';
+$lang->block->titleList['list']           = '我的待辦';
+$lang->block->titleList['contribute']     = '我的貢獻';
+$lang->block->titleList['scrumoverview']  = '項目概況';
+$lang->block->titleList['scrumtest']      = '待測版本';
+$lang->block->titleList['scrumlist']      = '迭代列表';
+$lang->block->titleList['sprint']         = '迭代總覽';
+$lang->block->titleList['projectdynamic'] = '最新動態';
+$lang->block->titleList['bug']            = '指派給我的Bug';
+$lang->block->titleList['case']           = '指派給我的用例';
+$lang->block->titleList['testtask']       = '待測版本列表';
 
 $lang->block->default['waterfall']['project']['3']['title']  = "項目計劃";
 $lang->block->default['waterfall']['project']['3']['block']  = 'waterfallgantt';
@@ -143,6 +166,7 @@ $lang->block->default['scrum']['project']['4']['grid']  = 4;
 $lang->block->default['scrum']['project']['5']['title'] = '最新動態';
 $lang->block->default['scrum']['project']['5']['block'] = 'projectdynamic';
 $lang->block->default['scrum']['project']['5']['grid']  = 4;
+$lang->block->default['kanban'] = $lang->block->default['scrum'];
 
 $lang->block->default['product']['1']['title'] = $lang->productCommon . '統計';
 $lang->block->default['product']['1']['block'] = 'statistic';
@@ -317,21 +341,24 @@ $lang->block->count   = '數量';
 $lang->block->type    = '類型';
 $lang->block->orderBy = '排序';
 
-$lang->block->availableBlocks            = new stdclass();
-$lang->block->availableBlocks->todo      = '我的日程';
-$lang->block->availableBlocks->task      = '我的任務';
-$lang->block->availableBlocks->bug       = '我的Bug';
-$lang->block->availableBlocks->case      = '我的用例';
-$lang->block->availableBlocks->story     = "我的{$lang->SRCommon}";
-$lang->block->availableBlocks->product   = $lang->productCommon . '列表';
-$lang->block->availableBlocks->execution = $lang->executionCommon . '列表';
-$lang->block->availableBlocks->plan      = "計劃列表";
-$lang->block->availableBlocks->release   = '發佈列表';
-$lang->block->availableBlocks->build     = '版本列表';
-$lang->block->availableBlocks->testtask  = '測試版本列表';
-$lang->block->availableBlocks->risk      = '我的風險';
-$lang->block->availableBlocks->issue     = '我的問題';
-$lang->block->availableBlocks->meeting   = '我的會議';
+$lang->block->availableBlocks              = new stdclass();
+$lang->block->availableBlocks->todo        = '日程';
+$lang->block->availableBlocks->task        = '任務';
+$lang->block->availableBlocks->bug         = 'Bug';
+$lang->block->availableBlocks->case        = '用例';
+$lang->block->availableBlocks->story       = "{$lang->SRCommon}";
+$lang->block->availableBlocks->requirement = "{$lang->URCommon}";
+$lang->block->availableBlocks->product     = $lang->productCommon . '列表';
+$lang->block->availableBlocks->execution   = $lang->executionCommon . '列表';
+$lang->block->availableBlocks->plan        = "計劃列表";
+$lang->block->availableBlocks->release     = '發佈列表';
+$lang->block->availableBlocks->build       = '版本列表';
+$lang->block->availableBlocks->testtask    = '測試版本列表';
+$lang->block->availableBlocks->risk        = '風險';
+$lang->block->availableBlocks->issue       = '問題';
+$lang->block->availableBlocks->meeting     = '會議';
+$lang->block->availableBlocks->feedback    = '反饋';
+$lang->block->availableBlocks->ticket      = '工單';
 
 if($config->systemMode == 'new') $lang->block->moduleList['project'] = '項目';
 $lang->block->moduleList['product']   = $lang->productCommon;
@@ -444,13 +471,15 @@ $lang->block->orderByList->story['status_desc'] = '狀態倒序';
 $lang->block->orderByList->story['stage_asc']   = '階段正序';
 $lang->block->orderByList->story['stage_desc']  = '階段倒序';
 
-$lang->block->todoCount    = '待辦數';
-$lang->block->taskCount    = '任務數';
-$lang->block->bugCount     = 'Bug數';
-$lang->block->riskCount    = '風險數';
-$lang->block->issueCount   = '問題數';
-$lang->block->storyCount   = '需求數';
-$lang->block->meetingCount = '會議數';
+$lang->block->todoCount     = '待辦數';
+$lang->block->taskCount     = '任務數';
+$lang->block->bugCount      = 'Bug數';
+$lang->block->riskCount     = '風險數';
+$lang->block->issueCount    = '問題數';
+$lang->block->storyCount    = '需求數';
+$lang->block->meetingCount  = '會議數';
+$lang->block->feedbackCount = '反饋數';
+$lang->block->ticketCount   = '工單數';
 
 $lang->block->typeList = new stdclass();
 
@@ -566,3 +595,7 @@ $lang->block->zentaoapp->createEffort         = '記日誌';
 $lang->block->zentaoapp->createDoc            = '建文檔';
 $lang->block->zentaoapp->createTodo           = '建待辦';
 $lang->block->zentaoapp->workbench            = '工作台';
+$lang->block->zentaoapp->notSupportKanban     = '移動端暫不支持研發看板模式';
+$lang->block->zentaoapp->notSupportVersion    = '移動端暫不支持該禪道版本';
+$lang->block->zentaoapp->incompatibleVersion  = '當前禪道版本較低，請升級至最新版本後再試';
+$lang->block->zentaoapp->canNotGetVersion     = '獲取禪道版本失敗，請確認網址是否正確';

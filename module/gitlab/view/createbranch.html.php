@@ -3,7 +3,7 @@
  * The create branch view file of gitlab module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yuchun Li <liyuchun@zcorp.ltd>
  * @package     gitlab
  * @version     $Id$
@@ -31,7 +31,7 @@
           <tr>
             <th></th>
             <td class='text-center form-actions'>
-              <?php echo html::submitButton($lang->gitlab->branch->create);?>
+              <?php echo html::submitButton();?>
               <?php $backLink = $this->session->gitlabBranchList ? $this->session->gitlabBranchList : inlink('browseBranch', "gitlibID=$gitlabID&projectID=$projectID");?>
               <?php if(!isonlybody()) echo html::a($backLink, $lang->goback, '', 'class="btn btn-wide"');?>
             </td>

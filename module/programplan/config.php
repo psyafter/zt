@@ -52,3 +52,12 @@ $config->programplan->datatable->fieldList['actions']['fixed']    = 'right';
 $config->programplan->datatable->fieldList['actions']['width']    = '150';
 $config->programplan->datatable->fieldList['actions']['required'] = 'yes';
 $config->programplan->datatable->fieldList['actions']['sort']     = 'no';
+
+$config->programplan->customCreateFields = 'PM,percent,attribute,acl,milestone,realBegan,realEnd';
+
+$config->programplan->custom = new stdclass();
+$config->programplan->custom->createFields = 'PM,percent,attribute,acl,milestone';
+
+$config->programplan->custom->customGanttFields = 'PM,deadline,status,realBegan,realEnd,progress,taskProgress,estimate,consumed,delay,delayDays';
+$config->programplan->ganttCustom = new stdclass();
+$config->programplan->ganttCustom->ganttFields = 'PM,deadline';

@@ -3,7 +3,7 @@
  * The user module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     user
  * @version     $Id: zh-tw.php 5053 2013-07-06 08:17:37Z wyd621@gmail.com $
@@ -18,6 +18,7 @@ $lang->user->dept             = '部門';
 $lang->user->account          = '用戶名';
 $lang->user->password         = '密碼';
 $lang->user->password2        = '請重複密碼';
+$lang->user->password2AB      = '重複密碼';
 $lang->user->role             = '職位';
 $lang->user->group            = '權限分組';
 $lang->user->realname         = '姓名';
@@ -39,9 +40,13 @@ $lang->user->dingding         = '釘釘';
 $lang->user->slack            = 'Slack';
 $lang->user->whatsapp         = 'WhatsApp';
 $lang->user->address          = '通訊地址';
+$lang->user->addressAB        = '地址';
 $lang->user->zipcode          = '郵編';
 $lang->user->join             = '入職日期';
+$lang->user->joinAB           = '入職';
+$lang->user->priv             = '權限';
 $lang->user->visits           = '訪問次數';
+$lang->user->visions          = '界面類型';
 $lang->user->ip               = '最後IP';
 $lang->user->last             = '最後登錄';
 $lang->user->ranzhi           = 'ZDOO帳號';
@@ -72,6 +77,10 @@ $lang->user->products         = $lang->productCommon;
 $lang->user->projects         = '項目';
 $lang->user->sprints          = $lang->execution->common;
 $lang->user->identity         = '身份';
+$lang->user->switchVision     = '切換到 %s';
+$lang->user->submit           = '提交';
+$lang->user->resetPWD         = '重置密碼';
+$lang->user->resetTitle       = '系統管理員重置密碼';
 
 $lang->user->legendBasic        = '基本資料';
 $lang->user->legendContribution = '個人貢獻';
@@ -109,6 +118,8 @@ $lang->user->applyTemplate         = '應用模板';
 $lang->user->confirmDeleteTemplate = '您確認要刪除該模板嗎？';
 $lang->user->setPublicTemplate     = '設為公共模板';
 $lang->user->tplContentNotEmpty    = '模板內容不能為空!';
+$lang->user->sendEmailSuccess      = '已發送一封郵件至您的郵箱，請注意查收。';
+$lang->user->linkExpired           = '連結已過期，請重新申請。';
 
 $lang->user->profile   = '檔案';
 $lang->user->project   = $lang->executionCommon;
@@ -145,6 +156,7 @@ $lang->user->loginLocked  = "密碼嘗試次數太多，請聯繫管理員解鎖
 $lang->user->weakPassword = "您的密碼強度小於系統設定。";
 $lang->user->errorWeak    = "密碼不能使用【%s】這些常用弱口令。";
 $lang->user->errorCaptcha = "驗證碼不正確！";
+$lang->user->loginExpired = '系統登錄已過期，請重新登錄：）';
 
 $lang->user->roleList['']       = '';
 $lang->user->roleList['dev']    = '研發';
@@ -210,15 +222,22 @@ $lang->user->placeholder->verify    = '請輸入您的系統登錄密碼';
 $lang->user->placeholder->loginPassword = '請輸入密碼';
 $lang->user->placeholder->loginAccount  = '請輸入用戶名';
 $lang->user->placeholder->loginUrl      = '請輸入禪道系統網址';
+$lang->user->placeholder->email         = '請輸入郵箱';
 
-$lang->user->placeholder->passwordStrength[1] = '6位以上，包含大小寫字母，數字。';
-$lang->user->placeholder->passwordStrength[2] = '10位以上，包含大小寫字母，數字，特殊字元。';
+$lang->user->placeholder->passwordStrength[0] = '密碼必須6位及以上。';
+$lang->user->placeholder->passwordStrength[1] = '6位及以上，包含大小寫字母，數字。';
+$lang->user->placeholder->passwordStrength[2] = '10位及以上，包含大小寫字母，數字，特殊字元。';
+
+$lang->user->placeholder->passwordStrengthCheck[0] = '密碼須6位及以上。';
+$lang->user->placeholder->passwordStrengthCheck[1] = '密碼必須6位及以上，且包含大小寫字母、數字。';
+$lang->user->placeholder->passwordStrengthCheck[2] = '密碼必須10位及以上，且包含大小寫字母、數字、特殊符號。';
 
 $lang->user->error = new stdclass();
 $lang->user->error->account        = "【ID %s】的用戶名應該為：三位以上的英文、數字或下劃線的組合";
 $lang->user->error->accountDupl    = "【ID %s】的用戶名已經存在";
 $lang->user->error->realname       = "【ID %s】的真實姓名必須填寫";
-$lang->user->error->password       = "【ID %s】的密碼必須為六位以上";
+$lang->user->error->visions        = "【ID %s】的界面類型必須填寫";
+$lang->user->error->password       = "【ID %s】的密碼必須為六位及以上";
 $lang->user->error->mail           = "【ID %s】的郵箱地址不正確";
 $lang->user->error->reserved       = "【ID %s】的用戶名已被系統預留";
 $lang->user->error->weakPassword   = "【ID %s】的密碼強度小於系統設定。";
@@ -230,6 +249,14 @@ $lang->user->error->verifyPassword   = "驗證失敗，請檢查您的系統登�
 $lang->user->error->originalPassword = "原密碼不正確";
 $lang->user->error->companyEmpty     = "公司名稱不能為空！";
 $lang->user->error->noAccess         = "該人員和你不是同一部門，你無權訪問該人員的工作信息。";
+$lang->user->error->accountEmpty     = '用戶名不能為空！';
+$lang->user->error->emailEmpty       = '郵箱不能為空！';
+$lang->user->error->noUser           = '用戶不存在';
+$lang->user->error->noEmail          = '該用戶未綁定郵箱，請聯繫管理員以重置密碼。';
+$lang->user->error->errorEmail       = '用戶名和郵箱不匹配，請重新輸入。';
+$lang->user->error->emailSetting     = '系統未配置發信郵箱，請聯繫管理員重置。';
+$lang->user->error->sendMailFail     = '郵件發送失敗，請重試！';
+$lang->user->error->loginTimeoutTip  = '系統登錄失敗，請檢查代理服務是否正常';
 
 $lang->user->contactFieldList['phone']    = $lang->user->phone;
 $lang->user->contactFieldList['mobile']   = $lang->user->mobile;
@@ -247,6 +274,9 @@ $lang->user->contacts = new stdclass();
 $lang->user->contacts->common   = '聯繫人';
 $lang->user->contacts->listName = '列表名稱';
 $lang->user->contacts->userList = '用戶列表';
+
+$lang->usercontact = new stdclass;
+$lang->usercontact->listName = '列表名稱';
 
 $lang->user->contacts->manage        = '維護列表';
 $lang->user->contacts->contactsList  = '已有列表';
@@ -282,11 +312,13 @@ $lang->user->mkdirLinux = <<<EOT
     <html><head><meta charset='utf-8'></head>
     <body><table align='center' style='width:700px; margin-top:100px; border:1px solid gray; font-size:14px;'><tr><td style='padding:8px'>
     <div style='margin-bottom:8px;'>不能創建臨時目錄，請確認目錄<strong style='color:#ed980f'>%s</strong>是否存在並有操作權限。</div>
-    <div style='margin-bottom:8px;'>命令為：<strong style='color:#ed980f'>chmod o=rwx -R %s</strong>。</div>
+    <div style='margin-bottom:8px;'>命令為：<strong style='color:#ed980f'>chmod 777 -R %s</strong>。</div>
     <div>Can't create tmp directory, make sure the directory <strong style='color:#ed980f'>%s</strong> exists and has permission to operate.</div>
-    <div style='margin-bottom:8px;'>Commond: <strong style='color:#ed980f'>chmod o=rwx -R %s</strong>.</div>
+    <div style='margin-bottom:8px;'>Commond: <strong style='color:#ed980f'>chmod 777 -R %s</strong>.</div>
     </td></tr></table></body></html>
 EOT;
+
+$lang->user->jumping = "<span id='time'>10</span>秒鐘後頁面將自動跳轉登錄頁。 <a href='%s' class='btn btn-primary btn-xs'>立即跳轉</a>";
 
 $lang->user->zentaoapp = new stdclass();
 $lang->user->zentaoapp->logout = '退出登錄';

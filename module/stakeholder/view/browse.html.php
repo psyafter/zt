@@ -3,7 +3,7 @@
  * The view view of stakeholder module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     product
  * @version     $Id: browse.html.php 5096 2013-07-11 07:02:43Z chencongzhi520@gmail.com $
@@ -14,7 +14,7 @@
 <?php js::set('confirmDelete', $lang->stakeholder->confirmDelete);?>
 <div id="mainMenu" class="clearfix">
   <div class="btn-toolbar pull-left">
-    <?php echo html::a($this->createLink('stakeholder', 'browse', 'browseType=all'), '<span class="text">' . $lang->stakeholder->browse . '</span>', '', 'class="btn btn-link btn-active-text"');?>
+    <?php echo html::a($this->createLink('stakeholder', 'browse', "projectID=$projectID"), '<span class="text">' . $lang->stakeholder->browse . '</span>', '', 'class="btn btn-link btn-active-text"');?>
   </div>
   <div class="btn-toolbar pull-right">
     <?php if(common::hasPriv('stakeholder', 'batchcreate') and common::hasPriv('stakeholder', 'create')):?>
@@ -47,7 +47,7 @@
             <?php common::printOrderLink('id', $orderBy, $vars, $lang->idAB);?>
           </th>
           <th class="c-name"><?php echo $lang->stakeholder->name;?></th>
-          <th class="c-type"><?php echo $lang->stakeholder->common . $lang->stakeholder->type;?></th>
+          <th class="c-type"><?php echo $lang->stakeholder->from;?></th>
           <th class="c-phone"><?php echo $lang->stakeholder->phone;?></th>
           <th class="c-qq"><?php echo $lang->stakeholder->qq;?></th>
           <th class="c-weixin"><?php echo $lang->stakeholder->weixin;?></th>
@@ -64,8 +64,12 @@
           <?php $stakeholder->name = $stakeholder->companyName ? $stakeholder->companyName . '/' . $stakeholder->name : $stakeholder->name;?>
           <?php $isKey = $stakeholder->key ? " <i class='icon icon-star-empty'></i>" : '';?>
           <?php $title = $stakeholder->key ? $stakeholder->name . '(' . $lang->stakeholder->isKey . ')' : $stakeholder->name;?>
-          <td><?php common::printLink('stakeholder', 'view', "id=$stakeholder->id", $stakeholder->name . $isKey, '', "title=$title");?></td>
-          <td title='<?php echo zget($lang->stakeholder->typeList, $stakeholder->type, '');?>'><?php echo zget($lang->stakeholder->typeList, $stakeholder->type, '');?></td>
+          <?php if(common::hasPriv('stakeholder', 'view')):?>
+          <td><?php echo html::a($this->createLink('stakeholder', 'view', "id=$stakeholder->id"), $stakeholder->name . $isKey, '', "title={$stakeholder->name}");?></td>
+          <?php else:?>
+          <td title='<?php echo $stakeholder->name;?>'><?php echo $stakeholder->name . $isKey;?></td>
+          <?php endif;?>
+          <td title='<?php echo zget($lang->stakeholder->fromList, $stakeholder->from, '');?>'><?php echo zget($lang->stakeholder->fromList, $stakeholder->from, '');?></td>
           <td title="<?php echo $stakeholder->phone;?>"><?php echo $stakeholder->phone;?></td>
           <td title="<?php echo $stakeholder->qq;?>"><?php echo $stakeholder->qq;?></td>
           <td title="<?php echo $stakeholder->weixin;?>"><?php echo $stakeholder->weixin;?></td>
@@ -74,7 +78,7 @@
             <?php
             common::printIcon('stakeholder', 'communicate', "id=$stakeholder->id", $stakeholder, 'list', 'chat-line', '', 'iframe', 'yes');
             common::printIcon('stakeholder', 'expect', "id=$stakeholder->id", $stakeholder, 'list', 'flag', '', 'iframe', 'yes');
-            if(isset($config->maxVersion) and $stakeholder->projectModel == 'waterfall') common::printIcon('stakeholder', 'userIssue', "account=$stakeholder->id", $stakeholder, 'list', 'list-alt', '', 'iframe', 'yes');
+            if($this->config->edition == 'max' and $stakeholder->projectModel == 'waterfall') common::printIcon('stakeholder', 'userIssue', "account=$stakeholder->id", $stakeholder, 'list', 'list-alt', '', 'iframe', 'yes');
             common::printIcon('stakeholder', 'edit', "id=$stakeholder->id", $stakeholder, 'list', '', '', '', '');
             $deleteClass = common::hasPriv('stakeholder', 'delete') ? 'btn' : 'btn disabled';
             echo html::a($this->createLink('stakeholder', 'delete', "id=$stakeholder->id"), '<i class="icon-trash"></i>', 'hiddenwin', "title='{$lang->stakeholder->delete}' class='{$deleteClass}'");

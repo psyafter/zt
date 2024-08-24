@@ -13,7 +13,7 @@ $(function()
 
     adjustTableFooter();
     $('body').on('click', '#toggleFold', adjustTableFooter);
-    $('body').on('click', '.icon.icon-angle-double-right', adjustTableFooter);
+    $('body').on('click', '.icon.icon-angle-right', adjustTableFooter);
 
     /* The display of the adjusting sidebarHeader is synchronized with the sidebar. */
     $(".sidebar-toggle").click(function()
@@ -38,6 +38,6 @@ function adjustTableFooter()
     {
         $('.table.with-footer-fixed').css('margin-bottom', '0');
         $('.table-footer').removeClass('fixed-footer');
-        $('.table-footer').css({"left":"0", "bottom":"0", "width":"unset"});
+        $('.table-footer').css({'left': 0, 'bottom': 0, 'width': 'unset'});
     }
 }

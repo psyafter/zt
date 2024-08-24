@@ -3,7 +3,7 @@
  * The model file of company module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     company
  * @version     $Id: model.php 5086 2013-07-10 02:25:22Z wyd621@gmail.com $
@@ -15,7 +15,7 @@ class companyModel extends model
 {
     /**
      * Set menu.
-     * 
+     *
      * @param  int    $dept
      * @access public
      * @return void
@@ -31,7 +31,7 @@ class companyModel extends model
 
     /**
      * Get company list.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -42,7 +42,7 @@ class companyModel extends model
 
     /**
      * Get the first company.
-     * 
+     *
      * @access public
      * @return void
      */
@@ -53,8 +53,8 @@ class companyModel extends model
 
     /**
      * Get company info by id.
-     * 
-     * @param  int    $companyID 
+     *
+     * @param  int    $companyID
      * @access public
      * @return object
      */
@@ -66,6 +66,7 @@ class companyModel extends model
     /**
      * Get users.
      *
+     * @param  string $browseType
      * @param  string $type
      * @param  int    $queryID
      * @param  int    $deptID
@@ -74,7 +75,7 @@ class companyModel extends model
      * @access public
      * @return array
      */
-    public function getUsers($browseType = 'inside', $type, $queryID, $deptID, $sort, $pager)
+    public function getUsers($browseType = 'inside', $type = '', $queryID = 0, $deptID = 0, $sort = '', $pager = null)
     {
         /* Get users. */
         if($type == 'bydept')
@@ -131,13 +132,15 @@ class companyModel extends model
 
     /**
      * Update a company.
-     * 
+     *
      * @access public
      * @return void
      */
     public function update()
     {
-        $company = fixer::input('post')->get();
+        $company = fixer::input('post')
+            ->stripTags('name')
+            ->get();
         if($company->website  == 'http://') $company->website  = '';
         if($company->backyard == 'http://') $company->backyard = '';
         $companyID = $this->app->company->id;
@@ -162,7 +165,8 @@ class companyModel extends model
     {
         $this->config->company->browse->search['actionURL'] = $actionURL;
         $this->config->company->browse->search['queryID']   = $queryID;
-        $this->config->company->browse->search['params']['dept']['values'] = array('' => '') + $this->loadModel('dept')->getOptionMenu();
+        $this->config->company->browse->search['params']['dept']['values']    = array('' => '') + $this->loadModel('dept')->getOptionMenu();
+        $this->config->company->browse->search['params']['visions']['values'] = $this->loadModel('user')->getVisionList();
 
         $this->loadModel('search')->setSearchParams($this->config->company->browse->search);
     }

@@ -3,7 +3,7 @@
  * The browsebylist view file of project module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Shujie Tian <tianshujie@easycorp.ltd>
  * @package     project
  * @version     $Id: browsebylist.html.php 4769 2021-07-23 11:16:21Z $
@@ -11,18 +11,17 @@
  */
 ?>
 <style>
+.export {margin-left: 0px !important;}
 .project-type-label.label-outline {width: 50px; min-width: 50px;}
 .project-type-label.label {overflow: unset !important; text-overflow: unset !important; white-space: unset !important;}
-
-#projectTableList .project-name {position: relative; display: flex; align-items: center;}
-#projectTableList .project-name > span,
-#projectTableList .project-name > span {flex: none;}
-#projectTableList .project-name > a {color: #0c60e1; display: inline-block; max-width: calc(100% - 50px);}
-#projectTableList .project-name.has-prefix > a,
-#projectTableList .project-name.has-suffix > a {max-width: calc(100% - 100px);}
-#projectTableList .project-name.has-prefix > a {padding-left: 5px;}
-#projectTableList .project-name.has-suffix > a {padding-right: 5px;}
+.project-name {display: flex; align-items: center;}
+.project-name > span,
+.project-name > span {flex: none;}
+.project-name > a {display: inline-block; max-width: calc(100% - 50px);}
+.project-name.has-prefix > a {padding-left: 5px;}
+.project-name.has-suffix > a {padding-right: 5px;}
 </style>
+<?php $canBatchEdit = common::hasPriv('project', 'batchEdit');?>
 <div id="mainMenu" class="clearfix">
   <?php if($this->config->systemMode == 'new'):?>
   <div id="sidebarHeader">
@@ -33,13 +32,16 @@
   </div>
   <?php endif;?>
   <div class="btn-toolBar pull-left">
-    <?php foreach($lang->project->featureBar as $key => $label):?>
+    <?php common::sortFeatureMenu();?>
+    <?php foreach($lang->project->featureBar['browse'] as $key => $label):?>
     <?php $active = $browseType == $key ? 'btn-active-text' : '';?>
     <?php $label = "<span class='text'>$label</span>";?>
     <?php if($browseType == $key) $label .= " <span class='label label-light label-badge'>{$pager->recTotal}</span>";?>
     <?php echo html::a(inlink('browse', "programID=$programID&browseType=$key"), $label, '', "class='btn btn-link $active'");?>
     <?php endforeach;?>
-    <?php echo html::checkbox('involved', array('1' => $lang->project->mine), '', $this->cookie->involved ? 'checked=checked' : '');?>
+    <?php if($canBatchEdit) echo html::checkbox('showEdit', array('1' => $lang->project->edit), $showBatchEdit);?>
+    <?php if($browseType != 'bysearch') echo html::checkbox('involved', array('1' => $lang->project->mine), '', $this->cookie->involved ? 'checked=checked' : '');?>
+    <a class="btn btn-link querybox-toggle" id='bysearchTab'><i class="icon icon-search muted"></i> <?php echo $lang->search->common;?></a>
   </div>
   <div class="btn-toolbar pull-right">
     <div class="btn-group panel-actions">
@@ -54,6 +56,12 @@
     <?php endif;?>
   </div>
 </div>
+<?php
+$waitCount      = 0;
+$doingCount     = 0;
+$suspendedCount = 0;
+$closedCount    = 0;
+?>
 <div id='mainContent' class="main-row fade">
   <?php if($this->config->systemMode == 'new'):?>
   <div id="sidebar" class="side-col">
@@ -67,21 +75,22 @@
   </div>
   <?php endif;?>
   <div class="main-col">
+    <div class="cell<?php if($browseType == 'bysearch') echo ' show';?>" id="queryBox" data-module='project'></div>
     <?php if(empty($projectStats)):?>
     <div class="table-empty-tip">
       <p>
         <span class="text-muted"><?php echo $lang->project->empty;?></span>
-        <?php if(!defined('TUTORIAL')):?>
-        <?php if(common::hasPriv('project', 'create')) common::printLink('project', 'createGuide', "programID=$programID", '<i class="icon icon-plus"></i> ' . $lang->project->create, '', 'class="btn btn-info" data-toggle="modal"');?>
-        <?php elseif($this->config->systemMode == 'new'):?>
-        <?php common::printLink('project', 'create', "mode=scrum&programID=$programID", '<i class="icon icon-plus"></i> ' . $lang->project->create, '', 'class="btn btn-info"');?>
-        <?php else:?>
-        <?php common::printLink('execution', 'create', '', '<i class="icon icon-plus"></i> ' . $lang->execution->create, '', 'class="btn btn-info"');?>
+        <?php if(empty($allProjectsNum)):?>
+          <?php if(!defined('TUTORIAL')):?>
+            <?php if(common::hasPriv('project', 'create') and $browseType != 'bysearch') common::printLink('project', 'createGuide', "programID=$programID", '<i class="icon icon-plus"></i> ' . $lang->project->create, '', 'class="btn btn-info" data-toggle="modal"');?>
+          <?php else:?>
+            <?php common::printLink('execution', 'create', '', '<i class="icon icon-plus"></i> ' . $lang->execution->create, '', 'class="btn btn-info"');?>
+          <?php endif;?>
         <?php endif;?>
       </p>
     </div>
     <?php else:?>
-    <form class='main-table' id='projectForm' method='post' data-ride="table">
+    <form class='main-table' id='projectForm' method='post'>
       <div class="table-header fixed-right">
         <nav class="btn-toolbar pull-right"></nav>
       </div>
@@ -92,17 +101,16 @@
       $setting          = $this->datatable->getSetting('project');
       $fixedFieldsWidth = $this->datatable->setFixedFieldWidth($setting);
 
-      if($useDatatable) include '../../common/view/datatable.html.php';
+      if($useDatatable) include dirname(dirname(dirname(__FILE__))) . '/common/view/datatable.html.php';
       ?>
       <?php if(!$useDatatable) echo '<div class="table-responsive">';?>
       <table class='table has-sort-head <?php if($useDatatable) echo 'datatable';?>' data-fixed-left-width='<?php echo $fixedFieldsWidth['leftWidth']?>' data-fixed-right-width='<?php echo $fixedFieldsWidth['rightWidth']?>'>
-      <?php $canBatchEdit = $this->config->systemMode == 'new' ? common::hasPriv('project', 'batchEdit') : common::hasPriv('project', 'batchEdit');?>
         <thead>
           <tr>
             <?php
             foreach($setting as $value)
             {
-              if($value->id == 'status' and $browseType !== 'all') $value->show = false;
+              if($value->id == 'status' and strpos(',all,bysearch,undone,', ",$browseType,") === false) $value->show = false;
               if($value->id == 'teamCount' and $browseType == 'all') $value->show = false;
               if(commonModel::isTutorialMode() && ($value->id == 'PM' || $value->id == 'budget' || $value->id == 'teamCount')) $value->show = false;
               if($value->show) $this->datatable->printHead($value, $orderBy, $vars, $canBatchEdit);
@@ -110,10 +118,14 @@
             ?>
           </tr>
         </thead>
-        <tbody class="sortable" id='projectTableList'>
+        <tbody class="sortable">
           <?php foreach($projectStats as $project):?>
           <?php $project->from = 'project';?>
-          <tr data-id="<?php echo $project->id;?>">
+          <?php if($project->status == 'wait')      $waitCount ++;?>
+          <?php if($project->status == 'doing')     $doingCount ++;?>
+          <?php if($project->status == 'suspended') $suspendedCount ++;?>
+          <?php if($project->status == 'closed')    $closedCount ++;?>
+          <tr data-id="<?php echo $project->id;?>" data-status="<?php echo $project->status;?>">
             <?php foreach($setting as $value) $this->project->printCell($value, $project, $users, $programID);?>
           </tr>
           <?php endforeach;?>
@@ -134,9 +146,51 @@
         }
         ?>
         </div>
+        <div class="table-statistic"><?php echo $browseType == 'all' ? sprintf($lang->project->allSummary, count($projectStats), $waitCount, $doingCount, $suspendedCount, $closedCount) : sprintf($lang->project->summary, count($projectStats));?></div>
         <?php $pager->show('right', 'pagerjs');?>
       </div>
     </form>
     <?php endif;?>
   </div>
 </div>
+<?php
+js::set('useDatatable', isset($useDatatable) ? $useDatatable : false);
+js::set('summary', sprintf($lang->project->summary, count($projectStats)));
+js::set('allSummary', sprintf($lang->project->allSummary, count($projectStats), $waitCount, $doingCount, $suspendedCount, $closedCount));
+js::set('checkedSummary', $lang->project->checkedSummary);
+js::set('checkedAllSummary', $lang->project->checkedAllSummary);
+?>
+<script>
+$(function()
+{
+    $('#projectForm').table(
+    {
+        replaceId: 'projectIdList',
+        statisticCreator: function(table)
+        {
+            var $table            = table.getTable();
+            var $checkedRows      = $table.find('tbody>tr.checked');
+            var checkedTotal      = $checkedRows.length;
+            var statistics        = summary;
+            var checkedStatistics = checkedSummary.replace('%total%', checkedTotal);
+
+            if(browseType == 'all')
+            {
+                var checkedWait      = $checkedRows.filter("[data-status=wait]").length;
+                var checkedDoing     = $checkedRows.filter("[data-status=doing]").length;
+                var checkedSuspended = $checkedRows.filter("[data-status=suspended]").length;
+                var checkedClosed    = $checkedRows.filter("[data-status=closed]").length;
+
+                statistics        = allSummary;
+                checkedStatistics = checkedAllSummary.replace('%total%', checkedTotal)
+                    .replace('%wait%', checkedWait)
+                    .replace('%doing%', checkedDoing)
+                    .replace('%suspended%', checkedSuspended)
+                    .replace('%closed%', checkedClosed);
+            }
+
+            return checkedTotal ? checkedStatistics : statistics;
+        }
+    });
+});
+</script>

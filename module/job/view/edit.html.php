@@ -3,7 +3,7 @@
  * The edit view file of job module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2017 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chenqi <chenqi@cnezsoft.com>
  * @package     job
  * @version     $Id$
@@ -18,6 +18,8 @@
 <?php js::set('dirChange', $lang->job->dirChange);?>
 <?php js::set('buildTag', $lang->job->buildTag);?>
 <?php js::set('jkTask', $job->pipeline);?>
+<?php js::set('job', $job);?>
+<?php js::set('frameList', $lang->job->frameList);?>
 
 <div id='mainContent' class='main-row'>
   <div class='main-content'>
@@ -28,7 +30,7 @@
       <form id='jobForm' method='post' class='form-ajax'>
         <table class='table table-form'>
           <tr>
-            <th class='w-120px'><?php echo $lang->job->name;?></th>
+            <th class='w-140px'><?php echo $lang->job->name;?></th>
             <td class='required'><?php echo html::input('name', $job->name, "class='form-control'");?></td>
             <td colspan="2" ></td>
           </tr>
@@ -39,7 +41,7 @@
           </tr>
           <tr class='commonRepo'>
             <th><?php echo $lang->job->repo; ?></th>
-            <td><?php echo html::select('repo', $repoPairs, $job->repo, "class='form-control'"); ?></td>
+            <td><?php echo html::select('repo', $repoPairs, $job->repo, "class='form-control chosen'"); ?></td>
           </tr>
           <tr class='gitlabRepo hide'>
             <th><?php echo $lang->job->repo; ?></th>
@@ -50,14 +52,18 @@
             <th><?php echo $lang->job->product;?></th>
             <td><?php echo html::select('product', $products, $job->product, "class='form-control chosen'");?></td>
           </tr>
-          <tr>
+          <tr id="frameBox">
             <th><?php echo $lang->job->frame;?></th>
-            <td><?php echo html::select('frame', $lang->job->frameList, $job->frame, "class='form-control chosen'");?></td>
+            <td>
+              <div class='input-group'>
+                <?php echo html::select('frame', array('' => ''), '', "class='form-control chosen'"); ?>
+              </div>
+            </td>
           </tr>
           <tr>
             <th><?php echo $lang->job->triggerType;?></th>
             <?php if($repoType == 'Subversion') $lang->job->triggerTypeList['tag'] = $lang->job->dirChange;?>
-            <td><?php echo html::select('triggerType', $lang->job->triggerTypeList, $job->triggerType, "class='form-control'");?></td>
+            <td><?php echo html::select('triggerType', $lang->job->triggerTypeList, $job->triggerType, "class='form-control chosen'");?></td>
             <td colspan="2"></td>
           </tr>
           <tr id='svnDirBox' class='svn-fields'>
@@ -87,6 +93,20 @@
                 ?>
               </div>
             </td>
+          </tr>
+          <tr class='sonarqube hide'>
+            <th><?php echo $lang->job->sonarqubeServer;?></th>
+            <td><?php echo html::select('sonarqubeServer', $sonarqubeServerList, $job->sonarqubeServer, "class='form-control chosen' required");?></td>
+            <td colspan="2"></td>
+          </tr>
+          <tr id='sonarProject' class='sonarqube hide'>
+            <th><?php echo $lang->job->projectKey;?></th>
+            <td class="required">
+              <div class='input-group'>
+                <?php echo html::select('projectKey', array('' => ''), '', "class='form-control chosen'");?>
+              </div>
+            </td>
+            <td colspan="2"></td>
           </tr>
           <tr class="comment-fields">
             <th><?php echo $lang->job->comment;?></th>
@@ -150,9 +170,9 @@
               <?php endforeach;?>
               <?php endif;?>
               <div class='table-row input-group'>
-                <span class='input-group-addon w-50px'><?php echo $lang->job->paramName;?></span>
+                <span class='input-group-addon <?php echo common::checkNotCN() ? 'w-60px' : 'w-50px'?>'><?php echo $lang->job->paramName; ?></span>
                 <?php echo html::input('paramName[]', '', "class='form-control' id='paramName'");?>
-                <span class='input-group-addon w-40px'><?php echo $lang->job->paramValue;?></span>
+                <span class='input-group-addon <?php echo common::checkNotCN() ? 'w-60px' : 'w-40px'?>'><?php echo $lang->job->paramValue; ?></span>
                 <?php echo html::select('paramValue[]', $lang->job->paramValueList, '', "class='form-control' onchange='setParamName(this)'");?>
                 <?php echo html::input('paramValue[]', '', "class='form-control hidden' id='paramValue' disabled");?>
                 <span class='input-group-addon w-90px'>
@@ -167,10 +187,9 @@
             </td>
           </tr>
           <tr>
-            <th></th>
-            <td colspan="2" class='text-center form-actions'>
+            <td colspan="3" class='text-center form-actions'>
               <?php echo html::submitButton();?>
-              <?php if(!isonlybody()) echo html::a(inlink('browse', ""), $lang->goback, '', 'class="btn btn-wide"');?>
+              <?php if(!isonlybody()) echo html::a(inlink('browse', "repoID={$job->repo}"), $lang->goback, '', 'class="btn btn-wide"');?>
               <?php echo html::hidden('repoType', zget($repoTypes, $job->repo, 'Git'));?>
             </td>
           </tr>

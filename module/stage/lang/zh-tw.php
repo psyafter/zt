@@ -3,7 +3,7 @@
  * The stage module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     stage
  * @version     $Id: zh-tw.php 4729 2013-05-03 07:53:55Z chencongzhi520@gmail.com $
@@ -21,7 +21,7 @@ $lang->stage->view        = '階段詳情';
 $lang->stage->common  = '階段';
 $lang->stage->id      = '編號';
 $lang->stage->name    = '階段名稱';
-$lang->stage->type    = '階段分類';
+$lang->stage->type    = '階段類型';
 $lang->stage->percent = '工作量占比';
 $lang->stage->setType = '階段類型';
 
@@ -36,3 +36,7 @@ $lang->stage->typeList['other']   = '其他';
 $lang->stage->viewList      = '瀏覽列表';
 $lang->stage->noStage       = '暫時沒有階段';
 $lang->stage->confirmDelete = '您確定要執行刪除操作嗎？';
+
+$lang->stage->error              = new stdclass();
+$lang->stage->error->percentOver = '工作量占比累計不應當超過100%';
+$lang->stage->error->notNum      = '工作量占比應當是數字';

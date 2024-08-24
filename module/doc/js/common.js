@@ -7,7 +7,7 @@
  */
 function loadModules(libID)
 {
-    link = createLink('doc', 'ajaxGetModules', 'libID=' + libID);
+    var link = createLink('doc', 'ajaxGetModules', 'libID=' + libID);
     $('#moduleBox').load(link, function(){$('#moduleBox').find('select').chosen()});
 }
 
@@ -21,19 +21,47 @@ function loadModules(libID)
  */
 function toggleAcl(acl, type)
 {
+    var libID = $('#lib').val();
     if(acl == 'custom')
     {
         $('#whiteListBox').removeClass('hidden');
+        $('#groupBox').removeClass('hidden');
+        if(type == 'doc') loadWhitelist(libID);
+    }
+    else if(acl == 'private')
+    {
+        $('#whiteListBox').removeClass('hidden');
+        $('#groupBox').addClass('hidden');
+        if(type == 'doc')
+        {
+            loadWhitelist(libID);
+            $('#whiteListBox').addClass('hidden');
+        }
     }
     else
     {
         $('#whiteListBox').addClass('hidden');
+        if(type == 'doc') loadWhitelist(libID);
     }
+
     if(type == 'lib')
     {
         var libType = $('input[name="type"]:checked').val();
         var notice  = typeof(noticeAcl[libType][acl]) != 'undefined' ? noticeAcl[libType][acl] : '';
         $('#noticeAcl').html(notice);
+
+        if((libType == 'custom' || libType == 'api' || libType == 'book') && acl == 'private') $('#whiteListBox').addClass('hidden');
+
+        if(libType == 'project' && typeof(doclibID) != 'undefined')
+        {
+            var link = createLink('doc', 'ajaxGetWhitelist', 'doclibID=' + doclibID + '&acl=' + acl);
+            $.get(link, function(users)
+            {
+                $('#users').replaceWith(users);
+                $('#users').next('.picker').remove();
+                $('#users').picker();
+            })
+        }
     }
     else
     {
@@ -51,13 +79,15 @@ function toggleAcl(acl, type)
  */
 function loadDocModule(libID)
 {
-    link = createLink('doc', 'ajaxGetChild', 'libID=' + libID);
+    var link = createLink('doc', 'ajaxGetChild', 'libID=' + libID);
     $.post(link, function(data)
     {
         $('#module').replaceWith(data);
         $('#module_chosen').remove();
         $('#module').chosen();
     });
+
+    loadWhitelist(libID);
 }
 
 /**

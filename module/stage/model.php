@@ -3,7 +3,7 @@
  * The model file of stage module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     stage
  * @version     $Id: model.php 5079 2013-07-10 00:44:34Z chencongzhi520@gmail.com $
@@ -26,7 +26,17 @@ class stageModel extends model
             ->add('createdDate', helper::today())
             ->get();
 
-        $this->dao->insert(TABLE_STAGE)->data($stage)->autoCheck()->exec();
+        $totalPercent = $this->getTotalPercent();
+
+        if(!is_numeric($stage->percent)) return dao::$errors['message'][] = $this->lang->stage->error->notNum;
+        if(round($totalPercent + $stage->percent) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+
+        $this->dao->insert(TABLE_STAGE)
+            ->data($stage)
+            ->autoCheck()
+            ->batchCheck($this->config->stage->create->requiredFields, 'notempty')
+            ->checkIF($stage->percent != '', 'percent', 'float')
+            ->exec();
 
         if(!dao::isError()) return $this->dao->lastInsertID();
         return false;
@@ -42,6 +52,10 @@ class stageModel extends model
     {
         $data = fixer::input('post')->get();
 
+        $totalPercent = $this->getTotalPercent();
+
+        if(round($totalPercent + array_sum($data->percent)) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+
         $this->loadModel('action');
         foreach($data->name as $i => $name)
         {
@@ -54,7 +68,12 @@ class stageModel extends model
             $stage->createdBy   = $this->app->user->account;
             $stage->createdDate = helper::today();
 
-            $this->dao->insert(TABLE_STAGE)->data($stage)->autoCheck()->exec();
+            $this->dao->insert(TABLE_STAGE)->data($stage)->autoCheck()
+                ->batchCheck($this->config->stage->create->requiredFields, 'notempty')
+                ->checkIF($stage->percent != '', 'percent', 'float')
+                ->exec();
+
+            if(dao::isError()) return false;
 
             $stageID = $this->dao->lastInsertID();
             $this->action->create('stage', $stageID, 'Opened');
@@ -79,7 +98,16 @@ class stageModel extends model
             ->add('editedDate', helper::today())
             ->get();
 
-        $this->dao->update(TABLE_STAGE)->data($stage)->autoCheck()->where('id')->eq((int)$stageID)->exec();
+        $totalPercent = $this->getTotalPercent();
+
+        if(round($totalPercent + $stage->percent - $oldStage->percent) > 100) return dao::$errors['message'][] = $this->lang->stage->error->percentOver;
+
+        $this->dao->update(TABLE_STAGE)
+            ->data($stage)
+            ->autoCheck()
+            ->batchCheck($this->config->stage->edit->requiredFields, 'notempty')
+            ->checkIF($stage->percent != '', 'percent', 'float')->where('id')->eq((int)$stageID)
+            ->exec();
 
         if(!dao::isError()) return common::createChanges($oldStage, $stage);
         return false;
@@ -89,13 +117,29 @@ class stageModel extends model
      * Get stages.
      *
      * @param  string $orderBy
+     * @param  int    $projectID
      * @access public
      * @return array
      */
-    public function getStages($orderBy = 'id_desc')
+    public function getStages($orderBy = 'id_desc', $projectID = 0)
     {
-        return $this->dao->select('*')->from(TABLE_STAGE)->where('deleted')->eq(0)->orderBy($orderBy)->fetchAll('id');
-    }
+        if($projectID)
+        {
+            return $this->dao->select('id,name,type,percent,openedBy as createdBy,begin as createdDate,lastEditedBy as editedBy,end as editedDate,deleted')
+                ->from(TABLE_EXECUTION)
+                ->where('type')->in('sprint,stage,kanban')
+                ->andWhere('deleted')->eq('0')
+                ->andWhere('vision')->eq($this->config->vision)
+                ->beginIF(!$this->app->user->admin)->andWhere('id')->in($this->app->user->view->sprints)->fi()
+                ->andWhere('project')->eq($projectID)
+                ->orderBy($orderBy)
+                ->fetchAll('id');
+        }
+        else
+        {
+            return $this->dao->select('*')->from(TABLE_STAGE)->where('deleted')->eq(0)->orderBy($orderBy)->fetchAll('id');
+        }
+     }
 
     /**
      * Get pairs of stage.
@@ -126,5 +170,15 @@ class stageModel extends model
     public function getByID($stageID)
     {
         return $this->dao->select('*')->from(TABLE_STAGE)->where('deleted')->eq(0)->andWhere('id')->eq((int)$stageID)->fetch();
+    }
+
+    /**
+     *  Get stage total percent
+     *
+     *  return string
+     */
+    public function getTotalPercent()
+    {
+        return $this->dao->select('sum(percent) as total')->from(TABLE_STAGE)->where('deleted')->eq('0')->fetch('total');
     }
 }

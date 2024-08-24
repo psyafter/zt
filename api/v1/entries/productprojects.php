@@ -3,7 +3,7 @@
  * The product projects entry point of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2021 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     entries
  * @version     1
@@ -25,7 +25,7 @@ class productProjectsEntry extends entry
         $appendFields = $this->param('fields', '');
 
         $control = $this->loadController('product', 'project');
-        $control->project($this->param('status', 'all'), $productID, $this->param('branch', 0), $this->param('involved', 0), $this->param('order', 'order_desc'));
+        $control->project($this->param('status', 'all'), $productID, $this->param('branch', 0), $this->param('involved', 0), $this->param('order', 'order_desc'), 0, $this->param('limit', 20), $this->param('page', 1));
         $data = $this->getData();
 
         if(isset($data->status) and $data->status == 'success')

@@ -3,7 +3,7 @@
  * The api module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     api
  * @version     $Id: zh-tw.php 5129 2013-07-15 00:16:07Z zhujinyonging@gmail.com $
@@ -60,6 +60,8 @@ $lang->api->confirmDeleteLib = "您確定刪除該介面庫嗎？";
 $lang->api->filterStruct     = "使用資料結構填充";
 $lang->api->defaultVersion   = "當前版本";
 $lang->api->zentaoAPI        = "禪道API文檔v1";
+$lang->api->search           = "搜索";
+$lang->api->allLibs          = "全部介面庫";
 
 /* Common access control lang. */
 $lang->api->whiteList          = '白名單';
@@ -124,6 +126,12 @@ $lang->api->query              = '請求參數';
 $lang->api->params             = '請求體';
 $lang->api->response           = '請求響應';
 $lang->api->responseExample    = '響應示例';
+$lang->api->id                 = '介面編號';
+$lang->api->addedBy            = '由誰添加';
+$lang->api->addedDate          = '添加時間';
+$lang->api->editedBy           = '由誰更新';
+$lang->api->editedDate         = '更新時間';
+$lang->api->version            = '版本號';
 $lang->api->res                = new stdClass();
 $lang->api->res->name          = '名稱';
 $lang->api->res->desc          = '描述';
@@ -198,9 +206,6 @@ $lang->api->paramsTypeCustomOptions = array('file' => 'file', 'ref' => 'ref');
 $lang->api->structParamsOptons   = array_merge($lang->api->paramsTypeOptions, array('file' => 'file', 'ref' => 'ref'));
 $lang->api->allParamsTypeOptions = array_merge($lang->api->paramsTypeOptions, $lang->api->paramsTypeCustomOptions);
 $lang->api->requiredOptions      = array(0 => '否', 1 => '是');
-
-$lang->doclib       = new stdclass();
-$lang->doclib->name = '介面庫名稱';
 
 $lang->apistruct = new stdClass();
 $lang->apistruct->name = '結構名';

@@ -3,7 +3,7 @@
  * The file module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     file
  * @version     $Id: zh-tw.php 4630 2013-04-10 05:54:08Z chencongzhi520@gmail.com $
@@ -36,6 +36,7 @@ $lang->file->addFile       = '添加檔案';
 $lang->file->beginUpload   = '開始上傳';
 $lang->file->uploadSuccess = '上傳成功';
 $lang->file->batchExport   = '分批導出';
+$lang->file->downloadFile  = '下載';
 
 $lang->file->pathname  = '路徑';
 $lang->file->title     = '標題';
@@ -55,6 +56,7 @@ $lang->file->uploadImagesExplain = '註：請上傳"jpg, jpeg, gif, png"格式�
 $lang->file->saveAndNext         = '保存並跳轉下一頁';
 $lang->file->importPager         = '共有<strong>%s</strong>條記錄，當前第<strong>%s</strong>頁，共有<strong>%s</strong>頁';
 $lang->file->importSummary       = "本次導入共有<strong id='allCount'>%s</strong>條記錄，每頁導入%s條，需要導入<strong id='times'>%s</strong>次";
+$lang->file->accessDenied        = '您無權下載該附件！';
 
 $lang->file->errorNotExists   = "<span class='text-red'>檔案夾 '%s' 不存在</span>";
 $lang->file->errorCanNotWrite = "<span class='text-red'>檔案夾 '%s' 不可寫,請改變檔案夾的權限。在linux中輸入指令: <span class='code'>sudo chmod -R 777 %s</span></span>";
@@ -68,3 +70,9 @@ $lang->file->errorSuffix      = '壓縮包格式錯誤，只能上傳zip壓縮�
 $lang->file->errorExtract     = '解壓縮失敗！可能檔案已經損壞，或壓縮包裡含有非法上傳檔案。';
 $lang->file->fileNotFound     = '未找到該檔案，可能物理檔案已被刪除！';
 $lang->file->fileContentEmpty = '上傳檔案內容為空，請檢查後重新上傳。';
+
+$lang->file->uploadError[1] = "上傳的檔案大小超過了限制，請修改 php.ini 中 upload_max_filesize 與 post_max_size 選項限制的值";
+$lang->file->uploadError[2] = '上傳檔案的大小超過了 HTML 表單中 MAX_FILE_SIZE 選項指定的值';
+$lang->file->uploadError[3] = '檔案只有部分被上傳,請重新上傳';
+$lang->file->uploadError[4] = '沒有檔案被上傳';
+$lang->file->uploadError[5] = '上傳檔案大小為0,請重新上傳';

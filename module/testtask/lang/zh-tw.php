@@ -3,7 +3,7 @@
  * The testtask module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testtask
  * @version     $Id: zh-tw.php 4490 2013-02-27 03:27:05Z wyd621@gmail.com $
@@ -14,7 +14,7 @@ $lang->testtask->create           = "提交測試";
 $lang->testtask->reportChart      = '報表統計';
 $lang->testtask->delete           = "刪除測試單";
 $lang->testtask->importUnitResult = "導入單元測試結果";
-$lang->testtask->importunitresult = "導入單元測試"; //Fix bug custom required testtask.
+$lang->testtask->importUnit       = "導入單元測試"; //Fix bug custom required testtask.
 $lang->testtask->browseUnits      = "單元測試列表";
 $lang->testtask->unitCases        = "單元測試用例";
 $lang->testtask->view             = "概況";
@@ -65,46 +65,50 @@ $lang->testtask->startAction    = "開始測試單";
 $lang->testtask->resultsAction  = "用例結果";
 $lang->testtask->reportAction   = '用例報表統計';
 
-$lang->testtask->id               = '編號';
-$lang->testtask->common           = '測試單';
-$lang->testtask->product          = '所屬' . $lang->productCommon;
-$lang->testtask->project          = '所屬項目';
-$lang->testtask->execution        = '所屬' . $lang->execution->common;
-$lang->testtask->type             = '測試類型';
-$lang->testtask->build            = '版本';
-$lang->testtask->owner            = '負責人';
-$lang->testtask->executor         = '執行人';
-$lang->testtask->execTime         = '執行時間';
-$lang->testtask->pri              = '優先順序';
-$lang->testtask->name             = '名稱';
-$lang->testtask->begin            = '開始日期';
-$lang->testtask->end              = '結束日期';
-$lang->testtask->realFinishedDate = '實際完成日期';
-$lang->testtask->desc             = '描述';
-$lang->testtask->mailto           = '抄送給';
-$lang->testtask->status           = '當前狀態';
-$lang->testtask->subStatus        = '子狀態';
-$lang->testtask->testreport       = '相關測試報告';
-$lang->testtask->assignedTo       = '指派給';
-$lang->testtask->linkVersion      = '版本';
-$lang->testtask->lastRunAccount   = '執行人';
-$lang->testtask->lastRunTime      = '執行時間';
-$lang->testtask->lastRunResult    = '結果';
-$lang->testtask->reportField      = '測試總結';
-$lang->testtask->files            = '上傳附件';
-$lang->testtask->case             = '用例';
-$lang->testtask->version          = '版本';
-$lang->testtask->caseResult       = '測試結果';
-$lang->testtask->stepResults      = '步驟結果';
-$lang->testtask->lastRunner       = '最後執行人';
-$lang->testtask->lastRunDate      = '最後執行時間';
-$lang->testtask->date             = '測試時間';
-$lang->testtask->deleted          = "已刪除";
-$lang->testtask->resultFile       = "結果檔案";
-$lang->testtask->caseCount        = '用例數';
-$lang->testtask->passCount        = '成功';
-$lang->testtask->failCount        = '失敗';
-$lang->testtask->summary          = '有%s個用例，失敗%s個，耗時%s。';
+$lang->testtask->id                = '編號';
+$lang->testtask->common            = '測試單';
+$lang->testtask->product           = '所屬' . $lang->productCommon;
+$lang->testtask->project           = '所屬項目';
+$lang->testtask->execution         = '所屬' . $lang->execution->common;
+$lang->testtask->type              = '測試類型';
+$lang->testtask->build             = '版本';
+$lang->testtask->owner             = '負責人';
+$lang->testtask->executor          = '執行人';
+$lang->testtask->execTime          = '執行時間';
+$lang->testtask->pri               = '優先順序';
+$lang->testtask->name              = '名稱';
+$lang->testtask->begin             = '開始日期';
+$lang->testtask->end               = '結束日期';
+$lang->testtask->realFinishedDate  = '實際完成日期';
+$lang->testtask->desc              = '描述';
+$lang->testtask->mailto            = '抄送給';
+$lang->testtask->status            = '當前狀態';
+$lang->testtask->subStatus         = '子狀態';
+$lang->testtask->testreport        = '相關測試報告';
+$lang->testtask->assignedTo        = '指派給';
+$lang->testtask->linkVersion       = '版本';
+$lang->testtask->lastRunAccount    = '執行人';
+$lang->testtask->lastRunTime       = '執行時間';
+$lang->testtask->lastRunResult     = '結果';
+$lang->testtask->reportField       = '測試總結';
+$lang->testtask->files             = '上傳附件';
+$lang->testtask->case              = '用例';
+$lang->testtask->version           = '版本';
+$lang->testtask->caseResult        = '測試結果';
+$lang->testtask->stepResults       = '步驟結果';
+$lang->testtask->lastRunner        = '最後執行人';
+$lang->testtask->lastRunDate       = '最後執行時間';
+$lang->testtask->date              = '測試時間';
+$lang->testtask->deleted           = "已刪除";
+$lang->testtask->resultFile        = "結果檔案";
+$lang->testtask->caseCount         = '用例數';
+$lang->testtask->passCount         = '成功';
+$lang->testtask->failCount         = '失敗';
+$lang->testtask->summary           = '有%s個用例，失敗%s個，耗時%s。';
+$lang->testtask->pageSummary       = '本頁共 <strong>%s</strong> 個測試單。';
+$lang->testtask->mySummary         = '本頁共 <strong>%s</strong> 個測試單，待測試測試單 <strong>%s</strong>，測試中測試單 <strong>%s</strong>，被阻塞測試單 <strong>%s</strong>。';
+$lang->testtask->allSummary        = '本頁共 <strong>%s</strong> 個測試單，待測試測試單 <strong>%s</strong>，測試中測試單 <strong>%s</strong>，被阻塞測試單 <strong>%s</strong>，已測測試單 <strong>%s</strong>。';
+$lang->testtask->checkedAllSummary = '共選中 <strong>%total%</strong> 個測試單，待測試測試單 <strong>%wait%</strong>，測試中測試單 <strong>%testing%</strong>，被阻塞測試單 <strong>%blocked%</strong>，已測測試單 <strong>%done%</strong>。';
 
 $lang->testtask->beginAndEnd = '起止時間';
 $lang->testtask->to          = '至';
@@ -128,6 +132,7 @@ $lang->testtask->linkByBuild   = '複製測試單';
 $lang->testtask->linkByStory   = "按{$lang->SRCommon}關聯";
 $lang->testtask->linkByBug     = '按Bug關聯';
 $lang->testtask->linkBySuite   = '按套件關聯';
+$lang->testtask->browseBySuite = '按套件查看';
 $lang->testtask->passAll       = '全部通過';
 $lang->testtask->pass          = '通過';
 $lang->testtask->fail          = '失敗';
@@ -147,7 +152,7 @@ $lang->testtask->finishedDateLess  = '實際完成日期不能小於開始日期
 $lang->testtask->finishedDateMore  = '實際完成日期不能大於今天';
 
 $lang->testtask->assignedToMe  = '指派給我';
-$lang->testtask->allCases      = '所有用例';
+$lang->testtask->allCases      = '全部用例';
 
 $lang->testtask->lblCases      = '用例列表';
 $lang->testtask->lblUnlinkCase = '移除用例';
@@ -179,18 +184,12 @@ $lang->testtask->report->common = '報表';
 $lang->testtask->report->select = '請選擇報表類型';
 $lang->testtask->report->create = '生成報表';
 
+$lang->testtask->report->testTaskPerRunResultTip = '共有%s個用例，通過%s個、未執行%s個、失敗%s個';
+
 $lang->testtask->report->charts['testTaskPerRunResult'] = '按用例結果統計';
 $lang->testtask->report->charts['testTaskPerType']      = '按用例類型統計';
 $lang->testtask->report->charts['testTaskPerModule']    = '按用例模組統計';
 $lang->testtask->report->charts['testTaskPerRunner']    = '按用例執行人統計';
-$lang->testtask->report->charts['bugSeverityGroups']    = 'Bug嚴重級別分佈';
-$lang->testtask->report->charts['bugStatusGroups']      = 'Bug狀態分佈';
-$lang->testtask->report->charts['bugOpenedByGroups']    = 'Bug創建者分佈';
-$lang->testtask->report->charts['bugResolvedByGroups']  = 'Bug解決者分佈';
-$lang->testtask->report->charts['bugResolutionGroups']  = 'Bug解決方案分佈';
-$lang->testtask->report->charts['bugModuleGroups']      = 'Bug模組分佈';
-$lang->testtask->report->charts['bugStageGroups']       = 'Bug重要程度階段分佈';
-$lang->testtask->report->charts['bugHandleGroups']      = 'Bug每日處理情況分佈';
 
 $lang->testtask->report->options = new stdclass();
 $lang->testtask->report->options->graph  = new stdclass();

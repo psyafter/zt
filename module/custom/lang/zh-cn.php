@@ -49,6 +49,13 @@ $lang->custom->switch               = "切换";
 $lang->custom->oneUnit              = "一个{$lang->hourCommon}";
 $lang->custom->convertRelationTitle = "请先设置{$lang->hourCommon}转换为%s的换算系数";
 $lang->custom->superReviewers       = "超级评审人";
+$lang->custom->kanban               = "看板";
+$lang->custom->allUsers             = '所有人员';
+$lang->custom->account              = '人员';
+$lang->custom->role                 = '职位';
+$lang->custom->dept                 = '部门';
+$lang->custom->code                 = $lang->code;
+$lang->custom->setCode              = '是否启用代号';
 
 if($config->systemMode == 'new') $lang->custom->execution = '执行';
 if($config->systemMode == 'classic' || !$config->systemMode) $lang->custom->execution = $lang->executionCommon;
@@ -79,19 +86,44 @@ $lang->custom->saveTips            = '点击保存后，则以当前%s为默认�
 $lang->custom->numberError = '区间必须大于零';
 
 $lang->custom->closedExecution = '已关闭' . $lang->custom->execution;
+$lang->custom->closedKanban    = '已关闭' . $lang->custom->kanban;
 $lang->custom->closedProduct   = '已关闭' . $lang->productCommon;
 
 if($config->systemMode == 'new') $lang->custom->object['project']   = '项目';
 $lang->custom->object['product']   = $lang->productCommon;
 $lang->custom->object['execution'] = $lang->custom->execution;
+$lang->custom->object['kanban']    = $lang->custom->kanban;
 $lang->custom->object['story']     = $lang->SRCommon;
 $lang->custom->object['task']      = '任务';
 $lang->custom->object['bug']       = 'Bug';
 $lang->custom->object['testcase']  = '用例';
-$lang->custom->object['testtask']  = '版本';
+$lang->custom->object['testtask']  = '测试单';
 $lang->custom->object['todo']      = '待办';
 $lang->custom->object['user']      = '用户';
 $lang->custom->object['block']     = '区块';
+$lang->custom->object['flow']      = '流程';
+$lang->custom->object['score']     = '积分';
+
+if($config->systemMode == 'new') $lang->custom->menuOrder[5]  = 'project';
+$lang->custom->menuOrder[10] = 'product';
+$lang->custom->menuOrder[15] = 'execution';
+$lang->custom->menuOrder[20] = 'kanban';
+$lang->custom->menuOrder[25] = 'story';
+$lang->custom->menuOrder[30] = 'task';
+$lang->custom->menuOrder[35] = 'bug';
+$lang->custom->menuOrder[40] = 'testcase';
+$lang->custom->menuOrder[45] = 'testtask';
+$lang->custom->menuOrder[50] = 'todo';
+$lang->custom->menuOrder[55] = 'user';
+$lang->custom->menuOrder[60] = 'block';
+$lang->custom->menuOrder[65] = 'flow';
+$lang->custom->menuOrder[70] = 'score';
+
+$lang->custom->dividerMenu  = ',story,todo,block,';
+$lang->custom->separatePage = ',execution,product,kanban,flow,score,';
+
+$lang->custom->block = new stdclass();
+$lang->custom->block->fields['closed'] = '关闭的区块';
 
 $lang->custom->project = new stdClass();
 $lang->custom->project->currencySetting    = '货币设置';
@@ -135,8 +167,9 @@ $lang->custom->testcase->fields['statusList'] = '状态';
 $lang->custom->testcase->fields['review']     = '评审流程';
 
 $lang->custom->testtask = new stdClass();
-$lang->custom->testtask->fields['priList']    = '优先级';
 $lang->custom->testtask->fields['statusList'] = '状态';
+$lang->custom->testtask->fields['typeList']   = '测试类型';
+$lang->custom->testtask->fields['priList']    = '优先级';
 
 $lang->custom->todo = new stdClass();
 $lang->custom->todo->fields['priList']    = '优先级';
@@ -148,11 +181,6 @@ $lang->custom->user->fields['roleList']     = '职位';
 $lang->custom->user->fields['statusList']   = '状态';
 $lang->custom->user->fields['contactField'] = '可用联系方式';
 $lang->custom->user->fields['deleted']      = '列出已删除用户';
-
-$lang->custom->system = array('required', 'flow', 'score');
-
-$lang->custom->block = new stdclass();
-$lang->custom->block->fields['closed'] = '关闭的区块';
 
 $lang->custom->currentLang = '适用当前语言';
 $lang->custom->allLang     = '适用所有语言';
@@ -174,15 +202,22 @@ $lang->custom->notice->conceptResult       = '我们已经根据您的选择为�
 $lang->custom->notice->conceptPath         = '您可以在：后台 -> 自定义 -> 流程页面修改。';
 $lang->custom->notice->readOnlyOfProduct   = '禁止修改后，已关闭' . $lang->productCommon . '下的' . $lang->SRCommon . '、Bug、用例、日志、发布、计划都禁止修改。';
 $lang->custom->notice->readOnlyOfExecution = "禁止修改后，已关闭{$lang->custom->execution}下的任务、版本、日志以及关联需求都禁止修改。";
+$lang->custom->notice->readOnlyOfKanban    = "禁止修改后，已关闭{$lang->custom->kanban}下的卡片以及相关设置都禁止修改。";
 $lang->custom->notice->URSREmpty           = '自定义需求名称不能为空！';
+$lang->custom->notice->valueEmpty          = '值不能为空！';
 $lang->custom->notice->confirmDelete       = '您确定要删除吗？';
 $lang->custom->notice->confirmReviewCase   = '是否将待评审的用例修改为正常状态？';
+$lang->custom->notice->storyReviewTip      = '按人员、职位、部门勾选后，取所有人员的并集。';
+$lang->custom->notice->selectAllTip        = '勾选所有人员后，会清空并置灰评审人员，同时隐藏职位、部门。';
+$lang->custom->notice->repeatKey           = '%s键重复';
+$lang->custom->notice->readOnlyOfCode      = '代号是一种管理话术，主要便于保密或作为别名存在。启用代号管理后，系统中的产品、项目、执行在创建、编辑、详情、列表等页面均会展示代号信息。';
 
 $lang->custom->notice->indexPage['product'] = "从8.2版本起增加了产品主页视图，是否默认进入产品主页？";
 $lang->custom->notice->indexPage['project'] = "从8.2版本起增加了项目主页视图，是否默认进入项目主页？";
 $lang->custom->notice->indexPage['qa']      = "从8.2版本起增加了测试主页视图，是否默认进入测试主页？";
 
 $lang->custom->notice->invalidStrlen['ten']        = '键的长度必须小于10个字符！';
+$lang->custom->notice->invalidStrlen['fifteen']    = '键的长度必须小于15个字符！';
 $lang->custom->notice->invalidStrlen['twenty']     = '键的长度必须小于20个字符！';
 $lang->custom->notice->invalidStrlen['thirty']     = '键的长度必须小于30个字符！';
 $lang->custom->notice->invalidStrlen['twoHundred'] = '键的长度必须小于225个字符！';
@@ -220,6 +255,7 @@ $lang->custom->menuTip          = '点击显示或隐藏导航条目，拖拽来
 $lang->custom->saveFail         = '保存失败！';
 $lang->custom->page             = '页面';
 $lang->custom->changeClassicTip = '切换为老版本的习惯后，系统将取消项目集功能。';
+$lang->custom->changeModeTips   = '历史删除数据不参与数据归并流程，切换模式后将不支持还原，请知悉';
 
 $lang->custom->scoreStatus[1] = '开启';
 $lang->custom->scoreStatus[0] = '关闭';
@@ -229,6 +265,9 @@ $lang->custom->CRProduct[0] = '禁止修改';
 
 $lang->custom->CRExecution[1] = '允许修改';
 $lang->custom->CRExecution[0] = '禁止修改';
+
+$lang->custom->CRKanban[1] = '允许修改';
+$lang->custom->CRKanban[0] = '禁止修改';
 
 $lang->custom->moduleName['product']     = $lang->productCommon;
 $lang->custom->moduleName['productplan'] = '计划';

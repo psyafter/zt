@@ -3,7 +3,7 @@
  * The model file of testreport module of ZenTaoCMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     testreport
  * @version     $Id$
@@ -125,7 +125,7 @@ class testreportModel extends model
     }
 
     /**
-     * Get bug info.
+     * Get bug info and summary.
      *
      * @param  array  $tasks
      * @param  array  $productIdList
@@ -135,12 +135,13 @@ class testreportModel extends model
      * @access public
      * @return array
      */
-    public function getBugInfo($tasks, $productIdList, $begin, $end, $builds)
+    public function getBug4Report($tasks, $productIdList, $begin, $end, $builds)
     {
         $generatedBugs = $this->dao->select('*')->from(TABLE_BUG)->where('product')->in($productIdList)->andWhere('openedDate')->ge($begin)->andWhere('openedDate')->le("$end 23:59:59")->andWhere('deleted')->eq(0)->fetchAll();
         $resolvedBugs  = $this->dao->select('*')->from(TABLE_BUG)->where('product')->in($productIdList)->andWhere('resolvedDate')->ge($begin)->andWhere('resolvedDate')->le("$end 23:59:59")->andWhere('deleted')->eq(0)->fetchAll();
         $foundBugs     = array();
         $legacyBugs    = array();
+        $activatedBugs = array();
         $byCaseNum     = 0;
         $buildIdList   = array_keys($builds);
         $taskIdList    = array_keys($tasks);
@@ -148,7 +149,7 @@ class testreportModel extends model
         $severityGroups = $statusGroups = $openedByGroups = $resolvedByGroups = $resolutionGroups = $moduleGroups = $typeGroups = $stageGoups = $handleGroups = array();
 
         /* Init stageGroups. */
-        $isEmptyStage = true;
+        $stageGroups = array();
         foreach($this->lang->bug->priList as $priKey => $priValue)
         {
             $stageGroups[$priKey]['generated'] = 0;
@@ -157,7 +158,7 @@ class testreportModel extends model
         }
 
         /* Init handleGroups. */
-        $isEmptyHandle  = true;
+        $handleGroups   = array();
         $beginTimeStamp = strtotime($begin);
         $endTimeStamp   = strtotime($end);
         for($i = $beginTimeStamp; $i <= $endTimeStamp; $i += 86400)
@@ -168,6 +169,49 @@ class testreportModel extends model
             $handleGroups['resolved'][$date]  = 0;
         }
 
+        $buildBugs = array();
+        $allBugs   = $this->dao->select('*')->from(TABLE_BUG)->where('product')->in($productIdList)->andWhere('deleted')->eq(0)->fetchAll('id');
+
+        foreach($allBugs as $bug)
+        {
+            $intersect = array_intersect(explode(',', $bug->openedBuild), $buildIdList);
+            if(!empty($intersect)) $buildBugs[$bug->id] = $bug;
+        }
+
+        /* Get bug reactivated actions during the testreport. */
+        $actions = $this->dao->select('*')->from(TABLE_ACTION)
+            ->where('objectType')->eq('bug')
+            ->andWhere('action')->eq('activated')
+            ->andWhere('date')->ge($begin)
+            ->andWhere('date')->le($end . ' 23:59:59')
+            ->andWhere('objectID')->in(array_keys($buildBugs))
+            ->fetchGroup('objectID', 'id');
+
+        $actionIdList = array();
+        foreach($actions as $bugID => $action) $actionIdList = array_merge($actionIdList, array_keys($action));
+
+        $histories = $this->loadModel('action')->getHistory($actionIdList);
+        foreach($actions as $bugID => $actionList)
+        {
+            foreach($actionList as $actionID => $action)
+            {
+                $action->history = zget($histories, $actionID, array());
+            }
+        }
+
+        foreach($buildBugs as $bug)
+        {
+            $bugActions = zget($actions, $bug->id, array());
+            foreach($bugActions as $action)
+            {
+                foreach($action->history as $history)
+                {
+                    if($history->field == 'openedBuild' and !in_array($history->new, $buildIdList)) continue;
+                    $activatedBugs[$bug->id] = $bug;
+                }
+            }
+        }
+
         /* Get the resolved bug data. */
         foreach($resolvedBugs as $bug)
         {
@@ -176,8 +220,6 @@ class testreportModel extends model
                 $resolvedDate = date('m-d', strtotime($bug->resolvedDate));
                 $stageGroups[$bug->pri]['resolved']      += 1;
                 $handleGroups['resolved'][$resolvedDate] += 1;
-                $isEmptyStage  = false;
-                $isEmptyHandle = false;
             }
         }
 
@@ -191,8 +233,6 @@ class testreportModel extends model
                 $foundBugs[$bug->id] = $bug;
                 $stageGroups[$bug->pri]['generated']    += 1;
                 $handleGroups['generated'][$openedDate] += 1;
-                $isEmptyStage  = false;
-                $isEmptyHandle = false;
 
                 if($bug->status == 'active' or $bug->resolvedDate > "$end 23:59:59")
                 {
@@ -229,13 +269,14 @@ class testreportModel extends model
             if($bug->status == 'resolved' or $bug->status == 'closed') $resolvedBugs ++;
         }
 
-        $bugInfo['foundBugs']           = count($foundBugs);
-        $bugInfo['legacyBugs']          = $legacyBugs;
-        $bugInfo['countBugByTask']      = $byCaseNum;
-        $bugInfo['bugConfirmedRate']    = empty($resolvedBugs) ? 0 : round((zget($resolutionGroups, 'fixed', 0) + zget($resolutionGroups, 'postponed', 0)) / $resolvedBugs * 100, 2);
-        $bugInfo['bugCreateByCaseRate'] = empty($byCaseNum) ? 0 : round($byCaseNum / count($foundBugs) * 100, 2);
-        $bugInfo['bugStageGroups']      = $isEmptyStage ? array() : $stageGroups;
-        $bugInfo['bugHandleGroups']     = $isEmptyHandle ? array() : $handleGroups;
+        $bugSummary['foundBugs']           = count($foundBugs);
+        $bugSummary['legacyBugs']          = $legacyBugs;
+        $bugSummary['activatedBugs']       = count($activatedBugs);
+        $bugSummary['countBugByTask']      = $byCaseNum;
+        $bugSummary['bugConfirmedRate']    = empty($resolvedBugs) ? 0 : round((zget($resolutionGroups, 'fixed', 0) + zget($resolutionGroups, 'postponed', 0)) / $resolvedBugs * 100, 2);
+        $bugSummary['bugCreateByCaseRate'] = empty($byCaseNum) ? 0 : round($byCaseNum / count($foundBugs) * 100, 2);
+        $bugInfo['bugStageGroups']         = $stageGroups;
+        $bugInfo['bugHandleGroups']        = $handleGroups;
 
         $this->app->loadLang('bug');
         $users = $this->loadModel('user')->getPairs('noclosed|noletter|nodeleted');
@@ -287,7 +328,7 @@ class testreportModel extends model
         $this->loadModel('tree');
         $modules = array();
         $data    = array();
-        if(is_string($productIdList)) $productIdList = explode(',', $productIdList);
+        if(!is_array($productIdList)) $productIdList = explode(',', $productIdList);
         foreach($productIdList as $productID) $modules += $this->tree->getOptionMenu($productID, $viewType = 'bug');
         foreach($moduleGroups as $moduleID => $count)
         {
@@ -306,7 +347,7 @@ class testreportModel extends model
         }
         $bugInfo['bugResolvedByGroups'] = $data;
 
-        return $bugInfo;
+        return array($bugInfo, $bugSummary);
     }
 
     /**
@@ -527,5 +568,23 @@ class testreportModel extends model
         return $this->dao->select('*')->from(TABLE_STORY)->where('deleted')->eq(0)
             ->andWhere('id')->in(trim($storyIdList, ','))
             ->fetchAll('id');
+    }
+
+    /**
+     * Get pairs.
+     *
+     * @param  int    $productID
+     * @param  int    $appendID
+     * @access public
+     * @return array
+     */
+    public function getPairs($productID = 0, $appendID = 0)
+    {
+        return $this->dao->select('id,title')->from(TABLE_TESTREPORT)
+            ->where('deleted')->eq(0)
+            ->beginIF($productID)->andWhere('product')->eq($productID)->fi()
+            ->beginIF($appendID)->orWhere('id')->eq($appendID)->fi()
+            ->orderBy('id_desc')
+            ->fetchPairs();
     }
 }

@@ -3,7 +3,7 @@
  * The build block view file of block module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Yidong Wang <yidong@cnezsoft.com>
  * @package     block
  * @version     $Id$
@@ -18,10 +18,10 @@
     <thead>
       <tr>
         <th class='c-id text-center'><?php echo $lang->idAB?></th>
+        <th><?php echo $lang->build->name;?></th>
         <?php if($longBlock):?>
         <th><?php echo $lang->build->product;?></th>
         <?php endif;?>
-        <th><?php echo $lang->build->name;?></th>
         <th class='c-date'><?php echo $lang->build->date;?></th>
       </tr>
     </thead>
@@ -34,10 +34,10 @@
       ?>
       <tr <?php echo $appid?>>
         <td class='text-center'><?php echo sprintf('%03d', $build->id);?></td>
+        <td title='<?php echo $build->name?>'><?php echo html::a($buildViewLink, $build->name);?></td>
         <?php if($longBlock):?>
         <td title='<?php echo $build->productName?>'><?php echo html::a($productViewLink, $build->productName);?></td>
         <?php endif;?>
-        <td title='<?php echo $build->name?>'><?php echo html::a($buildViewLink, $build->name);?></td>
         <td><?php echo $build->date?></td>
       </tr>
       <?php endforeach;?>

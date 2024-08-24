@@ -25,10 +25,25 @@ function getConflictStories(planID, branch)
 {
     $.get(createLink('productplan', 'ajaxGetConflictStory', 'planID=' + planID + '&newBranch=' + branch), function(conflictStories)
     {
-        if(conflictStories != '' && !confirm(conflictStories))
+        if(conflictStories != '')
         {
-            $('#branch').val(oldBranch[planID]);
-            $('#branch').trigger("chosen:updated");
+            var result = confirm(conflictStories) ? true : false;
+            if(!result)
+            {
+                $('#branch').val(oldBranch[planID]);
+                $('#branch').trigger("chosen:updated");
+            }
+        }
+
+        if(conflictStories == '' || result)
+        {
+            var link = createLink('productplan', 'ajaxGetTopPlan', "productID=" + productID + "&branch=" + branch);
+            $.post(link, function(data)
+            {
+                $('#parent').replaceWith(data);
+                $('#parent_chosen').remove();
+                $('#parent').chosen();
+            })
         }
     });
 }
@@ -64,16 +79,14 @@ $('#future').on('change', function()
     if($(this).prop('checked'))
     {
         $('#begin').attr('disabled', 'disabled');
-        $('#end').val('').parents('tr').hide();
+        $('#end').parents('tr').hide();
     }
     else
     {
-        var begin = $('#begin').val();
-        if(begin == '') $('#begin').val(today);
-
         $('#begin').removeAttr('disabled');
         $('#end').parents('tr').show();
     }
 });
+
 
 $('#future').change();

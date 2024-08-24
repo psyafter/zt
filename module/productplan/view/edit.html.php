@@ -3,7 +3,7 @@
  * The edit view of productplan module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     productplan
  * @version     $Id: edit.html.php 4728 2013-05-03 06:14:34Z chencongzhi520@gmail.com $
@@ -15,6 +15,7 @@
 <?php js::set('weekend', $config->execution->weekend);?>
 <?php js::import($jsRoot . 'misc/date.js');?>
 <?php js::set('today', helper::today());?>
+<?php js::set('productID', $productID);?>
 <?php js::set('oldBranch', $oldBranch);?>
 <div id='mainContent' class='main-content'>
   <div class='center-block'>
@@ -38,12 +39,21 @@
             <th><?php echo $lang->productplan->title;?></th>
             <td><?php echo html::input('title', $plan->title, "class='form-control' required");?></td><td></td><td></td>
           </tr>
+          <tr <?php echo $plan->parent == '-1' ? "class='hidden'": '';?>>
+            <th><?php echo $lang->productplan->parent;?></th>
+            <td><?php echo html::select('parent', array('0' => '') + $parentPlanPairs, $plan->parent, "class='form-control chosen'");?>
+          </tr>
           <tr>
+            <th><?php echo $lang->productplan->status;?></th>
+            <?php $disabled = $plan->parent == -1 ? "disabled='disabled'" : '' ;?>
+            <td><?php echo html::select('status', array_slice($lang->productplan->statusList,($plan->status == 'wait' ? 0 : 1)), $plan->status, "class='form-control chosen' $disabled");?></td>
+          </tr>
+          <tr>
+            <?php $checked = ($plan->begin  == $config->productplan->future and $plan->end == $config->productplan->future) ? "checked='checked'" : '';?>
             <th><?php echo $lang->productplan->begin;?></th>
-            <td><?php echo html::input('begin', $plan->begin != '2030-01-01' ? formatTime($plan->begin) : '', "class='form-control form-date'");?></td>
+            <td><?php echo html::input('begin', $plan->begin != $config->productplan->future ? formatTime($plan->begin) : '', "class='form-control form-date'");?></td>
             <td>
-              <?php $checked = $plan->begin == '2030-01-01' || $plan->end == '2030-01-01' ? "checked='checked'" : '';?>
-              <div class='checkbox-primary'>
+              <div class='checkbox-primary' id='checkBox'>
                 <input type='checkbox' id='future' name='future' value='1' <?php echo $checked;?> />
                 <label for='future'><?php echo $lang->productplan->future;?></label>
               </div>
@@ -51,8 +61,8 @@
           </tr>
           <tr>
             <th><?php echo $lang->productplan->end;?></th>
-            <td><?php echo html::input('end', $plan->end != '2030-01-01' ? formatTime($plan->end) : '', 'class="form-control form-date"');?></td>
-            <?php $deltaValue = $plan->end == '2030-01-01' ? 0 : (strtotime($plan->end) - strtotime($plan->begin)) / 3600 / 24 + 1;?>
+            <td><?php echo html::input('end', $plan->end != $config->productplan->future ? formatTime($plan->end) : '', "class='form-control form-date'");?></td>
+            <?php $deltaValue = $plan->end == $config->productplan->future ? 0 : (strtotime($plan->end) - strtotime($plan->begin)) / 3600 / 24 + 1;?>
             <td colspan='2'><?php echo html::radio('delta', $lang->productplan->endList , $deltaValue, "onclick='computeEndDate(this.value)'");?></td>
           </tr>
           <?php $this->printExtendFields($plan, 'table', 'columns=3');?>

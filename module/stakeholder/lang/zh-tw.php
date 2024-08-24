@@ -33,7 +33,7 @@ $lang->stakeholder->viewIssueAction = '問題列表';
 /* Fields. */
 $lang->stakeholder->id          = '編號';
 $lang->stakeholder->user        = '用戶';
-$lang->stakeholder->type        = '類型';
+$lang->stakeholder->type        = '用戶類型';
 $lang->stakeholder->name        = '姓名';
 $lang->stakeholder->phone       = '手機';
 $lang->stakeholder->qq          = 'QQ';
@@ -42,7 +42,7 @@ $lang->stakeholder->email       = '郵箱';
 $lang->stakeholder->isKey       = '關鍵干係人';
 $lang->stakeholder->inside      = '內部干係人';
 $lang->stakeholder->outside     = '外部干係人';
-$lang->stakeholder->from        = '類型';
+$lang->stakeholder->from        = '干係人類型';
 $lang->stakeholder->company     = '所屬公司';
 $lang->stakeholder->nature      = '性格特徵';
 $lang->stakeholder->analysis    = '影響分析';

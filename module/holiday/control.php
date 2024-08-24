@@ -3,7 +3,7 @@
  * The control file of holiday module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     holiday
  * @version     $Id
@@ -95,7 +95,7 @@ class holiday extends control
     {
         if($confirm == 'no')
         {
-            die(js::confirm($this->lang->holiday->confirmDelete, inLink('delete', "id=$id&confirm=yes")));
+            return print(js::confirm($this->lang->holiday->confirmDelete, inLink('delete', "id=$id&confirm=yes")));
         }
         else
         {
@@ -111,7 +111,7 @@ class holiday extends control
             $this->holiday->updateTaskRealDuration($holidayInformation->begin, $holidayInformation->end);
 
             if(dao::isError()) return $this->send(array('result' => 'fail', 'message' => dao::getError()));
-            die(js::reload('parent'));
+            return print(js::reload('parent'));
         }
     }
 }

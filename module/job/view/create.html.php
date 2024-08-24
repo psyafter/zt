@@ -3,7 +3,7 @@
  * The create view file of job module of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2017 青岛易软天创网络科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chenqi <chenqi@cnezsoft.com>
  * @package     job
  * @version     $Id$
@@ -16,6 +16,7 @@
 <?php js::set('triggerType', 'tag');?>
 <?php js::set('dirChange', $lang->job->dirChange);?>
 <?php js::set('buildTag', $lang->job->buildTag);?>
+<?php js::set('frameList', $lang->job->frameList);?>
 
 <div id='mainContent' class='main-row'>
   <div class='main-content'>
@@ -26,7 +27,7 @@
       <form id='jobForm' method='post' class='form-ajax'>
         <table class='table table-form'>
           <tr>
-            <th class='w-120px'><?php echo $lang->job->name; ?></th>
+            <th class='w-140px'><?php echo $lang->job->name; ?></th>
             <td class='required'><?php echo html::input('name', '', "class='form-control'"); ?></td>
             <td colspan="2" ></td>
           </tr>
@@ -51,13 +52,17 @@
             <th><?php echo $lang->job->product; ?></th>
             <td><?php echo html::select('product', '', '', "class='form-control chosen'"); ?></td>
           </tr>
-          <tr>
+          <tr id="frameBox">
             <th><?php echo $lang->job->frame; ?></th>
-            <td><?php echo html::select('frame', $lang->job->frameList, '', "class='form-control chosen'"); ?></td>
+            <td>
+              <div class='input-group'>
+                <?php echo html::select('frame', array('' => ''), '', "class='form-control chosen'"); ?>
+              </div>
+            </td>
           </tr>
           <tr>
             <th><?php echo $lang->job->triggerType; ?></th>
-            <td><?php echo html::select('triggerType', $lang->job->triggerTypeList, '', "class='form-control'");?></td>
+            <td><?php echo html::select('triggerType', $lang->job->triggerTypeList, '', "class='form-control chosen'");?></td>
             <td colspan="2"></td>
           </tr>
           <tr id='svnDirBox' class='svn-fields'>
@@ -67,6 +72,20 @@
                 <?php echo html::select('svnDir[]', array('' => ''), '', "class='form-control chosen'");?>
               </div>
             </td>
+          </tr>
+          <tr class='sonarqube hide'>
+            <th><?php echo $lang->job->sonarqubeServer;?></th>
+            <td><?php echo html::select('sonarqubeServer', $sonarqubeServerList, '', "class='form-control chosen' required");?></td>
+            <td colspan="2"></td>
+          </tr>
+          <tr id='sonarProject' class='sonarqube hide'>
+            <th><?php echo $lang->job->projectKey;?></th>
+            <td class='required'>
+              <div class='input-group'>
+                <?php echo html::select('projectKey', array('' => ''), '', "class='form-control chosen'");?>
+              </div>
+            </td>
+            <td colspan="2"></td>
           </tr>
           <tr class="comment-fields">
             <th><?php echo $lang->job->comment;?></th>
@@ -103,9 +122,9 @@
             <th><?php echo $lang->job->customParam;?></th>
             <td colspan='2' id='paramDiv'>
               <div class='table-row input-group'>
-                <span class='input-group-addon w-50px'><?php echo $lang->job->paramName; ?></span>
+                <span class='input-group-addon <?php echo common::checkNotCN() ? 'w-60px' : 'w-50px'?>'><?php echo $lang->job->paramName; ?></span>
                 <?php echo html::input('paramName[]', '', "class='form-control'"); ?>
-                <span class='input-group-addon w-40px'><?php echo $lang->job->paramValue; ?></span>
+                <span class='input-group-addon <?php echo common::checkNotCN() ? 'w-60px' : 'w-40px'?>'><?php echo $lang->job->paramValue; ?></span>
                 <?php echo html::select('paramValue[]', $lang->job->paramValueList, '', "class='form-control' onchange='setParamName(this)'"); ?>
                 <?php echo html::input('paramValue[]', '', "class='form-control hidden' id='paramValue' disabled"); ?>
                 <span class='input-group-addon w-90px'>
@@ -120,8 +139,7 @@
             </td>
           </tr>
           <tr>
-            <th></th>
-            <td class='text-center form-actions'>
+            <td colspan="3" class='text-center form-actions'>
               <?php echo html::submitButton(); ?>
               <?php if(!isonlybody()) echo html::a(inlink('browse', ""), $lang->goback, '', 'class="btn btn-wide"');?>
               <?php echo html::hidden('repoType');?>

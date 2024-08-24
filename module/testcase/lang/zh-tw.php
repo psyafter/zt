@@ -3,7 +3,7 @@
  * The testcase module zh-tw file of ZenTaoPMS.
  *
  * @copyright   Copyright 2009-2015 青島易軟天創網絡科技有限公司(QingDao Nature Easy Soft Network Technology Co,LTD, www.cnezsoft.com)
- * @license     ZPL (http://zpl.pub/page/zplv12.html)
+ * @license     ZPL(http://zpl.pub/page/zplv12.html) or AGPL(https://www.gnu.org/licenses/agpl-3.0.en.html)
  * @author      Chunsheng Wang <chunsheng@cnezsoft.com>
  * @package     testcase
  * @version     $Id: zh-tw.php 4764 2013-05-05 04:07:04Z chencongzhi520@gmail.com $
@@ -31,9 +31,11 @@ $lang->testcase->precondition     = '前置條件';
 $lang->testcase->pri              = '優先順序';
 $lang->testcase->type             = '用例類型';
 $lang->testcase->status           = '用例狀態';
+$lang->testcase->statusAB         = '狀態';
 $lang->testcase->subStatus        = '子狀態';
 $lang->testcase->steps            = '用例步驟';
 $lang->testcase->openedBy         = '由誰創建';
+$lang->testcase->openedByAB       = '創建者';
 $lang->testcase->openedDate       = '創建日期';
 $lang->testcase->lastEditedBy     = '最後修改者';
 $lang->testcase->result           = '測試結果';
@@ -43,6 +45,9 @@ $lang->testcase->files            = '附件';
 $lang->testcase->linkCase         = '相關用例';
 $lang->testcase->linkCases        = '關聯相關用例';
 $lang->testcase->unlinkCase       = '移除相關用例';
+$lang->testcase->linkBug          = '相關Bug';
+$lang->testcase->linkBugs         = '關聯相關Bug';
+$lang->testcase->unlinkBug        = '移除相關Bug';
 $lang->testcase->stage            = '適用階段';
 $lang->testcase->scriptedBy       = '腳本由誰創建';
 $lang->testcase->scriptedDate     = '腳本創建日期';
@@ -91,6 +96,7 @@ $lang->testcase->mailto           = '抄送給';
 $lang->testcase->deleted          = '是否刪除';
 $lang->testcase->browseUnits      = '單元測試';
 $lang->testcase->suite            = '套件';
+$lang->testcase->executionStatus  = '執行狀態';
 
 $lang->case = $lang->testcase;  // 用於DAO檢查時使用。因為case是系統關鍵字，所以無法定義該模組為case，只能使用testcase，但表還是使用的case。
 
@@ -121,12 +127,13 @@ $lang->testcase->batchConfirmStoryChange = "批量確認變更";
 $lang->testcase->batchCaseTypeChange     = "批量修改類型";
 $lang->testcase->browse                  = "用例列表";
 $lang->testcase->groupCase               = "分組瀏覽用例";
+$lang->testcase->zeroCase                = "零用例{$lang->SRCommon}";
 $lang->testcase->import                  = "導入";
 $lang->testcase->importAction            = "導入用例";
 $lang->testcase->fileImport              = "導入CSV";
 $lang->testcase->importFromLib           = "從用例庫中導入";
 $lang->testcase->showImport              = "顯示導入內容";
-$lang->testcase->exportTemplet           = "導出模板";
+$lang->testcase->exportTemplate          = "導出模板";
 $lang->testcase->export                  = "導出數據";
 $lang->testcase->exportAction            = "導出用例";
 $lang->testcase->reportChart             = '報表統計';
@@ -139,6 +146,7 @@ $lang->testcase->groupName               = '分組名稱';
 $lang->testcase->step                    = '步驟';
 $lang->testcase->stepChild               = '子步驟';
 $lang->testcase->viewAll                 = '查看所有';
+$lang->testcase->importToLib             = "導入用例庫";
 
 $lang->testcase->new = '新增';
 
@@ -168,11 +176,12 @@ $lang->testcase->legendLinkBugs    = '相關Bug';
 $lang->testcase->legendOpenAndEdit = '創建編輯';
 $lang->testcase->legendComment     = '備註';
 
-$lang->testcase->summary            = "本頁共 <strong>%s</strong> 個用例，已執行<strong>%s</strong>個。";
-$lang->testcase->confirmDelete      = '您確認要刪除該測試用例嗎？';
-$lang->testcase->confirmBatchDelete = '您確認要批量刪除這些測試用例嗎？';
-$lang->testcase->ditto              = '同上';
-$lang->testcase->dittoNotice        = '該用例與上一用例不屬於同一產品！';
+$lang->testcase->summary               = "本頁共 <strong>%s</strong> 個用例，已執行<strong>%s</strong>個。";
+$lang->testcase->confirmDelete         = '您確認要刪除該測試用例嗎？';
+$lang->testcase->confirmBatchDelete    = '您確認要批量刪除這些測試用例嗎？';
+$lang->testcase->ditto                 = '同上';
+$lang->testcase->dittoNotice           = '該用例與上一用例不屬於同一產品！';
+$lang->testcase->confirmUnlinkTesttask = '用例[%s]已關聯在之前所屬分支/平台的測試單中，調整分支/平台後，將從之前所屬分支/平台的測試單中移除，請確認是否繼續修改。';
 
 $lang->testcase->reviewList[0] = '否';
 $lang->testcase->reviewList[1] = '是';
@@ -219,16 +228,21 @@ $lang->testcase->resultList['blocked'] = '阻塞';
 
 $lang->testcase->buttonToList = '返回';
 
+$lang->testcase->whichLine        = '第%s行';
+$lang->testcase->stepsEmpty       = '步驟%s不能為空';
 $lang->testcase->errorEncode      = '無數據，請選擇正確的編碼重新上傳！';
 $lang->testcase->noFunction       = '不存在iconv和mb_convert_encoding轉碼方法，不能將數據轉成想要的編碼！';
 $lang->testcase->noRequire        = "%s行的“%s”是必填欄位，不能為空";
+$lang->testcase->noRequireTip     = "“%s”是必填欄位，不能為空";
 $lang->testcase->noLibrary        = "現在還沒有用例庫，請先創建！";
 $lang->testcase->mustChooseResult = '必須選擇評審結果';
 $lang->testcase->noModule         = '<div>您現在還沒有模組信息</div><div>請維護測試模組</div>';
 $lang->testcase->noCase           = '暫時沒有用例。';
+$lang->testcase->importedCases    = 'ID為 %s 的用例在相同模組已經導入，已忽略。';
 
 $lang->testcase->searchStories = "鍵入來搜索{$lang->SRCommon}";
 $lang->testcase->selectLib     = '請選擇庫';
+$lang->testcase->selectLibAB   = '選擇用例庫';
 
 $lang->testcase->action = new stdclass();
 $lang->testcase->action->fromlib               = array('main' => '$date, 由 <strong>$actor</strong> 從用例庫 <strong>$extra</strong>導入。');
@@ -238,11 +252,11 @@ $lang->testcase->action->unlinkedfromproject   = array('main' => '$date, 由 <st
 $lang->testcase->action->linked2execution      = array('main' => '$date, 由 <strong>$actor</strong> 關聯到' . $lang->executionCommon . ' <strong>$extra</strong>。');
 $lang->testcase->action->unlinkedfromexecution = array('main' => '$date, 由 <strong>$actor</strong> 從' . $lang->executionCommon . ' <strong>$extra</strong> 移除。');
 
-$lang->testcase->featureBar['browse']['all']         = $lang->testcase->allCases;
+$lang->testcase->featureBar['browse']['all']         = '全部';
 $lang->testcase->featureBar['browse']['wait']        = '待評審';
 $lang->testcase->featureBar['browse']['needconfirm'] = $lang->testcase->needConfirm;
 $lang->testcase->featureBar['browse']['group']       = '分組查看';
-$lang->testcase->featureBar['browse']['suite']       = '套件';
 $lang->testcase->featureBar['browse']['zerocase']    = "零用例{$lang->SRCommon}";
 $lang->testcase->featureBar['browse']['browseunits'] = '單元測試';
+$lang->testcase->featureBar['browse']['suite']       = '套件';
 $lang->testcase->featureBar['groupcase']             = $lang->testcase->featureBar['browse'];
