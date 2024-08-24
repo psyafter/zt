@@ -3,8 +3,8 @@ error_reporting(E_ALL);
 date_default_timezone_set('Asia/Shanghai');
 $config = new stdclass();
 
-include '../framework/helper.class.php';
-include '../config/config.php';
+include 'framework/helper.class.php';
+include 'config/config.php';
 define('DS', DIRECTORY_SEPARATOR);
 session_start();
 
@@ -70,8 +70,8 @@ $lang->productURCommon = '';
 $lang->productSRCommon = '';
 $lang->projectSRCommon = '';
 $lang->projectURCommon = '';
-include "../module/common/lang/{$clientLang}.php";
-include "../module/misc/lang/{$clientLang}.php";
+include "module/common/lang/{$clientLang}.php";
+include "module/misc/lang/{$clientLang}.php";
 if($status == 'createFile')
 {
     $lang->user = new stdclass();

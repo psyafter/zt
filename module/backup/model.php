@@ -74,7 +74,7 @@ class backupModel extends model
 
         $tmpFile  = array_search($appRoot . 'tmp', $fileList);
         $wwwFile  = array_search($appRoot . 'www', $fileList);
-        $dataFile = array_search($appRoot . 'www/data', $wwwFileList);
+        $dataFile = array_search($appRoot . 'data', $wwwFileList);
         unset($fileList[$tmpFile]);
         unset($fileList[$wwwFile]);
         unset($wwwFileList[$dataFile]);
@@ -175,7 +175,7 @@ class backupModel extends model
             chdir($this->app->getTmpRoot());
             $this->app->loadClass('pclzip', true);
             $zip = new pclzip($backupFile);
-            if($zip->extract(PCLZIP_OPT_PATH, $this->app->getAppRoot() . 'www/data/', PCLZIP_OPT_TEMP_FILE_ON) == 0)
+            if($zip->extract(PCLZIP_OPT_PATH, $this->app->getAppRoot() . 'data/', PCLZIP_OPT_TEMP_FILE_ON) == 0)
             {
                 $return->result = false;
                 $return->error  = $zip->errorInfo();
@@ -185,7 +185,7 @@ class backupModel extends model
         elseif(is_dir($backupFile))
         {
             $zfile = $this->app->loadClass('zfile');
-            $zfile->copyDir($backupFile, $this->app->getAppRoot() . 'www/data/', $showDetails = false);
+            $zfile->copyDir($backupFile, $this->app->getAppRoot() . 'data/', $showDetails = false);
         }
 
         return $return;
