@@ -16,10 +16,10 @@
 error_reporting(0);
 
 /* Load the framework. */
-include '../framework/router.class.php';
-include '../framework/control.class.php';
-include '../framework/model.class.php';
-include '../framework/helper.class.php';
+include 'framework/router.class.php';
+include 'framework/control.class.php';
+include 'framework/model.class.php';
+include 'framework/helper.class.php';
 
-$app    = router::createApp('pms', dirname(dirname(__FILE__)), 'router');
+$app    = router::createApp('pms', dirname(__FILE__), 'router');
 $tester = $app->loadCommon();

@@ -230,7 +230,7 @@ $config->upgrade->discardedBugTypes['zh-tw']['newfeature']   = "新增需求";
 $config->upgrade->discardedBugTypes['zh-tw']['trackthings']  = '事務跟蹤';
 
 $config->delete['10.6'][]   = 'module/chat/ext/control/extensions.php';
-$config->delete['12.4.2'][] = 'www/js/ueditor';
+$config->delete['12.4.2'][] = 'js/ueditor';
 
 $config->delete['16_5_beta1'][] = 'module/my/ext/model/hook/setMenu.effort.php';
 $config->delete['16_5_beta1'][] = 'module/my/ext/lang/de/bizext.php';
